@@ -1,0 +1,83 @@
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET Build and run Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  ConnectionString_MySql: server=localhost;port=3306;uid=root;pwd=TestTest123!;AllowLoadLocalInfile=true
+  ConnectionString_Oracle: Data Source=localhost:1521/FREEPDB1;User Id=SYSTEM;Password=TestTest123!
+  ConnectionString_PostgreSQL: Host=localhost;Port=5432;Username=postgres;Password=TestTest123!
+  ConnectionString_SqlServer: Data Source=localhost,1433;User ID=sa;Password=TestTest123!;Encrypt=False;MultipleActiveResultSets=True
+
+jobs:
+  build:
+    name: Build and run Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet-version: [ '8.0.x' ]
+        
+    services:
+        mysql:
+          image: mysql:latest
+          env:
+            MYSQL_ROOT_PASSWORD: TestTest123!
+          ports:
+            - 3306:3306
+
+        oracle:
+          image: gvenzl/oracle-free:latest
+          env:
+            ORACLE_PASSWORD: TestTest123!
+          ports:
+            - 1521:1521
+            - 5500:5500
+
+        postgresql:
+          image: postgres:latest
+          env:
+            POSTGRES_PASSWORD: TestTest123!
+          ports:
+            - 5432:5432
+
+        sqlserver:
+            image: mcr.microsoft.com/mssql/server:2022-latest
+            env:
+                ACCEPT_EULA: Y
+                MSSQL_PID: Developer
+                MSSQL_SA_PASSWORD: TestTest123!
+            ports:
+                - 1433:1433
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+        
+    - name: Test with dotnet
+      run: dotnet test --no-restore --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+      
+    - name: Upload dotnet test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-results-${{ matrix.dotnet-version }}
+        path: TestResults-${{ matrix.dotnet-version }}
+        
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}

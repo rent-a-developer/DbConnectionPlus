@@ -1,0 +1,12 @@
+global using System.ComponentModel.DataAnnotations;
+global using System.Data;
+global using Xunit;
+global using AwesomeAssertions;
+global using Microsoft.Data.SqlClient;
+global using RentADeveloper.DbConnectionPlus.DbCommands;
+global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
+global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestHelpers;
+global using RentADeveloper.DbConnectionPlus.SqlStatements;
+global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+global using static AwesomeAssertions.FluentActions;
+global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;

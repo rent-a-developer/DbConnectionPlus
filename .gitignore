@@ -1,0 +1,17 @@
+obj
+bin
+.vs
+
+**/AssemblyInfo.cs
+**/*.suo
+**/*.DotSettings.user
+**/*.csproj.user
+
+**/launchSettings.json
+.sonarlint/
+
+BenchmarkDotNet.Artifacts/
+docs/api
+docs/_site
+
+src/DbConnectionPlus/RentADeveloper.DbConnectionPlus.xml

@@ -1,0 +1,201 @@
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+using RentADeveloper.DbConnectionPlus.Converters;
+
+namespace RentADeveloper.DbConnectionPlus;
+
+/// <summary>
+/// Provides extension members for the type <see cref="DbConnection" />.
+/// </summary>
+public static partial class DbConnectionExtensions
+{
+    /// <summary>
+    /// Updates the specified entity, identified by its key property / properties, in the database.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to update.</typeparam>
+    /// <param name="connection">The database connection to use to update the entity.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="transaction">The database transaction within to perform the operation.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>The number of rows that were affected by the update operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="connection" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="entity" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was cancelled via <paramref name="cancellationToken" />.
+    /// </exception>
+    /// <remarks>
+    /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
+    /// type <typeparamref name="TEntity" />.
+    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// 
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
+    /// <see cref="KeyAttribute" />.
+    /// 
+    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
+    /// (case-sensitive) in the table.
+    /// 
+    /// The columns must have data types that are compatible with the property types of the corresponding properties.
+    /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
+    /// 
+    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
+    /// 
+    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
+    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
+    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
+    /// properties are updated accordingly.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// <![CDATA[
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    /// 
+    /// class User
+    /// {
+    ///     [Key]
+    ///     public Int64 Id { get; set; }
+    ///     public DateTime LastLoginDate { get; set; }
+    ///     public UserState State { get; set; }
+    /// }
+    /// 
+    /// if (user.LastLoginDate < DateTime.UtcNow.AddYears(-1))
+    /// {
+    ///     user.State = UserState.Inactive;
+    ///     connection.UpdateEntity(user);
+    /// }
+    /// ]]>
+    /// </code>
+    /// </example>
+    public static Int32 UpdateEntity<TEntity>(
+        this DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction = null,
+        CancellationToken cancellationToken = default
+    )
+        where TEntity : class
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+
+        return databaseAdapter.EntityManipulator.UpdateEntity(
+            connection,
+            entity,
+            transaction,
+            cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Asynchronously updates the specified entity, identified by its key property / properties, in the database.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to update.</typeparam>
+    /// <param name="connection">The database connection to use to update the entity.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="transaction">The database transaction within to perform the operation.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation.
+    /// <see cref="Task{TResult}.Result" /> will contain the number of rows that were affected by the update operation.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="connection" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="entity" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The operation was cancelled via <paramref name="cancellationToken" />.
+    /// </exception>
+    /// <remarks>
+    /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
+    /// type <typeparamref name="TEntity" />.
+    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// 
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
+    /// <see cref="KeyAttribute" />.
+    /// 
+    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
+    /// (case-sensitive) in the table.
+    /// 
+    /// The columns must have data types that are compatible with the property types of the corresponding properties.
+    /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
+    /// 
+    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
+    /// 
+    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
+    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
+    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
+    /// properties are updated accordingly.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// <![CDATA[
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    /// 
+    /// class User
+    /// {
+    ///     [Key]
+    ///     public Int64 Id { get; set; }
+    ///     public DateTime LastLoginDate { get; set; }
+    ///     public UserState State { get; set; }
+    /// }
+    /// 
+    /// if (user.LastLoginDate < DateTime.UtcNow.AddYears(-1))
+    /// {
+    ///     user.State = UserState.Inactive;
+    ///     await connection.UpdateEntityAsync(user);
+    /// }
+    /// ]]>
+    /// </code>
+    /// </example>
+    public static Task<Int32> UpdateEntityAsync<TEntity>(
+        this DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction = null,
+        CancellationToken cancellationToken = default
+    )
+        where TEntity : class
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+
+        return databaseAdapter.EntityManipulator.UpdateEntityAsync(
+            connection,
+            entity,
+            transaction,
+            cancellationToken
+        );
+    }
+}

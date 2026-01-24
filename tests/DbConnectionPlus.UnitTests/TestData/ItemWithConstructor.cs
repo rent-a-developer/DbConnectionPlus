@@ -1,0 +1,17 @@
+﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+
+#pragma warning disable IDE0290
+
+public class ItemWithConstructor
+{
+    public ItemWithConstructor(Int16 a, Int32 b, Int64 c)
+    {
+        this.A = a;
+        this.B = b;
+        this.C = c;
+    }
+
+    public Int16 A { get; init; }
+    public Int32 B { get; init; }
+    public Int64 C { get; init; }
+}

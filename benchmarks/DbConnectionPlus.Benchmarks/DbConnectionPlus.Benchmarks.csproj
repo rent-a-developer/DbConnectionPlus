@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<TieredCompilation>true</TieredCompilation>
+		<Authors>David Liebeherr</Authors>
+		<Company>rent-a-developer</Company>
+		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
+		<RootNamespace>RentADeveloper.DbConnectionPlus.Benchmarks</RootNamespace>
+		<AssemblyTitle>rent-a-developer DbConnectionPlus.Benchmarks</AssemblyTitle>
+		<AssemblyName>DbConnectionPlus.Benchmarks</AssemblyName>
+		<StartupObject>RentADeveloper.DbConnectionPlus.Benchmarks.Program</StartupObject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
+		<ProjectReference Include="..\..\tests\DbConnectionPlus.IntegrationTests\DbConnectionPlus.IntegrationTests.csproj" />
+	</ItemGroup>
+
+</Project>

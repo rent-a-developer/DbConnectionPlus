@@ -1,0 +1,227 @@
+﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/rent-a-developer/DbConnectionPlus.git")]
+namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters
+{
+    public static class Constants
+    {
+        public const string Indent = "    ";
+    }
+    public static class DatabaseAdapterRegistry
+    {
+        public static void RegisterAdapter<TConnection>(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter adapter)
+            where TConnection : System.Data.Common.DbConnection { }
+    }
+    public interface IDatabaseAdapter
+    {
+        RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator EntityManipulator { get; }
+        RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder TemporaryTableBuilder { get; }
+        void BindParameterValue(System.Data.Common.DbParameter parameter, object? value);
+        string FormatParameterName(string parameterName);
+        string GetDataType(System.Type type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode);
+        string QuoteIdentifier(string identifier);
+        string QuoteTemporaryTableName(string tableName, System.Data.Common.DbConnection connection);
+        bool SupportsTemporaryTables(System.Data.Common.DbConnection connection);
+        bool WasSqlStatementCancelledByCancellationToken(System.Exception exception, System.Threading.CancellationToken cancellationToken);
+    }
+    public interface IEntityManipulator
+    {
+        int DeleteEntities<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> DeleteEntitiesAsync<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        int DeleteEntity<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> DeleteEntityAsync<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        int InsertEntities<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> InsertEntitiesAsync<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        int InsertEntity<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> InsertEntityAsync<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        int UpdateEntities<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> UpdateEntitiesAsync<TEntity>(System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        int UpdateEntity<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<int> UpdateEntityAsync<TEntity>(System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction, System.Threading.CancellationToken cancellationToken);
+    }
+    public interface ITemporaryTableBuilder
+    {
+        RentADeveloper.DbConnectionPlus.DatabaseAdapters.TemporaryTableDisposer BuildTemporaryTable(System.Data.Common.DbConnection connection, System.Data.Common.DbTransaction? transaction, string name, System.Collections.IEnumerable values, System.Type valuesType, System.Threading.CancellationToken cancellationToken = default);
+        System.Threading.Tasks.Task<RentADeveloper.DbConnectionPlus.DatabaseAdapters.TemporaryTableDisposer> BuildTemporaryTableAsync(System.Data.Common.DbConnection connection, System.Data.Common.DbTransaction? transaction, string name, System.Collections.IEnumerable values, System.Type valuesType, System.Threading.CancellationToken cancellationToken = default);
+    }
+    public sealed class TemporaryTableDisposer : System.IAsyncDisposable, System.IDisposable
+    {
+        public TemporaryTableDisposer(System.Action dropTableFunction, System.Func<System.Threading.Tasks.ValueTask> dropTableAsyncFunction) { }
+        public void Dispose() { }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+    }
+}
+namespace RentADeveloper.DbConnectionPlus.DbCommands
+{
+    public interface IDbCommandFactory
+    {
+        System.Data.Common.DbCommand CreateDbCommand(System.Data.Common.DbConnection connection, string commandText, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1);
+    }
+}
+namespace RentADeveloper.DbConnectionPlus
+{
+    public static class DbConnectionExtensions
+    {
+        public static RentADeveloper.DbConnectionPlus.EnumSerializationMode EnumSerializationMode { get; set; }
+        public static RentADeveloper.DbConnectionPlus.InterceptDbCommand? InterceptDbCommand { get; set; }
+        public static int DeleteEntities<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> DeleteEntitiesAsync<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static int DeleteEntity<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> DeleteEntityAsync<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static int ExecuteNonQuery(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<int> ExecuteNonQueryAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Data.Common.DbDataReader ExecuteReader(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandBehavior commandBehavior = 0, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<System.Data.Common.DbDataReader> ExecuteReaderAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandBehavior commandBehavior = 0, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static TTarget ExecuteScalar<TTarget>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<TTarget> ExecuteScalarAsync<TTarget>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static bool Exists(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<bool> ExistsAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static int InsertEntities<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> InsertEntitiesAsync<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static int InsertEntity<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> InsertEntityAsync<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedParameter Parameter(object? parameterValue, [System.Runtime.CompilerServices.CallerArgumentExpression("parameterValue")] string? parameterValueExpression = null) { }
+        public static System.Collections.Generic.IEnumerable<dynamic> Query(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IEnumerable<T> Query<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        [System.Runtime.CompilerServices.AsyncIteratorStateMachine(typeof(RentADeveloper.DbConnectionPlus.DbConnectionExtensions.<QueryAsync>d__20))]
+        public static System.Collections.Generic.IAsyncEnumerable<dynamic> QueryAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, [System.Runtime.CompilerServices.EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default) { }
+        [System.Runtime.CompilerServices.AsyncIteratorStateMachine(typeof(RentADeveloper.DbConnectionPlus.DbConnectionExtensions.<QueryAsync>d__30<T>))]
+        public static System.Collections.Generic.IAsyncEnumerable<T> QueryAsync<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, [System.Runtime.CompilerServices.EnumeratorCancellation] System.Threading.CancellationToken cancellationToken = default) { }
+        public static dynamic QueryFirst(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static T QueryFirst<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<dynamic> QueryFirstAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<T> QueryFirstAsync<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static dynamic? QueryFirstOrDefault(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static T? QueryFirstOrDefault<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<dynamic?> QueryFirstOrDefaultAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<T?> QueryFirstOrDefaultAsync<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static dynamic QuerySingle(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static T QuerySingle<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<dynamic> QuerySingleAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<T> QuerySingleAsync<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static dynamic? QuerySingleOrDefault(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static T? QuerySingleOrDefault<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<dynamic?> QuerySingleOrDefaultAsync(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<T?> QuerySingleOrDefaultAsync<T>(this System.Data.Common.DbConnection connection, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement statement, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1, System.Threading.CancellationToken cancellationToken = default) { }
+        public static RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable TemporaryTable<T>(System.Collections.Generic.IEnumerable<T> values, [System.Runtime.CompilerServices.CallerArgumentExpression("values")] string? valuesExpression = null) { }
+        public static int UpdateEntities<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> UpdateEntitiesAsync<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static int UpdateEntity<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+        public static System.Threading.Tasks.Task<int> UpdateEntityAsync<TEntity>(this System.Data.Common.DbConnection connection, TEntity entity, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
+            where TEntity :  class { }
+    }
+    public enum EnumSerializationMode
+    {
+        Integers = 0,
+        Strings = 1,
+    }
+    public delegate void InterceptDbCommand(System.Data.Common.DbCommand dbCommand, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable> temporaryTables);
+}
+namespace RentADeveloper.DbConnectionPlus.Dynamic
+{
+    public class DataRow : System.Dynamic.DynamicObject, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IDictionary<string, object?>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable
+    {
+        public DataRow(System.Collections.Generic.IDictionary<string, object?> columns) { }
+        public int Count { get; }
+        public bool IsReadOnly { get; }
+        public object? this[string key] { get; set; }
+        public System.Collections.Generic.ICollection<string> Keys { get; }
+        public System.Collections.Generic.ICollection<object?> Values { get; }
+        public void Add(System.Collections.Generic.KeyValuePair<string, object?> item) { }
+        public void Add(string key, object? value) { }
+        public void Clear() { }
+        public bool Contains(System.Collections.Generic.KeyValuePair<string, object?> item) { }
+        public bool ContainsKey(string key) { }
+        public void CopyTo(System.Collections.Generic.KeyValuePair<string, object?>[] array, int arrayIndex) { }
+        public override System.Collections.Generic.IEnumerable<string> GetDynamicMemberNames() { }
+        public System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object?>> GetEnumerator() { }
+        public bool Remove(System.Collections.Generic.KeyValuePair<string, object?> item) { }
+        public bool Remove(string key) { }
+        public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object? result) { }
+        public bool TryGetValue(string key, out object? value) { }
+        public override bool TrySetMember(System.Dynamic.SetMemberBinder binder, object? value) { }
+    }
+}
+namespace RentADeveloper.DbConnectionPlus.Entities
+{
+    public static class EntityHelper
+    {
+        public static System.Reflection.ConstructorInfo? FindCompatibleConstructor(System.Type type, [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Name",
+                "Type"})] System.ValueTuple<string, System.Type>[] expectedParameters) { }
+        public static System.Reflection.ConstructorInfo? FindParameterlessConstructor(System.Type type) { }
+        public static RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata GetEntityTypeMetadata(System.Type entityType) { }
+    }
+    public sealed class EntityPropertyMetadata : System.IEquatable<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata>
+    {
+        public EntityPropertyMetadata(string PropertyName, System.Type PropertyType, System.Reflection.PropertyInfo PropertyInfo, bool IsNotMapped, bool IsKeyProperty, bool CanRead, bool CanWrite, Fasterflect.MemberGetter? PropertyGetter, Fasterflect.MemberSetter? PropertySetter, System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption DatabaseGeneratedOption) { }
+        public bool CanRead { get; init; }
+        public bool CanWrite { get; init; }
+        public System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption DatabaseGeneratedOption { get; init; }
+        public bool IsKeyProperty { get; init; }
+        public bool IsNotMapped { get; init; }
+        public Fasterflect.MemberGetter? PropertyGetter { get; init; }
+        public System.Reflection.PropertyInfo PropertyInfo { get; init; }
+        public string PropertyName { get; init; }
+        public Fasterflect.MemberSetter? PropertySetter { get; init; }
+        public System.Type PropertyType { get; init; }
+    }
+    public sealed class EntityTypeMetadata : System.IEquatable<RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata>
+    {
+        public EntityTypeMetadata(System.Type EntityType, string TableName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties, System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> IdentityAndComputedProperties) { }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties { get; init; }
+        public System.Type EntityType { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> IdentityAndComputedProperties { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties { get; init; }
+        public string TableName { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties { get; init; }
+    }
+}
+namespace RentADeveloper.DbConnectionPlus.SqlStatements
+{
+    public readonly struct InterpolatedParameter : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedParameter>
+    {
+        public InterpolatedParameter(string? InferredName, object? Value) { }
+        public string? InferredName { get; init; }
+        public object? Value { get; init; }
+    }
+    [System.Diagnostics.DebuggerTypeProxy(typeof(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatementDebugView))]
+    [System.Runtime.CompilerServices.InterpolatedStringHandler]
+    public struct InterpolatedSqlStatement : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement>
+    {
+        public InterpolatedSqlStatement(int literalLength, int formattedCount) { }
+        public InterpolatedSqlStatement(string code, [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Name",
+                "Value"})] params System.ValueTuple<string, object?>[] parameters) { }
+        public void AppendFormatted<T>(T? value, int alignment = 0, string? format = null) { }
+        public void AppendLiteral(string? value) { }
+        public bool Equals(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement other) { }
+        public override bool Equals(object? obj) { }
+        public override int GetHashCode() { }
+        public override string ToString() { }
+        public static RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement FromString(string value) { }
+        public static RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement op_Implicit(string value) { }
+        public static bool operator !=(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement left, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement right) { }
+        public static bool operator ==(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement left, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement right) { }
+    }
+    public readonly struct InterpolatedTemporaryTable : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable>
+    {
+        public InterpolatedTemporaryTable(string Name, System.Collections.IEnumerable Values, System.Type ValuesType) { }
+        public string Name { get; init; }
+        public System.Collections.IEnumerable Values { get; init; }
+        public System.Type ValuesType { get; init; }
+    }
+}

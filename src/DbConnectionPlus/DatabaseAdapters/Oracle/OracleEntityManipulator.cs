@@ -1,0 +1,1044 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using LinkDotNet.StringBuilder;
+using RentADeveloper.DbConnectionPlus.DbCommands;
+using RentADeveloper.DbConnectionPlus.Entities;
+
+namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+
+/// <summary>
+/// The entity manipulator for PostgreSQL.
+/// </summary>
+internal class OracleEntityManipulator : IEntityManipulator
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OracleEntityManipulator" /> class.
+    /// </summary>
+    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+    public OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) =>
+        this.databaseAdapter = databaseAdapter;
+
+    /// <inheritdoc />
+    public Int32 DeleteEntities<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entitiesList = entities.ToList();
+
+        var totalNumberOfAffectedRows = 0;
+
+        foreach (var entity in entitiesList)
+        {
+            if (entity is null)
+            {
+                continue;
+            }
+
+            totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
+        }
+
+        return totalNumberOfAffectedRows;
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> DeleteEntitiesAsync<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entitiesList = entities.ToList();
+
+        var totalNumberOfAffectedRows = 0;
+
+        foreach (var entity in entitiesList)
+        {
+            if (entity is null)
+            {
+                continue;
+            }
+
+            totalNumberOfAffectedRows += await this
+                .DeleteEntityAsync(connection, entity, transaction, cancellationToken).ConfigureAwait(false);
+        }
+
+        return totalNumberOfAffectedRows;
+    }
+
+    /// <inheritdoc />
+    public Int32 DeleteEntity<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                return command.ExecuteNonQuery();
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> DeleteEntityAsync<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public Int32 InsertEntities<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateInsertEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            var totalNumberOfAffectedRows = 0;
+
+            try
+            {
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
+
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    totalNumberOfAffectedRows += command.ExecuteNonQuery();
+
+                    var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                }
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            return totalNumberOfAffectedRows;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> InsertEntitiesAsync<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateInsertEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            var totalNumberOfAffectedRows = 0;
+
+            try
+            {
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
+
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    totalNumberOfAffectedRows +=
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                    var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                }
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            return totalNumberOfAffectedRows;
+        }
+    }
+
+    /// <inheritdoc />
+    public Int32 InsertEntity<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateInsertEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+
+                return numberOfAffectedRows;
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> InsertEntityAsync<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateInsertEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                var numberOfAffectedRows = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+
+                return numberOfAffectedRows;
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public Int32 UpdateEntities<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateUpdateEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            var totalNumberOfAffectedRows = 0;
+
+            try
+            {
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
+
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    totalNumberOfAffectedRows += command.ExecuteNonQuery();
+
+                    var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                }
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            return totalNumberOfAffectedRows;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> UpdateEntitiesAsync<TEntity>(
+        DbConnection connection,
+        IEnumerable<TEntity> entities,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entities);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateUpdateEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            var totalNumberOfAffectedRows = 0;
+
+            try
+            {
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
+
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    totalNumberOfAffectedRows +=
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                    var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                }
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+
+            return totalNumberOfAffectedRows;
+        }
+    }
+
+    /// <inheritdoc />
+    public Int32 UpdateEntity<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateUpdateEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+
+                return numberOfAffectedRows;
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Int32> UpdateEntityAsync<TEntity>(
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction,
+        CancellationToken cancellationToken
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateUpdateEntityCommand(
+            connection,
+            transaction,
+            entityTypeMetadata
+        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
+        using (command)
+        using (cancellationTokenRegistration)
+        {
+            try
+            {
+                this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                var numberOfAffectedRows = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
+
+                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+
+                return numberOfAffectedRows;
+            }
+            catch (Exception exception) when (
+                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a command to delete an entity.
+    /// </summary>
+    /// <param name="connection">The connection to use to create the command.</param>
+    /// <param name="transaction">The transaction to assign to the command.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <returns>
+    /// A tuple containing the created command and the parameters for the key property values of the entity to delete.
+    /// </returns>
+    private (DbCommand Command, List<DbParameter> Parameters) CreateDeleteEntityCommand(
+        DbConnection connection,
+        DbTransaction? transaction,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entityTypeMetadata);
+
+        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+            connection,
+            this.GetDeleteEntitySqlCode(entityTypeMetadata),
+            transaction
+        );
+
+        var parameters = new List<DbParameter>();
+
+        foreach (var property in entityTypeMetadata.KeyProperties)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = property.PropertyName;
+            parameters.Add(parameter);
+            command.Parameters.Add(parameter);
+        }
+
+        return (command, parameters);
+    }
+
+    /// <summary>
+    /// Creates a command to insert an entity.
+    /// </summary>
+    /// <param name="connection">The connection to use to create the command.</param>
+    /// <param name="transaction">The transaction to assign to the command.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <returns>
+    /// A tuple containing the created command and the parameters for the property values of the entity to insert.
+    /// </returns>
+    private (DbCommand Command, List<DbParameter> Parameters) CreateInsertEntityCommand(
+        DbConnection connection,
+        DbTransaction? transaction,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entityTypeMetadata);
+
+        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+            connection,
+            this.GetInsertEntitySqlCode(entityTypeMetadata),
+            transaction
+        );
+
+        var parameters = new List<DbParameter>();
+
+        foreach (var property in entityTypeMetadata.InsertProperties)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = property.PropertyName;
+            parameters.Add(parameter);
+            command.Parameters.Add(parameter);
+        }
+
+        // Add parameters for identity and computed properties to retrieve their values after insertion:
+        foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "return_" + property.PropertyName;
+            parameter.DbType = this.databaseAdapter.GetDbType(
+                property.PropertyType,
+                DbConnectionExtensions.EnumSerializationMode
+            );
+            parameter.Direction = ParameterDirection.Output;
+            parameters.Add(parameter);
+            command.Parameters.Add(parameter);
+        }
+
+        return (command, parameters);
+    }
+
+    /// <summary>
+    /// Creates a command to update an entity.
+    /// </summary>
+    /// <param name="connection">The connection to use to create the command.</param>
+    /// <param name="transaction">The transaction to assign to the command.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <returns>
+    /// A tuple containing the created command and the parameters for the property values of the entity to update.
+    /// </returns>
+    private (DbCommand Command, List<DbParameter> Parameters) CreateUpdateEntityCommand(
+        DbConnection connection,
+        DbTransaction? transaction,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+        ArgumentNullException.ThrowIfNull(entityTypeMetadata);
+
+        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+            connection,
+            this.GetUpdateEntitySqlCode(entityTypeMetadata),
+            transaction
+        );
+
+        var parameters = new List<DbParameter>();
+
+        foreach (var property in entityTypeMetadata.UpdateProperties.Concat(entityTypeMetadata.KeyProperties))
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = property.PropertyName;
+            parameters.Add(parameter);
+            command.Parameters.Add(parameter);
+        }
+
+        // Add parameters for identity and computed properties to retrieve their values after insertion:
+        foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "return_" + property.PropertyName;
+            parameter.DbType = this.databaseAdapter.GetDbType(
+                property.PropertyType,
+                DbConnectionExtensions.EnumSerializationMode
+            );
+            parameter.Direction = ParameterDirection.Output;
+            parameters.Add(parameter);
+            command.Parameters.Add(parameter);
+        }
+
+        return (command, parameters);
+    }
+
+    /// <summary>
+    /// Gets the SQL code to delete an entity of the provided entity type.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
+    /// <returns>The SQL code to delete an entity of the specified type.</returns>
+    private String GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+        this.entityDeleteSqlCodePerEntityType.GetOrAdd(
+            entityTypeMetadata.EntityType,
+            _ =>
+            {
+                if (entityTypeMetadata.KeyProperties.Count == 0)
+                {
+                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                }
+
+                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+
+                sqlBuilder.AppendLine("DELETE FROM");
+
+                sqlBuilder.Append(Constants.Indent);
+                sqlBuilder.Append("\"");
+                sqlBuilder.Append(entityTypeMetadata.TableName);
+                sqlBuilder.AppendLine("\"");
+
+                sqlBuilder.AppendLine("WHERE");
+
+                sqlBuilder.Append(Constants.Indent);
+
+                var prependSeparator = false;
+
+                foreach (var keyProperty in entityTypeMetadata.KeyProperties)
+                {
+                    if (prependSeparator)
+                    {
+                        sqlBuilder.Append(" AND ");
+                    }
+
+                    sqlBuilder.Append('"');
+                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append("\" =:\"");
+                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append('"');
+
+                    prependSeparator = true;
+                }
+
+                sqlBuilder.AppendLine();
+
+                return sqlBuilder.ToString();
+            }
+        );
+
+    /// <summary>
+    /// Gets the SQL code to insert an entity of the provided entity type.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
+    /// <returns>The SQL code to insert an entity of the specified type.</returns>
+    private String GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+        this.entityInsertSqlCodePerEntityType.GetOrAdd(
+            entityTypeMetadata.EntityType,
+            _ =>
+            {
+                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+
+                sqlBuilder.Append("INSERT INTO \"");
+                sqlBuilder.Append(entityTypeMetadata.TableName);
+                sqlBuilder.AppendLine("\"");
+
+                sqlBuilder.Append(Constants.Indent);
+                sqlBuilder.Append("(");
+                var prependSeparator = false;
+
+                foreach (var property in entityTypeMetadata.InsertProperties)
+                {
+                    if (prependSeparator)
+                    {
+                        sqlBuilder.Append(", ");
+                    }
+
+                    sqlBuilder.Append('"');
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append('"');
+
+                    prependSeparator = true;
+                }
+
+                sqlBuilder.AppendLine(")");
+
+                sqlBuilder.AppendLine("VALUES");
+                sqlBuilder.Append(Constants.Indent);
+                sqlBuilder.Append("(");
+
+                prependSeparator = false;
+
+                foreach (var property in entityTypeMetadata.InsertProperties)
+                {
+                    if (prependSeparator)
+                    {
+                        sqlBuilder.Append(", ");
+                    }
+
+                    sqlBuilder.Append(":\"");
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append('"');
+
+                    prependSeparator = true;
+                }
+
+                sqlBuilder.AppendLine(")");
+
+                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                {
+                    sqlBuilder.AppendLine("RETURNING");
+                    sqlBuilder.Append(Constants.Indent);
+
+                    prependSeparator = false;
+
+                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    {
+                        if (prependSeparator)
+                        {
+                            sqlBuilder.Append(", ");
+                        }
+
+                        sqlBuilder.Append('"');
+                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append('"');
+                        prependSeparator = true;
+                    }
+
+                    sqlBuilder.AppendLine();
+
+                    sqlBuilder.AppendLine("INTO");
+
+                    sqlBuilder.Append(Constants.Indent);
+
+                    prependSeparator = false;
+
+                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    {
+                        if (prependSeparator)
+                        {
+                            sqlBuilder.Append(", ");
+                        }
+
+                        sqlBuilder.Append(":\"return_");
+                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append('"');
+                        prependSeparator = true;
+                    }
+
+                    sqlBuilder.AppendLine();
+                }
+
+                return sqlBuilder.ToString();
+            }
+        );
+
+    /// <summary>
+    /// Gets the SQL code to update an entity of the provided entity type.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
+    /// <returns>The SQL code to update an entity of the specified type.</returns>
+    private String GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+        this.entityUpdateSqlCodePerEntityType.GetOrAdd(
+            entityTypeMetadata.EntityType,
+            _ =>
+            {
+                if (entityTypeMetadata.KeyProperties.Count == 0)
+                {
+                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                }
+
+                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+
+                sqlBuilder.AppendLine("UPDATE");
+                sqlBuilder.Append(Constants.Indent);
+                sqlBuilder.Append("\"");
+                sqlBuilder.Append(entityTypeMetadata.TableName);
+                sqlBuilder.AppendLine("\"");
+
+                sqlBuilder.AppendLine("SET");
+                sqlBuilder.Append(Constants.Indent);
+
+                var prependSeparator = false;
+
+                foreach (var property in entityTypeMetadata.UpdateProperties)
+                {
+                    if (prependSeparator)
+                    {
+                        sqlBuilder.Append(", ");
+                    }
+
+                    sqlBuilder.Append('"');
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append("\" = :\"");
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append('"');
+
+                    prependSeparator = true;
+                }
+
+                sqlBuilder.AppendLine();
+
+                sqlBuilder.AppendLine("WHERE");
+
+                sqlBuilder.Append(Constants.Indent);
+
+                prependSeparator = false;
+
+                foreach (var property in entityTypeMetadata.KeyProperties)
+                {
+                    if (prependSeparator)
+                    {
+                        sqlBuilder.Append(" AND ");
+                    }
+
+                    sqlBuilder.Append('"');
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append("\" = ");
+                    sqlBuilder.Append(":\"");
+                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append('"');
+
+                    prependSeparator = true;
+                }
+
+                sqlBuilder.AppendLine();
+
+                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                {
+                    sqlBuilder.AppendLine("RETURNING");
+
+                    sqlBuilder.Append(Constants.Indent);
+
+                    prependSeparator = false;
+
+                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    {
+                        if (prependSeparator)
+                        {
+                            sqlBuilder.Append(", ");
+                        }
+
+                        sqlBuilder.Append('"');
+                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append('"');
+                        prependSeparator = true;
+                    }
+
+                    sqlBuilder.AppendLine();
+
+                    sqlBuilder.AppendLine("INTO");
+
+                    sqlBuilder.Append(Constants.Indent);
+
+                    prependSeparator = false;
+
+                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    {
+                        if (prependSeparator)
+                        {
+                            sqlBuilder.Append(", ");
+                        }
+
+                        sqlBuilder.Append(":\"return_");
+                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append('"');
+                        prependSeparator = true;
+                    }
+
+                    sqlBuilder.AppendLine();
+                }
+
+                return sqlBuilder.ToString();
+            }
+        );
+
+    /// <summary>
+    /// Populates the provided parameters with the property values of the provided entity.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="parameters">The parameters to populate.</param>
+    /// <param name="entity">The entity from which to get the property values.</param>
+    private void PopulateParametersFromEntityProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        List<DbParameter> parameters,
+        Object entity
+    )
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentNullException.ThrowIfNull(entity);
+
+        foreach (var parameter in parameters.Where(a => a.Direction == ParameterDirection.Input))
+        {
+            var property = entityTypeMetadata.AllPropertiesByPropertyName[parameter.ParameterName];
+            var propertyValue = property.PropertyGetter!(entity);
+            this.databaseAdapter.BindParameterValue(parameter, propertyValue);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    private static void ThrowEntityTypeHasNoKeyPropertyException(EntityTypeMetadata entityTypeMetadata) =>
+        throw new ArgumentException(
+            $"Could not get the key property / properties of the type {entityTypeMetadata.EntityType}. " +
+            $"Make sure that at least one instance property of that type is denoted with a " +
+            $"{typeof(KeyAttribute)}."
+        );
+
+    /// <summary>
+    /// Updates the identity and computed properties of the provided entity from the provided output parameters.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    private static void UpdateIdentityAndComputedProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        DbParameter[] outputParameters,
+        Object entity
+    )
+    {
+        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        {
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = outputParameters[i].Value;
+                property.PropertySetter!(entity, value);
+            }
+        }
+    }
+
+    private readonly OracleDatabaseAdapter databaseAdapter;
+    private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
+}

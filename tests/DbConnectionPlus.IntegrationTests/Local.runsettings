@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+	<RunConfiguration>
+		<EnvironmentVariables>
+			<ConnectionString_MySql>
+				server=localhost;port=13306;uid=root;pwd=TestTest123!;AllowLoadLocalInfile=true
+			</ConnectionString_MySql>
+			<ConnectionString_Oracle>
+				Data Source=localhost:11521/FREEPDB1;User Id=SYSTEM;Password=TestTest123!
+			</ConnectionString_Oracle>
+			<ConnectionString_PostgreSQL>
+				Host=localhost;Port=15432;Username=postgres;Password=TestTest123!
+			</ConnectionString_PostgreSQL>
+			<ConnectionString_SqlServer>
+				Data Source=localhost,11433;User ID=sa;Password=TestTest123!;Encrypt=False;MultipleActiveResultSets=True
+			</ConnectionString_SqlServer>
+		</EnvironmentVariables>
+	</RunConfiguration>
+</RunSettings>

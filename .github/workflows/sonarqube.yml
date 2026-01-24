@@ -1,0 +1,83 @@
+# https://github.com/marketplace/actions/official-sonarqube-scan
+
+name: SonarQube
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Analyze
+    runs-on: ubuntu-latest
+
+    services:
+        mysql:
+          image: mysql:latest
+          env:
+            MYSQL_ROOT_PASSWORD: TestTest123!
+          ports:
+            - 3306:3306
+
+        oracle:
+          image: gvenzl/oracle-free:latest
+          env:
+            ORACLE_PASSWORD: TestTest123!
+          ports:
+            - 1521:1521
+            - 5500:5500
+
+        postgresql:
+          image: postgres:latest
+          env:
+            POSTGRES_PASSWORD: TestTest123!
+          ports:
+            - 5432:5432
+
+        sqlserver:
+            image: mcr.microsoft.com/mssql/server:2022-latest
+            env:
+                ACCEPT_EULA: Y
+                MSSQL_PID: Developer
+                MSSQL_SA_PASSWORD: TestTest123!
+            ports:
+                - 1433:1433
+
+    env:
+      ConnectionString_MySql: server=localhost;port=3306;uid=root;pwd=TestTest123!;AllowLoadLocalInfile=true
+      ConnectionString_Oracle: Data Source=localhost:1521/FREEPDB1;User Id=SYSTEM;Password=TestTest123!
+      ConnectionString_PostgreSQL: Host=localhost;Port=5432;Username=postgres;Password=TestTest123!
+      ConnectionString_SqlServer: Data Source=localhost,1433;User ID=sa;Password=TestTest123!;Encrypt=False;MultipleActiveResultSets=True
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+          
+      - name: Run Tests with Coverage
+        run: |
+          dotnet test --no-build --configuration Release \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=TestResults/coverage/
+            
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          args: >
+            -Dsonar.cs.opencover.reportsPaths=TestResults/coverage/coverage.cobertura.xml

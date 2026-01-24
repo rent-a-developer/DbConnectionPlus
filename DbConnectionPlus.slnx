@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="CREATERELEASE.md" />
+    <File Path="docs/DESIGN-DECISIONS.md" />
+    <File Path="LICENSE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/DbConnectionPlus/DbConnectionPlus.csproj" />
+  <Project Path="benchmarks/DbConnectionPlus.Benchmarks/DbConnectionPlus.Benchmarks.csproj" Id="beba4892-ec19-4a36-a22d-51d1bab9cba2" />
+  <Project Path="tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj" Id="1ee1a1c4-cd33-4c04-bf42-72f52cd60606" />
+  <Project Path="tests/DbConnectionPlus.IntegrationTests/DbConnectionPlus.IntegrationTests.csproj" Id="5704a89e-05f8-4afe-a359-d6b9dd62725c" />
+</Solution>
