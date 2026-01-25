@@ -47,20 +47,14 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not SqlConnection sqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(SqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<SqlConnection, TemporaryTableDisposer>();
         }
 
         var sqlTransaction = transaction as SqlTransaction;
 
         if (transaction is not null && sqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(SqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<SqlTransaction, TemporaryTableDisposer>();
         }
 
         // For text columns, we must use the collation of the database the connection is currently connected to,
@@ -153,20 +147,14 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not SqlConnection sqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(SqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<SqlConnection, TemporaryTableDisposer>();
         }
 
         var sqlTransaction = transaction as SqlTransaction;
 
         if (transaction is not null && sqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(SqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<SqlTransaction, TemporaryTableDisposer>();
         }
 
         // For text columns, we must use the collation of the database the connection is currently connected to,

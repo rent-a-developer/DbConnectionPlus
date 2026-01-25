@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using LinkDotNet.StringBuilder;
+﻿using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -631,7 +630,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             command.Parameters.Add(parameter);
         }
 
-        // Add parameters for identity and computed properties to retrieve their values after insertion:
+        // Add output parameters for identity and computed properties to retrieve their values after the insert:
         foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
         {
             var parameter = command.CreateParameter();
@@ -682,7 +681,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             command.Parameters.Add(parameter);
         }
 
-        // Add parameters for identity and computed properties to retrieve their values after insertion:
+        // Add output parameters for identity and computed properties to retrieve their values after the update:
         foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
         {
             var parameter = command.CreateParameter();
@@ -711,7 +710,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -869,7 +868,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -999,15 +998,6 @@ internal class OracleEntityManipulator : IEntityManipulator
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowEntityTypeHasNoKeyPropertyException(EntityTypeMetadata entityTypeMetadata) =>
-        throw new ArgumentException(
-            $"Could not get the key property / properties of the type {entityTypeMetadata.EntityType}. " +
-            $"Make sure that at least one instance property of that type is denoted with a " +
-            $"{typeof(KeyAttribute)}."
-        );
 
     /// <summary>
     /// Updates the identity and computed properties of the provided entity from the provided output parameters.

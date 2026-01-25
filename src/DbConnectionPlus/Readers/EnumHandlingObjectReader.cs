@@ -33,12 +33,13 @@ internal class EnumHandlingObjectReader : ObjectReader
         {
             return DbConnectionExtensions.EnumSerializationMode switch
             {
-                EnumSerializationMode.Strings => typeof(String),
-                EnumSerializationMode.Integers => typeof(Int32),
+                EnumSerializationMode.Strings =>
+                    typeof(String),
+                EnumSerializationMode.Integers =>
+                    typeof(Int32),
                 _ =>
-                    throw new NotSupportedException(
-                        $"The {nameof(EnumSerializationMode)} " +
-                        $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<Type>(
+                        DbConnectionExtensions.EnumSerializationMode
                     )
             };
         }

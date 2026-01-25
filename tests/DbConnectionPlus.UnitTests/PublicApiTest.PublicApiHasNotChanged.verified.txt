@@ -125,6 +125,23 @@ namespace RentADeveloper.DbConnectionPlus
         Strings = 1,
     }
     public delegate void InterceptDbCommand(System.Data.Common.DbCommand dbCommand, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable> temporaryTables);
+    public static class ThrowHelper
+    {
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowEntityTypeHasNoKeyPropertyException(System.Type entityType) { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static T ThrowInvalidEnumSerializationModeException<T>(RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowSqlStatementReturnedMoreThanOneRowException() { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowSqlStatementReturnedNoRowsException() { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static T ThrowWrongConnectionTypeException<TExpectedConnectionType, T>()
+            where TExpectedConnectionType : System.Data.Common.DbConnection { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static T ThrowWrongTransactionTypeException<TExpectedTransactionType, T>()
+            where TExpectedTransactionType : System.Data.Common.DbTransaction { }
+    }
 }
 namespace RentADeveloper.DbConnectionPlus.Dynamic
 {

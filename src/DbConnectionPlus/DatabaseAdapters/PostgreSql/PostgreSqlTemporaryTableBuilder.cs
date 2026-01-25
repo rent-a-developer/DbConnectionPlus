@@ -48,20 +48,14 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not NpgsqlConnection npgsqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(NpgsqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<NpgsqlConnection, TemporaryTableDisposer>();
         }
 
         var npgsqlTransaction = transaction as NpgsqlTransaction;
 
         if (transaction is not null && npgsqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(NpgsqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<NpgsqlTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
@@ -130,20 +124,14 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not NpgsqlConnection npgsqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(NpgsqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<NpgsqlConnection, TemporaryTableDisposer>();
         }
 
         var npgsqlTransaction = transaction as NpgsqlTransaction;
 
         if (transaction is not null && npgsqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(NpgsqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<NpgsqlTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())

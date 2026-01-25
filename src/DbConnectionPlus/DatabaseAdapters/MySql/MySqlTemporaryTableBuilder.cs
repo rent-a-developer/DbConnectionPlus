@@ -48,20 +48,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not MySqlConnection mySqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(MySqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, TemporaryTableDisposer>();
         }
 
         var mySqlTransaction = transaction as MySqlTransaction;
 
         if (transaction is not null && mySqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(MySqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
@@ -144,20 +138,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not MySqlConnection mySqlConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(MySqlConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, TemporaryTableDisposer>();
         }
 
         var mySqlTransaction = transaction as MySqlTransaction;
 
         if (transaction is not null && mySqlTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(MySqlTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
@@ -348,9 +336,8 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                         typeof(String),
 
                     _ =>
-                        throw new NotSupportedException(
-                            $"The {nameof(EnumSerializationMode)} " +
-                            $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                        ThrowHelper.ThrowInvalidEnumSerializationModeException<Type>(
+                            DbConnectionExtensions.EnumSerializationMode
                         )
                 };
 

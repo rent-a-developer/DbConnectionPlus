@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using LinkDotNet.StringBuilder;
+﻿using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -452,8 +451,10 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    using var reader = await command
+#pragma warning disable CA2007
+                    await using var reader = await command
                         .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+#pragma warning restore CA2007
 
                     await UpdateIdentityAndComputedPropertiesAsync(
                         entityTypeMetadata,
@@ -549,8 +550,11 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                using var reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+#pragma warning disable CA2007
+                await using var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
                     .ConfigureAwait(false);
+#pragma warning restore CA2007
 
                 await UpdateIdentityAndComputedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
@@ -689,7 +693,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -875,7 +879,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -1019,15 +1023,6 @@ internal class SqliteEntityManipulator : IEntityManipulator
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowEntityTypeHasNoKeyPropertyException(EntityTypeMetadata entityTypeMetadata) =>
-        throw new ArgumentException(
-            $"Could not get the key property / properties of the type {entityTypeMetadata.EntityType}. " +
-            $"Make sure that at least one instance property of that type is denoted with a " +
-            $"{typeof(KeyAttribute)}."
-        );
 
     /// <summary>
     /// Updates the identity and computed properties of the provided entity from the provided data reader.

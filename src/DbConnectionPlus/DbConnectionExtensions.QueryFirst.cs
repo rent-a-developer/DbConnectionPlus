@@ -80,7 +80,7 @@ public static partial class DbConnectionExtensions
                 {
                     if (!reader.Read())
                     {
-                        throw new InvalidOperationException("The SQL statement did not return any rows.");
+                        ThrowHelper.ThrowSqlStatementReturnedNoRowsException();
                     }
 
                     return DataRowMaterializer.Materialize(reader);
@@ -169,7 +169,7 @@ public static partial class DbConnectionExtensions
                 {
                     if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        throw new InvalidOperationException("The SQL statement did not return any rows.");
+                        ThrowHelper.ThrowSqlStatementReturnedNoRowsException();
                     }
 
                     return DataRowMaterializer.Materialize(reader);

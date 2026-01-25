@@ -240,7 +240,7 @@ public static partial class DbConnectionExtensions
 
                     if (!reader.Read())
                     {
-                        throw new InvalidOperationException("The SQL statement did not return any rows.");
+                        ThrowHelper.ThrowSqlStatementReturnedNoRowsException();
                     }
 
                     T result;
@@ -267,7 +267,7 @@ public static partial class DbConnectionExtensions
 
                     if (reader.Read())
                     {
-                        throw new InvalidOperationException("The SQL statement did return more than one row.");
+                        ThrowHelper.ThrowSqlStatementReturnedMoreThanOneRowException();
                     }
 
                     return result;
@@ -510,7 +510,7 @@ public static partial class DbConnectionExtensions
 
                     if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        throw new InvalidOperationException("The SQL statement did not return any rows.");
+                        ThrowHelper.ThrowSqlStatementReturnedNoRowsException();
                     }
 
                     T result;
@@ -537,7 +537,7 @@ public static partial class DbConnectionExtensions
 
                     if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        throw new InvalidOperationException("The SQL statement did return more than one row.");
+                        ThrowHelper.ThrowSqlStatementReturnedMoreThanOneRowException();
                     }
 
                     return result;

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using RentADeveloper.DbConnectionPlus.Extensions;
-
 namespace RentADeveloper.DbConnectionPlus.Converters;
 
 /// <summary>
@@ -36,11 +34,7 @@ internal class EnumSerializer
                 Convert.ToInt32(enumValue, CultureInfo.InvariantCulture),
 
             _ =>
-                throw new ArgumentOutOfRangeException(
-                    nameof(serializationMode),
-                    serializationMode,
-                    $"The {nameof(EnumSerializationMode)} {serializationMode.ToDebugString()} is not supported."
-                )
+                ThrowHelper.ThrowInvalidEnumSerializationModeException<Object>(serializationMode)
         };
     }
 }

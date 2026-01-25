@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using LinkDotNet.StringBuilder;
+﻿using LinkDotNet.StringBuilder;
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
@@ -19,6 +18,21 @@ internal class MySqlEntityManipulator : IEntityManipulator
         this.databaseAdapter = databaseAdapter;
 
     /// <inheritdoc />
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="connection" /> is not a <see cref="MySqlConnection" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="transaction" /> is not <see langword="null" /> and not a
+    /// <see cref="MySqlTransaction" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     public Int32 DeleteEntities<TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
@@ -31,8 +45,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entitiesList = entities.ToList();
 
-        // For small number of entities deleting them one by one is more efficient than creating a temp table.
-        if (entitiesList.Count < 10)
+        // For a small number of entities deleting them one by one is more efficient than creating a temp table.
+        if (entitiesList.Count < BulkDeleteThreshold)
         {
             var totalNumberOfAffectedRows = 0;
 
@@ -51,16 +65,14 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         if (connection is not MySqlConnection mySqlConnection)
         {
-            ThrowWrongConnectionTypeException();
-            return 0; // Just to satisfy the compiler
+            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, Int32>();
         }
 
         var mySqlTransaction = transaction as MySqlTransaction;
 
         if (transaction is not null && mySqlTransaction is null)
         {
-            ThrowWrongTransactionTypeException();
-            return 0; // Just to satisfy the compiler
+            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, Int32>();
         }
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
@@ -116,6 +128,21 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="connection" /> is not a <see cref="MySqlConnection" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="transaction" /> is not <see langword="null" /> and not a
+    /// <see cref="MySqlTransaction" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     public async Task<Int32> DeleteEntitiesAsync<TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
@@ -128,8 +155,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entitiesList = entities.ToList();
 
-        // For small number of entities deleting them one by one is more efficient than creating a temp table.
-        if (entitiesList.Count < 10)
+        // For a small number of entities deleting them one by one is more efficient than creating a temp table.
+        if (entitiesList.Count < BulkDeleteThreshold)
         {
             var totalNumberOfAffectedRows = 0;
 
@@ -149,16 +176,14 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         if (connection is not MySqlConnection mySqlConnection)
         {
-            ThrowWrongConnectionTypeException();
-            return 0; // Just to satisfy the compiler
+            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, Int32>();
         }
 
         var mySqlTransaction = transaction as MySqlTransaction;
 
         if (transaction is not null && mySqlTransaction is null)
         {
-            ThrowWrongTransactionTypeException();
-            return 0; // Just to satisfy the compiler
+            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, Int32>();
         }
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
@@ -594,8 +619,10 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    using var reader = await command
+#pragma warning disable CA2007
+                    await using var reader = await command
                         .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+#pragma warning restore CA2007
 
                     await UpdateIdentityAndComputedPropertiesAsync(
                         entityTypeMetadata,
@@ -691,8 +718,11 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                using var reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+#pragma warning disable CA2007
+                await using var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
                     .ConfigureAwait(false);
+#pragma warning restore CA2007
 
                 await UpdateIdentityAndComputedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
@@ -960,7 +990,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
@@ -1009,7 +1039,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -1194,7 +1224,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
             {
                 if (entityTypeMetadata.KeyProperties.Count == 0)
                 {
-                    ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata);
+                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
                 using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
@@ -1336,33 +1366,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
         }
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowEntityTypeHasNoKeyPropertyException(EntityTypeMetadata entityTypeMetadata) =>
-        throw new ArgumentException(
-            $"Could not get the key property / properties of the type {entityTypeMetadata.EntityType}. " +
-            $"Make sure that at least one instance property of that type is denoted with a " +
-            $"{typeof(KeyAttribute)}."
-        );
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowWrongConnectionTypeException() =>
-        throw new ArgumentOutOfRangeException(
-            // ReSharper disable once NotResolvedInText
-            "connection",
-            $"The provided connection is not of the type {nameof(MySqlConnection)}."
-        );
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowWrongTransactionTypeException() =>
-        throw new ArgumentOutOfRangeException(
-            // ReSharper disable once NotResolvedInText
-            "transaction",
-            $"The provided transaction is not of the type {nameof(MySqlTransaction)}."
-        );
-
     /// <summary>
     /// Updates the identity and computed properties of the provided entity from the provided data reader.
     /// </summary>
@@ -1442,4 +1445,5 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
+    private const Int32 BulkDeleteThreshold = 10;
 }

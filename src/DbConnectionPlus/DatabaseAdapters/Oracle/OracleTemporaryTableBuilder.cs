@@ -50,31 +50,19 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (!OracleDatabaseAdapter.AllowTemporaryTables)
         {
-            throw new InvalidOperationException(
-                $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-                $"To enable it " +
-                $"set {typeof(OracleDatabaseAdapter)}.{nameof(OracleDatabaseAdapter.AllowTemporaryTables)} to true, " +
-                $"but be sure to read the documentation first, because enabling this feature has implications for " +
-                $"transaction management."
-            );
+            OracleDatabaseAdapter.ThrowTemporaryTablesFeatureIsDisabledException();
         }
 
         if (connection is not OracleConnection oracleConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(OracleConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<OracleConnection, TemporaryTableDisposer>();
         }
 
         var oracleTransaction = transaction as OracleTransaction;
 
         if (transaction is not null && oracleTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(OracleTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<OracleTransaction, TemporaryTableDisposer>();
         }
 
         var quotedTableName = this.databaseAdapter.QuoteTemporaryTableName(name, connection);
@@ -151,31 +139,19 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (!OracleDatabaseAdapter.AllowTemporaryTables)
         {
-            throw new InvalidOperationException(
-                $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-                $"To enable it " +
-                $"set {typeof(OracleDatabaseAdapter)}.{nameof(OracleDatabaseAdapter.AllowTemporaryTables)} to true, " +
-                $"but be sure to read the documentation first, because enabling this feature has implications for " +
-                $"transaction management."
-            );
+            OracleDatabaseAdapter.ThrowTemporaryTablesFeatureIsDisabledException();
         }
 
         if (connection is not OracleConnection oracleConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(OracleConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<OracleConnection, TemporaryTableDisposer>();
         }
 
         var oracleTransaction = transaction as OracleTransaction;
 
         if (transaction is not null && oracleTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(OracleTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<OracleTransaction, TemporaryTableDisposer>();
         }
 
         var quotedTableName = this.databaseAdapter.QuoteTemporaryTableName(name, connection);

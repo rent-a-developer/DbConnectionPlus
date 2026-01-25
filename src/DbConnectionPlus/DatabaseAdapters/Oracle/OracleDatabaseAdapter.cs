@@ -3,7 +3,6 @@
 
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.Converters;
-using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
@@ -31,12 +30,7 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
         {
             if (!AllowTemporaryTables)
             {
-                throw new InvalidOperationException(
-                    $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-                    $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} to true, but " +
-                    $"be sure to read the documentation first, because enabling this feature has implications for " +
-                    $"transaction management."
-                );
+                ThrowTemporaryTablesFeatureIsDisabledException();
             }
 
             return this.temporaryTableBuilder;
@@ -60,9 +54,8 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
                         DbType.String,
 
                     _ =>
-                        throw new NotSupportedException(
-                            $"The {nameof(EnumSerializationMode)} " +
-                            $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                            DbConnectionExtensions.EnumSerializationMode
                         )
                 };
 
@@ -124,11 +117,7 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
                     "NUMBER(10)",
 
                 _ =>
-                    throw new ArgumentOutOfRangeException(
-                        nameof(enumSerializationMode),
-                        enumSerializationMode,
-                        $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-                    )
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
             };
         }
 
@@ -169,7 +158,9 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     ///         </item>
     ///     </list>
     /// </exception>
+#pragma warning disable CA1822
     public DbType GetDbType(Type type, EnumSerializationMode enumSerializationMode)
+#pragma warning restore CA1822
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -187,11 +178,7 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
                     DbType.Int32,
 
                 _ =>
-                    throw new ArgumentOutOfRangeException(
-                        nameof(enumSerializationMode),
-                        enumSerializationMode,
-                        $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-                    )
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(enumSerializationMode)
             };
         }
 
@@ -223,7 +210,7 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
 
     /// <inheritdoc />
     public Boolean SupportsTemporaryTables(DbConnection connection) =>
-        this.supportsTemporaryTablePerConnectionString.GetOrAdd(
+        this.supportsTemporaryTablesPerConnectionString.GetOrAdd(
             connection.ConnectionString,
             // Oracle 18c added support for private temporary tables.
             _ => connection.Exists("SELECT 1 FROM v$instance WHERE version >= '18'")
@@ -284,9 +271,21 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     public static Boolean AllowTemporaryTables { get; set; } = false;
 #pragma warning restore CA1805
 
-    private readonly OracleEntityManipulator entityManipulator;
+    /// <summary>
+    /// Throws an <see cref="InvalidOperationException" /> indicating that the temporary tables feature of
+    /// DbConnectionPlus is disabled for Oracle databases.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Always thrown.</exception>
+    internal static void ThrowTemporaryTablesFeatureIsDisabledException() =>
+        throw new InvalidOperationException(
+            $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
+            $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} " +
+            $"to true, but be sure to read the documentation first, because enabling this feature has implications " +
+            $"for transaction management."
+        );
 
-    private readonly ConcurrentDictionary<String, Boolean> supportsTemporaryTablePerConnectionString = [];
+    private readonly OracleEntityManipulator entityManipulator;
+    private readonly ConcurrentDictionary<String, Boolean> supportsTemporaryTablesPerConnectionString = [];
     private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
 
     private static readonly Dictionary<Type, DbType> typeToDbType = new()

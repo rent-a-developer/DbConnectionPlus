@@ -48,20 +48,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not SqliteConnection sqliteConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(SqliteConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<SqliteConnection, TemporaryTableDisposer>();
         }
 
         var sqliteTransaction = transaction as SqliteTransaction;
 
         if (transaction is not null && sqliteTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(SqliteTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<SqliteTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
@@ -130,20 +124,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (connection is not SqliteConnection sqliteConnection)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(connection),
-                $"The provided connection is not of the type {nameof(SqliteConnection)}."
-            );
+            return ThrowHelper.ThrowWrongConnectionTypeException<SqliteConnection, TemporaryTableDisposer>();
         }
 
         var sqliteTransaction = transaction as SqliteTransaction;
 
         if (transaction is not null && sqliteTransaction is null)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(transaction),
-                $"The provided transaction is not of the type {nameof(SqliteTransaction)}."
-            );
+            return ThrowHelper.ThrowWrongTransactionTypeException<SqliteTransaction, TemporaryTableDisposer>();
         }
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())

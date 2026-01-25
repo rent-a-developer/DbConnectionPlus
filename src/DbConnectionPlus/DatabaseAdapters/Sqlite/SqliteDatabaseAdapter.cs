@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
-using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 
@@ -44,9 +43,8 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
                         DbType.String,
 
                     _ =>
-                        throw new NotSupportedException(
-                            $"The {nameof(EnumSerializationMode)} " +
-                            $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                            DbConnectionExtensions.EnumSerializationMode
                         )
                 };
 
@@ -92,11 +90,7 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
                     "INTEGER",
 
                 _ =>
-                    throw new ArgumentOutOfRangeException(
-                        nameof(enumSerializationMode),
-                        enumSerializationMode,
-                        $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-                    )
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
             };
         }
 

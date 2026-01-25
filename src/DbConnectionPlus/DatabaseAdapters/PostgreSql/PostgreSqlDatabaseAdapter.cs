@@ -3,7 +3,6 @@
 
 using NpgsqlTypes;
 using RentADeveloper.DbConnectionPlus.Converters;
-using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 
@@ -45,9 +44,8 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                         DbType.String,
 
                     _ =>
-                        throw new NotSupportedException(
-                            $"The {nameof(EnumSerializationMode)} " +
-                            $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                            DbConnectionExtensions.EnumSerializationMode
                         )
                 };
 
@@ -92,11 +90,8 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                 EnumSerializationMode.Integers =>
                     "integer",
 
-                _ => throw new ArgumentOutOfRangeException(
-                    nameof(enumSerializationMode),
-                    enumSerializationMode,
-                    $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-                )
+                _ =>
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
             };
         }
 
@@ -139,10 +134,9 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     ///         </item>
     ///     </list>
     /// </exception>
-    public NpgsqlDbType GetDbType(
-        Type type,
-        EnumSerializationMode enumSerializationMode
-    )
+#pragma warning disable CA1822
+    public NpgsqlDbType GetDbType(Type type, EnumSerializationMode enumSerializationMode)
+#pragma warning restore CA1822
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -160,11 +154,7 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                     NpgsqlDbType.Integer,
 
                 _ =>
-                    throw new ArgumentOutOfRangeException(
-                        nameof(enumSerializationMode),
-                        enumSerializationMode,
-                        $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-                    )
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<NpgsqlDbType>(enumSerializationMode)
             };
         }
 
