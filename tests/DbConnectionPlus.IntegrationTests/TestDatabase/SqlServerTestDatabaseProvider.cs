@@ -101,7 +101,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         String columnName,
         DbConnection connection
     ) =>
-        connection.Query<String>(
+        connection.QuerySingle<String>(
             $"""
              SELECT  t.name AS DataType
              FROM    tempdb.sys.columns c
@@ -109,7 +109,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
              WHERE   c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND c.name = '{columnName}'
              """,
             cancellationToken: TestContext.Current.CancellationToken
-        ).First();
+        );
 
     /// <inheritdoc />
     public String GetUnsupportedDataTypeLiteral() =>

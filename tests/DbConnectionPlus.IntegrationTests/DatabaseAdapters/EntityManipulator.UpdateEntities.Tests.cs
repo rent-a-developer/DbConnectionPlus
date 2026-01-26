@@ -184,10 +184,12 @@ public abstract class EntityManipulator_UpdateEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.Query<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-            )
-            .Should().BeEquivalentTo(updatedEntities);
+        updatedEntities
+            .Should().BeEquivalentTo(
+                this.Connection.Query<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -223,10 +225,12 @@ public abstract class EntityManipulator_UpdateEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.Query<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-            )
-            .Should().BeEquivalentTo(updatedEntities);
+        updatedEntities
+            .Should().BeEquivalentTo(
+                this.Connection.Query<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -511,10 +515,12 @@ public abstract class EntityManipulator_UpdateEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities);
+        updatedEntities
+            .Should().BeEquivalentTo(
+                await this.Connection.QueryAsync<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
+                ).ToListAsync(TestContext.Current.CancellationToken)
+            );
     }
 
     [Fact]
@@ -550,10 +556,12 @@ public abstract class EntityManipulator_UpdateEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities);
+        updatedEntities
+            .Should().BeEquivalentTo(
+                await this.Connection.QueryAsync<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
+                ).ToListAsync(TestContext.Current.CancellationToken)
+            );
     }
 
     [Fact]

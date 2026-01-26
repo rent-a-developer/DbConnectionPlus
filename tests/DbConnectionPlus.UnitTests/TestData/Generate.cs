@@ -31,7 +31,7 @@ public static class Generate
             {
                 var dateTime = faker.Date.Past();
 
-                // We limit to seconds precision because not all database systems support higher precision.
+                // We limit to seconds precision because not all database systems support a higher precision.
                 return new(
                     dateTime.Year,
                     dateTime.Month,
@@ -47,7 +47,7 @@ public static class Generate
             {
                 var dateTimeOffset = faker.Date.PastOffset();
 
-                // We limit to seconds precision because not all database systems support higher precision.
+                // We limit to seconds precision because not all database systems support a higher precision.
                 return new(
                     dateTimeOffset.Year,
                     dateTimeOffset.Month,
@@ -61,13 +61,13 @@ public static class Generate
         );
         fixture.Register<Decimal>(() =>
             {
-                // We limit to 10 fractional digits because not all database systems support higher precision.
+                // We limit to 10 fractional digits because not all database systems support a higher precision.
                 return Math.Round(faker.Random.Decimal(0, 999), 10);
             }
         );
         fixture.Register<Double>(() =>
             {
-                // We limit to 3 fractional digits because not all database systems support higher precision.
+                // We limit to 3 fractional digits because not all database systems support a higher precision.
                 return Math.Round(faker.Random.Double(0, 999), 3);
             }
         );
@@ -77,7 +77,7 @@ public static class Generate
         fixture.Register<Int64>(() => Interlocked.Increment(ref entityId));
         fixture.Register<Single>(() =>
             {
-                // We limit to 3 fractional digits because not all database systems support higher precision.
+                // We limit to 3 fractional digits because not all database systems support a higher precision.
                 return (Single)Math.Round(faker.Random.Float(0, 999), 3);
             }
         );
@@ -87,7 +87,7 @@ public static class Generate
             {
                 var timeOnly = faker.Date.RecentTimeOnly();
 
-                // We limit to seconds precision because not all database systems support higher precision.
+                // We limit to seconds precision because not all database systems support a higher precision.
                 return new(timeOnly.Hour, timeOnly.Minute, timeOnly.Second);
             }
         );
@@ -95,7 +95,7 @@ public static class Generate
             {
                 var timeSpan = faker.Date.Timespan(new TimeSpan(0, 23, 59, 59));
 
-                // We limit to seconds precision because not all database systems support higher precision.
+                // We limit to seconds precision because not all database systems support a higher precision.
                 return new(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
             }
         );
@@ -149,7 +149,7 @@ public static class Generate
     /// <summary>
     /// Generates a list of instances of the type <typeparamref name="T" /> populated with test data.
     /// </summary>
-    /// <typeparam name="T">The type of objects to generate.</typeparam>
+    /// <typeparam name="T">The type of instances to generate.</typeparam>
     /// <param name="numberOfObjects">
     /// The number of objects to generate.
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
@@ -162,33 +162,45 @@ public static class Generate
     }
 
     /// <summary>
-    /// Generates an array containing the specified number of random integer and <see langword="null" /> values.
+    /// Generates a list containing the specified number of random values of the type <typeparamref name="T" /> and
+    /// <see langword="null" /> values.
     /// </summary>
+    /// <typeparam name="T">The type of values to generate.</typeparam>
+    /// <param name="numberOfValues">
+    /// The number of values to generate.
+    /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
+    /// </param>
     /// <returns>
-    /// An array of random integer and <see langword="null" /> values.
-    /// The array is guaranteed to contain at least one <see langword="null" /> value.
+    /// A list of random values of the type <typeparamref name="T" /> and <see langword="null" /> values.
+    /// The list is guaranteed to have at least 50% of its values set to <see langword="null" />.
     /// </returns>
-    public static Int32?[] NullableNumbers()
+    public static List<Nullable<T>> MultipleNullable<T>(Int32? numberOfValues = null)
+        where T : struct
     {
-        var result = fixture.Create<Int32?[]>();
+        fixture.RepeatCount = numberOfValues ?? SmallNumber();
 
-        for (var i = 0; i < result.Length; i++)
-        {
-            result[i] = faker.Random.Bool() ? faker.Random.Int() : null;
-        }
+        var result = fixture.Create<List<Nullable<T>>>();
 
-        if (result.All(a => a is not null))
+        var nullsToSet = Math.Ceiling(result.Count / 2D);
+
+        while (nullsToSet > 0)
         {
-            result[faker.Random.Int(0, result.Length - 1)] = null;
+            var index = faker.Random.Int(0, result.Count - 1);
+
+            if (result[index] is not null)
+            {
+                result[index] = null;
+                nullsToSet--;
+            }
         }
 
         return result;
     }
 
     /// <summary>
-    /// Generates a random scalar value of one of the following types:
+    /// Generates a random scalar value of a randomly chosen type from the following list:
     /// Boolean, Byte, Char, DateTimeOffset, DateTime, Decimal, Double, Guid, Int16, Int32, Int64, Single, String,
-    /// TimeSpan
+    /// or TimeSpan.
     /// </summary>
     /// <returns>A random scalar value.</returns>
     public static Object ScalarValue() =>
@@ -218,16 +230,16 @@ public static class Generate
     /// <returns>An instance of the type <typeparamref name="T" /> populated with test data.</returns>
     public static T Single<T>()
     {
-        fixture.RepeatCount = SmallNumber();
+        fixture.RepeatCount = SmallNumber(); // For array/collection properties within the type T.
         return fixture.Create<T>();
     }
 
     /// <summary>
-    /// Generates a random number between 3 and 10.
+    /// Generates a random number between 5 and 15.
     /// </summary>
-    /// <returns>A random number between 3 and 10.</returns>
+    /// <returns>A random number between 5 and 15.</returns>
     public static Int32 SmallNumber() =>
-        faker.Random.Int(3, 10);
+        faker.Random.Int(5, 15);
 
     /// <summary>
     /// Creates a copy of <paramref name="entity" /> where all properties except the key property / properties have new
@@ -266,22 +278,25 @@ public static class Generate
         [.. entities.Select(UpdateFor)];
 
     /// <summary>
-    /// Copies all key properties (properties denoted with a <see cref="KeyAttribute" />) from
+    /// Copies the values of all key properties (properties denoted with a <see cref="KeyAttribute" />) from
     /// <paramref name="sourceEntity" /> to <paramref name="targetEntity" />.
     /// </summary>
     /// <typeparam name="T">The type of the entities to copy keys from and to.</typeparam>
-    /// <param name="sourceEntity">The source entities to copy keys from.</param>
-    /// <param name="targetEntity">The target entities to copy keys to.</param>
+    /// <param name="sourceEntity">The source entity to copy keys from.</param>
+    /// <param name="targetEntity">The target entity to copy keys to.</param>
     private static void CopyKeys<T>(T sourceEntity, T targetEntity)
     {
         foreach (var keyProperty in EntityHelper.GetEntityTypeMetadata(typeof(T)).KeyProperties)
         {
-            var key = keyProperty.PropertyGetter!(sourceEntity);
-            keyProperty.PropertySetter!(targetEntity, key);
+            var keyPropertyValue = keyProperty.PropertyGetter!(sourceEntity);
+            keyProperty.PropertySetter!(targetEntity, keyPropertyValue);
         }
     }
 
+    // We only use alphabetic characters for Char generation to avoid issues with databases that do not support
+    // certain characters.
     private static readonly Char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+
     private static readonly Faker faker;
     private static readonly Fixture fixture;
     private static Int64 entityId = 1;

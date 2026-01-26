@@ -1,4 +1,7 @@
-﻿using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
 
 namespace RentADeveloper.DbConnectionPlus.Materializers;
 

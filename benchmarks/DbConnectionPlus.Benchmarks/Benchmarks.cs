@@ -133,7 +133,7 @@ public class Benchmarks
 
         for (var i = 0; i < DeleteEntity_OperationsPerInvoke; i++)
         {
-            var entityToDelete = this.entitiesInDb.First();
+            var entityToDelete = this.entitiesInDb[0];
 
             using var command = connection.CreateCommand();
 
@@ -154,7 +154,7 @@ public class Benchmarks
 
         for (var i = 0; i < DeleteEntity_OperationsPerInvoke; i++)
         {
-            var entityToDelete = this.entitiesInDb.First();
+            var entityToDelete = this.entitiesInDb[0];
 
             connection.DeleteEntity(entityToDelete);
 
@@ -179,7 +179,7 @@ public class Benchmarks
 
         for (var i = 0; i < ExecuteNonQuery_OperationsPerInvoke; i++)
         {
-            var entity = this.entitiesInDb.First();
+            var entity = this.entitiesInDb[0];
 
             using var command = connection.CreateCommand();
 
@@ -200,7 +200,7 @@ public class Benchmarks
 
         for (var i = 0; i < ExecuteNonQuery_OperationsPerInvoke; i++)
         {
-            var entity = this.entitiesInDb.First();
+            var entity = this.entitiesInDb[0];
 
             connection.ExecuteNonQuery($"DELETE FROM Entity WHERE Id = {Parameter(entity.Id)}");
 

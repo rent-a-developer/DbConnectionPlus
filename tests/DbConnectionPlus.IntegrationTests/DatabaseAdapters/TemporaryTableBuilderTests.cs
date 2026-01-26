@@ -36,8 +36,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
-        TemporaryTableTestItemWithDateTimeOffset[] items =
-            [new() { DateTimeOffset = Generate.Single<DateTimeOffset>() }];
+        var items = Generate.Multiple<TemporaryTableTestItemWithDateTimeOffset>();
 
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
@@ -60,11 +59,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
 
+        var entities = Generate.Multiple<EntityWithEnumProperty>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            entities,
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -83,9 +84,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().BeAnyOf(typeof(Int32), typeof(Int64));
 
-        foreach (var entity in this.entitiesWithEnumProperty)
+        foreach (var entity in entities)
         {
             reader.Read();
+            
             reader.GetInt32(0)
                 .Should().Be((Int32)entity.Enum);
         }
@@ -96,11 +98,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var entities = Generate.Multiple<EntityWithEnumProperty>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            entities,
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -119,9 +123,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().Be(typeof(String));
 
-        foreach (var entity in this.entitiesWithEnumProperty)
+        foreach (var entity in entities)
         {
             reader.Read();
+            
             reader.GetString(0)
                 .Should().Be(entity.Enum.ToString());
         }
@@ -139,7 +144,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            Generate.Multiple<EntityWithEnumProperty>(),
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -177,18 +182,18 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ComplexObjects_NullableProperties_ShouldHandleNullValues()
     {
-        var itemsWithNulls = new List<TemporaryTableTestItem> { new() };
+        var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
 
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Objects",
             itemsWithNulls,
-            typeof(TemporaryTableTestItem),
+            typeof(TemporaryTableTestItemWithNullableProperties),
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.Query<TemporaryTableTestItem>(
+        this.Connection.Query<TemporaryTableTestItemWithNullableProperties>(
                 $"SELECT * FROM {QT("Objects")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -198,11 +203,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable()
     {
+        var items = Generate.Multiple<TemporaryTableTestItem>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Objects",
-            this.temporaryTableTestItems,
+            items,
             typeof(TemporaryTableTestItem),
             TestContext.Current.CancellationToken
         );
@@ -211,7 +218,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT * FROM {QT("Objects")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(this.temporaryTableTestItems);
+            .Should().BeEquivalentTo(items);
     }
 
     [Fact]
@@ -223,7 +230,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithStringProperty,
+            Generate.Multiple<EntityWithStringProperty>(),
             typeof(EntityWithStringProperty),
             TestContext.Current.CancellationToken
         );
@@ -262,11 +269,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
 
+        var values = Generate.Multiple<TestEnum>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            values,
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -285,11 +294,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().BeAnyOf(typeof(Int32), typeof(Int64));
 
-        foreach (var enumValue in this.enumValues)
+        foreach (var value in values)
         {
             reader.Read();
+            
             reader.GetInt32(0)
-                .Should().Be((Int32)enumValue);
+                .Should().Be((Int32)value);
         }
     }
 
@@ -298,11 +308,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var values = Generate.Multiple<TestEnum>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            values,
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -321,11 +333,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().Be(typeof(String));
 
-        foreach (var enumValue in this.enumValues)
+        foreach (var value in values)
         {
             reader.Read();
+            
             reader.GetString(0)
-                .Should().Be(enumValue.ToString());
+                .Should().Be(value.ToString());
         }
     }
 
@@ -341,7 +354,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            Generate.Multiple<TestEnum>(),
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -358,11 +371,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var values = Generate.MultipleNullable<TestEnum>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Values",
-            this.nullableEnumValues,
+            values,
             typeof(TestEnum?),
             TestContext.Current.CancellationToken
         );
@@ -371,17 +386,19 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("Values")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(this.nullableEnumValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
     public void BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable()
     {
+        var values = Generate.Multiple<Int32>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "Values",
-            this.integerValues,
+            values,
             typeof(Int32),
             TestContext.Current.CancellationToken
         );
@@ -390,7 +407,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("Values")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(this.integerValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
@@ -402,7 +419,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.stringValues,
+            Generate.Multiple<String>(),
             typeof(String),
             TestContext.Current.CancellationToken
         );
@@ -416,11 +433,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues()
     {
+        var values = Generate.MultipleNullable<Int32>();
+
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
             null,
             "NullValues",
-            this.nullValues,
+            values,
             typeof(Int32?),
             TestContext.Current.CancellationToken
         );
@@ -429,7 +448,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("NullValues")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(this.nullValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
@@ -439,7 +458,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.integerValues,
+            Generate.Multiple<Int32>(),
             typeof(Int32),
             TestContext.Current.CancellationToken
         );
@@ -458,8 +477,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
-        TemporaryTableTestItemWithDateTimeOffset[] items =
-            [new() { DateTimeOffset = Generate.Single<DateTimeOffset>() }];
+        var items = Generate.Multiple<TemporaryTableTestItemWithDateTimeOffset>();
 
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
@@ -483,11 +501,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
 
+        var entities = Generate.Multiple<EntityWithEnumProperty>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            entities,
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -506,9 +526,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().BeAnyOf(typeof(Int32), typeof(Int64));
 
-        foreach (var entity in this.entitiesWithEnumProperty)
+        foreach (var entity in entities)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
+            
             reader.GetInt32(0)
                 .Should().Be((Int32)entity.Enum);
         }
@@ -520,11 +541,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var entities = Generate.Multiple<EntityWithEnumProperty>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            entities,
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -543,9 +566,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().Be(typeof(String));
 
-        foreach (var entity in this.entitiesWithEnumProperty)
+        foreach (var entity in entities)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
+            
             reader.GetString(0)
                 .Should().Be(entity.Enum.ToString());
         }
@@ -563,7 +587,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithEnumProperty,
+            Generate.Multiple<EntityWithEnumProperty>(),
             typeof(EntityWithEnumProperty),
             TestContext.Current.CancellationToken
         );
@@ -602,11 +626,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldCreateMultiColumnTable()
     {
+        var items = Generate.Multiple<TemporaryTableTestItem>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Objects",
-            this.temporaryTableTestItems,
+            items,
             typeof(TemporaryTableTestItem),
             TestContext.Current.CancellationToken
         );
@@ -615,7 +641,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT * FROM {QT("Objects")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(this.temporaryTableTestItems);
+            .Should().BeEquivalentTo(items);
     }
 
     [Fact]
@@ -627,7 +653,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            this.entitiesWithStringProperty,
+            Generate.Multiple<EntityWithStringProperty>(),
             typeof(EntityWithStringProperty),
             TestContext.Current.CancellationToken
         );
@@ -641,18 +667,18 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public async Task BuildTemporaryTableAsync_ComplexObjects_WithNullables_ShouldHandleNullValues()
     {
-        var itemsWithNulls = new List<TemporaryTableTestItem> { new() };
+        var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
 
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Objects",
             itemsWithNulls,
-            typeof(TemporaryTableTestItem),
+            typeof(TemporaryTableTestItemWithNullableProperties),
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<TemporaryTableTestItem>(
+        (await this.Connection.QueryAsync<TemporaryTableTestItemWithNullableProperties>(
                 $"SELECT * FROM {QT("Objects")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
@@ -688,11 +714,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
 
+        var values = Generate.Multiple<TestEnum>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            values,
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -711,11 +739,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().BeAnyOf(typeof(Int32), typeof(Int64));
 
-        foreach (var enumValue in this.enumValues)
+        foreach (var value in values)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
+            
             reader.GetInt32(0)
-                .Should().Be((Int32)enumValue);
+                .Should().Be((Int32)value);
         }
     }
 
@@ -725,11 +754,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var values = Generate.Multiple<TestEnum>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            values,
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -748,11 +779,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         reader.GetFieldType(0)
             .Should().Be(typeof(String));
 
-        foreach (var enumValue in this.enumValues)
+        foreach (var value in values)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
+            
             reader.GetString(0)
-                .Should().Be(enumValue.ToString());
+                .Should().Be(value.ToString());
         }
     }
 
@@ -768,7 +800,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.enumValues,
+            Generate.Multiple<TestEnum>(),
             typeof(TestEnum),
             TestContext.Current.CancellationToken
         );
@@ -785,11 +817,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
 
+        var values = Generate.MultipleNullable<TestEnum>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Values",
-            this.nullableEnumValues,
+            values,
             typeof(TestEnum?),
             TestContext.Current.CancellationToken
         );
@@ -798,17 +832,19 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("Values")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(this.nullableEnumValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
     public async Task BuildTemporaryTableAsync_ScalarValues_ShouldCreateSingleColumnTable()
     {
+        var values = Generate.Multiple<Int32>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Values",
-            this.integerValues,
+            values,
             typeof(Int32),
             TestContext.Current.CancellationToken
         );
@@ -817,7 +853,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("Values")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(this.integerValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
@@ -829,7 +865,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.stringValues,
+            Generate.Multiple<String>(),
             typeof(String),
             TestContext.Current.CancellationToken
         );
@@ -843,11 +879,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public async Task BuildTemporaryTableAsync_ScalarValuesWithNullValues_ShouldHandleNullValues()
     {
+        var values = Generate.MultipleNullable<Int32>();
+
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "NullValues",
-            this.nullValues,
+            values,
             typeof(Int32?),
             TestContext.Current.CancellationToken
         );
@@ -856,7 +894,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
                 $"SELECT {Q("Value")} FROM {QT("NullValues")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(this.nullValues);
+            .Should().BeEquivalentTo(values);
     }
 
     [Fact]
@@ -866,7 +904,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            this.integerValues,
+            Generate.Multiple<Int32>(),
             typeof(Int32),
             TestContext.Current.CancellationToken
         );
@@ -881,46 +919,4 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     }
 
     private readonly ITemporaryTableBuilder builder;
-
-    private readonly List<EntityWithEnumProperty> entitiesWithEnumProperty =
-    [
-        new() { Enum = TestEnum.Value1 },
-        new() { Enum = TestEnum.Value2 },
-        new() { Enum = TestEnum.Value3 }
-    ];
-
-    private readonly List<EntityWithStringProperty> entitiesWithStringProperty =
-    [
-        new() { String = "A" }
-    ];
-
-    private readonly List<TestEnum> enumValues =
-    [
-        TestEnum.Value1,
-        TestEnum.Value2,
-        TestEnum.Value3
-    ];
-
-    private readonly List<Int32> integerValues =
-    [
-        1, 2, 3, 4, 5
-    ];
-
-    private readonly List<TestEnum?> nullableEnumValues =
-    [
-        TestEnum.Value1,
-        null,
-        TestEnum.Value2,
-        null,
-        TestEnum.Value3
-    ];
-
-    private readonly List<Int32?> nullValues = [null, null, null];
-
-    private readonly List<String> stringValues =
-    [
-        "A", "B", "C"
-    ];
-
-    private readonly List<TemporaryTableTestItem> temporaryTableTestItems = Generate.Multiple<TemporaryTableTestItem>();
 }

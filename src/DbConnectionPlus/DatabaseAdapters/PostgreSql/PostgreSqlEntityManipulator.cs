@@ -1,4 +1,7 @@
-﻿using LinkDotNet.StringBuilder;
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+using LinkDotNet.StringBuilder;
 using Npgsql;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;

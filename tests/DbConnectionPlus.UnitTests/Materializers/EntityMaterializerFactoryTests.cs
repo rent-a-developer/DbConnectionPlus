@@ -592,9 +592,9 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithDifferentCasingProperties>(dataReader);
 
-        var materializedEntity = materializer(dataReader);
+        var materializedEntityWithDifferentCasingProperties = materializer(dataReader);
 
-        materializedEntity
+        materializedEntityWithDifferentCasingProperties
             .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
     }
 

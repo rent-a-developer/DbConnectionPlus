@@ -77,9 +77,8 @@ internal class EnumHandlingObjectReader : ObjectReader
         if (base.GetFieldType(i)?.IsCharOrNullableCharType() == true)
         {
             // The data readers of all major database systems return the type String for CHAR columns, which means that
-            // GetString is called to retrieve the value.
-            // This would cause ObjectReader to throw an InvalidCastException.
-            // So we handle this case here and convert the Char to a String.
+            // GetString is called to retrieve the value. This would cause ObjectReader to throw an
+            // InvalidCastException. So we handle this case here and convert the Char to a String.
 
             var charValue = this.GetValue(i) as Char?;
             return charValue?.ToString() ?? String.Empty;

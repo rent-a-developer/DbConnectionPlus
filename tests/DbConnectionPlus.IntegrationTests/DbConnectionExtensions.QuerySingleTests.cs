@@ -68,7 +68,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable([entity])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var dynamicObject = this.Connection.QuerySingle(
             statement,
@@ -164,7 +164,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var dynamicObject = this.Connection.QuerySingle(
             statement,
@@ -280,7 +280,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable([entity])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var dynamicObject = await this.Connection.QuerySingleAsync(
             statement,
@@ -378,7 +378,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var dynamicObject = await this.Connection.QuerySingleAsync(
             statement,

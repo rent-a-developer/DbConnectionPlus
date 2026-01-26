@@ -130,11 +130,13 @@ public abstract class EntityManipulator_InsertEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.Query<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entities);
+        entities
+            .Should().BeEquivalentTo(
+                this.Connection.Query<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+            );
     }
 
     [Fact]
@@ -149,11 +151,13 @@ public abstract class EntityManipulator_InsertEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.Query<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entities);
+        entities
+            .Should().BeEquivalentTo(
+                this.Connection.Query<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+            );
     }
 
     [Fact]
@@ -376,11 +380,13 @@ public abstract class EntityManipulator_InsertEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities);
+        entities
+            .Should().BeEquivalentTo(
+                await this.Connection.QueryAsync<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                ).ToListAsync(TestContext.Current.CancellationToken)
+            );
     }
 
     [Fact]
@@ -395,11 +401,13 @@ public abstract class EntityManipulator_InsertEntities_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities);
+        entities
+            .Should().BeEquivalentTo(
+                await this.Connection.QueryAsync<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                ).ToListAsync(TestContext.Current.CancellationToken)
+            );
     }
 
     [Fact]

@@ -102,7 +102,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             )
             .Where(a => a.name == columnName)
             .Select(a => a.Type)
-            .First();
+            .Single();
 
     /// <inheritdoc />
     public String GetUnsupportedDataTypeLiteral() =>

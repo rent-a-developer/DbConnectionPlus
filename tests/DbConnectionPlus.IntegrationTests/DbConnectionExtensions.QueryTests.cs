@@ -68,7 +68,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable(entities)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.Query(
             statement,
@@ -151,7 +151,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.Query(
             statement,
@@ -280,7 +280,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable(entities)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.QueryAsync(
             statement,
@@ -363,7 +363,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.QueryAsync(
             statement,

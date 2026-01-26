@@ -318,11 +318,7 @@ internal static class DbCommandBuilder
     {
         if (!databaseAdapter.SupportsTemporaryTables(connection))
         {
-            throw new NotSupportedException(
-                $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) " +
-                $"temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
-                $"this database."
-            );
+            ThrowHelper.ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(databaseAdapter);
         }
 
         var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Length];
@@ -387,11 +383,7 @@ internal static class DbCommandBuilder
     {
         if (!databaseAdapter.SupportsTemporaryTables(connection))
         {
-            throw new NotSupportedException(
-                $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) " +
-                $"temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
-                $"this database."
-            );
+            ThrowHelper.ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(databaseAdapter);
         }
 
         var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Length];

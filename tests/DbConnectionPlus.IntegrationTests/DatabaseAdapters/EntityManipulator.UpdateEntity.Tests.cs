@@ -47,7 +47,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entity should not have been updated.
-        this.Connection.QueryFirst<Entity>(
+        this.Connection.QuerySingle<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -78,7 +78,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
 
-        this.Connection.QueryFirst<Entity>(
+        this.Connection.QuerySingle<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -98,7 +98,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<EntityWithTableAttribute>(
+        this.Connection.QuerySingle<EntityWithTableAttribute>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -114,8 +114,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        // Make sure the enums are stored as integers:
-        this.Connection.QueryFirst<Int32>(
+        // Make sure the enum is stored as integer:
+        this.Connection.QuerySingle<Int32>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -130,8 +130,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        // Make sure the enums are stored as integers:
-        this.Connection.QueryFirst<Int32>(
+        // Make sure the enum is stored as integer:
+        this.Connection.QuerySingle<Int32>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -147,8 +147,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        // Make sure the enums are stored as strings:
-        this.Connection.Query<String>(
+        // Make sure the enum is stored as string:
+        this.Connection.QuerySingle<String>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -163,8 +163,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        // Make sure the enums are stored as strings:
-        this.Connection.Query<String>(
+        // Make sure the enum is stored as string:
+        this.Connection.QuerySingle<String>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -184,10 +184,12 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-            )
-            .Should().BeEquivalentTo(updatedEntity);
+        updatedEntity
+            .Should().BeEquivalentTo(
+                this.Connection.QuerySingle<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -203,7 +205,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<EntityWithCompositeKey>(
+        this.Connection.QuerySingle<EntityWithCompositeKey>(
                 $"SELECT * FROM {Q("EntityWithCompositeKey")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -223,10 +225,12 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-            )
-            .Should().BeEquivalentTo(updatedEntity);
+        updatedEntity
+            .Should().BeEquivalentTo(
+                this.Connection.QuerySingle<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -286,7 +290,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<EntityWithDateTimeOffset>(
+        this.Connection.QuerySingle<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -301,7 +305,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
 
-        this.Connection.QueryFirst<Entity>(
+        this.Connection.QuerySingle<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -325,13 +329,13 @@ public abstract class EntityManipulator_UpdateEntity_Tests
                 )
                 .Should().Be(1);
 
-            this.Connection.QueryFirst<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
+            this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
                 .Should().Be(updatedEntity);
 
             transaction.Rollback();
         }
 
-        this.Connection.QueryFirst<Entity>($"SELECT * FROM {Q("Entity")}")
+        this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}")
             .Should().Be(entity);
     }
 
@@ -354,7 +358,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entity should not have been updated.
-        (await this.Connection.QueryFirstAsync<Entity>(
+        (await this.Connection.QuerySingleAsync<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -390,7 +394,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<Entity>(
+        (await this.Connection.QuerySingleAsync<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -410,7 +414,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<EntityWithTableAttribute>(
+        (await this.Connection.QuerySingleAsync<EntityWithTableAttribute>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -426,8 +430,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        // Make sure the enums are stored as integers:
-        (await this.Connection.QueryFirstAsync<Int32>(
+        // Make sure the enum is stored as integer:
+        (await this.Connection.QuerySingleAsync<Int32>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -442,8 +446,8 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        // Make sure the enums are stored as integers:
-        (await this.Connection.QueryFirstAsync<Int32>(
+        // Make sure the enum is stored as integer:
+        (await this.Connection.QuerySingleAsync<Int32>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -459,11 +463,11 @@ public abstract class EntityManipulator_UpdateEntity_Tests
 
         await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        // Make sure the enums are stored as strings:
-        (await this.Connection.QueryAsync<String>(
+        // Make sure the enum is stored as string:
+        (await this.Connection.QuerySingleAsync<String>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
+            ))
             .Should().BeEquivalentTo(entity.Enum.ToString());
 
         var updatedEntity = Generate.UpdateFor(entity);
@@ -475,11 +479,11 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        // Make sure the enums are stored as strings:
-        (await this.Connection.QueryAsync<String>(
+        // Make sure the enum is stored as string:
+        (await this.Connection.QuerySingleAsync<String>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
+            ))
             .Should().BeEquivalentTo(updatedEntity.Enum.ToString());
     }
 
@@ -496,10 +500,12 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<EntityWithComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-            ))
-            .Should().BeEquivalentTo(updatedEntity);
+        updatedEntity
+            .Should().BeEquivalentTo(
+                await this.Connection.QuerySingleAsync<EntityWithComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -515,7 +521,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<EntityWithCompositeKey>(
+        (await this.Connection.QuerySingleAsync<EntityWithCompositeKey>(
                 $"SELECT * FROM {Q("EntityWithCompositeKey")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -535,10 +541,12 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<EntityWithIdentityAndComputedProperties>(
-                $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-            ))
-            .Should().BeEquivalentTo(updatedEntity);
+        updatedEntity
+            .Should().BeEquivalentTo(
+                await this.Connection.QuerySingleAsync<EntityWithIdentityAndComputedProperties>(
+                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
+                )
+            );
     }
 
     [Fact]
@@ -608,7 +616,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryFirstAsync<EntityWithDateTimeOffset>(
+        (await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -629,7 +637,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             ))
             .Should().Be(1);
 
-        (await this.Connection.QueryFirstAsync<Entity>(
+        (await this.Connection.QuerySingleAsync<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -653,13 +661,13 @@ public abstract class EntityManipulator_UpdateEntity_Tests
                 ))
                 .Should().Be(1);
 
-            (await this.Connection.QueryFirstAsync<Entity>($"SELECT * FROM {Q("Entity")}", transaction))
+            (await this.Connection.QuerySingleAsync<Entity>($"SELECT * FROM {Q("Entity")}", transaction))
                 .Should().Be(updatedEntity);
 
             await transaction.RollbackAsync();
         }
 
-        (await this.Connection.QueryFirstAsync<Entity>($"SELECT * FROM {Q("Entity")}"))
+        (await this.Connection.QuerySingleAsync<Entity>($"SELECT * FROM {Q("Entity")}"))
             .Should().Be(entity);
     }
 

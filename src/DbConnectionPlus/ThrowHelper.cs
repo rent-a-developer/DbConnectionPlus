@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+using System.Diagnostics.CodeAnalysis;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus;
@@ -8,6 +11,24 @@ namespace RentADeveloper.DbConnectionPlus;
 /// </summary>
 public static class ThrowHelper
 {
+    /// <summary>
+    /// Throws an <see cref="NotSupportedException" /> indicating that an attempt was made to use the temporary tables
+    /// feature of DbConnectionPlus, but the database adapter for the current database system does not support
+    /// temporary tables.
+    /// </summary>
+    /// <param name="databaseAdapter">The database adapter that does not support temporary tables.</param>
+    /// <exception cref="NotSupportedException">Always thrown.</exception>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    public static void ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(IDatabaseAdapter databaseAdapter) =>
+        throw new NotSupportedException(
+#pragma warning disable CA1062
+            $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) " +
+            $"temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
+            $"this database."
+#pragma warning restore CA1062
+        );
+
     /// <summary>
     /// Throws an <see cref="ArgumentException" /> indicating that the specified entity type has no key property.
     /// </summary>

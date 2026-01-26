@@ -81,7 +81,7 @@ public abstract class
                                               FROM       {TemporaryTable(entities)}
                                               """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         this.Connection.ExecuteScalar<String>(
                 statement,
@@ -161,7 +161,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         this.Connection.ExecuteScalar<Int64>(
                 statement,
@@ -420,7 +420,7 @@ public abstract class
                                               FROM       {TemporaryTable(entities)}
                                               """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExecuteScalarAsync<String>(
                 statement,
@@ -504,7 +504,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExecuteScalarAsync<Int64>(
                 statement,

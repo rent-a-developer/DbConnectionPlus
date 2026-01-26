@@ -70,7 +70,7 @@ public abstract class
         var dateTime = new DateTime(2025, 12, 31, 23, 59, 59);
 
         this.Connection
-            .QueryFirst<(Int64, Guid, DateTime)>(
+            .QuerySingle<(Int64, Guid, DateTime)>(
                 $"SELECT {Parameter(int64)}, {Parameter(guid)}, {Parameter(dateTime)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )

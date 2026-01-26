@@ -276,7 +276,7 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void IsDBNull_ValidOrdinal_ShouldReturnWhetherCurrentValueIsNull()
     {
-        var valuesWithNulls = Generate.NullableNumbers();
+        var valuesWithNulls = Generate.MultipleNullable<Int32>();
         var readerWithNulls = new EnumerableReader(valuesWithNulls, typeof(Int32), FieldName);
 
         foreach (var value in valuesWithNulls)

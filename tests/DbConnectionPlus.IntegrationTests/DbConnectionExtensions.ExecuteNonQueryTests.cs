@@ -86,7 +86,7 @@ public abstract class
                            )
              """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         this.Connection.ExecuteNonQuery(
                 statement,
@@ -179,7 +179,7 @@ public abstract class
              WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
              """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         this.Connection.ExecuteNonQuery(
                 statement,
@@ -324,7 +324,7 @@ public abstract class
                            )
              """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExecuteNonQueryAsync(
                 statement,
@@ -417,7 +417,7 @@ public abstract class
              WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
              """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExecuteNonQueryAsync(
                 statement,

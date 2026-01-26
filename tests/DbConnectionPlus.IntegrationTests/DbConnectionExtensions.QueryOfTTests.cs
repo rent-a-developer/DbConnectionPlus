@@ -225,7 +225,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable(entities)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.Query<Entity>(
             statement,
@@ -466,7 +466,7 @@ public abstract class
                 $"SELECT 1 AS {Q("Id")}, {(Int32)enumValue} AS {Q("Enum")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .First().Enum
+            .Single().Enum
             .Should().Be(enumValue);
     }
 
@@ -479,7 +479,7 @@ public abstract class
                 $"SELECT 1 AS {Q("Id")}, '{enumValue.ToString()}' AS {Q("Enum")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .First().Enum
+            .Single().Enum
             .Should().Be(enumValue);
     }
 
@@ -639,7 +639,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS Id FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = this.Connection.Query<Entity>(
             statement,
@@ -1143,7 +1143,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable(entities)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var asyncEnumerator = this.Connection.QueryAsync<Entity>(
             statement,
@@ -1564,7 +1564,7 @@ public abstract class
         InterpolatedSqlStatement statement =
             $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var asyncEnumerator = this.Connection.QueryAsync<Entity>(
             statement,

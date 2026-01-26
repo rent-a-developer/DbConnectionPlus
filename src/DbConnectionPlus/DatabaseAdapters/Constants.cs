@@ -1,4 +1,7 @@
-﻿namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 /// <summary>
 /// Provides constant values for database adapters.

@@ -66,12 +66,9 @@ public abstract class
                                               WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
                                               """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        this.Connection.Exists(
-                statement,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
+        this.Connection.Exists(statement, cancellationToken: TestContext.Current.CancellationToken)
             .Should().BeTrue();
 
         this.ExistsTemporaryTableInDb(temporaryTableName)
@@ -132,7 +129,7 @@ public abstract class
         InterpolatedSqlStatement statement =
             $"SELECT 1 FROM {TemporaryTable(entityIds)} WHERE {Q("Value")} = {Parameter(entityIds[0])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         this.Connection.Exists(statement, cancellationToken: TestContext.Current.CancellationToken)
             .Should().BeTrue();
@@ -239,7 +236,7 @@ public abstract class
                                               WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
                                               """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExistsAsync(
                 statement,
@@ -306,7 +303,7 @@ public abstract class
         InterpolatedSqlStatement statement =
             $"SELECT 1 FROM {TemporaryTable(entityIds)} WHERE {Q("Value")} = {Parameter(entityIds[0])}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         (await this.Connection.ExistsAsync(
                 statement,

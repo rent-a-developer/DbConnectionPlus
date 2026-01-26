@@ -16,7 +16,7 @@ public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
                 commandType,
                 cancellationToken
             ) =>
-            connection.QueryAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken)
+            connection.QueryAsync(sql, transaction, timeout, commandType, cancellationToken)
                 .ToListAsync(cancellationToken)
                 .AsTask(),
         (
@@ -27,7 +27,7 @@ public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
                 commandType,
                 cancellationToken
             ) =>
-            connection.Query<Entity>(sql, transaction, timeout, commandType, cancellationToken).ToList()
+            connection.Query(sql, transaction, timeout, commandType, cancellationToken).ToList()
     )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();

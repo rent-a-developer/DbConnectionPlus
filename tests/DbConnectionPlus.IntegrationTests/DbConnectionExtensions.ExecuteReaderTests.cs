@@ -98,7 +98,7 @@ public abstract class
                                               FROM       {TemporaryTable(entities)}
                                               """;
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var reader = this.Connection.ExecuteReader(
             statement,
@@ -196,7 +196,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var reader = this.Connection.ExecuteReader(
             statement,
@@ -379,7 +379,7 @@ public abstract class
                                               SELECT     {Q("Id")}
                                               FROM       {TemporaryTable(entities)}
                                               """;
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var reader = await this.Connection.ExecuteReaderAsync(
             statement,
@@ -478,7 +478,7 @@ public abstract class
 
         InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
 
-        var temporaryTableName = statement.TemporaryTables.First().Name;
+        var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var reader = await this.Connection.ExecuteReaderAsync(
             statement,

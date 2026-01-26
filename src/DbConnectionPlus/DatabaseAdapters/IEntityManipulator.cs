@@ -1,4 +1,7 @@
-﻿using RentADeveloper.DbConnectionPlus.Converters;
+﻿// Copyright (c) 2026 David Liebeherr
+// Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+using RentADeveloper.DbConnectionPlus.Converters;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 

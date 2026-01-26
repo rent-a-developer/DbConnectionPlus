@@ -98,7 +98,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         String columnName,
         DbConnection connection
     ) =>
-        connection.Query<String>(
+        connection.QuerySingle<String>(
             $"""
              SELECT data_type
              FROM   information_schema.columns
@@ -107,7 +107,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
                     column_name = '{columnName}'
              """,
             cancellationToken: TestContext.Current.CancellationToken
-        ).First();
+        );
 
     /// <inheritdoc />
     public String GetUnsupportedDataTypeLiteral() =>
