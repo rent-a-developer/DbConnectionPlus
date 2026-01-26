@@ -16,9 +16,11 @@ public class PublicApiTest : UnitTestsBase
             ExcludeAttributes =
             [
                 typeof(InternalsVisibleToAttribute).FullName!,
-                typeof(TargetFrameworkAttribute).FullName!
+                typeof(TargetFrameworkAttribute).FullName!,
+                typeof(AsyncIteratorStateMachineAttribute).FullName!
             ],
-            DenyNamespacePrefixes = []
+            DenyNamespacePrefixes = [],
+            TreatRecordsAsClasses = false
         };
 
         var publicApi = typeof(DbConnectionExtensions).Assembly.GeneratePublicApi(apiGeneratorOptions);
