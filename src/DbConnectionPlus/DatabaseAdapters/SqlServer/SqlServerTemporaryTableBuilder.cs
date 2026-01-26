@@ -165,7 +165,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
@@ -177,9 +178,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -187,7 +189,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
@@ -197,9 +200,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -207,7 +211,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
 
         // ReSharper disable once PossibleMultipleEnumeration
-        using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning disable CA2007
+        await using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning restore CA2007
 
         using var sqlBulkCopy = new SqlBulkCopy(sqlConnection, SqlBulkCopyOptions.TableLock, sqlTransaction);
 
@@ -437,11 +443,13 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         SqlTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]",
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -495,11 +503,13 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             return collation;
         }
 
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             GetCurrentDatabaseCollationQuery,
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

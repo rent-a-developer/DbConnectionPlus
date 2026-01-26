@@ -1,6 +1,6 @@
 ﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
-public class ItemWithPrivateConstructor
+public sealed class ItemWithPrivateConstructor
 {
     private ItemWithPrivateConstructor(Int16 a, Int32 b, Int64 c)
     {

@@ -166,7 +166,9 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     [Fact]
     public void AppendLiteral_ShouldStoreLiteral()
     {
+#pragma warning disable RCS1214 // Unnecessary interpolated string
         InterpolatedSqlStatement statement = $"SELECT 1";
+#pragma warning restore RCS1214 // Unnecessary interpolated string
 
         statement.Fragments
             .Should().HaveCount(1);
@@ -362,8 +364,10 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     public void ImplicitConversion_NullValue_ShouldThrow() =>
         Invoking(() =>
                 {
-                    String? sql = null;
+                    const String? sql = null;
+#pragma warning disable RCS1124 // Inline local variable
                     InterpolatedSqlStatement statement = sql!;
+#pragma warning restore RCS1124 // Inline local variable
                     return statement;
                 }
             )

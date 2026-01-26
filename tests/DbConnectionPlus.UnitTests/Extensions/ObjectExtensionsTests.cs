@@ -1,9 +1,9 @@
-﻿using RentADeveloper.DbConnectionPlus.Extensions;
-
-// ReSharper disable RedundantExplicitArrayCreation
+﻿// ReSharper disable RedundantExplicitArrayCreation
 // ReSharper disable RedundantCast
 // ReSharper disable NotAccessedPositionalProperty.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local
+
+using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Extensions;
 
@@ -27,8 +27,10 @@ public class ObjectExtensionsTests : UnitTestsBase
     [Fact]
     public void ToDebugString_ShouldReturnStringRepresentationOfValue()
     {
+#pragma warning disable RCS1202
         (null as Object).ToDebugString()
             .Should().Be("{null}");
+#pragma warning restore RCS1202
 
         DBNull.Value.ToDebugString()
             .Should().Be("{DBNull}");
@@ -99,8 +101,10 @@ public class ObjectExtensionsTests : UnitTestsBase
         ((UIntPtr)123).ToDebugString()
             .Should().Be("'123' (System.UIntPtr)");
 
+#pragma warning disable CA1861 // Avoid constant arrays as arguments
         new Int32[] { 1, 2, 3 }.ToDebugString()
             .Should().Be("'[1,2,3]' (System.Int32[])");
+#pragma warning restore CA1861 // Avoid constant arrays as arguments
 
         new Object().ToDebugString()
             .Should().Be("'{}' (System.Object)");

@@ -3,31 +3,31 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
 public sealed class
-    EntityManipulator_DeleteEntity_Tests_MySql :
-    EntityManipulator_DeleteEntity_Tests<MySqlTestDatabaseProvider>;
+    EntityManipulator_DeleteEntityTests_MySql :
+    EntityManipulator_DeleteEntityTests<MySqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntity_Tests_Oracle :
-    EntityManipulator_DeleteEntity_Tests<OracleTestDatabaseProvider>;
+    EntityManipulator_DeleteEntityTests_Oracle :
+    EntityManipulator_DeleteEntityTests<OracleTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntity_Tests_PostgreSql :
-    EntityManipulator_DeleteEntity_Tests<PostgreSqlTestDatabaseProvider>;
+    EntityManipulator_DeleteEntityTests_PostgreSql :
+    EntityManipulator_DeleteEntityTests<PostgreSqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntity_Tests_Sqlite :
-    EntityManipulator_DeleteEntity_Tests<SqliteTestDatabaseProvider>;
+    EntityManipulator_DeleteEntityTests_Sqlite :
+    EntityManipulator_DeleteEntityTests<SqliteTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntity_Tests_SqlServer :
-    EntityManipulator_DeleteEntity_Tests<SqlServerTestDatabaseProvider>;
+    EntityManipulator_DeleteEntityTests_SqlServer :
+    EntityManipulator_DeleteEntityTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_DeleteEntity_Tests
+public abstract class EntityManipulator_DeleteEntityTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_DeleteEntity_Tests() =>
+    protected EntityManipulator_DeleteEntityTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Fact]
@@ -71,7 +71,7 @@ public abstract class EntityManipulator_DeleteEntity_Tests
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                $"Make sure that at least one instance property of that type is denoted with a " +
+                "Make sure that at least one instance property of that type is denoted with a " +
                 $"{typeof(KeyAttribute)}."
             );
     }
@@ -211,7 +211,7 @@ public abstract class EntityManipulator_DeleteEntity_Tests
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
                 $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                $"Make sure that at least one instance property of that type is denoted with a " +
+                "Make sure that at least one instance property of that type is denoted with a " +
                 $"{typeof(KeyAttribute)}."
             );
     }
@@ -291,7 +291,7 @@ public abstract class EntityManipulator_DeleteEntity_Tests
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
-        using (var transaction = await this.Connection.BeginTransactionAsync())
+        await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             await this.manipulator.DeleteEntityAsync(
                 this.Connection,

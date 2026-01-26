@@ -91,7 +91,9 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         }
         catch
         {
+#pragma warning disable ERP022
             return false;
+#pragma warning restore ERP022
         }
     }
 

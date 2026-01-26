@@ -40,12 +40,15 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     public Int32 DeleteEntities<TEntity>(
         DbConnection connection,
@@ -88,12 +91,15 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     public Task<Int32> DeleteEntitiesAsync<TEntity>(
         DbConnection connection,
@@ -132,12 +138,15 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     public Int32 DeleteEntity<TEntity>(
         DbConnection connection,
@@ -180,12 +189,15 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     public Task<Int32> DeleteEntityAsync<TEntity>(
         DbConnection connection,
@@ -221,23 +233,27 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Int32 InsertEntities<TEntity>(
         DbConnection connection,
@@ -277,23 +293,27 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Task<Int32> InsertEntitiesAsync<TEntity>(
         DbConnection connection,
@@ -329,23 +349,27 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Int32 InsertEntity<TEntity>(
         DbConnection connection,
@@ -385,23 +409,27 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Task<Int32> InsertEntityAsync<TEntity>(
         DbConnection connection,
@@ -440,26 +468,31 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
     /// type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Int32 UpdateEntities<TEntity>(
         DbConnection connection,
@@ -503,26 +536,31 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
     /// type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Task<Int32> UpdateEntitiesAsync<TEntity>(
         DbConnection connection,
@@ -561,26 +599,31 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
     /// type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Int32 UpdateEntity<TEntity>(
         DbConnection connection,
@@ -623,26 +666,31 @@ public interface IEntityManipulator
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
     /// type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     public Task<Int32> UpdateEntityAsync<TEntity>(
         DbConnection connection,

@@ -1,7 +1,7 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
-using RentADeveloper.DbConnectionPlus.DbCommands;
+﻿#pragma warning disable NS1001
 
-#pragma warning disable NS1001
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DbCommands;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DbCommands;
 

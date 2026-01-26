@@ -18,8 +18,8 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The SQL statement returned 2 columns, but the value tuple type {typeof((Int32, Int32, Int32))} has " +
-                $"3 fields. Make sure that the SQL statement returns the same number of columns as the number of " +
-                $"fields in the value tuple type.*"
+                "3 fields. Make sure that the SQL statement returns the same number of columns as the number of " +
+                "fields in the value tuple type.*"
             );
     }
 
@@ -82,7 +82,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The data type {typeof(BigInteger)} of the column 'Value' returned by the SQL statement is not " +
-                $"supported.*"
+                "supported.*"
             );
 
         dataReader.FieldCount.Returns(1);
@@ -180,7 +180,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
@@ -232,14 +232,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. That " +
-                $"string does not match any of the names of the enum's members.*"
+                "string does not match any of the names of the enum's members.*"
             );
     }
 
@@ -331,14 +331,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(Char)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
 
         dataReader.GetString(0).Returns("ab");
@@ -346,14 +346,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(Char)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
     }
 
@@ -396,7 +396,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
+                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
                 $"of the value tuple type {typeof(ValueTuple<Int64>)} is non-nullable.*"
             );
     }
@@ -419,14 +419,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(Char?)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
 
         dataReader.GetString(0).Returns("ab");
@@ -434,14 +434,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(Char?)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly " +
-                $"one character long."
+                "one character long."
             );
     }
 

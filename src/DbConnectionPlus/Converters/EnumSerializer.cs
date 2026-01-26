@@ -6,7 +6,7 @@ namespace RentADeveloper.DbConnectionPlus.Converters;
 /// <summary>
 /// Serializes enum values according to a specified serialization mode.
 /// </summary>
-internal class EnumSerializer
+internal static class EnumSerializer
 {
     /// <summary>
     /// Serializes <paramref name="enumValue" /> according to <paramref name="serializationMode" />.

@@ -3,31 +3,31 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
 public sealed class
-    EntityManipulator_UpdateEntity_Tests_MySql :
-    EntityManipulator_UpdateEntity_Tests<MySqlTestDatabaseProvider>;
+    EntityManipulator_UpdateEntityTests_MySql :
+    EntityManipulator_UpdateEntityTests<MySqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_UpdateEntity_Tests_Oracle :
-    EntityManipulator_UpdateEntity_Tests<OracleTestDatabaseProvider>;
+    EntityManipulator_UpdateEntityTests_Oracle :
+    EntityManipulator_UpdateEntityTests<OracleTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_UpdateEntity_Tests_PostgreSql :
-    EntityManipulator_UpdateEntity_Tests<PostgreSqlTestDatabaseProvider>;
+    EntityManipulator_UpdateEntityTests_PostgreSql :
+    EntityManipulator_UpdateEntityTests<PostgreSqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_UpdateEntity_Tests_Sqlite :
-    EntityManipulator_UpdateEntity_Tests<SqliteTestDatabaseProvider>;
+    EntityManipulator_UpdateEntityTests_Sqlite :
+    EntityManipulator_UpdateEntityTests<SqliteTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_UpdateEntity_Tests_SqlServer :
-    EntityManipulator_UpdateEntity_Tests<SqlServerTestDatabaseProvider>;
+    EntityManipulator_UpdateEntityTests_SqlServer :
+    EntityManipulator_UpdateEntityTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_UpdateEntity_Tests
+public abstract class EntityManipulator_UpdateEntityTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_UpdateEntity_Tests() =>
+    protected EntityManipulator_UpdateEntityTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Fact]
@@ -564,7 +564,7 @@ public abstract class EntityManipulator_UpdateEntity_Tests
             TestContext.Current.CancellationToken
         );
 
-        using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await this.Connection.ExecuteReaderAsync(
             $"SELECT {Q("Id")}, {Q("NotMappedValue")} FROM {Q("EntityWithNotMappedProperty")}",
             cancellationToken: TestContext.Current.CancellationToken
         );

@@ -171,7 +171,7 @@ public abstract class
 
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.Select(a => a.Id).ToList();
+        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
         InterpolatedSqlStatement statement =
             $"""
@@ -198,7 +198,7 @@ public abstract class
 
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.Select(a => a.Id).ToList();
+        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
         this.Connection.ExecuteNonQuery(
             $"""
@@ -409,7 +409,7 @@ public abstract class
 
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.Select(a => a.Id).ToList();
+        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
         InterpolatedSqlStatement statement =
             $"""
@@ -437,7 +437,7 @@ public abstract class
 
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.Select(a => a.Id).ToList();
+        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
         await this.Connection.ExecuteNonQueryAsync(
             $"""

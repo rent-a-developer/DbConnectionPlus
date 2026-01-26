@@ -1,6 +1,7 @@
+// ReSharper disable UnusedParameter.Local
+
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
-// ReSharper disable UnusedParameter.Local
 public class DbConnectionExtensions_TemporaryTableTests : UnitTestsBase
 {
     [Fact]
@@ -13,7 +14,9 @@ public class DbConnectionExtensions_TemporaryTableTests : UnitTestsBase
         var entityIds = Generate.Ids();
         static List<Int64> Get() => Generate.Ids();
         static List<Int64> GetEntityIds() => Generate.Ids();
+#pragma warning disable RCS1163 // Unused parameter
         static List<Int64> GetEntityIdsByCategory(String category) => Generate.Ids();
+#pragma warning restore RCS1163 // Unused parameter
 
         TemporaryTable(entityIds).Name
             .Should().StartWith("EntityIds_");

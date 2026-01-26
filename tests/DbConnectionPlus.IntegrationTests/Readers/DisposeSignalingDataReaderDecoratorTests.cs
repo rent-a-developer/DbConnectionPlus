@@ -80,7 +80,7 @@ public abstract class
         // meaning the cancellation won't be observed until after the delay.
         Assert.SkipWhen(this.TestDatabaseProvider is PostgreSqlTestDatabaseProvider, "");
 
-        using var command = this.Connection.CreateCommand();
+        await using var command = this.Connection.CreateCommand();
         command.CommandText = "SELECT 1; " + this.TestDatabaseProvider.DelayTwoSecondsStatement + " SELECT 1;";
 
         var cancellationTokenSource = new CancellationTokenSource();

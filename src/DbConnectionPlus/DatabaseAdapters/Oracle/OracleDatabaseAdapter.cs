@@ -246,10 +246,12 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <summary>
+    /// <para>
     /// Determines whether the temporary tables feature of DbConnectionPlus
     /// (<see cref="DbConnectionExtensions.TemporaryTable{T}" />) is allowed to be used with Oracle databases.
     /// Disabled by default.
-    /// 
+    /// </para>
+    /// <para>
     /// WARNING:
     /// Before enabling this feature, read the following note:
     /// When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
@@ -259,17 +261,17 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     /// the current transaction in an Oracle database.
     /// That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
     /// committed when the temporary table is created and again when it is dropped!
-    /// 
+    /// </para>
+    /// <para>
     /// Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
     /// explicit transactions or at least be aware of the implications.
     /// You have been warned!
+    /// </para>
     /// </summary>
     /// <remarks>
     /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
     /// </remarks>
-#pragma warning disable CA1805
-    public static Boolean AllowTemporaryTables { get; set; } = false;
-#pragma warning restore CA1805
+    public static Boolean AllowTemporaryTables { get; set; }
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException" /> indicating that the temporary tables feature of
@@ -278,10 +280,10 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     /// <exception cref="InvalidOperationException">Always thrown.</exception>
     internal static void ThrowTemporaryTablesFeatureIsDisabledException() =>
         throw new InvalidOperationException(
-            $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
+            "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
             $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} " +
-            $"to true, but be sure to read the documentation first, because enabling this feature has implications " +
-            $"for transaction management."
+            "to true, but be sure to read the documentation first, because enabling this feature has implications " +
+            "for transaction management."
         );
 
     private readonly OracleEntityManipulator entityManipulator;

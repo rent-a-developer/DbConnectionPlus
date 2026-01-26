@@ -32,7 +32,7 @@ public class DbConnectionExtensions_DeleteEntityTests : UnitTestsBase
     public async Task DeleteEntityAsync_ShouldCallEntityManipulator()
     {
         var entity = Generate.Single<Entity>();
-        using var transaction = await this.MockDbConnection.BeginTransactionAsync();
+        await using var transaction = await this.MockDbConnection.BeginTransactionAsync();
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 

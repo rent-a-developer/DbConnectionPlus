@@ -1,9 +1,9 @@
+// ReSharper disable ParameterHidesMember
+
 using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
-
-// ReSharper disable ParameterHidesMember
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 

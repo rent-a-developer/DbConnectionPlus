@@ -46,7 +46,7 @@ public abstract class
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly " +
-                    $"one character long."
+                    "one character long."
                 );
         }
 
@@ -64,7 +64,7 @@ public abstract class
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
-                $"one character long."
+                "one character long."
             );
     }
 
@@ -105,7 +105,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains the value '999*' (System.*), which " +
+                "The first column returned by the SQL statement contains the value '999*' (System.*), which " +
                 $"could not be converted to the type {typeof(TestEnum)}. See inner exception for details.*"
             );
 
@@ -119,9 +119,9 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains the value 'NonExistent' " +
+                "The first column returned by the SQL statement contains the value 'NonExistent' " +
                 $"({typeof(String)}), which could not be converted to the type {typeof(TestEnum)}. See inner " +
-                $"exception for details.*"
+                "exception for details.*"
             );
 
     [Fact]
@@ -158,7 +158,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains a NULL value, which could not be converted " +
+                "The first column returned by the SQL statement contains a NULL value, which could not be converted " +
                 $"to the type {typeof(Int32)}. See inner exception for details.*"
             );
 
@@ -269,14 +269,14 @@ public abstract class
                 )
                 .Should().Throw<InvalidCastException>()
                 .WithMessage(
-                    $"The column 'Char' returned by the SQL statement contains a value that could not be converted " +
+                    "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
                     $"to the type {typeof(Char)} of the corresponding property of the type " +
                     $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
                 )
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -288,14 +288,14 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(Char)} of the corresponding property of the type " +
                 $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -322,7 +322,7 @@ public abstract class
             )
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"The data type System.* of the column 'TimeSpanValue' returned by the SQL statement is not " +
+                "The data type System.* of the column 'TimeSpanValue' returned by the SQL statement is not " +
                 $"compatible with the property type {typeof(TimeSpan)} of the corresponding property of the type " +
                 $"{typeof(Entity)}.*"
             );
@@ -333,13 +333,13 @@ public abstract class
         InterpolatedSqlStatement statement = this.TestDatabaseProvider switch
         {
             SqlServerTestDatabaseProvider =>
-                $"SELECT 1",
+                "SELECT 1",
 
             PostgreSqlTestDatabaseProvider or OracleTestDatabaseProvider =>
-                $"SELECT 1 AS \" \"",
+                "SELECT 1 AS \" \"",
 
             _ =>
-                $"SELECT 1 AS ''"
+                "SELECT 1 AS ''"
         };
 
         Invoking(() =>
@@ -416,13 +416,13 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(TestEnum)} of the corresponding property of the type " +
                 $"{typeof(EntityWithEnumStoredAsInteger)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
-                $"Could not convert the value '999*' (System.*) to an enum member of the type " +
+                "Could not convert the value '999*' (System.*) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
@@ -435,14 +435,14 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding property of the type " +
                 $"{typeof(EntityWithEnumStoredAsString)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
 
     [Fact]
@@ -479,10 +479,10 @@ public abstract class
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"Could not materialize an instance of the type {typeof(EntityWithPublicConstructor)}. The type " +
-                $"either needs to have a parameterless constructor or a constructor whose parameters match the " +
-                $"columns returned by the SQL statement, e.g. a constructor that has the following " +
+                "either needs to have a parameterless constructor or a constructor whose parameters match the " +
+                "columns returned by the SQL statement, e.g. a constructor that has the following " +
                 $"signature:{Environment.NewLine}" +
-                $"(* NonExistent).*"
+                "(* NonExistent).*"
             );
 
     [Fact]
@@ -526,9 +526,9 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a " +
+                "The column 'Value' returned by the SQL statement contains a " +
                 $"NULL value, but the corresponding property of the type {typeof(EntityWithNonNullableProperty)} " +
-                $"is non-nullable.*"
+                "is non-nullable.*"
             );
     }
 
@@ -720,14 +720,14 @@ public abstract class
                 )
                 .Should().Throw<InvalidCastException>()
                 .WithMessage(
-                    $"The column 'Value' returned by the SQL statement contains a value that could not be converted " +
+                    "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
                     $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
                     $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
                 )
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -739,14 +739,14 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -773,7 +773,7 @@ public abstract class
             )
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"The data type System.* of the column 'Value' returned by the SQL statement is not compatible with " +
+                "The data type System.* of the column 'Value' returned by the SQL statement is not compatible with " +
                 $"the field type {typeof(TimeSpan)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TimeSpan>)}.*"
             );
@@ -788,13 +788,13 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999*' (System.*) to an enum member of the type " +
+                "Could not convert the value '999*' (System.*) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
@@ -808,14 +808,14 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
 
     [Fact]
@@ -857,7 +857,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
+                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
                 $"field of the value tuple type {typeof(ValueTuple<Int32>)} is non-nullable.*"
             );
     }
@@ -887,8 +887,8 @@ public abstract class
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The SQL statement returned 1 column, but the value tuple type {typeof((Int32, Int32))} has 2 " +
-                $"fields. Make sure that the SQL statement returns the same number of columns as the number of " +
-                $"fields in the value tuple type.*"
+                "fields. Make sure that the SQL statement returns the same number of columns as the number of " +
+                "fields in the value tuple type.*"
             );
 
     [Fact]
@@ -958,7 +958,7 @@ public abstract class
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly " +
-                    $"one character long."
+                    "one character long."
                 );
         }
 
@@ -976,7 +976,7 @@ public abstract class
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
-                $"one character long."
+                "one character long."
             );
     }
 
@@ -1017,7 +1017,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains the value '999*' (System.*), which " +
+                "The first column returned by the SQL statement contains the value '999*' (System.*), which " +
                 $"could not be converted to the type {typeof(TestEnum)}. See inner exception for details.*"
             );
 
@@ -1031,9 +1031,9 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains the value 'NonExistent' " +
+                "The first column returned by the SQL statement contains the value 'NonExistent' " +
                 $"({typeof(String)}), which could not be converted to the type {typeof(TestEnum)}. See inner " +
-                $"exception for details.*"
+                "exception for details.*"
             );
 
     [Fact]
@@ -1070,7 +1070,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column returned by the SQL statement contains a NULL value, which could not be converted " +
+                "The first column returned by the SQL statement contains a NULL value, which could not be converted " +
                 $"to the type {typeof(Int32)}. See inner exception for details.*"
             );
 
@@ -1183,14 +1183,14 @@ public abstract class
                 )
                 .Should().ThrowAsync<InvalidCastException>()
                 .WithMessage(
-                    $"The column 'Char' returned by the SQL statement contains a value that could not be converted " +
+                    "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
                     $"to the type {typeof(Char)} of the corresponding property of the type " +
                     $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
                 )
                 .WithInnerException(typeof(InvalidCastException))
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -1202,14 +1202,14 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Char' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(Char)} of the corresponding property of the type " +
                 $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -1236,7 +1236,7 @@ public abstract class
             )
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
-                $"The data type System.* of the column 'TimeSpanValue' returned by the SQL statement is not " +
+                "The data type System.* of the column 'TimeSpanValue' returned by the SQL statement is not " +
                 $"compatible with the property type {typeof(TimeSpan)} of the corresponding property of the type " +
                 $"{typeof(Entity)}.*"
             );
@@ -1247,13 +1247,13 @@ public abstract class
         InterpolatedSqlStatement statement = this.TestDatabaseProvider switch
         {
             SqlServerTestDatabaseProvider =>
-                $"SELECT 1",
+                "SELECT 1",
 
             PostgreSqlTestDatabaseProvider or OracleTestDatabaseProvider =>
-                $"SELECT 1 AS \" \"",
+                "SELECT 1 AS \" \"",
 
             _ =>
-                $"SELECT 1 AS ''"
+                "SELECT 1 AS ''"
         };
 
         await Invoking(() =>
@@ -1333,13 +1333,13 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding property of the type " +
                 $"{typeof(EntityWithEnumStoredAsInteger)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
-                $"Could not convert the value '999*' (System.*) to an enum member of the type " +
+                "Could not convert the value '999*' (System.*) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
@@ -1353,14 +1353,14 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding property of the type " +
                 $"{typeof(EntityWithEnumStoredAsString)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
 
     [Fact]
@@ -1397,10 +1397,10 @@ public abstract class
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
                 $"Could not materialize an instance of the type {typeof(EntityWithPublicConstructor)}. The type " +
-                $"either needs to have a parameterless constructor or a constructor whose parameters match the " +
-                $"columns returned by the SQL statement, e.g. a constructor that has the following " +
+                "either needs to have a parameterless constructor or a constructor whose parameters match the " +
+                "columns returned by the SQL statement, e.g. a constructor that has the following " +
                 $"signature:{Environment.NewLine}" +
-                $"(* NonExistent).*"
+                "(* NonExistent).*"
             );
 
     [Fact]
@@ -1444,7 +1444,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
+                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
                 $"property of the type {typeof(EntityWithNonNullableProperty)} is non-nullable.*"
             );
     }
@@ -1589,7 +1589,7 @@ public abstract class
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = this.CreateEntitiesInDb<Entity>(2);
-        var entityIds = entities.Select(a => a.Id).ToList();
+        var entityIds = entities.ConvertAll(a => a.Id);
 
         (await this.Connection.QueryFirstOrDefaultAsync<Entity>(
                 $"""
@@ -1642,14 +1642,14 @@ public abstract class
                 )
                 .Should().ThrowAsync<InvalidCastException>()
                 .WithMessage(
-                    $"The column 'Value' returned by the SQL statement contains a value that could not be converted " +
+                    "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
                     $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
                     $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
                 )
                 .WithInnerException(typeof(InvalidCastException))
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -1661,14 +1661,14 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -1696,7 +1696,7 @@ public abstract class
             )
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
-                $"The data type System.* of the column 'Value' returned by the SQL statement is not compatible with " +
+                "The data type System.* of the column 'Value' returned by the SQL statement is not compatible with " +
                 $"the field type {typeof(TimeSpan)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TimeSpan>)}.*"
             );
@@ -1712,13 +1712,13 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
-                $"Could not convert the value '999*' (System.*) to an enum member of the type " +
+                "Could not convert the value '999*' (System.*) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
@@ -1732,14 +1732,14 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
+                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
                 $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
 
     [Fact]
@@ -1781,7 +1781,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
+                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
                 $"field of the value tuple type {typeof(ValueTuple<Int32>)} is non-nullable.*"
             );
     }
@@ -1813,8 +1813,8 @@ public abstract class
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
                 $"The SQL statement returned 1 column, but the value tuple type {typeof((Int32, Int32))} has 2 " +
-                $"fields. Make sure that the SQL statement returns the same number of columns as the number of " +
-                $"fields in the value tuple type.*"
+                "fields. Make sure that the SQL statement returns the same number of columns as the number of " +
+                "fields in the value tuple type.*"
             );
 
     [Fact]

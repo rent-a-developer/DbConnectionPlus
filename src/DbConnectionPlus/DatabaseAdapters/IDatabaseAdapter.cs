@@ -19,10 +19,13 @@ public interface IDatabaseAdapter
     public ITemporaryTableBuilder TemporaryTableBuilder { get; }
 
     /// <summary>
-    /// Binds the <paramref name="value" /> to <paramref name="parameter" />.
-    /// 
+    /// <para>
+    /// Binds <paramref name="value" /> to <paramref name="parameter" />.
+    /// </para>
+    /// <para>
     /// If <paramref name="value" /> is an <see cref="Enum" /> value, it is serialized according to the setting
     /// <see cref="DbConnectionExtensions.EnumSerializationMode" /> before being assigned to the parameter.
+    /// </para>
     /// </summary>
     /// <param name="parameter">The parameter to bind <paramref name="value" /> to.</param>
     /// <param name="value">The value to bind to <paramref name="parameter" />.</param>
@@ -94,12 +97,15 @@ public interface IDatabaseAdapter
     /// <see langword="true" /> if the database system supports temporary tables; otherwise, <see langword="false" />.
     /// </returns>
     /// <remarks>
+    /// <para>
     /// A database adapter returning <see langword="true" /> for this method must implement an
     /// <see cref="ITemporaryTableBuilder" /> and provide an instance of it via the <see cref="TemporaryTableBuilder" />
     /// property.
-    /// 
+    /// </para>
+    /// <para>
     /// If a database adapter returns <see langword="false" /> for this method, it must throw a
     /// <see cref="NotSupportedException" /> from the <see cref="TemporaryTableBuilder" /> property.
+    /// </para>
     /// </remarks>
     public Boolean SupportsTemporaryTables(DbConnection connection);
 

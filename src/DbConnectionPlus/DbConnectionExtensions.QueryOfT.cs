@@ -558,7 +558,7 @@ public static partial class DbConnectionExtensions
         catch (Exception exception) when (value is DBNull)
         {
             throw new InvalidCastException(
-                $"The first column returned by the SQL statement contains a NULL value, which could not be converted " +
+                "The first column returned by the SQL statement contains a NULL value, which could not be converted " +
                 $"to the type {typeof(TTarget)}. See inner exception for details.",
                 exception
             );

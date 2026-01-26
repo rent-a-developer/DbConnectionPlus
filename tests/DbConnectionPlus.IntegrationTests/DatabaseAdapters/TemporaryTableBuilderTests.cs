@@ -605,7 +605,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         var entities = Generate.Multiple<EntityWithNotMappedProperty>();
         entities.ForEach(a => a.NotMappedValue = "ShouldNotBePersisted");
 
-        using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
             null,
             "Objects",

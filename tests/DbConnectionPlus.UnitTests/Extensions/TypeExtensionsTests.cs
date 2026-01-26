@@ -1,7 +1,7 @@
-﻿using RentADeveloper.DbConnectionPlus.Extensions;
-using TypeExtensions = RentADeveloper.DbConnectionPlus.Extensions.TypeExtensions;
+﻿// ReSharper disable InvokeAsExtensionMethod
 
-// ReSharper disable InvokeAsExtensionMethod
+using RentADeveloper.DbConnectionPlus.Extensions;
+using TypeExtensions = RentADeveloper.DbConnectionPlus.Extensions.TypeExtensions;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Extensions;
 

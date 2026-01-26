@@ -1,14 +1,12 @@
-﻿using System.Globalization;
+﻿#pragma warning disable NS1004
+
+using System.Globalization;
 using NSubstitute.DbConnection;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Extensions;
-
-#pragma warning disable IDE0002
-#pragma warning disable NS1000
-#pragma warning disable NS1004
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
 

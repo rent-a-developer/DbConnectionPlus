@@ -17,8 +17,10 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// Initializes a new instance of the <see cref="MySqlEntityManipulator" /> class.
     /// </summary>
     /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+#pragma warning disable IDE0290 // Use primary constructor
     public MySqlEntityManipulator(MySqlDatabaseAdapter databaseAdapter) =>
         this.databaseAdapter = databaseAdapter;
+#pragma warning restore IDE0290 // Use primary constructor
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
@@ -789,8 +791,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
             foreach (var keyProperty in entityTypeMetadata.KeyProperties)
             {
-                var keyValue = keyProperty.PropertyGetter!(entity);
-                keysRow[keyProperty.PropertyName] = keyValue;
+                keysRow[keyProperty.PropertyName] = keyProperty.PropertyGetter!(entity);
             }
 
             keysTable.Rows.Add(keysRow);
@@ -854,8 +855,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
             foreach (var keyProperty in entityTypeMetadata.KeyProperties)
             {
-                var keyValue = keyProperty.PropertyGetter!(entity);
-                keysRow[keyProperty.PropertyName] = keyValue;
+                keysRow[keyProperty.PropertyName] = keyProperty.PropertyGetter!(entity);
             }
 
             keysTable.Rows.Add(keysRow);
@@ -1383,25 +1383,22 @@ internal class MySqlEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0 && reader.Read())
         {
-            if (reader.Read())
+            cancellationToken.ThrowIfCancellationRequested();
+
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
 
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }
@@ -1422,23 +1419,23 @@ internal class MySqlEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (
+            entityTypeMetadata.IdentityAndComputedProperties.Count > 0 &&
+            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+        )
         {
-            if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }

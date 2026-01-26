@@ -1,10 +1,10 @@
-﻿using System.Reflection;
+﻿#pragma warning disable IDE0200
+
+using System.Reflection;
 using AutoFixture;
 using AutoFixture.Kernel;
 using Bogus;
 using RentADeveloper.DbConnectionPlus.Entities;
-
-#pragma warning disable IDE0200
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Entities;
 

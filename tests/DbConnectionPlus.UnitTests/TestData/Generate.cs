@@ -1,11 +1,11 @@
-﻿using AutoFixture;
+﻿// ReSharper disable ConvertToLambdaExpression
+// ReSharper disable RedundantTypeArgumentsOfMethod
+#pragma warning disable IDE0053
+
+using AutoFixture;
 using Bogus;
 using Mapster;
 using RentADeveloper.DbConnectionPlus.Entities;
-
-// ReSharper disable ConvertToLambdaExpression
-// ReSharper disable RedundantTypeArgumentsOfMethod
-#pragma warning disable IDE0053
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
@@ -129,6 +129,7 @@ public static class Generate
     /// <summary>
     /// Maps <paramref name="objects" /> to a list of <typeparamref name="TTarget" /> objects containing the same data.
     /// </summary>
+    /// <typeparam name="TTarget">The type of objects to map <paramref name="objects" /> to.</typeparam>
     /// <param name="objects">The objects to map.</param>
     /// <returns>
     /// A list of <typeparamref name="TTarget" /> objects containing the same data as <paramref name="objects" />.
@@ -139,6 +140,7 @@ public static class Generate
     /// <summary>
     /// Maps <paramref name="obj" /> to an instance of <typeparamref name="TTarget" /> containing the same data.
     /// </summary>
+    /// <typeparam name="TTarget">The type of object to map <paramref name="obj"/> to.</typeparam>
     /// <param name="obj">The object to map.</param>
     /// <returns>
     /// An instance of <typeparamref name="TTarget" /> containing the same data as <paramref name="obj" />.
@@ -174,12 +176,12 @@ public static class Generate
     /// A list of random values of the type <typeparamref name="T" /> and <see langword="null" /> values.
     /// The list is guaranteed to have at least 50% of its values set to <see langword="null" />.
     /// </returns>
-    public static List<Nullable<T>> MultipleNullable<T>(Int32? numberOfValues = null)
+    public static List<T?> MultipleNullable<T>(Int32? numberOfValues = null)
         where T : struct
     {
         fixture.RepeatCount = numberOfValues ?? SmallNumber();
 
-        var result = fixture.Create<List<Nullable<T>>>();
+        var result = fixture.Create<List<T?>>();
 
         var nullsToSet = Math.Ceiling(result.Count / 2D);
 
@@ -245,6 +247,7 @@ public static class Generate
     /// Creates a copy of <paramref name="entity" /> where all properties except the key property / properties have new
     /// values.
     /// </summary>
+    /// <typeparam name="T">The type of entity to create an updated copy of.</typeparam>
     /// <param name="entity">The entity for which to create an updated copy.</param>
     /// <returns>
     /// A copy of <paramref name="entity" /> where all properties except the key property / properties have new values.
@@ -269,6 +272,7 @@ public static class Generate
     /// Creates a list with copies of <paramref name="entities" /> where all properties except the key property /
     /// properties have new values.
     /// </summary>
+    /// <typeparam name="T">The type of entities to create updated copies of.</typeparam>
     /// <param name="entities">The entities for which to create updated copies.</param>
     /// <returns>
     /// A list with copies of <paramref name="entities" /> where all properties except the key property / properties
@@ -293,8 +297,11 @@ public static class Generate
         }
     }
 
-    // We only use alphabetic characters for Char generation to avoid issues with databases that do not support
-    // certain characters.
+    /// <summary>
+    /// The characters used for Char generation.
+    /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
+    /// certain characters.
+    /// </summary>
     private static readonly Char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
 
     private static readonly Faker faker;

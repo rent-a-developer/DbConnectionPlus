@@ -49,31 +49,31 @@ internal static class EntityMaterializerFactory
     ///     </list>
     /// </exception>
     /// <remarks>
-    /// The type <typeparamref name="TEntity" /> must either:
-    /// 
+    /// <para>The type <typeparamref name="TEntity" /> must either:</para>
+    /// <para>
     /// 1. Have a constructor whose parameters match the fields in <paramref name="dataReader" />.
     ///    The names of the parameters must match the names of the fields (case-insensitive).
     ///    The types of the parameters must be compatible with the types of the fields.
     ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     ///    The parameters can be in any order.
-    /// 
-    /// Or
-    /// 
+    /// </para>
+    /// <para>Or</para>
+    /// <para>
     /// 2. Have a parameterless constructor and instance properties (with public setters) that match the fields in
     /// <paramref name="dataReader" />.
-    /// 
-    ///    The names of the properties must match the names of the fields (case-insensitive).
-    /// 
+    /// </para>
+    /// <para>   The names of the properties must match the names of the fields (case-insensitive).</para>
+    /// <para>
     ///    The types of the properties must be compatible with the types of the fields.
     ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    ///
-    ///    Fields without a matching property will be ignored.
-    /// 
-    /// If neither condition is satisfied, an <see cref="ArgumentException" /> will be thrown.
-    /// 
+    /// </para>
+    /// <para>   Fields without a matching property will be ignored.</para>
+    /// <para>If neither condition is satisfied, an <see cref="ArgumentException" /> will be thrown.</para>
+    /// <para>
     /// If a constructor parameter or a property cannot be set to the value of the corresponding field of
     /// <paramref name="dataReader" /> (for example, due to a type mismatch), the returned function throws an
     /// <see cref="InvalidCastException" />.
+    /// </para>
     /// </remarks>
     internal static Func<DbDataReader, TEntity> GetMaterializer<TEntity>(DbDataReader dataReader)
     {
@@ -122,29 +122,30 @@ internal static class EntityMaterializerFactory
     /// <paramref name="entityType" />.
     /// </returns>
     /// <remarks>
-    /// The type <paramref name="entityType" /> must either:
-    /// 
+    /// <para>The type <paramref name="entityType" /> must either:</para>
+    /// <para>
     /// 1. Have a constructor whose parameters match the fields in <paramref name="dataReader" />.
     ///    The names of the parameters must match the names of the fields (case-insensitive).
     ///    The types of the parameters must be compatible with the types of the fields.
     ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     ///    The parameters can be in any order.
-    /// 
-    /// Or
-    /// 
+    /// </para>
+    /// <para>Or</para>
+    /// <para>
     /// 2. Have a parameterless constructor and instance properties (with public setters) that match the fields in
     /// <paramref name="dataReader" />.
-    /// 
-    ///    The names of the properties must match the names of the fields (case-insensitive).
-    /// 
+    /// </para>
+    /// <para>   The names of the properties must match the names of the fields (case-insensitive).</para>
+    /// <para>
     ///    The types of the properties must be compatible with the types of the fields.
     ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    ///    Fields without a matching property will be ignored.
-    /// 
+    /// </para>
+    /// <para>   Fields without a matching property will be ignored.</para>
+    /// <para>
     /// If a constructor parameter or a property cannot be set to the value of the corresponding field of
     /// <paramref name="dataReader" /> (for example, due to a type mismatch), the returned function throws an
     /// <see cref="InvalidCastException" />.
+    /// </para>
     /// </remarks>
     private static Delegate CreateMaterializer(
         Type entityType,
@@ -288,7 +289,7 @@ internal static class EntityMaterializerFactory
                         Expression.Constant(
                             $"The column '{dataReaderFieldName}' returned by the SQL statement contains a " +
                             $"NULL value, but the corresponding property of the type {entityType} is " +
-                            $"non-nullable."
+                            "non-nullable."
                         )
                     ),
                     targetType
@@ -303,7 +304,7 @@ internal static class EntityMaterializerFactory
                         $"The column '{dataReaderFieldName}' returned by the SQL statement " +
                         $"contains a value that could not be converted to the type {targetType} " +
                         $"of the corresponding property of the type {entityType}. See inner " +
-                        $"exception for details."
+                        "exception for details."
                     ),
                     exceptionParameterExpression
                 ),
@@ -446,7 +447,7 @@ internal static class EntityMaterializerFactory
             {
                 throw new ArgumentException(
                     $"The {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the SQL statement does not " +
-                    $"have a name. Make sure that all columns the statement returns have a name.",
+                    "have a name. Make sure that all columns the statement returns have a name.",
                     nameof(dataReader)
                 );
             }
@@ -455,7 +456,7 @@ internal static class EntityMaterializerFactory
             {
                 throw new ArgumentException(
                     $"The data type {dataReaderFieldType} of the column '{dataReaderFieldName}' returned by the " +
-                    $"SQL statement is not supported.",
+                    "SQL statement is not supported.",
                     nameof(dataReader)
                 );
             }
@@ -487,7 +488,7 @@ internal static class EntityMaterializerFactory
 
             throw new ArgumentException(
                 $"Could not materialize an instance of the type {entityType}. The type either needs to have a " +
-                $"parameterless constructor or a constructor whose parameters match the columns returned by the SQL " +
+                "parameterless constructor or a constructor whose parameters match the columns returned by the SQL " +
                 $"statement, e.g. a constructor that has the following signature:{Environment.NewLine}" +
                 $"{exampleConstructorSignature}.",
                 nameof(entityType)

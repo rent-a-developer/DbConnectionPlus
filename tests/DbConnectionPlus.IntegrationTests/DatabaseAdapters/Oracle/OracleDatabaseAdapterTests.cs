@@ -1,7 +1,7 @@
-﻿using Oracle.ManagedDataAccess.Client;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+﻿// ReSharper disable AccessToDisposedClosure
 
-// ReSharper disable AccessToDisposedClosure
+using Oracle.ManagedDataAccess.Client;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.Oracle;
 

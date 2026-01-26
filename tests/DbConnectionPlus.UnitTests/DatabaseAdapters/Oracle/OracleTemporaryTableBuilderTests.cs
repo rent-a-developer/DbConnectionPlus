@@ -13,10 +13,10 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
             )
             .Should().Throw<InvalidOperationException>()
             .WithMessage(
-                $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
+                "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
                 $"To enable it set {typeof(OracleDatabaseAdapter)}.AllowTemporaryTables to true, but be sure to " +
-                $"read the documentation first, because enabling this feature has implications for transaction " +
-                $"management."
+                "read the documentation first, because enabling this feature has implications for transaction " +
+                "management."
             );
     }
 
@@ -49,10 +49,10 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
             )
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage(
-                $"The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
+                "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
                 $"To enable it set {typeof(OracleDatabaseAdapter)}.AllowTemporaryTables to true, but be sure to " +
-                $"read the documentation first, because enabling this feature has implications for transaction " +
-                $"management."
+                "read the documentation first, because enabling this feature has implications for transaction " +
+                "management."
             );
     }
 

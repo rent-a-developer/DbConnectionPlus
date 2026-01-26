@@ -846,10 +846,12 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
             .Select(p => this.databaseAdapter.GetDbType(p.PropertyType, DbConnectionExtensions.EnumSerializationMode))
             .ToArray();
 
-        using var importer = await connection.BeginBinaryImportAsync(
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var importer = await connection.BeginBinaryImportAsync(
             $"COPY \"{keysTableName}\" FROM STDIN (FORMAT BINARY)",
             cancellationToken
         ).ConfigureAwait(false);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
         foreach (var entity in entities)
         {
@@ -1317,25 +1319,22 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0 && reader.Read())
         {
-            if (reader.Read())
+            cancellationToken.ThrowIfCancellationRequested();
+
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
 
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }
@@ -1356,23 +1355,23 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (
+            entityTypeMetadata.IdentityAndComputedProperties.Count > 0 &&
+            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+        )
         {
-            if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }

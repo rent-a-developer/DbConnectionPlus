@@ -1,8 +1,8 @@
-﻿using RentADeveloper.DbConnectionPlus.SqlStatements;
-using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
-
-// ReSharper disable UnusedParameter.Local
+﻿// ReSharper disable UnusedParameter.Local
 #pragma warning disable NS1001
+
+using RentADeveloper.DbConnectionPlus.SqlStatements;
+using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DbCommands;
 
@@ -240,7 +240,9 @@ public class DbCommandBuilderTests : UnitTestsBase
     {
         var productId = Generate.Id();
         static Int64 GetProductId() => Generate.Id();
+#pragma warning disable RCS1163 // Unused parameter
         static Int64 GetProductIdByCategory(String category) => Generate.Id();
+#pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
 
         var (command, _) = DbCommandBuilder.BuildDbCommand(
@@ -369,13 +371,13 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Throw<NotSupportedException>()
             .WithMessage(
                 $"The database adapter {this.MockDatabaseAdapter.GetType()} does not support " +
-                $"(local / session-scoped) temporary tables. Therefore the temporary tables feature of " +
-                $"DbConnectionPlus can not be used with this database."
+                "(local / session-scoped) temporary tables. Therefore the temporary tables feature of " +
+                "DbConnectionPlus can not be used with this database."
             );
 
         // No temporary table used - should not throw.
         Invoking(() => DbCommandBuilder.BuildDbCommand(
-                    $"SELECT 1",
+                    "SELECT 1",
                     this.MockDatabaseAdapter,
                     this.MockDbConnection
                 )
@@ -389,7 +391,9 @@ public class DbCommandBuilderTests : UnitTestsBase
         var entityIds = Generate.Ids();
         static List<Int64> Get() => Generate.Ids();
         static List<Int64> GetEntityIds() => Generate.Ids();
+#pragma warning disable RCS1163 // Unused parameter
         static List<Int64> GetEntityIdsByCategory(String category) => Generate.Ids();
+#pragma warning restore RCS1163 // Unused parameter
 
         InterpolatedSqlStatement statement =
             $"""
@@ -611,7 +615,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public void BuildDbCommand_ShouldStoreLiteral()
     {
         var (command, _) = DbCommandBuilder.BuildDbCommand(
-            $"SELECT 1",
+            "SELECT 1",
             this.MockDatabaseAdapter,
             this.MockDbConnection
         );
@@ -626,7 +630,7 @@ public class DbCommandBuilderTests : UnitTestsBase
         using var transaction = this.MockDbConnection.BeginTransaction();
 
         var (command, _) = DbCommandBuilder.BuildDbCommand(
-            $"SELECT 1",
+            "SELECT 1",
             this.MockDatabaseAdapter,
             this.MockDbConnection,
             transaction
@@ -823,7 +827,9 @@ public class DbCommandBuilderTests : UnitTestsBase
     {
         var productId = Generate.Id();
         static Int64 GetProductId() => Generate.Id();
+#pragma warning disable RCS1163 // Unused parameter
         static Int64 GetProductIdByCategory(String category) => Generate.Id();
+#pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
 
         var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
@@ -953,14 +959,14 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().ThrowAsync<NotSupportedException>()
             .WithMessage(
                 $"The database adapter {this.MockDatabaseAdapter.GetType()} does not support " +
-                $"(local / session-scoped) temporary tables. Therefore the temporary tables feature of " +
-                $"DbConnectionPlus can not be used with this database."
+                "(local / session-scoped) temporary tables. Therefore the temporary tables feature of " +
+                "DbConnectionPlus can not be used with this database."
             );
 
 
         // No temporary table used - should not throw.
         await Invoking(() => DbCommandBuilder.BuildDbCommandAsync(
-                    $"SELECT 1",
+                    "SELECT 1",
                     this.MockDatabaseAdapter,
                     this.MockDbConnection
                 )
@@ -975,7 +981,9 @@ public class DbCommandBuilderTests : UnitTestsBase
         var entityIds = Generate.Ids();
         static List<Int64> Get() => Generate.Ids();
         static List<Int64> GetEntityIds() => Generate.Ids();
+#pragma warning disable RCS1163 // Unused parameter
         static List<Int64> GetEntityIdsByCategory(String category) => Generate.Ids();
+#pragma warning restore RCS1163 // Unused parameter
 
         InterpolatedSqlStatement statement =
             $"""
@@ -1215,7 +1223,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public async Task BuildDbCommandAsync_ShouldStoreLiteral()
     {
         var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
-            $"SELECT 1",
+            "SELECT 1",
             this.MockDatabaseAdapter,
             this.MockDbConnection
         );
@@ -1230,7 +1238,7 @@ public class DbCommandBuilderTests : UnitTestsBase
         await using var transaction = await this.MockDbConnection.BeginTransactionAsync();
 
         var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
-            $"SELECT 1",
+            "SELECT 1",
             this.MockDatabaseAdapter,
             this.MockDbConnection,
             transaction

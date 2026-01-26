@@ -1,9 +1,10 @@
-﻿using RentADeveloper.DbConnectionPlus.Readers;
+﻿// ReSharper disable PossibleMultipleEnumeration
+// ReSharper disable GenericEnumeratorNotDisposed
+
+using RentADeveloper.DbConnectionPlus.Readers;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
-// ReSharper disable PossibleMultipleEnumeration
-// ReSharper disable GenericEnumeratorNotDisposed
 public class EnumerableReaderTests : UnitTestsBase
 {
     /// <inheritdoc />

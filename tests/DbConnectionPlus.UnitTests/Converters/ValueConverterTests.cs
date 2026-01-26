@@ -1,13 +1,13 @@
-﻿using System.Globalization;
+﻿// ReSharper disable SpecifyACultureInStringConversionExplicitly
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+#pragma warning disable IDE0004
+
+using System.Globalization;
 using System.Reflection;
 using Bogus;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Materializers;
-
-// ReSharper disable SpecifyACultureInStringConversionExplicitly
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-#pragma warning disable IDE0004
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Converters;
 
@@ -134,28 +134,28 @@ public class ValueConverterTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<Char?>(String.Empty))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<Char>("ab"))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<Char?>("ab"))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly one " +
-                $"character long."
+                "character long."
             );
     }
 
@@ -198,14 +198,14 @@ public class ValueConverterTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>("NonExistent"))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
-                $"That string does not match any of the names of the enum's members.*"
+                "That string does not match any of the names of the enum's members.*"
             );
     }
 
@@ -216,14 +216,14 @@ public class ValueConverterTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
-                $"type is non-nullable.*"
+                "type is non-nullable.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<DateTime>(null))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
-                $"non-nullable.*"
+                "non-nullable.*"
             );
     }
 
@@ -249,7 +249,7 @@ public class ValueConverterTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the value 'NotADate' ({typeof(String)}) to the type {typeof(DateTime)}. See " +
-                $"inner exception for details.*"
+                "inner exception for details.*"
             )
             .WithInnerException<FormatException>()
             .WithMessage("The string 'NotADate' was not recognized as a valid DateTime.*");

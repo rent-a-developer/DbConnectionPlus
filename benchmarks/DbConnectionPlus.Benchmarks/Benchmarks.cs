@@ -1,4 +1,8 @@
-﻿using System.Dynamic;
+﻿// @formatter:off
+// ReSharper disable InconsistentNaming
+#pragma warning disable IDE0017, IDE0305
+
+using System.Dynamic;
 using BenchmarkDotNet.Attributes;
 using FastMember;
 using Microsoft.Data.SqlClient;
@@ -7,12 +11,6 @@ using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 using RentADeveloper.DbConnectionPlus.Readers;
 using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-
-// @formatter:off
-// ReSharper disable InconsistentNaming
-
-#pragma warning disable IDE0017
-#pragma warning disable IDE0305
 
 namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
@@ -84,9 +82,7 @@ public class Benchmarks
             idParameter.ParameterName = "@Id";
             command.Parameters.Add(idParameter);
 
-            var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
-
-            foreach (var entity in entities)
+            foreach (var entity in this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList())
             {
                 idParameter.Value = entity.Id;
 
@@ -115,7 +111,7 @@ public class Benchmarks
             }
         }
     }
-    #endregion
+    #endregion DeleteEntities
 
     #region DeleteEntity
     private const String DeleteEntity_Category = "DeleteEntity";
@@ -161,7 +157,7 @@ public class Benchmarks
             this.entitiesInDb.Remove(entityToDelete);
         }
     }
-    #endregion
+    #endregion DeleteEntity
 
     #region ExecuteNonQuery
     private const String ExecuteNonQuery_Category = "ExecuteNonQuery";
@@ -207,7 +203,7 @@ public class Benchmarks
             this.entitiesInDb.Remove(entity);
         }
     }
-    #endregion
+    #endregion ExecuteNonQuery
 
     #region ExecuteReader
     private const String ExecuteReader_Category = "ExecuteReader";
@@ -359,7 +355,7 @@ public class Benchmarks
 
         return entities;
     }
-    #endregion
+    #endregion ExecuteReader
 
     #region ExecuteScalar
     private const String ExecuteScalar_Category = "ExecuteScalar";
@@ -414,7 +410,7 @@ public class Benchmarks
 
         return result;
     }
-    #endregion
+    #endregion ExecuteScalar
 
     #region Exists
     private const String Exists_Category = "Exists";
@@ -468,7 +464,7 @@ public class Benchmarks
 
         return result;
     }
-    #endregion
+    #endregion Exists
 
     #region InsertEntities
     private const String InsertEntities_Category = "InsertEntities";
@@ -643,7 +639,7 @@ public class Benchmarks
             connection.InsertEntities(entitiesToInsert);
         }
     }
-    #endregion
+    #endregion InsertEntities
 
     #region InsertEntity
     private const String InsertEntity_Category = "InsertEntity";
@@ -744,7 +740,7 @@ public class Benchmarks
             connection.InsertEntity(entity);
         }
     }
-    #endregion
+    #endregion InsertEntity
 
     #region Parameter
     private const String Parameter_Category = "Parameter";
@@ -821,7 +817,7 @@ public class Benchmarks
 
         return result;
     }
-    #endregion
+    #endregion Parameter
 
     #region Query_Dynamic
     private const String Query_Dynamic_Category = "Query_Dynamic";
@@ -924,7 +920,7 @@ public class Benchmarks
 
         return entities;
     }
-    #endregion
+    #endregion Query_Dynamic
 
     #region Query_Scalars
     private const String Query_Scalars_Category = "Query_Scalars";
@@ -983,7 +979,7 @@ public class Benchmarks
 
         return data;
     }
-    #endregion
+    #endregion Query_Scalars
 
     #region Query_Entities
     private const String Query_Entities_Category = "Query_Entities";
@@ -1083,7 +1079,7 @@ public class Benchmarks
 
         return entities;
     }
-    #endregion
+    #endregion Query_Entities
 
     #region Query_ValueTuples
     private const String Query_ValueTuples_Category = "Query_ValueTuples";
@@ -1158,7 +1154,7 @@ public class Benchmarks
 
         return tuples;
     }
-    #endregion
+    #endregion Query_ValueTuples
 
     #region TemporaryTable_ComplexObjects
     private const String TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
@@ -1311,7 +1307,7 @@ public class Benchmarks
 
         return result;
     }
-    #endregion
+    #endregion TemporaryTable_ComplexObjects
 
     #region TemporaryTable_ScalarValues
     private const String TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
@@ -1400,7 +1396,7 @@ public class Benchmarks
 
         return result;
     }
-    #endregion
+    #endregion TemporaryTable_ScalarValues
 
     #region UpdateEntities
     private const String UpdateEntities_Category = "UpdateEntities";
@@ -1556,7 +1552,7 @@ public class Benchmarks
             connection.UpdateEntities(updatesEntities);
         }
     }
-    #endregion
+    #endregion UpdateEntities
 
     #region UpdateEntity
     private const String UpdateEntity_Category = "UpdateEntity";
@@ -1642,7 +1638,7 @@ public class Benchmarks
             connection.UpdateEntity(updatedEntity);
         }
     }
-    #endregion
+    #endregion UpdateEntity
 
     private readonly SqlServerTestDatabaseProvider testDatabaseProvider = new();
 }

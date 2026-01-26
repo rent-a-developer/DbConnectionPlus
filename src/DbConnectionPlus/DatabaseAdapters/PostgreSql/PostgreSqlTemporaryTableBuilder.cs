@@ -136,7 +136,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
@@ -145,9 +146,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -155,7 +157,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
@@ -164,16 +167,19 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
             await createCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning disable CA2007
+        await using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning restore CA2007
 
         await this.PopulateTemporaryTableAsync(npgsqlConnection, name, reader, cancellationToken)
             .ConfigureAwait(false);
@@ -328,9 +334,11 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         CancellationToken cancellationToken
     )
     {
-        using var importer = await connection
+#pragma warning disable CA2007
+        await using var importer = await connection
             .BeginBinaryImportAsync($"COPY \"{tableName}\" FROM STDIN (FORMAT BINARY)", cancellationToken)
             .ConfigureAwait(false);
+#pragma warning restore CA2007
 
         var npgsqlDbTypes = dataReader
             .GetFieldTypes()
@@ -423,11 +431,13 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         NpgsqlTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             $"DROP TABLE IF EXISTS \"{name}\"",
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

@@ -50,7 +50,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value 'A' ({typeof(String)}), which could not be converted to the type {typeof(Int32)}.*"
             );
 
@@ -62,7 +62,7 @@ public abstract class
         var entity = this.CreateEntityInDb<Entity>();
 
         this.Connection.ExecuteScalar<Int64>(
-                $"GetFirstEntityId",
+                "GetFirstEntityId",
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -219,14 +219,14 @@ public abstract class
                 )
                 .Should().Throw<InvalidCastException>()
                 .WithMessage(
-                    $"The first column of the first row in the result set returned by the SQL statement contains " +
+                    "The first column of the first row in the result set returned by the SQL statement contains " +
                     $"the value '' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. See " +
-                    $"inner exception for details.*"
+                    "inner exception for details.*"
                 )
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -238,14 +238,14 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value 'ab' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. See inner " +
-                $"exception for details.*"
+                "exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -283,7 +283,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value '999*' (System.*), which could not be converted to the type {typeof(TestEnum)}.*"
             );
 
@@ -297,7 +297,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value 'NonExistent' ({typeof(String)}), which could not be converted to the type " +
                 $"{typeof(TestEnum)}.*"
             );
@@ -324,7 +324,7 @@ public abstract class
             )
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains a NULL " +
+                "The first column of the first row in the result set returned by the SQL statement contains a NULL " +
                 $"value, which could not be converted to the type {typeof(Int32)}.*"
             );
 
@@ -389,7 +389,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value 'A' ({typeof(String)}), which could not be converted to the type {typeof(Int32)}.*"
             );
 
@@ -401,7 +401,7 @@ public abstract class
         var entity = this.CreateEntityInDb<Entity>();
 
         (await this.Connection.ExecuteScalarAsync<Int64>(
-                $"GetFirstEntityId",
+                "GetFirstEntityId",
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -563,14 +563,14 @@ public abstract class
                     )
                     .Should().ThrowAsync<InvalidCastException>()
                     .WithMessage(
-                        $"The first column of the first row in the result set returned by the SQL statement contains " +
+                        "The first column of the first row in the result set returned by the SQL statement contains " +
                         $"the value '' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. " +
-                        $"See inner exception for details.*"
+                        "See inner exception for details.*"
                     ))
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
                     $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    $"exactly one character long."
+                    "exactly one character long."
                 );
         }
 
@@ -582,14 +582,14 @@ public abstract class
                 )
                 .Should().ThrowAsync<InvalidCastException>()
                 .WithMessage(
-                    $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                    "The first column of the first row in the result set returned by the SQL statement contains the " +
                     $"value 'ab' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. See " +
-                    $"inner exception for details.*"
+                    "inner exception for details.*"
                 ))
             .WithInnerException<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                $"exactly one character long."
+                "exactly one character long."
             );
     }
 
@@ -628,7 +628,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value '999*' (System.*), which could not be converted to the type {typeof(TestEnum)}.*"
             );
 
@@ -642,7 +642,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains the " +
+                "The first column of the first row in the result set returned by the SQL statement contains the " +
                 $"value 'NonExistent' ({typeof(String)}), which could not be converted to the type " +
                 $"{typeof(TestEnum)}.*"
             );
@@ -669,7 +669,7 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                $"The first column of the first row in the result set returned by the SQL statement contains a NULL " +
+                "The first column of the first row in the result set returned by the SQL statement contains a NULL " +
                 $"value, which could not be converted to the type {typeof(Int32)}.*"
             );
 

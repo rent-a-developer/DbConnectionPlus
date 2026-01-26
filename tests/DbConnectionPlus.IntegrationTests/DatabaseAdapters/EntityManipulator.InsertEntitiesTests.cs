@@ -3,31 +3,31 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
 public sealed class
-    EntityManipulator_InsertEntities_Tests_MySql :
-    EntityManipulator_InsertEntities_Tests<MySqlTestDatabaseProvider>;
+    EntityManipulator_InsertEntitiesTests_MySql :
+    EntityManipulator_InsertEntitiesTests<MySqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_InsertEntities_Tests_Oracle :
-    EntityManipulator_InsertEntities_Tests<OracleTestDatabaseProvider>;
+    EntityManipulator_InsertEntitiesTests_Oracle :
+    EntityManipulator_InsertEntitiesTests<OracleTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_InsertEntities_Tests_PostgreSql :
-    EntityManipulator_InsertEntities_Tests<PostgreSqlTestDatabaseProvider>;
+    EntityManipulator_InsertEntitiesTests_PostgreSql :
+    EntityManipulator_InsertEntitiesTests<PostgreSqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_InsertEntities_Tests_Sqlite :
-    EntityManipulator_InsertEntities_Tests<SqliteTestDatabaseProvider>;
+    EntityManipulator_InsertEntitiesTests_Sqlite :
+    EntityManipulator_InsertEntitiesTests<SqliteTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_InsertEntities_Tests_SqlServer :
-    EntityManipulator_InsertEntities_Tests<SqlServerTestDatabaseProvider>;
+    EntityManipulator_InsertEntitiesTests_SqlServer :
+    EntityManipulator_InsertEntitiesTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_InsertEntities_Tests
+public abstract class EntityManipulator_InsertEntitiesTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_InsertEntities_Tests() =>
+    protected EntityManipulator_InsertEntitiesTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Fact]

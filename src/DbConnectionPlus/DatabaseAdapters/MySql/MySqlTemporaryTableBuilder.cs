@@ -150,7 +150,8 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
@@ -159,9 +160,12 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
+            await using var cancellationTokenRegistration =
+#pragma warning disable CA2007
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+#pragma warning restore CA2007
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -169,7 +173,8 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
@@ -178,16 +183,20 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken)
+                    .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
             await createCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning disable CA2007
+        await using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning restore CA2007
 
         var mySqlBulkCopy = new MySqlBulkCopy(mySqlConnection, mySqlTransaction)
         {
@@ -388,11 +397,13 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         MySqlTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             $"DROP TEMPORARY TABLE IF EXISTS `{name}`",
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

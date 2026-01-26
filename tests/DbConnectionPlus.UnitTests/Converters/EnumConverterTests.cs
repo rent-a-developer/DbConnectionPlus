@@ -9,7 +9,7 @@ public class EnumConverterTests : UnitTestsBase
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(String.Empty))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert an empty string or a string that consists only of white-space characters to an " +
+                "Could not convert an empty string or a string that consists only of white-space characters to an " +
                 $"enum member of the type {typeof(TestEnum)}."
             );
 
@@ -84,7 +84,7 @@ public class EnumConverterTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                $"That string does not match any of the names of the enum's members."
+                "That string does not match any of the names of the enum's members."
             );
 
     [Fact]
@@ -94,7 +94,7 @@ public class EnumConverterTests : UnitTestsBase
             .WithMessage(
                 $"Could not convert the value '{Guid.Empty}' ({typeof(Guid)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. The value must either be an enum value of that type or a string or a numeric " +
-                $"value."
+                "value."
             );
 
     [Fact]
@@ -104,7 +104,7 @@ public class EnumConverterTests : UnitTestsBase
             .WithMessage(
                 $"Could not convert the value 'Red' ({typeof(ConsoleColor)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. The value must either be an enum value of that type or a string or a numeric " +
-                $"value."
+                "value."
             );
 
     [Fact]
@@ -112,7 +112,7 @@ public class EnumConverterTests : UnitTestsBase
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>("   "))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert an empty string or a string that consists only of white-space characters to an " +
+                "Could not convert an empty string or a string that consists only of white-space characters to an " +
                 $"enum member of the type {typeof(TestEnum)}."
             );
 

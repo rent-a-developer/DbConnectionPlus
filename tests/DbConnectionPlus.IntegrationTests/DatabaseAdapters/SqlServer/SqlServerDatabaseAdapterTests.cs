@@ -1,6 +1,6 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
+﻿// ReSharper disable AccessToDisposedClosure
 
-// ReSharper disable AccessToDisposedClosure
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.SqlServer;
 

@@ -136,7 +136,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
@@ -145,9 +146,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -155,7 +157,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
@@ -164,16 +167,19 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
             await createCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning disable CA2007
+        await using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning restore CA2007
 
         await PopulateTemporaryTableAsync(sqliteConnection, sqliteTransaction, name, reader, cancellationToken)
             .ConfigureAwait(false);
@@ -298,12 +304,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             sqlBuilder.Append(fieldName);
             sqlBuilder.Append('"');
 
-            var parameter = new SqliteParameter
+            parameters[i] = new()
             {
                 ParameterName = "@" + fieldName
             };
-
-            parameters[i] = parameter;
         }
 
         sqlBuilder.AppendLine(")");
@@ -382,11 +386,13 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         SqliteTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             $"DROP TABLE IF EXISTS temp.\"{name}\"",
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

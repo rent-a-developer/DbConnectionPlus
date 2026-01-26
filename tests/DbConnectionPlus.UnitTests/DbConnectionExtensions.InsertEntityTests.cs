@@ -32,7 +32,7 @@ public class DbConnectionExtensions_InsertEntityTests : UnitTestsBase
     public async Task InsertEntityAsync_ShouldCallEntityManipulator()
     {
         var entity = Generate.Single<Entity>();
-        using var transaction = await this.MockDbConnection.BeginTransactionAsync();
+        await using var transaction = await this.MockDbConnection.BeginTransactionAsync();
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 

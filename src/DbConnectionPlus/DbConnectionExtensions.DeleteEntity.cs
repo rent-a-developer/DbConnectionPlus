@@ -38,12 +38,15 @@ public static partial class DbConnectionExtensions
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -116,12 +119,15 @@ public static partial class DbConnectionExtensions
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
     /// <see cref="KeyAttribute" />.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>

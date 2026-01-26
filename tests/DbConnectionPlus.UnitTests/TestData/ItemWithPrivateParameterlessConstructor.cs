@@ -1,6 +1,8 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+﻿// ReSharper disable ConvertToStaticClass
 
-public class ItemWithPrivateParameterlessConstructor
+namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+
+public sealed class ItemWithPrivateParameterlessConstructor
 {
     private ItemWithPrivateParameterlessConstructor()
     {

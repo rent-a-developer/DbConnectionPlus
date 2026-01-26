@@ -37,23 +37,27 @@ public static partial class DbConnectionExtensions
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -125,23 +129,27 @@ public static partial class DbConnectionExtensions
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
+    /// <para>
     /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
     /// applied to the type <typeparamref name="TEntity" />.
     /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
-    /// 
+    /// </para>
+    /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
-    /// 
+    /// </para>
+    /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
-    /// Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.
-    /// 
+    /// </para>
+    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
+    /// <para>
     /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
     /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
     /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>

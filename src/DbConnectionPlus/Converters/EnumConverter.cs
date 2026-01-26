@@ -144,7 +144,7 @@ internal static class EnumConverter
     [DoesNotReturn]
     private static void ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(Type enumType) =>
         throw new InvalidCastException(
-            $"Could not convert an empty string or a string that consists only of white-space characters to an enum " +
+            "Could not convert an empty string or a string that consists only of white-space characters to an enum " +
             $"member of the type {enumType}."
         );
 
@@ -161,7 +161,7 @@ internal static class EnumConverter
         ThrowCouldNotConvertNumericValueToEnumType(Object value, Type enumType) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}. That " +
-            $"value does not match any of the values of the enum's members."
+            "value does not match any of the values of the enum's members."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -172,7 +172,7 @@ internal static class EnumConverter
     ) =>
         throw new InvalidCastException(
             $"Could not convert the string '{value}' to an enum member of the type {enumType}. That string does " +
-            $"not match any of the names of the enum's members."
+            "not match any of the names of the enum's members."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -192,6 +192,6 @@ internal static class EnumConverter
     ) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to an enum member of the type {originalEnumType}. " +
-            $"The value must either be an enum value of that type or a string or a numeric value."
+            "The value must either be an enum value of that type or a string or a numeric value."
         );
 }

@@ -3,14 +3,14 @@
 
 using System.Dynamic;
 
-#pragma warning disable CA1710
-
 namespace RentADeveloper.DbConnectionPlus.Dynamic;
 
 /// <summary>
 /// The data of a single row returned by an SQL query.
 /// </summary>
+#pragma warning disable CA1710
 public class DataRow : DynamicObject, IDictionary<String, Object?>
+#pragma warning restore CA1710
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DataRow" /> class.

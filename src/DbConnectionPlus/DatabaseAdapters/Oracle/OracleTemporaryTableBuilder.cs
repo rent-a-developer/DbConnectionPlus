@@ -158,7 +158,8 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     quotedTableName,
@@ -169,9 +170,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -179,7 +181,8 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
                 connection,
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     quotedTableName,
@@ -188,9 +191,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                 ),
                 transaction
             );
+#pragma warning restore CA2007
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            await using var cancellationTokenRegistration =
+                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -198,7 +202,9 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         }
 
         // ReSharper disable once PossibleMultipleEnumeration
-        using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning disable CA2007
+        await using var reader = CreateValuesDataReader(values, valuesType);
+#pragma warning restore CA2007
 
         await this.PopulateTemporaryTableAsync(
                 oracleConnection,
@@ -454,12 +460,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             sqlBuilder.Append(fieldName);
             sqlBuilder.Append('"');
 
-            var parameter = new OracleParameter
+            parameters[i] = new()
             {
                 ParameterName = fieldName
             };
-
-            parameters[i] = parameter;
         }
 
         sqlBuilder.AppendLine(")");
@@ -543,11 +547,13 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
+#pragma warning disable CA2007
+        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
             connection,
             $"DROP TABLE {quotedTableName}",
             transaction
         );
+#pragma warning restore CA2007
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

@@ -48,9 +48,8 @@ public static class EntityHelper
 
         var constructors = type
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .OrderBy(c => c.IsPublic ? 0 :
-                c.IsPrivate ? 2 : 1
-            )
+            .OrderByDescending(c => c.IsPublic)
+            .ThenBy(c => c.IsPrivate)
             .ThenBy(c => c.GetParameters().Length);
 
         foreach (var constructor in constructors)
@@ -89,6 +88,7 @@ public static class EntityHelper
     /// The parameterless constructor of the type <paramref name="type" />, or <see langword="null" /> if none was
     /// found.
     /// </returns>
+    /// <param name="type">The type of which to find the parameterless constructor.</param>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     public static ConstructorInfo? FindParameterlessConstructor(Type type)
     {
@@ -96,9 +96,8 @@ public static class EntityHelper
 
         return type
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-            .OrderBy(c => c.IsPublic ? 0 :
-                c.IsPrivate ? 2 : 1
-            )
+            .OrderByDescending(c => c.IsPublic)
+            .ThenBy(c => c.IsPrivate)
             .FirstOrDefault(c => c.GetParameters().Length == 0);
     }
 

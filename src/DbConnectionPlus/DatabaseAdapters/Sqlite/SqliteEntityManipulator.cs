@@ -1041,25 +1041,22 @@ internal class SqliteEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0 && reader.Read())
         {
-            if (reader.Read())
+            cancellationToken.ThrowIfCancellationRequested();
+
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
 
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }
@@ -1080,23 +1077,23 @@ internal class SqliteEntityManipulator : IEntityManipulator
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (
+            entityTypeMetadata.IdentityAndComputedProperties.Count > 0 &&
+            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+        )
         {
-            if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
             {
-                for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+
+                if (!property.CanWrite)
                 {
-                    var property = entityTypeMetadata.IdentityAndComputedProperties[i];
-
-                    if (!property.CanWrite)
-                    {
-                        continue;
-                    }
-
-                    var value = reader.GetValue(i);
-
-                    property.PropertySetter!(entity, value);
+                    continue;
                 }
+
+                var value = reader.GetValue(i);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }

@@ -1,6 +1,6 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+﻿#pragma warning disable IDE0290
 
-#pragma warning disable IDE0290
+namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record EntityWithPublicConstructor
 {

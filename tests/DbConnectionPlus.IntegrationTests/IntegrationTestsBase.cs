@@ -1,3 +1,6 @@
+// ReSharper disable StaticMemberInGenericType
+#pragma warning disable RCS1158
+
 using System.Data.Common;
 using System.Globalization;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
@@ -46,6 +49,8 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <inheritdoc />
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
+
         this.Connection.Close();
         this.Connection.Dispose();
     }
@@ -53,6 +58,8 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         await this.Connection.CloseAsync();
         await this.Connection.DisposeAsync();
     }
@@ -112,6 +119,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// Creates the specified number of entities of the type <typeparamref name="T" /> and inserts them into the test
     /// database.
     /// </summary>
+    /// <typeparam name="T">The type of entities to create and insert.</typeparam>
     /// <param name="numberOfEntities">
     /// The number of entities to create and insert.
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
@@ -144,6 +152,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <summary>
     /// Creates an entity of the type <typeparamref name="T" /> and inserts it into the test database.
     /// </summary>
+    /// <typeparam name="T">The type of entity to create and insert.</typeparam>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The entity that was created and inserted.</returns>
     protected T CreateEntityInDb<T>(DbTransaction? transaction = null)
@@ -196,7 +205,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
              WHERE  {
                  String.Join(
                      " AND ",
-                     keyProperties.Select(p => $"{Q(p.PropertyName)} = {P(p.PropertyName)}").ToArray()
+                     [.. keyProperties.Select(p => $"{Q(p.PropertyName)} = {P(p.PropertyName)}")]
                  )
              }
              """,
@@ -282,13 +291,11 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <summary>
     /// The connection to the test database for the currently running integration test.
     /// </summary>
-    // ReSharper disable once StaticMemberInGenericType
     private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
 
     /// <summary>
     /// The test database provider for the currently running integration test.
     /// </summary>
-    // ReSharper disable once StaticMemberInGenericType
     private static readonly AsyncLocal<ITestDatabaseProvider> currentTestDatabaseProvider = new();
 
     /// <summary>

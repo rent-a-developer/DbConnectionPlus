@@ -139,7 +139,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not " +
-                $"supported.*"
+                "supported.*"
             );
 
         Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
@@ -153,7 +153,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not " +
-                $"supported.*"
+                "supported.*"
             );
     }
 

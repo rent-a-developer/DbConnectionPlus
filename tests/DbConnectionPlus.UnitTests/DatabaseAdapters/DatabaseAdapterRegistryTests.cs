@@ -18,10 +18,10 @@ public class DatabaseAdapterRegistryTests
         Invoking(() => DatabaseAdapterRegistry.GetAdapter(typeof(FakeConnectionC)))
             .Should().Throw<InvalidOperationException>()
             .WithMessage(
-                $"No database adapter is registered for the database connection of the type " +
+                "No database adapter is registered for the database connection of the type " +
                 $"{typeof(FakeConnectionC)}. Please call " +
                 $"{nameof(DatabaseAdapterRegistry)}.{nameof(DatabaseAdapterRegistry.RegisterAdapter)} to register an " +
-                $"adapter for that connection type."
+                "adapter for that connection type."
             );
 
     [Fact]

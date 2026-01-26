@@ -12,10 +12,11 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
+    /// <para>
     /// Wraps <paramref name="parameterValue" /> in an instance of <see cref="InterpolatedParameter" /> to indicate
     /// that this value should be passed as a parameter to an SQL statement.
-    /// 
-    /// Use this method to pass a value in an interpolated string as a parameter to an SQL statement.
+    /// </para>
+    /// <para>Use this method to pass a value in an interpolated string as a parameter to an SQL statement.</para>
     /// </summary>
     /// <param name="parameterValue">The value to pass as a parameter.</param>
     /// <param name="parameterValueExpression">
@@ -49,16 +50,20 @@ public static partial class DbConnectionExtensions
     /// );
     /// ]]>
     /// </code>
+    /// <para>
     /// This will add a parameter with the name "LowStockThreshold" and the value of the variable "lowStockThreshold"
     /// to the SQL statement.
-    /// 
+    /// </para>
+    /// <para>
     /// The name of the parameter will be inferred from the expression from which <paramref name="parameterValue" />
     /// was obtained.
     /// If the name cannot be inferred from the expression a generic name like "Parameter_1", "Parameter_2", and so
     /// on will be used.
-    /// 
+    /// </para>
+    /// <para>
     /// If you pass an <see cref="Enum" /> value as a parameter, the enum value is serialized according to the setting
     /// <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+    /// </para>
     /// </remarks>
     public static InterpolatedParameter Parameter(
         Object? parameterValue,

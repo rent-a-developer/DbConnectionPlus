@@ -8,13 +8,16 @@ using RentADeveloper.DbConnectionPlus.Extensions;
 namespace RentADeveloper.DbConnectionPlus.Readers;
 
 /// <summary>
+/// <para>
 /// A version of <see cref="ObjectReader" /> that handles enum serialization according to the setting
 /// <see cref="DbConnectionExtensions.EnumSerializationMode" />.
-/// 
+/// </para>
+/// <para>
 /// For Enum fields <see cref="GetFieldType" /> returns the type that corresponds to the enum serialization mode.
 /// For Enum fields <see cref="GetInt32" /> returns the enum value as <see cref="Int32" />.
 /// For Enum fields <see cref="GetString" /> returns the enum value as <see cref="String" />.
 /// For Enum fields <see cref="GetValues" /> serializes the enum values based on the enum serialization mode.
+/// </para>
 /// </summary>
 internal class EnumHandlingObjectReader : ObjectReader
 {

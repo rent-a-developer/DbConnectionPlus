@@ -229,19 +229,19 @@ internal sealed class EnumerableReader : DbDataReader
 
     /// <inheritdoc />
     /// <exception cref="ArgumentException">
-    /// <paramref name="buffer" /> does not have a length of at least 1.
+    /// <paramref name="values" /> does not have a length of at least 1.
     /// </exception>
-    public override Int32 GetValues(Object[] buffer)
+    public override Int32 GetValues(Object[] values)
     {
-        if (buffer.Length < 1)
+        if (values.Length < 1)
         {
             throw new ArgumentException(
                 "The specified array must have a length greater than or equal to 1.",
-                nameof(buffer)
+                nameof(values)
             );
         }
 
-        buffer[0] = this.current ?? DBNull.Value;
+        values[0] = this.current ?? DBNull.Value;
 
         return 1;
     }

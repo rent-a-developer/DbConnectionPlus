@@ -61,11 +61,12 @@ internal static class ValueTupleMaterializerFactory
     ///     </list>
     /// </exception>
     /// <remarks>
-    /// The order of the fields in the value tuple must match the order of the fields in <paramref name="dataReader" />.
-    /// 
+    /// <para>The order of the fields in the value tuple must match the order of the fields in <paramref name="dataReader" />.</para>
+    /// <para>
     /// The field types of the fields in <paramref name="dataReader" /> must be compatible with the field types of the
     /// fields in <paramref name="dataReader" />.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert(Type, Type)" />.
+    /// </para>
     /// </remarks>
     internal static Func<DbDataReader, TValueTuple> GetMaterializer<TValueTuple>(DbDataReader dataReader)
     {
@@ -216,7 +217,7 @@ internal static class ValueTupleMaterializerFactory
                         Expression.Constant(
                             $"The {columnNameOrPosition} returned by the SQL statement contains a NULL " +
                             $"value, but the corresponding field of the value tuple type {valueTupleType} " +
-                            $"is non-nullable."
+                            "is non-nullable."
                         )
                     ),
                     targetType
@@ -231,7 +232,7 @@ internal static class ValueTupleMaterializerFactory
                         $"The {columnNameOrPosition} returned by the SQL statement contains a " +
                         $"value that could not be converted to the type {targetType} " +
                         $"of the corresponding field of the value tuple type {valueTupleType}. " +
-                        $"See inner exception for details."
+                        "See inner exception for details."
                     ),
                     exceptionParameterExpression
                 ),
@@ -297,7 +298,7 @@ internal static class ValueTupleMaterializerFactory
                 )!
             );
 
-            var lastValueTupleField = valueTupleFields.Last();
+            var lastValueTupleField = valueTupleFields[^1];
 
             // If the last field is not "Rest", we have reached the inner most value tuple type and we are done.
             if (lastValueTupleField.Name != "Rest")
@@ -336,12 +337,15 @@ internal static class ValueTupleMaterializerFactory
     }
 
     /// <summary>
+    /// <para>
     /// Gets the types of the fields of the value tuple type <paramref name="valueTupleType" /> including the fields
     /// of all nested value tuple types.
-    ///
+    /// </para>
+    /// <para>
     /// For example, for the value tuple type
     /// <c><![CDATA[ ValueTuple<T1, T2, T3, T4, T5, T6, T7, ValueTuple<T8, T9> ]]></c> this method returns the types
     /// T1, T2, T3, T4, T5, T6, T7, T8, T9.
+    /// </para>
     /// </summary>
     /// <param name="valueTupleType">The value tuple type of which to get the field types.</param>
     /// <returns>
@@ -438,7 +442,7 @@ internal static class ValueTupleMaterializerFactory
             throw new ArgumentException(
                 $"The SQL statement returned {"column".ToQuantity(dataReader.FieldCount)}, but the value tuple type " +
                 $"{valueTupleType} has {"field".ToQuantity(valueTupleFieldTypes.Length)}. Make sure that the SQL " +
-                $"statement returns the same number of columns as the number of fields in the value tuple type.",
+                "statement returns the same number of columns as the number of fields in the value tuple type.",
                 nameof(dataReader)
             );
         }
@@ -468,7 +472,7 @@ internal static class ValueTupleMaterializerFactory
             {
                 throw new ArgumentException(
                     $"The data type {dataReaderFieldType} of the {columnNameOrPosition} returned by the SQL " +
-                    $"statement is not supported.",
+                    "statement is not supported.",
                     nameof(dataReader)
                 );
             }

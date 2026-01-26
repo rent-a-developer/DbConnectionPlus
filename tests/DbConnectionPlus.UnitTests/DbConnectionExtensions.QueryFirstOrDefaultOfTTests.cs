@@ -1,7 +1,6 @@
-namespace RentADeveloper.DbConnectionPlus.UnitTests;
+#pragma warning disable NS1000, NS1004
 
-#pragma warning disable NS1000
-#pragma warning disable NS1004
+namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QueryFirstOrDefaultOfTTests : StatementMethodTestsBase
 {

@@ -18,6 +18,10 @@ public static partial class DbConnectionExtensions
     /// by the statement converted to the type <typeparamref name="TTarget" />.
     /// Additional columns or rows are ignored.
     /// </summary>
+    /// <typeparam name="TTarget">
+    /// The type to which the first column of the first row in the result set returned by the statement should be
+    /// converted.
+    /// </typeparam>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
     /// <param name="transaction">The database transaction within to execute the statement.</param>
@@ -103,6 +107,10 @@ public static partial class DbConnectionExtensions
     /// set returned by the statement converted to the type <typeparamref name="TTarget" />.
     /// Additional columns or rows are ignored.
     /// </summary>
+    /// <typeparam name="TTarget">
+    /// The type to which the first column of the first row in the result set returned by the statement should be
+    /// converted.
+    /// </typeparam>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
     /// <param name="transaction">The database transaction within to execute the statement.</param>
@@ -206,7 +214,7 @@ public static partial class DbConnectionExtensions
         catch (Exception exception) when (value is null or DBNull)
         {
             throw new InvalidCastException(
-                $"The first column of the first row in the result set returned by the SQL statement contains a NULL " +
+                "The first column of the first row in the result set returned by the SQL statement contains a NULL " +
                 $"value, which could not be converted to the type {typeof(TTarget)}. See inner exception for details.",
                 exception
             );
@@ -214,9 +222,9 @@ public static partial class DbConnectionExtensions
         catch (Exception exception) when (value is not null)
         {
             throw new InvalidCastException(
-                $"The first column of the first row in the result set returned by the SQL statement contains " +
+                "The first column of the first row in the result set returned by the SQL statement contains " +
                 $"the value {value.ToDebugString()}, which could not be converted to the type {typeof(TTarget)}. " +
-                $"See inner exception for details.",
+                "See inner exception for details.",
                 exception
             );
         }

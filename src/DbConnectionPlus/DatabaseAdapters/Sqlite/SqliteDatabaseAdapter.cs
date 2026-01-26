@@ -112,7 +112,7 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
 
     /// <inheritdoc />
     public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
-        "temp." + "\"" + tableName + "\"";
+        "temp.\"" + tableName + "\"";
 
     /// <inheritdoc />
     public Boolean SupportsTemporaryTables(DbConnection connection) =>

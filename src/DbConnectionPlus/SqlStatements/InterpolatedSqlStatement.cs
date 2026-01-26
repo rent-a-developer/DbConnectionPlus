@@ -33,7 +33,9 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     // ReSharper disable once UnusedParameter.Local
+#pragma warning disable RCS1163 // Unused parameter
     public InterpolatedSqlStatement(Int32 literalLength, Int32 formattedCount)
+#pragma warning restore RCS1163 // Unused parameter
     {
         this.fragments = new(formattedCount);
         this.temporaryTables = [];
@@ -84,7 +86,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
             var duplicateParameterNames = duplicateParameters.SelectMany(a => a.Select(b => $"'{b.Name}'")).ToList();
 
             throw new ArgumentException(
-                $"The specified parameters have the following duplicate parameter names: " +
+                "The specified parameters have the following duplicate parameter names: " +
                 $"{String.Join(", ", duplicateParameterNames)}. Make sure each parameter name is only used once.",
                 nameof(parameters)
             );

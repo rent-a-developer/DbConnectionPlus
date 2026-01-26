@@ -12,11 +12,14 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
+    /// <para>
     /// Wraps the sequence <paramref name="values" /> in an instance of <see cref="InterpolatedTemporaryTable" /> to
     /// indicate that this sequence should be passed as a temporary table to an SQL statement.
-    /// 
+    /// </para>
+    /// <para>
     /// Use this method to pass a sequence of scalar values or complex objects in an interpolated string as a temporary
     /// table to an SQL statement.
+    /// </para>
     /// </summary>
     /// <typeparam name="T">The type of values in <paramref name="values" />.</typeparam>
     /// <param name="values">The sequence of scalar values or complex objects to pass as a temporary table.</param>
@@ -36,13 +39,15 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
     /// </code>
+    /// <para>
     /// You can pass a sequence of scalar values (e.g. <see cref="String" />, <see cref="Int32" />,
     /// <see cref="DateTime" />, <see cref="Enum" /> and so on) or a sequence of complex objects.
-    /// 
+    /// </para>
+    /// <para>
     /// If a sequence of scalar values is passed, the temporary table will have a single column named "Value" with
     /// a data type that is compatible with the type of the passed values.
-    /// 
-    /// Example:
+    /// </para>
+    /// <para>Example:</para>
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
@@ -69,13 +74,14 @@ public static partial class DbConnectionExtensions
     ///     Value BIGINT
     /// )
     /// </code>
+    /// <para>
     /// If a sequence of complex objects is passed, the temporary table will have multiple columns.
     /// The temporary table will contain a column for each instance property (with a public getter) of the passed
     /// objects.
     /// The name of each column will be the name of the corresponding property.
     /// The data type of each column will be compatible with the property type of the corresponding property.
-    /// 
-    /// Example:
+    /// </para>
+    /// <para>Example:</para>
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
@@ -111,14 +117,18 @@ public static partial class DbConnectionExtensions
     ///     OrderDate DATETIME2
     /// )
     /// </code>
+    /// <para>
     /// The name of the temporary table will be inferred from the expression passed to <see cref="TemporaryTable{T}" />
     /// and suffixed with a new Guid to avoid naming conflicts (e.g. "OrderItems_395c98f203514e81aa0098ec7f13e8a2").
-    /// 
+    /// </para>
+    /// <para>
     /// If the name cannot be inferred from the expression the name "Values" (also suffixed with a new Guid) will be
     /// used (e.g. "Values_395c98f203514e81aa0098ec7f13e8a2").
-    /// 
+    /// </para>
+    /// <para>
     /// If you pass enum values or objects containing enum properties, the enum values are serialized according to the
     /// setting <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+    /// </para>
     /// </remarks>
     public static InterpolatedTemporaryTable TemporaryTable<T>(
         IEnumerable<T> values,

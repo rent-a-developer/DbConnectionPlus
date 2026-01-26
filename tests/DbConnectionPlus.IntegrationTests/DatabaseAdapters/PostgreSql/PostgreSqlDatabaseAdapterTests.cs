@@ -1,7 +1,7 @@
-﻿using Npgsql;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
+﻿// ReSharper disable AccessToDisposedClosure
 
-// ReSharper disable AccessToDisposedClosure
+using Npgsql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.PostgreSql;
 

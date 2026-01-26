@@ -243,7 +243,7 @@ internal static class ValueConverter
     private static void ThrowCouldNotConvertNonSingleCharStringToCharException(String stringValue, Type targetType) =>
         throw new InvalidCastException(
             $"Could not convert the string '{stringValue}' to the type {targetType}. The string must be exactly one " +
-            $"character long."
+            "character long."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -254,7 +254,7 @@ internal static class ValueConverter
     ) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to the type {targetType}, because the type is " +
-            $"non-nullable."
+            "non-nullable."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -266,7 +266,7 @@ internal static class ValueConverter
     ) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to the type {targetType}. See inner exception " +
-            $"for details.",
+            "for details.",
             innerException
         );
 

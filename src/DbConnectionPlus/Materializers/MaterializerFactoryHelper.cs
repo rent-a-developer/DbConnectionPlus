@@ -185,14 +185,14 @@ internal static class MaterializerFactoryHelper
             {
                 throw new ArgumentException(
                     $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not " +
-                    $"supported.",
+                    "supported.",
                     nameof(fieldType)
                 );
             }
 
             throw new ArgumentException(
                 $"The data type {fieldType} of the {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the " +
-                $"SQL statement is not supported.",
+                "SQL statement is not supported.",
                 nameof(fieldType)
             );
         }

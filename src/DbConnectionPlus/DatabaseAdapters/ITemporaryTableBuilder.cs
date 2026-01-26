@@ -62,17 +62,20 @@ public interface ITemporaryTableBuilder
     ///     </list>
     /// </exception>
     /// <remarks>
+    /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
     /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
     /// a single-column temporary table will be built with a column named "Value" with a data type that matches the
     /// type <paramref name="valuesType" />.
-    /// 
+    /// </para>
+    /// <para>
     /// If the type <paramref name="valuesType" /> is a complex type (e.g. a class or a record), a multi-column
     /// temporary table will be built.
     /// The temporary table will contain a column for each instance property (with a public getter) of the type
     /// <paramref name="valuesType" />.
     /// The name of each column will be the name of the corresponding property.
     /// The data type of each column will match the property type of the corresponding property.
+    /// </para>
     /// </remarks>
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
@@ -139,17 +142,20 @@ public interface ITemporaryTableBuilder
     ///     </list>
     /// </exception>
     /// <remarks>
+    /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
     /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
     /// a single-column temporary table will be built with a column named "Value" with a data type that matches
     /// the type <paramref name="valuesType" />.
-    ///
+    /// </para>
+    /// <para>
     /// If the type <paramref name="valuesType" /> is a complex type (e.g. a class or a record), a multi-column
     /// temporary table will be built.
     /// The temporary table will contain a column for each instance property (with a public getter) of the type
     /// <paramref name="valuesType" />.
     /// The name of each column will be the name of the corresponding property.
     /// The data type of each column will match the property type of the corresponding property.
+    /// </para>
     /// </remarks>
     public Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,

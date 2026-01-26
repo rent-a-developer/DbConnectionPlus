@@ -1,25 +1,24 @@
-﻿using System.Reflection;
+﻿#pragma warning disable NS5000, NS1001, NS1000
+
+using System.Reflection;
 using AutoFixture;
 using AutoFixture.Kernel;
-
-#pragma warning disable NS5000
-#pragma warning disable NS1001
-#pragma warning disable NS1000
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 
 /// <summary>
 /// Provides methods for asserting types that implement the decorator pattern.
 /// </summary>
-public class DecoratorAssertions
+public static class DecoratorAssertions
 {
     /// <summary>
+    /// <para>
     /// Asserts that <paramref name="decorator" /> forwards all calls to <paramref name="decorated" />, meaning each
     /// public instance method of <paramref name="decorator" /> calls the respective method of
     /// <paramref name="decorated" /> with the same arguments and that the methods of <paramref name="decorator" />
     /// return the return values of the called methods of <paramref name="decorated" />.
-    /// 
-    /// Methods specified in <paramref name="excludedMethods" /> are excluded from the assertion.
+    /// </para>
+    /// <para>Methods specified in <paramref name="excludedMethods" /> are excluded from the assertion.</para>
     /// </summary>
     /// <typeparam name="TDecorator">The type of decorator and decorated.</typeparam>
     /// <param name="fixture">The fixture to use to create sample method arguments and return values.</param>

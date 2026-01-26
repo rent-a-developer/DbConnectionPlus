@@ -3,31 +3,31 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
 public sealed class
-    EntityManipulator_DeleteEntities_Tests_MySql :
-    EntityManipulator_DeleteEntities_Tests<MySqlTestDatabaseProvider>;
+    EntityManipulator_DeleteEntitiesTests_MySql :
+    EntityManipulator_DeleteEntitiesTests<MySqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntities_Tests_Oracle :
-    EntityManipulator_DeleteEntities_Tests<OracleTestDatabaseProvider>;
+    EntityManipulator_DeleteEntitiesTests_Oracle :
+    EntityManipulator_DeleteEntitiesTests<OracleTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntities_Tests_PostgreSql :
-    EntityManipulator_DeleteEntities_Tests<PostgreSqlTestDatabaseProvider>;
+    EntityManipulator_DeleteEntitiesTests_PostgreSql :
+    EntityManipulator_DeleteEntitiesTests<PostgreSqlTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntities_Tests_Sqlite :
-    EntityManipulator_DeleteEntities_Tests<SqliteTestDatabaseProvider>;
+    EntityManipulator_DeleteEntitiesTests_Sqlite :
+    EntityManipulator_DeleteEntitiesTests<SqliteTestDatabaseProvider>;
 
 public sealed class
-    EntityManipulator_DeleteEntities_Tests_SqlServer :
-    EntityManipulator_DeleteEntities_Tests<SqlServerTestDatabaseProvider>;
+    EntityManipulator_DeleteEntitiesTests_SqlServer :
+    EntityManipulator_DeleteEntitiesTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_DeleteEntities_Tests
+public abstract class EntityManipulator_DeleteEntitiesTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_DeleteEntities_Tests() =>
+    protected EntityManipulator_DeleteEntitiesTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Fact]
@@ -385,7 +385,7 @@ public abstract class EntityManipulator_DeleteEntities_Tests
     {
         var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
 
-        using (var transaction = await this.Connection.BeginTransactionAsync())
+        await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             await this.manipulator.DeleteEntitiesAsync(
                 this.Connection,

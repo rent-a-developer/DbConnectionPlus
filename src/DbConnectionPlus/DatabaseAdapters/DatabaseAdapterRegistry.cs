@@ -75,7 +75,7 @@ public static class DatabaseAdapterRegistry
             : throw new InvalidOperationException(
                 $"No database adapter is registered for the database connection of the type {connectionType}. " +
                 $"Please call {nameof(DatabaseAdapterRegistry)}.{nameof(RegisterAdapter)} to register an adapter " +
-                $"for that connection type."
+                "for that connection type."
             );
     }
 

@@ -1,7 +1,6 @@
-﻿using RentADeveloper.DbConnectionPlus.Extensions;
-using DbDataReaderExtensions = RentADeveloper.DbConnectionPlus.Extensions.DbDataReaderExtensions;
+﻿// ReSharper disable InvokeAsExtensionMethod
 
-// ReSharper disable InvokeAsExtensionMethod
+using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Extensions;
 
@@ -46,7 +45,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
     {
         var dataReader = Substitute.For<DbDataReader>();
 
-        ArgumentNullGuardVerifier.Verify(() => DbDataReaderExtensions.GetFieldNames(dataReader));
-        ArgumentNullGuardVerifier.Verify(() => DbDataReaderExtensions.GetFieldTypes(dataReader));
+        ArgumentNullGuardVerifier.Verify(() => dataReader.GetFieldNames());
+        ArgumentNullGuardVerifier.Verify(() => dataReader.GetFieldTypes());
     }
 }

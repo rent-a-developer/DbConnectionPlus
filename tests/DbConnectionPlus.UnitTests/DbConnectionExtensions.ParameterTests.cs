@@ -1,6 +1,7 @@
+// ReSharper disable UnusedParameter.Local
+
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
-// ReSharper disable UnusedParameter.Local
 public class DbConnectionExtensions_ParameterTests : UnitTestsBase
 {
     [Fact]
@@ -8,7 +9,9 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
     {
         var productId = Generate.Id();
         static Int64 GetProductId() => Generate.Id();
+#pragma warning disable RCS1163 // Unused parameter
         static Int64 GetProductIdByCategory(String category) => Generate.Id();
+#pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
 
         Parameter(productId).InferredName

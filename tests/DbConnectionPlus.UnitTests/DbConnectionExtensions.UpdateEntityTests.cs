@@ -46,7 +46,7 @@ public class DbConnectionExtensions_UpdateEntityTests : UnitTestsBase
     public async Task UpdateEntityAsync_ShouldCallEntityManipulator()
     {
         var entity = Generate.Single<Entity>();
-        using var transaction = await this.MockDbConnection.BeginTransactionAsync();
+        await using var transaction = await this.MockDbConnection.BeginTransactionAsync();
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 

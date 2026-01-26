@@ -24,8 +24,8 @@ public static class ThrowHelper
         throw new NotSupportedException(
 #pragma warning disable CA1062
             $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) " +
-            $"temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
-            $"this database."
+            "temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
+            "this database."
 #pragma warning restore CA1062
         );
 
@@ -86,12 +86,12 @@ public static class ThrowHelper
     /// Throws an <see cref="ArgumentOutOfRangeException" /> indicating that the specified connection is not of the
     /// expected type.
     /// </summary>
+    /// <typeparam name="TExpectedConnectionType">The type of connection that was expected.</typeparam>
     /// <typeparam name="T">
     /// The type parameter for the return value of this method.
     /// This just exists to satisfy the compiler when this method is used in an expression or when we must trick the
     /// compiler to believe a value is returned.
     /// </typeparam>
-    /// <typeparam name="TExpectedConnectionType">The type of connection that was expected.</typeparam>
     /// <exception cref="ArgumentOutOfRangeException">Always thrown.</exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
@@ -108,12 +108,12 @@ public static class ThrowHelper
     /// Throws an <see cref="ArgumentOutOfRangeException" /> indicating that the specified transaction is not of the
     /// expected type.
     /// </summary>
+    /// <typeparam name="TExpectedTransactionType">The type of transaction that was expected.</typeparam>
     /// <typeparam name="T">
     /// The type parameter for the return value of this method.
     /// This just exists to satisfy the compiler when this method is used in an expression or when we must trick the
     /// compiler to believe a value is returned.
     /// </typeparam>
-    /// <typeparam name="TExpectedTransactionType">The type of transaction that was expected.</typeparam>
     /// <exception cref="ArgumentOutOfRangeException">Always thrown.</exception>
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]

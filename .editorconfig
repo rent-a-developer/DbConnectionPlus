@@ -36,6 +36,13 @@ csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+dotnet_analyzer_diagnostic.category-roslynator.severity = error
+
+# RCS1037: Remove trailing white-space
+dotnet_diagnostic.RCS1037.severity = none
+
+# RCS1227: Validate arguments correctly
+dotnet_diagnostic.RCS1227.severity = none
 
 [*.{cs,vb}]
 #### Naming styles ####
