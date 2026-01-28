@@ -1,4 +1,5 @@
 // ReSharper disable StaticMemberInGenericType
+// ReSharper disable InconsistentNaming
 #pragma warning disable RCS1158
 
 using System.Data.Common;
@@ -93,7 +94,6 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <param name="tableName">The name of the temporary table to quote.</param>
     /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    // ReSharper disable once InconsistentNaming
     public static String QT(String tableName) =>
         currentTestDatabaseProvider.Value!.DatabaseAdapter.QuoteTemporaryTableName(
             tableName,

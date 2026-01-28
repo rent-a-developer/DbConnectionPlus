@@ -11,8 +11,8 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
     /// <summary>
     /// Initializes a new instance of the <see cref="StatementMethodTestsBase" /> class.
     /// </summary>
-    /// <param name="syncTestMethod">The synchronous version of the statement method to test.</param>
     /// <param name="asyncTestMethod">The asynchronous version of the statement method to test.</param>
+    /// <param name="syncTestMethod">The synchronous version of the statement method to test.</param>
     protected StatementMethodTestsBase(
         Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
             asyncTestMethod,
