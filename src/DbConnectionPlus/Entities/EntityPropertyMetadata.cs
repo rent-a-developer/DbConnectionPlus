@@ -9,6 +9,7 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <summary>
 /// Metadata of an entity property.
 /// </summary>
+/// <param name="ColumnName">The name of the column to which the property is mapped.</param>
 /// <param name="PropertyName">The name of the property.</param>
 /// <param name="PropertyType">The property type of the property.</param>
 /// <param name="PropertyInfo">The property info of the property.</param>
@@ -26,6 +27,7 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// </param>
 /// <param name="DatabaseGeneratedOption">The database generated option for the property.</param>
 public sealed record EntityPropertyMetadata(
+    String ColumnName,
     String PropertyName,
     Type PropertyType,
     PropertyInfo PropertyInfo,

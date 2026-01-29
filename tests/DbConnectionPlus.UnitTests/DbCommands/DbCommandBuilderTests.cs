@@ -483,7 +483,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().StartWith("EntityIds_");
 
         table2.Values
-            .Should().Be(entityIds);
+            .Should().BeEquivalentTo(entityIds);
 
         table2.ValuesType
             .Should().Be(typeof(Int64));
@@ -1081,7 +1081,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().StartWith("EntityIds_");
 
         table2.Values
-            .Should().Be(entityIds);
+            .Should().BeEquivalentTo(entityIds);
 
         table2.ValuesType
             .Should().Be(typeof(Int64));

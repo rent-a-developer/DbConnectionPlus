@@ -172,9 +172,9 @@ internal static class EntityMaterializerFactory
             dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type)).ToArray()
         );
 
-        var entityPropertiesByName = EntityHelper.GetEntityTypeMetadata(entityType)
+        var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)
             .MappedProperties.Where(a => a.CanWrite)
-            .ToDictionary(a => a.PropertyName, StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
 
         if (compatibleConstructor is not null)
         {
@@ -202,7 +202,7 @@ internal static class EntityMaterializerFactory
             {
                 var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
 
-                if (entityPropertiesByName.TryGetValue(dataReaderFieldName, out var entityProperty))
+                if (entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
                 {
                     fieldOrdinalToTargetType.Add(
                         fieldOrdinal,
@@ -225,7 +225,7 @@ internal static class EntityMaterializerFactory
 
             var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
 
-            if (compatibleConstructor is null && !entityPropertiesByName.ContainsKey(dataReaderFieldName))
+            if (compatibleConstructor is null && !entityPropertiesByColumnName.ContainsKey(dataReaderFieldName))
             {
                 // No need to read the field when we are using properties to materialize and there is no matching
                 // property for the field.
@@ -369,7 +369,7 @@ internal static class EntityMaterializerFactory
             {
                 var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
 
-                if (!entityPropertiesByName.TryGetValue(dataReaderFieldName, out var entityProperty))
+                if (!entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
                 {
                     continue;
                 }
@@ -495,15 +495,15 @@ internal static class EntityMaterializerFactory
             );
         }
 
-        var entityPropertiesByName = EntityHelper.GetEntityTypeMetadata(entityType)
+        var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)
             .MappedProperties.Where(a => a.CanWrite)
-            .ToDictionary(a => a.PropertyName, StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
 
         for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
         {
             var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
 
-            if (!entityPropertiesByName.TryGetValue(dataReaderFieldName, out var entityProperty))
+            if (!entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
             {
                 continue;
             }

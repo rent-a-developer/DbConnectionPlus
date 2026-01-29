@@ -99,7 +99,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
         using var reader = CreateValuesDataReader(values, valuesType);
 
-        PopulateTemporaryTable(sqliteConnection, sqliteTransaction, name, reader, cancellationToken);
+        PopulateTemporaryTable(sqliteConnection, sqliteTransaction, name, valuesType, reader, cancellationToken);
 
         return new(
             () => DropTemporaryTable(name, sqliteConnection, sqliteTransaction),
@@ -181,7 +181,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         await using var reader = CreateValuesDataReader(values, valuesType);
 #pragma warning restore CA2007
 
-        await PopulateTemporaryTableAsync(sqliteConnection, sqliteTransaction, name, reader, cancellationToken)
+        await PopulateTemporaryTableAsync(sqliteConnection, sqliteTransaction, name, valuesType, reader, cancellationToken)
             .ConfigureAwait(false);
 
         return new(
@@ -194,8 +194,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
     /// </summary>
-    /// <param name="tableName">The name of the temporary table to create.</param>
-    /// <param name="objectsType">The type of objects the temporary table will be populated with.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
@@ -225,7 +225,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             }
 
             sqlBuilder.Append('"');
-            sqlBuilder.Append(property.PropertyName);
+            sqlBuilder.Append(property.ColumnName);
             sqlBuilder.Append("\" ");
 
             var propertyType = property.PropertyType;
@@ -244,8 +244,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
     /// <paramref name="valuesType" />.
     /// </summary>
-    /// <param name="tableName">The name of the temporary table to create.</param>
-    /// <param name="valuesType">The type of values the temporary table will be populated with.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
@@ -261,7 +261,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         sqlBuilder.AppendLine("\"");
 
         sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(\"Value\" ");
+        sqlBuilder.Append("(\"");
+        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+        sqlBuilder.Append("\" ");
         sqlBuilder.Append(this.databaseAdapter.GetDataType(valuesType, enumSerializationMode));
         sqlBuilder.AppendLine(")");
 
@@ -271,11 +273,13 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Builds an SQL code to insert data from the specified data reader into the specified temporary table.
     /// </summary>
-    /// <param name="tableName">The name of the temporary table to insert data into.</param>
+    /// <param name="tableName">The name of the table to insert data into.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
     /// <param name="dataReader">The data reader to read data from.</param>
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
     private static (String SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
         String tableName,
+        Type valuesType,
         DbDataReader dataReader
     )
     {
@@ -291,23 +295,37 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         var fieldCount = dataReader.FieldCount;
         var parameters = new SqliteParameter[fieldCount];
 
-        for (var i = 0; i < fieldCount; i++)
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            if (i > 0)
+            sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+
+            parameters[0] = new()
             {
-                sqlBuilder.Append(", ");
-            }
-
-            var fieldName = dataReader.GetName(i);
-
-            sqlBuilder.Append('"');
-            sqlBuilder.Append(fieldName);
-            sqlBuilder.Append('"');
-
-            parameters[i] = new()
-            {
-                ParameterName = "@" + fieldName
+                ParameterName = Constants.SingleColumnTemporaryTableColumnName
             };
+        }
+        else
+        {
+            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead).ToList();
+
+            for (var i = 0; i < properties.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sqlBuilder.Append(", ");
+                }
+
+                var property = properties[i];
+
+                sqlBuilder.Append('"');
+                sqlBuilder.Append(property.ColumnName);
+                sqlBuilder.Append('"');
+
+                parameters[i] = new()
+                {
+                    ParameterName = property.PropertyName
+                };
+            }
         }
 
         sqlBuilder.AppendLine(")");
@@ -324,6 +342,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 sqlBuilder.Append(", ");
             }
 
+            sqlBuilder.Append("@");
             sqlBuilder.Append(parameters[i].ParameterName);
         }
 
@@ -342,7 +361,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            return new EnumerableReader(values, valuesType, "Value");
+            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
         return new ObjectReader(
@@ -357,7 +376,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Drops the temporary table with the specified name.
     /// </summary>
-    /// <param name="name">The name of the temporary table to drop.</param>
+    /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
     private static void DropTemporaryTable(String name, SqliteConnection connection, SqliteTransaction? transaction)
@@ -376,7 +395,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Asynchronously drops the temporary table with the specified name.
     /// </summary>
-    /// <param name="name">The name of the temporary table to drop.</param>
+    /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
@@ -402,15 +421,17 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Populates the specified temporary table with the data from the specified data reader.
     /// </summary>
-    /// <param name="connection">The database connection to use to populate the temporary table.</param>
-    /// <param name="transaction">The database transaction within to populate the temporary table.</param>
-    /// <param name="tableName">The name of the temporary table to populate.</param>
-    /// <param name="dataReader">The data reader to use to populate the temporary table.</param>
+    /// <param name="connection">The database connection to use to populate the table.</param>
+    /// <param name="transaction">The database transaction within to populate the table.</param>
+    /// <param name="tableName">The name of the table to populate.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
+    /// <param name="dataReader">The data reader to use to populate the table.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     private static void PopulateTemporaryTable(
         SqliteConnection connection,
         SqliteTransaction? transaction,
         String tableName,
+        Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -418,7 +439,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         var insertCommand = connection.CreateCommand();
         insertCommand.Transaction = transaction;
 
-        var (insertSqlCode, parameters) = BuildInsertSqlCode(tableName, dataReader);
+        var (insertSqlCode, parameters) = BuildInsertSqlCode(tableName, valuesType, dataReader);
 
 #pragma warning disable CA2100
         insertCommand.CommandText = insertSqlCode;
@@ -451,16 +472,18 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Asynchronously populates the specified temporary table with the data from the specified data reader.
     /// </summary>
-    /// <param name="connection">The database connection to use to populate the temporary table.</param>
-    /// <param name="transaction">The database transaction within to populate the temporary table.</param>
-    /// <param name="tableName">The name of the temporary table to populate.</param>
-    /// <param name="dataReader">The data reader to use to populate the temporary table.</param>
+    /// <param name="connection">The database connection to use to populate the table.</param>
+    /// <param name="transaction">The database transaction within to populate the table.</param>
+    /// <param name="tableName">The name of the table to populate.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
+    /// <param name="dataReader">The data reader to use to populate the table.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     private static async Task PopulateTemporaryTableAsync(
         SqliteConnection connection,
         SqliteTransaction? transaction,
         String tableName,
+        Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -471,7 +494,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
         insertCommand.Transaction = transaction;
 
-        var (insertSqlCode, parameters) = BuildInsertSqlCode(tableName, dataReader);
+        var (insertSqlCode, parameters) = BuildInsertSqlCode(tableName, valuesType, dataReader);
 
 #pragma warning disable CA2100
         insertCommand.CommandText = insertSqlCode;

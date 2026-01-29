@@ -106,6 +106,30 @@ public static class Generate
         TypeAdapterConfig<Entity, EntityWithDifferentCasingProperties>
             .NewConfig()
             .NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
+
+        TypeAdapterConfig<Entity, EntityWithColumnAttributes>
+            .NewConfig()
+            .ConstructUsing(entity => new()
+                {
+                    ValueId = entity.Id,
+                    ValueBoolean = entity.BooleanValue,
+                    ValueByte = entity.ByteValue,
+                    ValueChar = entity.CharValue,
+                    ValueDateOnly = entity.DateOnlyValue,
+                    ValueDateTime = entity.DateTimeValue,
+                    ValueDecimal = entity.DecimalValue,
+                    ValueDouble = entity.DoubleValue,
+                    ValueEnum = entity.EnumValue,
+                    ValueGuid = entity.GuidValue,
+                    ValueInt16 = entity.Int16Value,
+                    ValueInt32 = entity.Int32Value,
+                    ValueInt64 = entity.Int64Value,
+                    ValueSingle = entity.SingleValue,
+                    ValueString = entity.StringValue,
+                    ValueTimeSpan = entity.TimeSpanValue,
+                    ValueTimeOnly = entity.TimeOnlyValue
+            }
+        );
     }
 
     /// <summary>

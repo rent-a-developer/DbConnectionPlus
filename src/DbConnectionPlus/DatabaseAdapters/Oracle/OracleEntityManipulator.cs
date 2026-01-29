@@ -637,7 +637,7 @@ internal class OracleEntityManipulator : IEntityManipulator
         foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
         {
             var parameter = command.CreateParameter();
-            parameter.ParameterName = "return_" + property.PropertyName;
+            parameter.ParameterName = "return_" + property.ColumnName;
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
                 DbConnectionExtensions.EnumSerializationMode
@@ -688,7 +688,7 @@ internal class OracleEntityManipulator : IEntityManipulator
         foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
         {
             var parameter = command.CreateParameter();
-            parameter.ParameterName = "return_" + property.PropertyName;
+            parameter.ParameterName = "return_" + property.ColumnName;
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
                 DbConnectionExtensions.EnumSerializationMode
@@ -739,7 +739,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append(keyProperty.ColumnName);
                     sqlBuilder.Append("\" =:\"");
                     sqlBuilder.Append(keyProperty.PropertyName);
                     sqlBuilder.Append('"');
@@ -781,7 +781,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append('"');
 
                     prependSeparator = true;
@@ -826,7 +826,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
                         prependSeparator = true;
                     }
@@ -847,7 +847,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append(":\"return_");
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
                         prependSeparator = true;
                     }
@@ -895,7 +895,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("\" = :\"");
                     sqlBuilder.Append(property.PropertyName);
                     sqlBuilder.Append('"');
@@ -919,7 +919,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("\" = ");
                     sqlBuilder.Append(":\"");
                     sqlBuilder.Append(property.PropertyName);
@@ -946,7 +946,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
                         prependSeparator = true;
                     }
@@ -967,7 +967,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append(":\"return_");
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
                         prependSeparator = true;
                     }

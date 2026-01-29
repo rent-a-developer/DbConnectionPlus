@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
  
+## [Unreleased]
+
+### Added
+- Support for column name mapping via System.ComponentModel.DataAnnotations.Schema.ColumnAttribute (Fixes [issue #1](https://github.com/rent-a-developer/DbConnectionPlus/issues/1))
+- Throw helper for common exceptions
+
+### Changed
+- Updated all dependencies to latest stable versions
+
 ## [1.0.0] - 2026-01-24
  
 ### Added

@@ -28,61 +28,55 @@ Other database systems and database connectors can be supported by implementing 
 All examples in this document use SQL Server.
 
 ## Table of contents
-- [ DbConnectionPlus](#-dbconnectionplus)
-  - [Table of contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Quick start](#quick-start)
-  - [Examples](#examples)
-    - [Parameters via interpolated strings](#parameters-via-interpolated-strings)
-    - [On-the-fly temporary tables via interpolated strings](#on-the-fly-temporary-tables-via-interpolated-strings)
-    - [Enum support](#enum-support)
-  - [API summary](#api-summary)
-    - [Attributes](#attributes)
-      - [`System.ComponentModel.DataAnnotations.Schema.TableAttribute`](#systemcomponentmodeldataannotationsschematableattribute)
-      - [`System.ComponentModel.DataAnnotations.KeyAttribute`](#systemcomponentmodeldataannotationskeyattribute)
-      - [`System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute`](#systemcomponentmodeldataannotationsschemadatabasegeneratedattribute)
-      - [`System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute`](#systemcomponentmodeldataannotationsschemanotmappedattribute)
-    - [Configuration](#configuration)
-      - [EnumSerializationMode](#enumserializationmode)
-      - [InterceptDbCommand](#interceptdbcommand)
-    - [General-purpose methods](#general-purpose-methods)
-      - [ExecuteNonQuery / ExecuteNonQueryAsync](#executenonquery--executenonqueryasync)
-      - [ExecuteReader / ExecuteReaderAsync](#executereader--executereaderasync)
-      - [ExecuteScalar / ExecuteScalarAsync](#executescalar--executescalarasync)
-      - [Exists / ExistsAsync](#exists--existsasync)
-    - [Query methods](#query-methods)
-      - [Query / QueryAsync](#query--queryasync)
-      - [QueryFirst / QueryFirstAsync](#queryfirst--queryfirstasync)
-      - [QueryFirstOrDefault / QueryFirstOrDefaultAsync](#queryfirstordefault--queryfirstordefaultasync)
-      - [QuerySingle / QuerySingleAsync](#querysingle--querysingleasync)
-      - [QuerySingleOrDefault / QuerySingleOrDefaultAsync](#querysingleordefault--querysingleordefaultasync)
-      - [Query\<T\> / QueryAsync\<T\>](#queryt--queryasynct)
-      - [QueryFirst\<T\> / QueryFirstAsync\<T\>](#queryfirstt--queryfirstasynct)
-      - [QueryFirstOrDefault\<T\> / QueryFirstOrDefaultAsync\<T\>](#queryfirstordefaultt--queryfirstordefaultasynct)
-      - [QuerySingle\<T\> / QuerySingleAsync\<T\>](#querysinglet--querysingleasynct)
-      - [QuerySingleOrDefault\<T\> / QuerySingleOrDefaultAsync\<T\>](#querysingleordefaultt--querysingleordefaultasynct)
-    - [Entity manipulation methods](#entity-manipulation-methods)
-      - [InsertEntities / InsertEntitiesAsync](#insertentities--insertentitiesasync)
-      - [InsertEntity / InsertEntityAsync](#insertentity--insertentityasync)
-      - [UpdateEntities / UpdateEntitiesAsync](#updateentities--updateentitiesasync)
-      - [UpdateEntity / UpdateEntityAsync](#updateentity--updateentityasync)
-      - [DeleteEntities / DeleteEntitiesAsync](#deleteentities--deleteentitiesasync)
-      - [DeleteEntity / DeleteEntityAsync](#deleteentity--deleteentityasync)
-    - [Special helpers](#special-helpers)
-      - [Parameter(value)](#parametervalue)
-      - [TemporaryTable(values)](#temporarytablevalues)
-    - [Custom database adapter](#custom-database-adapter)
-  - [Benchmarks](#benchmarks)
-    - [Running the benchmarks](#running-the-benchmarks)
-  - [Running the unit tests](#running-the-unit-tests)
-  - [Running the integration tests](#running-the-integration-tests)
-  - [Contributing](#contributing)
-  - [License](#license)
-  - [Documentation](#documentation)
-  - [Change Log](#change-log)
-  - [Contributors](#contributors)
+- **[Quick start](#quick-start)**
+- [Examples](#examples)
+- [Parameters via interpolated strings](#parameters-via-interpolated-strings)
+- [On-the-fly temporary tables via interpolated strings](#on-the-fly-temporary-tables-via-interpolated-strings)
+- [Enum support](#enum-support)
+- [API summary](#api-summary)
+- [Configuration](#configuration)
+    - [EnumSerializationMode](#enumserializationmode)
+    - [InterceptDbCommand](#interceptdbcommand)
+    - [Entity Mapping](#entity-mapping)
+        - [Data annotation attributes](#data-annotation-attributes)
+- [General-purpose methods](#general-purpose-methods)
+    - [ExecuteNonQuery / ExecuteNonQueryAsync](#executenonquery--executenonqueryasync)
+    - [ExecuteReader / ExecuteReaderAsync](#executereader--executereaderasync)
+    - [ExecuteScalar / ExecuteScalarAsync](#executescalar--executescalarasync)
+    - [Exists / ExistsAsync](#exists--existsasync)
+- [Query methods](#query-methods)
+    - [Query / QueryAsync](#query--queryasync)
+    - [QueryFirst / QueryFirstAsync](#queryfirst--queryfirstasync)
+    - [QueryFirstOrDefault / QueryFirstOrDefaultAsync](#queryfirstordefault--queryfirstordefaultasync)
+    - [QuerySingle / QuerySingleAsync](#querysingle--querysingleasync)
+    - [QuerySingleOrDefault / QuerySingleOrDefaultAsync](#querysingleordefault--querysingleordefaultasync)
+    - [Query\<T\> / QueryAsync\<T\>](#queryt--queryasynct)
+    - [QueryFirst\<T\> / QueryFirstAsync\<T\>](#queryfirstt--queryfirstasynct)
+    - [QueryFirstOrDefault\<T\> / QueryFirstOrDefaultAsync\<T\>](#queryfirstordefaultt--queryfirstordefaultasynct)
+    - [QuerySingle\<T\> / QuerySingleAsync\<T\>](#querysinglet--querysingleasynct)
+    - [QuerySingleOrDefault\<T\> / QuerySingleOrDefaultAsync\<T\>](#querysingleordefaultt--querysingleordefaultasynct)
+- [Entity manipulation methods](#entity-manipulation-methods)
+    - [InsertEntities / InsertEntitiesAsync](#insertentities--insertentitiesasync)
+    - [InsertEntity / InsertEntityAsync](#insertentity--insertentityasync)
+    - [UpdateEntities / UpdateEntitiesAsync](#updateentities--updateentitiesasync)
+    - [UpdateEntity / UpdateEntityAsync](#updateentity--updateentityasync)
+    - [DeleteEntities / DeleteEntitiesAsync](#deleteentities--deleteentitiesasync)
+    - [DeleteEntity / DeleteEntityAsync](#deleteentity--deleteentityasync)
+- [Special helpers](#special-helpers)
+    - [Parameter(value)](#parametervalue)
+    - [TemporaryTable(values)](#temporarytablevalues)
+- [Custom database adapter](#custom-database-adapter)
+- [Benchmarks](#benchmarks)
+- [Running the benchmarks](#running-the-benchmarks)
+- [Running the unit tests](#running-the-unit-tests)
+- [Running the integration tests](#running-the-integration-tests)
+- [Contributing](#contributing)
+- [License](#license)
+- [Documentation](#documentation)
+- [Change Log](#change-log)
+- [Contributors](#contributors)
 
-## Installation
+## Quick start
 First, [install NuGet](https://docs.nuget.org/docs/start-here/installing-nuget).
 
 Then install the [NuGet package](https://www.nuget.org/packages/RentADeveloper.DbConnectionPlus/) from the package
@@ -91,7 +85,6 @@ manager console:
 PM> Install-Package RentADeveloper.DbConnectionPlus
 ```
 
-## Quick start
 Import the library and the static helpers:
 
 ```csharp
@@ -329,19 +322,22 @@ corresponding enum values.
 
 ## API summary
 
-Attributes:
+Configuration:
+- [EnumSerializationMode](#enumserializationmode) - Configure how enum values are serialized when sent to the database
+- [InterceptDbCommand](#interceptdbcommand) - Configure a delegate to intercept `DbCommand`s executed by DbConnectionPlus
+
+Entity mapping:  
+Data annotation attributes:
 - [`System.ComponentModel.DataAnnotations.Schema.TableAttribute`](#systemcomponentmodeldataannotationsschematableattribute) 
 Specify the name of the table where entities of an entity type are stored
+- [`System.ComponentModel.DataAnnotations.Schema.ColumnAttribute`](#systemcomponentmodeldataannotationsschemacolumnattribute)
+Specify the name of the column where a property of an entity type is stored
 - [`System.ComponentModel.DataAnnotations.KeyAttribute`](#systemcomponentmodeldataannotationskeyattribute) 
 Specify the key property / properties of an entity type
 - [`System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute`](#systemcomponentmodeldataannotationsschemadatabasegeneratedattribute)
 Specify that a property of an entity type is generated by the database
 - [`System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute`](#systemcomponentmodeldataannotationsschemanotmappedattribute)
 Specify that a property of an entity type is not mapped to a column in the database
-
-Configuration:
-- [EnumSerializationMode](#enumserializationmode) - Configure how enum values are serialized when sent to the database
-- [InterceptDbCommand](#interceptdbcommand) - Configure a delegate to intercept `DbCommand`s executed by DbConnectionPlus
 
 General-purpose methods:
 - [ExecuteNonQuery / ExecuteNonQueryAsync](#executenonquery--executenonqueryasync) - Execute a non-query and return 
@@ -376,63 +372,8 @@ Special helpers:
 - [TemporaryTable(values)](#temporarytablevalues) - Create a temporary table from a sequence of values and reference 
 it inside an SQL statement
 
-### Attributes
-This library uses the following attributes:
- 
-#### `System.ComponentModel.DataAnnotations.Schema.TableAttribute`
-Use this attribute to specify the name of the table where entities of an entity type are stored in the database:
-```csharp
-[Table("Products")]
-public class Product { ... }
-```
-If you don't specify the table name using this attribute, the singular name of the entity type 
-(not including its namespace) is used as the table name.
-
-#### `System.ComponentModel.DataAnnotations.KeyAttribute`
-Use this attribute to specify the property / properties of an entity type by which entities of that type are 
-identified (usually the primary key / keys):
-```csharp
-class Product
-{
-  [Key]
-  public Int64 Id { get; set; }
-}
-```
-
-This attribute must be used for entities passed to the following methods:
-- [InsertEntities / InsertEntitiesAsync](#insertentities--insertentitiesasync)
-- [InsertEntity / InsertEntityAsync](#insertentity--insertentityasync)
-- [UpdateEntities / UpdateEntitiesAsync](#updateentities--updateentitiesasync)
-- [UpdateEntity / UpdateEntityAsync](#updateentity--updateentityasync)
-- [DeleteEntities / DeleteEntitiesAsync](#deleteentities--deleteentitiesasync)
-- [DeleteEntity / DeleteEntityAsync](#deleteentity--deleteentityasync)
- 
-#### `System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute`
-Use this attribute to specify that a property of an entity type is generated by the database:
-```csharp
-class Product
-{
-  [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-  public Int64 Id { get; set; }
-}
-```
-Properties marked with this attribute are ignored (unless `DatabaseGeneratedOption.None` is used) when inserting new 
-entities into the database or updating existing entities.
-When an entity is inserted or updated, the value of the property is read back from the database and set on the entity.
-
-#### `System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute`
-Use this attribute to specify that a property of an entity type should be ignored and not mapped to a column:
-```csharp
-public class OrderItem
-{
-    [NotMapped]
-    public Decimal TotalPrice => this.UnitPrice * this.Quantity;
-}
-```
-Properties marked with this attribute are ignored by DbConnectionPlus.
-They are never read from the database and never written to the database.
-
 ### Configuration
+
 #### EnumSerializationMode
 Use `DbConnectionExtensions.EnumSerializationMode` to configure how enum values are serialized when they are sent to a 
 database.  
@@ -497,6 +438,68 @@ DbConnectionExtensions.InterceptDbCommand = (dbCommand, temporaryTables) =>
 
 See [DbCommandLogger](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/tests/DbConnectionPlus.IntegrationTests/TestHelpers/DbCommandLogger.cs) 
 for an example of logging executed commands.
+
+#### Entity Mapping
+
+##### Data annotation attributes 
+
+You can use the following attributes to configure how entity types are mapped to database tables and columns:
+
+###### `System.ComponentModel.DataAnnotations.Schema.TableAttribute`
+Use this attribute to specify the name of the table where entities of an entity type are stored in the database:
+```csharp
+[Table("Products")]
+public class Product { ... }
+```
+If you don't specify the table name using this attribute, the singular name of the entity type 
+(not including its namespace) is used as the table name.
+
+###### `System.ComponentModel.DataAnnotations.Schema.ColumnAttribute`
+Use this attribute to specify the name of the column where a property of an entity type is stored in the database:
+```csharp
+class Product
+{
+  [Column("ProductName")]
+  public String Name { get; set; }
+}
+```
+If you don't specify the column name using this attribute, the property name is used as the column name.
+
+###### `System.ComponentModel.DataAnnotations.KeyAttribute`
+Use this attribute to specify the property / properties of an entity type by which entities of that type are 
+identified (usually the primary key / keys):
+```csharp
+class Product
+{
+  [Key]
+  public Int64 Id { get; set; }
+}
+```
+ 
+###### `System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute`
+Use this attribute to specify that a property of an entity type is generated by the database:
+```csharp
+class Product
+{
+  [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+  public Int64 Id { get; set; }
+}
+```
+Properties marked with this attribute are ignored (unless `DatabaseGeneratedOption.None` is used) when inserting new 
+entities into the database or updating existing entities.
+When an entity is inserted or updated, the value of the property is read back from the database and set on the entity.
+
+###### `System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute`
+Use this attribute to specify that a property of an entity type should be ignored and not mapped to a column:
+```csharp
+public class OrderItem
+{
+    [NotMapped]
+    public Decimal TotalPrice => this.UnitPrice * this.Quantity;
+}
+```
+Properties marked with this attribute are ignored by DbConnectionPlus.
+They are never read from the database and never written to the database.
 
 ### General-purpose methods
 

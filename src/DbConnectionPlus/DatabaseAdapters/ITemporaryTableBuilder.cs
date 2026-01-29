@@ -11,10 +11,10 @@ public interface ITemporaryTableBuilder
     /// <summary>
     /// Builds a temporary table and populates it with the specified values.
     /// </summary>
-    /// <param name="connection">The database connection to use to build the temporary table.</param>
-    /// <param name="transaction">The database transaction within to build the temporary table.</param>
-    /// <param name="name">The name of the temporary table to build.</param>
-    /// <param name="values">The values to populate the temporary table with.</param>
+    /// <param name="connection">The database connection to use to build the table.</param>
+    /// <param name="transaction">The database transaction within to build the table.</param>
+    /// <param name="name">The name of the table to build.</param>
+    /// <param name="values">The values with which to populate the table.</param>
     /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
@@ -65,13 +65,13 @@ public interface ITemporaryTableBuilder
     /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
     /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
-    /// a single-column temporary table will be built with a column named "Value" with a data type that matches the
+    /// a single-column table will be built with a column named "Value" with a data type that matches the
     /// type <paramref name="valuesType" />.
     /// </para>
     /// <para>
     /// If the type <paramref name="valuesType" /> is a complex type (e.g. a class or a record), a multi-column
-    /// temporary table will be built.
-    /// The temporary table will contain a column for each instance property (with a public getter) of the type
+    /// table will be built.
+    /// The table will contain a column for each instance property (with a public getter) of the type
     /// <paramref name="valuesType" />.
     /// The name of each column will be the name of the corresponding property.
     /// The data type of each column will match the property type of the corresponding property.
@@ -89,10 +89,10 @@ public interface ITemporaryTableBuilder
     /// <summary>
     /// Asynchronously builds a temporary table and populates it with the specified values.
     /// </summary>
-    /// <param name="connection">The database connection to use to build the temporary table.</param>
-    /// <param name="transaction">The database transaction within to build the temporary table.</param>
-    /// <param name="name">The name of the temporary table to build.</param>
-    /// <param name="values">The values to populate the temporary table with.</param>
+    /// <param name="connection">The database connection to use to build the table.</param>
+    /// <param name="transaction">The database transaction within to build the table.</param>
+    /// <param name="name">The name of the table to build.</param>
+    /// <param name="values">The values with which to populate the table.</param>
     /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
@@ -145,13 +145,13 @@ public interface ITemporaryTableBuilder
     /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
     /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
-    /// a single-column temporary table will be built with a column named "Value" with a data type that matches
+    /// a single-column table will be built with a column named "Value" with a data type that matches
     /// the type <paramref name="valuesType" />.
     /// </para>
     /// <para>
     /// If the type <paramref name="valuesType" /> is a complex type (e.g. a class or a record), a multi-column
-    /// temporary table will be built.
-    /// The temporary table will contain a column for each instance property (with a public getter) of the type
+    /// table will be built.
+    /// The table will contain a column for each instance property (with a public getter) of the type
     /// <paramref name="valuesType" />.
     /// The name of each column will be the name of the corresponding property.
     /// The data type of each column will match the property type of the corresponding property.

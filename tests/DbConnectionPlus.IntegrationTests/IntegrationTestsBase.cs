@@ -205,7 +205,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
              WHERE  {
                  String.Join(
                      " AND ",
-                     [.. keyProperties.Select(p => $"{Q(p.PropertyName)} = {P(p.PropertyName)}")]
+                     [.. keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}")]
                  )
              }
              """,

@@ -116,10 +116,18 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         sqlBulkCopy.ColumnMappings.Clear();
 
-        for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            var fieldName = reader.GetName(fieldOrdinal);
-            sqlBulkCopy.ColumnMappings.Add(fieldName, fieldName);
+            sqlBulkCopy.ColumnMappings.Add(Constants.SingleColumnTemporaryTableColumnName, Constants.SingleColumnTemporaryTableColumnName);
+        }
+        else
+        {
+            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead);
+            
+            foreach (var property in properties)
+            {
+                sqlBulkCopy.ColumnMappings.Add(property.PropertyName, property.ColumnName);
+            }
         }
 
         sqlBulkCopy.WriteToServer(reader);
@@ -223,10 +231,18 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         sqlBulkCopy.ColumnMappings.Clear();
 
-        for (var fieldOrdinal = 0; fieldOrdinal < reader.FieldCount; fieldOrdinal++)
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            var fieldName = reader.GetName(fieldOrdinal);
-            sqlBulkCopy.ColumnMappings.Add(fieldName, fieldName);
+            sqlBulkCopy.ColumnMappings.Add(Constants.SingleColumnTemporaryTableColumnName, Constants.SingleColumnTemporaryTableColumnName);
+        }
+        else
+        {
+            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead);
+
+            foreach (var property in properties)
+            {
+                sqlBulkCopy.ColumnMappings.Add(property.PropertyName, property.ColumnName);
+            }
         }
 
         try
@@ -249,8 +265,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
     /// </summary>
-    /// <param name="tableName">The name of the temporary table to create.</param>
-    /// <param name="objectsType">The type of objects the temporary table will be populated with.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
@@ -282,7 +298,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             }
 
             sqlBuilder.Append('[');
-            sqlBuilder.Append(property.PropertyName);
+            sqlBuilder.Append(property.ColumnName);
             sqlBuilder.Append("] ");
 
             var propertyType = property.PropertyType;
@@ -314,9 +330,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
     /// <paramref name="valuesType" />.
     /// </summary>
-    /// <param name="tableName">The name of the temporary table to create.</param>
-    /// <param name="values">The values to populate the temporary table with.</param>
-    /// <param name="valuesType">The type of values the temporary table will be populated with.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="values">The values with which to populate the table.</param>
+    /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
@@ -335,7 +351,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         sqlBuilder.AppendLine("]");
 
         sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("([Value] ");
+        sqlBuilder.Append("([");
+        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+        sqlBuilder.Append("] ");
 
         if (valuesType == typeof(String))
         {
@@ -399,7 +417,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            return new EnumerableReader(values, valuesType, "Value");
+            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
         return new ObjectReader(
@@ -414,7 +432,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Drops the temporary table with the specified name.
     /// </summary>
-    /// <param name="name">The name of the temporary table to drop.</param>
+    /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
     private static void DropTemporaryTable(String name, SqlConnection connection, SqlTransaction? transaction)
@@ -433,7 +451,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <summary>
     /// Asynchronously drops the temporary table with the specified name.
     /// </summary>
-    /// <param name="name">The name of the temporary table to drop.</param>
+    /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>

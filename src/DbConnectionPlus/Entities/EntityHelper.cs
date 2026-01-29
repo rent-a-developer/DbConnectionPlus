@@ -140,6 +140,7 @@ public static class EntityHelper
             var property = properties[i];
 
             propertiesMetadata[i] = new(
+                property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name,
                 property.Name,
                 property.PropertyType,
                 property,

@@ -722,7 +722,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('\"');
-                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append(keyProperty.ColumnName);
                     sqlBuilder.Append("\" = @");
                     sqlBuilder.Append(keyProperty.PropertyName);
 
@@ -764,7 +764,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append('"');
 
                     prependSeparator = true;
@@ -813,7 +813,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
 
                         prependSeparator = true;
@@ -839,7 +839,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     if (identityProperty is not null)
                     {
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(identityProperty.PropertyName);
+                        sqlBuilder.Append(identityProperty.ColumnName);
                         sqlBuilder.Append("\" = last_insert_rowid()");
                     }
                     else
@@ -854,7 +854,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                             }
 
                             sqlBuilder.Append("\"");
-                            sqlBuilder.Append(keyProperty.PropertyName);
+                            sqlBuilder.Append(keyProperty.ColumnName);
                             sqlBuilder.Append("\" = @");
                             sqlBuilder.Append(keyProperty.PropertyName);
                             prependSeparator = true;
@@ -908,7 +908,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append('"');
                     sqlBuilder.Append(" =  @");
                     sqlBuilder.Append(property.PropertyName);
@@ -932,7 +932,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('"');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append('"');
                     sqlBuilder.Append(" = ");
                     sqlBuilder.Append('@');
@@ -961,7 +961,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('"');
                         prependSeparator = true;
                     }
@@ -989,7 +989,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append("\"");
-                        sqlBuilder.Append(keyProperty.PropertyName);
+                        sqlBuilder.Append(keyProperty.ColumnName);
                         sqlBuilder.Append("\" = @");
                         sqlBuilder.Append(keyProperty.PropertyName);
                         prependSeparator = true;

@@ -51,7 +51,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -273,7 +273,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -288,7 +288,22 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
+    }
+
+    [Fact]
+    public void UpdateEntity_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<EntityWithColumnAttributes>();
+        var updatedEntity = Generate.UpdateFor(entity);
+
+        this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
+
+        this.Connection.QuerySingle<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -309,13 +324,13 @@ public abstract class EntityManipulator_UpdateEntityTests
                 .Should().Be(1);
 
             this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
-                .Should().Be(updatedEntity);
+                .Should().BeEquivalentTo(updatedEntity);
 
             transaction.Rollback();
         }
 
         this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}")
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -341,7 +356,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -377,7 +392,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -397,7 +412,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -578,7 +593,7 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -599,7 +614,27 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(updatedEntity);
+            .Should().BeEquivalentTo(updatedEntity);
+    }
+
+    [Fact]
+    public async Task UpdateEntityAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<EntityWithColumnAttributes>();
+        var updatedEntity = Generate.UpdateFor(entity);
+
+        await this.manipulator.UpdateEntityAsync(
+            this.Connection,
+            updatedEntity,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(updatedEntity);
     }
 
     [Fact]
@@ -620,13 +655,13 @@ public abstract class EntityManipulator_UpdateEntityTests
                 .Should().Be(1);
 
             (await this.Connection.QuerySingleAsync<Entity>($"SELECT * FROM {Q("Entity")}", transaction))
-                .Should().Be(updatedEntity);
+                .Should().BeEquivalentTo(updatedEntity);
 
             await transaction.RollbackAsync();
         }
 
         (await this.Connection.QuerySingleAsync<Entity>($"SELECT * FROM {Q("Entity")}"))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     private readonly IEntityManipulator manipulator;
