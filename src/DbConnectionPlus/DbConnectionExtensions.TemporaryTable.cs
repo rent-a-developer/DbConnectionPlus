@@ -79,6 +79,8 @@ public static partial class DbConnectionExtensions
     /// The temporary table will contain a column for each instance property (with a public getter) of the passed
     /// objects.
     /// The name of each column will be the name of the corresponding property.
+    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
+    /// as the column name.
     /// The data type of each column will be compatible with the property type of the corresponding property.
     /// </para>
     /// <para>Example:</para>

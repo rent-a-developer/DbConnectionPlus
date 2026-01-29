@@ -297,6 +297,21 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     }
 
     [Fact]
+    public void UpdateEntities_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<EntityWithColumnAttributes>();
+        var updatedEntities = Generate.UpdatesFor(entities);
+
+        this.manipulator.UpdateEntities(this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
+
+        this.Connection.Query<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(updatedEntities);
+    }
+
+    [Fact]
     public void UpdateEntities_Transaction_ShouldUseTransaction()
     {
         var entities = this.CreateEntitiesInDb<Entity>();
@@ -614,6 +629,26 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(updatedEntities);
+    }
+
+    [Fact]
+    public async Task UpdateEntitiesAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<EntityWithColumnAttributes>();
+        var updatedEntities = Generate.UpdatesFor(entities);
+
+        await this.manipulator.UpdateEntitiesAsync(
+            this.Connection,
+            updatedEntities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        (await this.Connection.QueryAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync())
             .Should().BeEquivalentTo(updatedEntities);
     }
 

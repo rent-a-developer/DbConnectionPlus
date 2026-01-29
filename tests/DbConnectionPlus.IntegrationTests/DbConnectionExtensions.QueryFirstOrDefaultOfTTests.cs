@@ -309,7 +309,7 @@ public abstract class
                 $"SELECT '{character}' AS {Q("Char")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(new EntityWithCharProperty { Char = character });
+            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
     }
 
     [Fact]
@@ -570,6 +570,19 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             )
             .Should().Be(entities[0]);
+    }
+
+    [Fact]
+    public void QueryFirstOrDefault_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        this.Connection.QueryFirstOrDefault<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entityWithColumnAttributes);
     }
 
     [Fact]
@@ -1223,7 +1236,7 @@ public abstract class
                 $"SELECT '{character}' AS {Q("Char")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(new EntityWithCharProperty { Char = character });
+            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
     }
 
     [Fact]
@@ -1487,6 +1500,19 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(entities[0]);
+    }
+
+    [Fact]
+    public async Task QueryFirstOrDefaultAsync_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        (await this.Connection.QueryFirstOrDefaultAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entityWithColumnAttributes);
     }
 
     [Fact]

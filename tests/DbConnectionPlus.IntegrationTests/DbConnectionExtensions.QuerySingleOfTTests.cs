@@ -213,7 +213,7 @@ public abstract class
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public abstract class
                 $"SELECT * FROM {TemporaryTable([entity])}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -305,7 +305,7 @@ public abstract class
                 $"SELECT '{character}' AS {Q("Char")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(new EntityWithCharProperty { Char = character });
+            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
     }
 
     [Fact]
@@ -400,7 +400,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entityWithDifferentCasingProperties);
+            .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
     }
 
     [Fact]
@@ -504,7 +504,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -565,7 +565,20 @@ public abstract class
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public void QuerySingle_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        this.Connection.QuerySingle<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entityWithColumnAttributes);
     }
 
     [Fact]
@@ -596,7 +609,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -610,7 +623,7 @@ public abstract class
         );
 
         this.Connection.QuerySingle<Entity>(statement, cancellationToken: TestContext.Current.CancellationToken)
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -678,7 +691,7 @@ public abstract class
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -693,7 +706,7 @@ public abstract class
                     transaction,
                     cancellationToken: TestContext.Current.CancellationToken
                 )
-                .Should().Be(entity);
+                .Should().BeEquivalentTo(entity);
 
             transaction.Rollback();
         }
@@ -915,7 +928,7 @@ public abstract class
                 $"SELECT {Q("Id")}, {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be((entity.Id, entity.DateTimeOffsetValue));
+            .Should().BeEquivalentTo((entity.Id, entity.DateTimeOffsetValue));
     }
 
     [Fact]
@@ -1127,7 +1140,7 @@ public abstract class
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1164,7 +1177,7 @@ public abstract class
                 $"SELECT * FROM {TemporaryTable([entity])}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1223,7 +1236,7 @@ public abstract class
                 $"SELECT '{character}' AS {Q("Char")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(new EntityWithCharProperty { Char = character });
+            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
     }
 
     [Fact]
@@ -1319,7 +1332,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entityWithDifferentCasingProperties);
+            .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
     }
 
     [Fact]
@@ -1423,7 +1436,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1483,7 +1496,20 @@ public abstract class
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public async Task QuerySingleAsync_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entityWithColumnAttributes);
     }
 
     [Fact]
@@ -1514,7 +1540,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1531,7 +1557,7 @@ public abstract class
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1602,7 +1628,7 @@ public abstract class
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -1617,7 +1643,7 @@ public abstract class
                     transaction,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
-                .Should().Be(entity);
+                .Should().BeEquivalentTo(entity);
 
             await transaction.RollbackAsync();
         }
@@ -1840,7 +1866,7 @@ public abstract class
                 $"SELECT {Q("Id")}, {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be((entity.Id, entity.DateTimeOffsetValue));
+            .Should().BeEquivalentTo((entity.Id, entity.DateTimeOffsetValue));
     }
 
     [Fact]

@@ -139,6 +139,29 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     }
 
     [Fact]
+    public void DeleteEntities_MoreThan10Entities_ShouldUseConfiguredColumnNames()
+    {
+        // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
+        // to test that as well.
+
+        var entities = this.CreateEntitiesInDb<Entity>(20);
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        this.manipulator.DeleteEntities(
+            this.Connection,
+            entitiesWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entities)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
+    }
+
+    [Fact]
     public void DeleteEntities_MoreThan10EntitiesWithCompositeKey_ShouldBatchDeleteIfPossible()
     {
         // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
@@ -199,6 +222,26 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                 TestContext.Current.CancellationToken
             )
             .Should().Be(0);
+    }
+
+    [Fact]
+    public void DeleteEntities_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        this.manipulator.DeleteEntities(
+            this.Connection,
+            entitiesWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entities)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
     }
 
     [Fact]
@@ -340,6 +383,29 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     }
 
     [Fact]
+    public async Task DeleteEntitiesAsync_MoreThan10Entities_ShouldUseConfiguredColumnNames()
+    {
+        // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
+        // to test that as well.
+
+        var entities = this.CreateEntitiesInDb<Entity>(20);
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        await this.manipulator.DeleteEntitiesAsync(
+            this.Connection,
+            entitiesWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entities)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
+    }
+
+    [Fact]
     public async Task DeleteEntitiesAsync_ShouldHandleEntityWithCompositeKey()
     {
         var entities = this.CreateEntitiesInDb<EntityWithCompositeKey>();
@@ -378,6 +444,26 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                 TestContext.Current.CancellationToken
             ))
             .Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteEntitiesAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        await this.manipulator.DeleteEntitiesAsync(
+            this.Connection,
+            entitiesWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entities)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
     }
 
     [Fact]

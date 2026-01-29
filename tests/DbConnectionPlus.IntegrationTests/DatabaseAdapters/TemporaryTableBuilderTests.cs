@@ -87,7 +87,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var entity in entities)
         {
             reader.Read();
-            
+
             reader.GetInt32(0)
                 .Should().Be((Int32)entity.Enum);
         }
@@ -126,7 +126,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var entity in entities)
         {
             reader.Read();
-            
+
             reader.GetString(0)
                 .Should().Be(entity.Enum.ToString());
         }
@@ -242,6 +242,28 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     }
 
     [Fact]
+    public void BuildTemporaryTable_ComplexObjects_ShouldUseConfiguredColumnNames()
+    {
+        var entities = Generate.Multiple<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        using var tableDisposer = this.builder.BuildTemporaryTable(
+            this.Connection,
+            null,
+            "Objects",
+            entitiesWithColumnAttributes,
+            typeof(EntityWithColumnAttributes),
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<Entity>(
+                $"SELECT * FROM {QT("Objects")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entities);
+    }
+
+    [Fact]
     public void BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset()
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
@@ -297,7 +319,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var value in values)
         {
             reader.Read();
-            
+
             reader.GetInt32(0)
                 .Should().Be((Int32)value);
         }
@@ -336,7 +358,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var value in values)
         {
             reader.Read();
-            
+
             reader.GetString(0)
                 .Should().Be(value.ToString());
         }
@@ -529,7 +551,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var entity in entities)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
-            
+
             reader.GetInt32(0)
                 .Should().Be((Int32)entity.Enum);
         }
@@ -569,7 +591,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var entity in entities)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
-            
+
             reader.GetString(0)
                 .Should().Be(entity.Enum.ToString());
         }
@@ -665,6 +687,28 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     }
 
     [Fact]
+    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldUseConfiguredColumnNames()
+    {
+        var entities = Generate.Multiple<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+            this.Connection,
+            null,
+            "Objects",
+            entitiesWithColumnAttributes,
+            typeof(EntityWithColumnAttributes),
+            TestContext.Current.CancellationToken
+        );
+
+        (await this.Connection.QueryAsync<Entity>(
+                $"SELECT * FROM {QT("Objects")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync())
+            .Should().BeEquivalentTo(entities);
+    }
+
+    [Fact]
     public async Task BuildTemporaryTableAsync_ComplexObjects_WithNullables_ShouldHandleNullValues()
     {
         var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
@@ -742,7 +786,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var value in values)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
-            
+
             reader.GetInt32(0)
                 .Should().Be((Int32)value);
         }
@@ -782,7 +826,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         foreach (var value in values)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
-            
+
             reader.GetString(0)
                 .Should().Be(value.ToString());
         }

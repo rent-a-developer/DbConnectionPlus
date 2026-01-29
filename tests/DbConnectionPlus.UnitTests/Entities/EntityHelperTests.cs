@@ -157,6 +157,7 @@ public class EntityHelperTests : UnitTestsBase
     [InlineData(typeof(Entity))]
     [InlineData(typeof(EntityWithTableAttribute))]
     [InlineData(typeof(EntityWithIdentityAndComputedProperties))]
+    [InlineData(typeof(EntityWithColumnAttributes))]
     public void GetEntityTypeMetadata_ShouldGetMetadataForEntityType(Type entityType)
     {
         var faker = new Faker();
@@ -233,6 +234,9 @@ public class EntityHelperTests : UnitTestsBase
 
             propertyMetadata
                 .Should().NotBeNull();
+
+            propertyMetadata.ColumnName
+                .Should().Be(property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name);
 
             propertyMetadata.PropertyName
                 .Should().Be(property.Name);

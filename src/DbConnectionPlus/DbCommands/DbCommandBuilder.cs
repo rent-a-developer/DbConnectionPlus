@@ -293,14 +293,14 @@ internal static class DbCommandBuilder
     /// <summary>
     /// Builds the specified temporary tables.
     /// </summary>
-    /// <param name="temporaryTables">The temporary tables to build.</param>
-    /// <param name="databaseAdapter">The database adapter to use to build the temporary tables.</param>
-    /// <param name="connection">The database connection to use to build the temporary tables.</param>
-    /// <param name="transaction">The database transaction within to build the temporary tables.</param>
+    /// <param name="temporaryTables">The tables to build.</param>
+    /// <param name="databaseAdapter">The database adapter to use to build the tables.</param>
+    /// <param name="connection">The database connection to use to build the tables.</param>
+    /// <param name="transaction">The database transaction within to build the tables.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
     /// An array of <see cref="TemporaryTableDisposer" /> instances that can be used to dispose the built
-    /// temporary tables.
+    /// tables.
     /// </returns>
     /// <exception cref="NotSupportedException">
     /// <paramref name="databaseAdapter" /> does not support (local / session-scoped) temporary tables.
@@ -357,15 +357,15 @@ internal static class DbCommandBuilder
     /// <summary>
     /// Asynchronously builds the specified temporary tables.
     /// </summary>
-    /// <param name="temporaryTables">The temporary tables to build.</param>
-    /// <param name="databaseAdapter">The database adapter to use to build the temporary tables.</param>
-    /// <param name="connection">The database connection to use to build the temporary tables.</param>
-    /// <param name="transaction">The database transaction within to build the temporary tables.</param>
+    /// <param name="temporaryTables">The tables to build.</param>
+    /// <param name="databaseAdapter">The database adapter to use to build the tables.</param>
+    /// <param name="connection">The database connection to use to build the tables.</param>
+    /// <param name="transaction">The database transaction within to build the tables.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
     /// A task that represents the asynchronous operation.
     /// <see cref="Task{TResult}.Result" /> will contain an array of <see cref="TemporaryTableDisposer" />
-    /// instances that can be used to dispose the built temporary tables.
+    /// instances that can be used to dispose the built tables.
     /// </returns>
     /// <exception cref="NotSupportedException">
     /// <paramref name="databaseAdapter" /> does not support (local / session-scoped) temporary tables.

@@ -147,6 +147,23 @@ public abstract class EntityManipulator_DeleteEntityTests
     }
 
     [Fact]
+    public void DeleteEntity_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        this.manipulator.DeleteEntity(
+            this.Connection,
+            entityWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entity)
+            .Should().BeFalse();
+    }
+
+    [Fact]
     public void DeleteEntity_Transaction_ShouldUseTransaction()
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
@@ -284,6 +301,23 @@ public abstract class EntityManipulator_DeleteEntityTests
                 TestContext.Current.CancellationToken
             ))
             .Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DeleteEntityAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entity = this.CreateEntityInDb<Entity>();
+        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+
+        await this.manipulator.DeleteEntityAsync(
+            this.Connection,
+            entityWithColumnAttributes,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entity)
+            .Should().BeFalse();
     }
 
     [Fact]

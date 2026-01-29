@@ -52,6 +52,8 @@ public static partial class DbConnectionExtensions
     /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
+    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
+    /// as the column name.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
@@ -163,6 +165,8 @@ public static partial class DbConnectionExtensions
     /// <para>
     /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
     /// (case-sensitive) in the table.
+    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
+    /// as the column name.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.

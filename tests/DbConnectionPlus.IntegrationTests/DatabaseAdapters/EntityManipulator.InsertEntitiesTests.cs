@@ -212,6 +212,25 @@ public abstract class EntityManipulator_InsertEntitiesTests
     }
 
     [Fact]
+    public void InsertEntities_ShouldUseConfiguredColumnNames()
+    {
+        var entities = Generate.Multiple<EntityWithColumnAttributes>();
+
+        this.manipulator.InsertEntities(
+            this.Connection,
+            entities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entities);
+    }
+
+    [Fact]
     public void InsertEntities_Transaction_ShouldUseTransaction()
     {
         var entities = Generate.Multiple<Entity>();
@@ -451,6 +470,25 @@ public abstract class EntityManipulator_InsertEntitiesTests
 
         (await this.Connection.QueryAsync<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(entities);
+    }
+
+    [Fact]
+    public async Task InsertEntitiesAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entities = Generate.Multiple<EntityWithColumnAttributes>();
+
+        await this.manipulator.InsertEntitiesAsync(
+            this.Connection,
+            entities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        (await this.Connection.QueryAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(entities);

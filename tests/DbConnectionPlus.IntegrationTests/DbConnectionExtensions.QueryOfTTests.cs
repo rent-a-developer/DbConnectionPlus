@@ -586,6 +586,19 @@ public abstract class
     }
 
     [Fact]
+    public void Query_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        this.Connection.Query<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entitiesWithColumnAttributes);
+    }
+
+    [Fact]
     public void Query_EntityType_UnsupportedFieldType_ShouldThrow()
     {
         Assert.SkipUnless(this.TestDatabaseProvider.HasUnsupportedDataType, "");
@@ -1503,6 +1516,19 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(entities);
+    }
+
+    [Fact]
+    public async Task QueryAsync_EntityType_ShouldUseConfiguredColumnNames()
+    {
+        var entities = this.CreateEntitiesInDb<Entity>();
+        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
+
+        (await this.Connection.QueryAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(entitiesWithColumnAttributes);
     }
 
     [Fact]

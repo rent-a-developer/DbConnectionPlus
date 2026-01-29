@@ -165,7 +165,7 @@ public abstract class EntityManipulator_InsertEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -190,7 +190,21 @@ public abstract class EntityManipulator_InsertEntityTests
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public void InsertEntity_ShouldUseConfiguredColumnNames()
+    {
+        var entity = Generate.Single<EntityWithColumnAttributes>();
+
+        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
+
+        this.Connection.QuerySingle<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -361,7 +375,7 @@ public abstract class EntityManipulator_InsertEntityTests
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]
@@ -386,7 +400,21 @@ public abstract class EntityManipulator_InsertEntityTests
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entity);
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public async Task InsertEntityAsync_ShouldUseConfiguredColumnNames()
+    {
+        var entity = Generate.Single<EntityWithColumnAttributes>();
+
+        await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
+
+        (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entity);
     }
 
     [Fact]

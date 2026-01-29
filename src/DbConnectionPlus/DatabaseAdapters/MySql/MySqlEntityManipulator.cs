@@ -85,7 +85,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
         var onClause = String.Join(
             " AND ",
             entityTypeMetadata.KeyProperties
-                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.PropertyName}`")
+                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.ColumnName}`")
         );
 
         try
@@ -196,7 +196,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
         var onClause = String.Join(
             " AND ",
             entityTypeMetadata.KeyProperties
-                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.PropertyName}`")
+                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.ColumnName}`")
         );
 
         try
@@ -763,11 +763,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     )
     {
         connection.ExecuteNonQuery(
-            this.GetCreateEntityKeysTemporaryTableSqlCode(entityTypeMetadata).Replace(
-                "###__________EntityKeys__________###",
-                $"`{keysTableName}`",
-                StringComparison.Ordinal
-            ),
+            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
             transaction,
             cancellationToken: cancellationToken
         );
@@ -827,11 +823,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     )
     {
         await connection.ExecuteNonQueryAsync(
-            this.GetCreateEntityKeysTemporaryTableSqlCode(entityTypeMetadata).Replace(
-                "###__________EntityKeys__________###",
-                $"`{keysTableName}`",
-                StringComparison.Ordinal
-            ),
+            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
             transaction,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false);
@@ -982,53 +974,56 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Gets the SQL code to create a temporary table for the keys of the provided entity type.
+    /// Creates the SQL code to create a temporary table for the keys of the provided entity type.
     /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type to create the temporary table for.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to create the table for.</param>
     /// <returns>The SQL code to create the temporary table.</returns>
-    private String GetCreateEntityKeysTemporaryTableSqlCode(EntityTypeMetadata entityTypeMetadata) =>
-        this.createEntityKeysTemporaryTableSqlCodePerEntityType.GetOrAdd(
-            entityTypeMetadata.EntityType,
-            _ =>
+    private String CreateEntityKeysTemporaryTableSqlCode(
+        String tableName,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        if (entityTypeMetadata.KeyProperties.Count == 0)
+        {
+            ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
+        }
+
+        using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
+
+        createKeysTableSqlBuilder.Append("CREATE TEMPORARY TABLE `");
+        createKeysTableSqlBuilder.Append(tableName);
+        createKeysTableSqlBuilder.AppendLine("`");
+
+        createKeysTableSqlBuilder.Append(Constants.Indent);
+        createKeysTableSqlBuilder.Append("(");
+
+        var prependSeparator = false;
+
+        foreach (var property in entityTypeMetadata.KeyProperties)
+        {
+            if (prependSeparator)
             {
-                if (entityTypeMetadata.KeyProperties.Count == 0)
-                {
-                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
-                }
-
-                using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
-
-                createKeysTableSqlBuilder.AppendLine("CREATE TEMPORARY TABLE ###__________EntityKeys__________###");
-                createKeysTableSqlBuilder.Append(Constants.Indent);
-                createKeysTableSqlBuilder.Append("(");
-
-                var prependSeparator = false;
-
-                foreach (var property in entityTypeMetadata.KeyProperties)
-                {
-                    if (prependSeparator)
-                    {
-                        createKeysTableSqlBuilder.Append(", ");
-                    }
-
-                    createKeysTableSqlBuilder.Append('`');
-                    createKeysTableSqlBuilder.Append(property.PropertyName);
-                    createKeysTableSqlBuilder.Append("` ");
-                    createKeysTableSqlBuilder.Append(
-                        this.databaseAdapter.GetDataType(
-                            property.PropertyType,
-                            DbConnectionExtensions.EnumSerializationMode
-                        )
-                    );
-
-                    prependSeparator = true;
-                }
-
-                createKeysTableSqlBuilder.AppendLine(")");
-
-                return createKeysTableSqlBuilder.ToString();
+                createKeysTableSqlBuilder.Append(", ");
             }
-        );
+
+            createKeysTableSqlBuilder.Append('`');
+            createKeysTableSqlBuilder.Append(property.PropertyName);
+            createKeysTableSqlBuilder.Append("` ");
+            createKeysTableSqlBuilder.Append(
+                this.databaseAdapter.GetDataType(
+                    property.PropertyType,
+                    DbConnectionExtensions.EnumSerializationMode
+                )
+            );
+
+            prependSeparator = true;
+        }
+
+        createKeysTableSqlBuilder.AppendLine(")");
+
+        return createKeysTableSqlBuilder.ToString();
+    }
 
     /// <summary>
     /// Gets the SQL code to delete an entity of the provided entity type.
@@ -1067,7 +1062,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('`');
-                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append(keyProperty.ColumnName);
                     sqlBuilder.Append("` = @");
                     sqlBuilder.Append(keyProperty.PropertyName);
 
@@ -1109,7 +1104,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('`');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append('`');
 
                     prependSeparator = true;
@@ -1158,7 +1153,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('`');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('`');
 
                         prependSeparator = true;
@@ -1184,7 +1179,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     if (identityProperty is not null)
                     {
                         sqlBuilder.Append('`');
-                        sqlBuilder.Append(identityProperty.PropertyName);
+                        sqlBuilder.Append(identityProperty.ColumnName);
                         sqlBuilder.Append("` = LAST_INSERT_ID()");
                     }
                     else
@@ -1199,7 +1194,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                             }
 
                             sqlBuilder.Append('`');
-                            sqlBuilder.Append(keyProperty.PropertyName);
+                            sqlBuilder.Append(keyProperty.ColumnName);
                             sqlBuilder.Append("` = @");
                             sqlBuilder.Append(keyProperty.PropertyName);
                             prependSeparator = true;
@@ -1253,7 +1248,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('`');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("` =  @");
                     sqlBuilder.Append(property.PropertyName);
 
@@ -1276,7 +1271,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('`');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("` = ");
                     sqlBuilder.Append('@');
                     sqlBuilder.Append(property.PropertyName);
@@ -1303,7 +1298,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('`');
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append('`');
                         prependSeparator = true;
                     }
@@ -1331,7 +1326,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append('`');
-                        sqlBuilder.Append(keyProperty.PropertyName);
+                        sqlBuilder.Append(keyProperty.ColumnName);
                         sqlBuilder.Append("` = @");
                         sqlBuilder.Append(keyProperty.PropertyName);
                         prependSeparator = true;
@@ -1440,7 +1435,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly ConcurrentDictionary<Type, String> createEntityKeysTemporaryTableSqlCodePerEntityType = new();
     private readonly MySqlDatabaseAdapter databaseAdapter;
     private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();

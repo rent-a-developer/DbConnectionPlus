@@ -81,7 +81,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
 
         var onClause = String.Join(
             " AND ",
-            entityTypeMetadata.KeyProperties.Select(p => $"TKeys.[{p.PropertyName}] = TEntities.[{p.PropertyName}]")
+            entityTypeMetadata.KeyProperties.Select(p => $"TKeys.[{p.PropertyName}] = TEntities.[{p.ColumnName}]")
         );
 
         try
@@ -191,7 +191,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
 
         var onClause = String.Join(
             " AND ",
-            entityTypeMetadata.KeyProperties.Select(p => $"TKeys.[{p.PropertyName}] = TEntities.[{p.PropertyName}]")
+            entityTypeMetadata.KeyProperties.Select(p => $"TKeys.[{p.PropertyName}] = TEntities.[{p.ColumnName}]")
         );
 
         try
@@ -760,11 +760,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
     )
     {
         connection.ExecuteNonQuery(
-            this.GetCreateEntityKeysTemporaryTableSqlCode(entityTypeMetadata).Replace(
-                "###__________EntityKeys__________###",
-                $"[#{keysTableName}]",
-                StringComparison.Ordinal
-            ),
+            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
             transaction,
             cancellationToken: cancellationToken
         );
@@ -821,11 +817,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
     )
     {
         await connection.ExecuteNonQueryAsync(
-            this.GetCreateEntityKeysTemporaryTableSqlCode(entityTypeMetadata).Replace(
-                "###__________EntityKeys__________###",
-                $"[#{keysTableName}]",
-                StringComparison.Ordinal
-            ),
+            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
             transaction,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false);
@@ -973,54 +965,56 @@ internal class SqlServerEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Gets the SQL code to create a temporary table for the keys of the provided entity type.
+    /// Creates the SQL code to create a temporary table for the keys of the provided entity type.
     /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type to create the temporary table for.</param>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to create the table for.</param>
     /// <returns>The SQL code to create the temporary table.</returns>
-    private String GetCreateEntityKeysTemporaryTableSqlCode(EntityTypeMetadata entityTypeMetadata) =>
-        this.createEntityKeysTemporaryTableSqlCodePerEntityType.GetOrAdd(
-            entityTypeMetadata.EntityType,
-            _ =>
+    private String CreateEntityKeysTemporaryTableSqlCode(
+        String tableName,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        if (entityTypeMetadata.KeyProperties.Count == 0)
+        {
+            ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
+        }
+
+        using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
+
+        createKeysTableSqlBuilder.Append("CREATE TABLE [#");
+        createKeysTableSqlBuilder.Append(tableName);
+        createKeysTableSqlBuilder.AppendLine("]");
+
+        createKeysTableSqlBuilder.Append(Constants.Indent);
+        createKeysTableSqlBuilder.Append("(");
+
+        var prependSeparator = false;
+
+        foreach (var property in entityTypeMetadata.KeyProperties)
+        {
+            if (prependSeparator)
             {
-                if (entityTypeMetadata.KeyProperties.Count == 0)
-                {
-                    ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
-                }
-
-                using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
-
-                createKeysTableSqlBuilder.AppendLine("CREATE TABLE ###__________EntityKeys__________###");
-
-                createKeysTableSqlBuilder.Append(Constants.Indent);
-                createKeysTableSqlBuilder.Append("(");
-
-                var prependSeparator = false;
-
-                foreach (var property in entityTypeMetadata.KeyProperties)
-                {
-                    if (prependSeparator)
-                    {
-                        createKeysTableSqlBuilder.Append(", ");
-                    }
-
-                    createKeysTableSqlBuilder.Append('[');
-                    createKeysTableSqlBuilder.Append(property.PropertyName);
-                    createKeysTableSqlBuilder.Append("] ");
-                    createKeysTableSqlBuilder.Append(
-                        this.databaseAdapter.GetDataType(
-                            property.PropertyType,
-                            DbConnectionExtensions.EnumSerializationMode
-                        )
-                    );
-
-                    prependSeparator = true;
-                }
-
-                createKeysTableSqlBuilder.AppendLine(")");
-
-                return createKeysTableSqlBuilder.ToString();
+                createKeysTableSqlBuilder.Append(", ");
             }
-        );
+
+            createKeysTableSqlBuilder.Append('[');
+            createKeysTableSqlBuilder.Append(property.PropertyName);
+            createKeysTableSqlBuilder.Append("] ");
+            createKeysTableSqlBuilder.Append(
+                this.databaseAdapter.GetDataType(
+                    property.PropertyType,
+                    DbConnectionExtensions.EnumSerializationMode
+                )
+            );
+
+            prependSeparator = true;
+        }
+
+        createKeysTableSqlBuilder.AppendLine(")");
+
+        return createKeysTableSqlBuilder.ToString();
+    }
 
     /// <summary>
     /// Gets the SQL code to delete an entity of the provided entity type.
@@ -1060,7 +1054,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('[');
-                    sqlBuilder.Append(keyProperty.PropertyName);
+                    sqlBuilder.Append(keyProperty.ColumnName);
                     sqlBuilder.Append("] = @");
                     sqlBuilder.Append(keyProperty.PropertyName);
 
@@ -1102,7 +1096,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('[');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append(']');
 
                     prependSeparator = true;
@@ -1126,7 +1120,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append("INSERTED.[");
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append(']');
                         prependSeparator = true;
                     }
@@ -1198,7 +1192,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('[');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("] = @");
                     sqlBuilder.Append(property.PropertyName);
 
@@ -1223,7 +1217,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                         }
 
                         sqlBuilder.Append("INSERTED.[");
-                        sqlBuilder.Append(property.PropertyName);
+                        sqlBuilder.Append(property.ColumnName);
                         sqlBuilder.Append(']');
                         prependSeparator = true;
                     }
@@ -1245,7 +1239,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                     }
 
                     sqlBuilder.Append('[');
-                    sqlBuilder.Append(property.PropertyName);
+                    sqlBuilder.Append(property.ColumnName);
                     sqlBuilder.Append("] = ");
                     sqlBuilder.Append('@');
                     sqlBuilder.Append(property.PropertyName);
@@ -1353,7 +1347,6 @@ internal class SqlServerEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly ConcurrentDictionary<Type, String> createEntityKeysTemporaryTableSqlCodePerEntityType = new();
     private readonly SqlServerDatabaseAdapter databaseAdapter;
     private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();

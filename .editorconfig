@@ -44,6 +44,9 @@ dotnet_diagnostic.RCS1037.severity = none
 # RCS1227: Validate arguments correctly
 dotnet_diagnostic.RCS1227.severity = none
 
+# RCS1124: Inline local variable
+dotnet_diagnostic.RCS1124.severity = suggestion
+
 [*.{cs,vb}]
 #### Naming styles ####
 
