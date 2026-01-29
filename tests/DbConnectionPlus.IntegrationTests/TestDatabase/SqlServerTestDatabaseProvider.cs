@@ -220,14 +220,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE EntityWithComputedProperties
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            ComputedValue AS ([BaseValue]+(999)),
-            BaseValue BIGINT NOT NULL
-        );
-        GO
-
         CREATE TABLE EntityWithIdentityAndComputedProperties
         (
             Id BIGINT NOT NULL PRIMARY KEY,
@@ -317,9 +309,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithNullableProperty;
-        GO
-
-        TRUNCATE TABLE EntityWithComputedProperties;
         GO
 
         TRUNCATE TABLE EntityWithIdentityAndComputedProperties;

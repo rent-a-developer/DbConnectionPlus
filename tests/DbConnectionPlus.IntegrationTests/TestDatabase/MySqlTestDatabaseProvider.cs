@@ -208,14 +208,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE `EntityWithComputedProperties`
-        (
-            `Id` BIGINT NOT NULL,
-            `ComputedValue` BIGINT AS (`BaseValue`+999),
-            `BaseValue` BIGINT NOT NULL
-        );
-        GO
-
         CREATE TABLE `EntityWithIdentityAndComputedProperties`
         (
             `Id` BIGINT NOT NULL,
@@ -297,9 +289,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithNullableProperty`;
-        GO
-
-        TRUNCATE TABLE `EntityWithComputedProperties`;
         GO
 
         TRUNCATE TABLE `EntityWithIdentityAndComputedProperties`;

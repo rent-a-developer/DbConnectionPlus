@@ -4,7 +4,7 @@
 namespace RentADeveloper.DbConnectionPlus.Entities;
 
 /// <summary>
-/// Metadata of an entity type.
+/// The metadata of an entity type.
 /// </summary>
 /// <param name="EntityType">The entity type this metadata describes.</param>
 /// <param name="TableName">The name of the database table where entities of the entity type are stored.</param>
@@ -15,29 +15,19 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// The values of the dictionary are the corresponding property metadata.
 /// </param>
 /// <param name="MappedProperties">
-/// The metadata of all instance properties of the entity type not denoted with the <see cref="NotMappedAttribute" />.
+/// The metadata of the mapped properties of the entity type.
 /// </param>
 /// <param name="KeyProperties">
-/// The metadata of all public instance properties of the entity type that are denoted with the
-/// <see cref="KeyAttribute" /> and not denoted with the <see cref="NotMappedAttribute" />.
+/// The metadata of the key properties of the entity type.
 /// </param>
 /// <param name="InsertProperties">
-/// The metadata of all public instance properties needed to insert an entity of the entity type into the database.
+/// The metadata of the properties needed to insert an entity of the entity type into the database.
 /// </param>
 /// <param name="UpdateProperties">
-/// The metadata of all public instance properties needed to update an entity of the entity type in the database.
+/// The metadata of the properties needed to update an entity of the entity type in the database.
 /// </param>
-/// <param name="ComputedProperties">
-/// The metadata of all public instance properties of the entity type that are not denoted with the
-/// <see cref="NotMappedAttribute" /> and are denoted with the <see cref="DatabaseGeneratedAttribute" />
-/// where <see cref="DatabaseGeneratedAttribute.DatabaseGeneratedOption" /> is set to
-/// <see cref="DatabaseGeneratedOption.Computed" />.
-/// </param>
-/// <param name="IdentityAndComputedProperties">
-/// The metadata of all public instance properties of the entity type that are not denoted with the
-/// <see cref="NotMappedAttribute" /> and are denoted with the <see cref="DatabaseGeneratedAttribute" />
-/// where <see cref="DatabaseGeneratedAttribute.DatabaseGeneratedOption" /> is set to
-/// <see cref="DatabaseGeneratedOption.Identity" /> or <see cref="DatabaseGeneratedOption.Computed" />.
+/// <param name="DatabaseGeneratedProperties">
+/// The metadata of the database generated properties of the entity type.
 /// </param>
 public sealed record EntityTypeMetadata(
     Type EntityType,
@@ -48,6 +38,5 @@ public sealed record EntityTypeMetadata(
     IReadOnlyList<EntityPropertyMetadata> KeyProperties,
     IReadOnlyList<EntityPropertyMetadata> InsertProperties,
     IReadOnlyList<EntityPropertyMetadata> UpdateProperties,
-    IReadOnlyList<EntityPropertyMetadata> ComputedProperties,
-    IReadOnlyList<EntityPropertyMetadata> IdentityAndComputedProperties
+    IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties
 );

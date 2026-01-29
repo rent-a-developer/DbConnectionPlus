@@ -172,27 +172,6 @@ public abstract class EntityManipulator_UpdateEntityTests
     }
 
     [Fact]
-    public void UpdateEntity_ShouldHandleComputedColumns()
-    {
-        var entity = this.CreateEntityInDb<EntityWithComputedProperties>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        updatedEntity
-            .Should().BeEquivalentTo(
-                this.Connection.QuerySingle<EntityWithComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-                )
-            );
-    }
-
-    [Fact]
     public void UpdateEntity_ShouldHandleEntityWithCompositeKey()
     {
         var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
@@ -485,27 +464,6 @@ public abstract class EntityManipulator_UpdateEntityTests
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(updatedEntity.Enum.ToString());
-    }
-
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldHandleComputedColumns()
-    {
-        var entity = this.CreateEntityInDb<EntityWithComputedProperties>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        await this.manipulator.UpdateEntityAsync(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        updatedEntity
-            .Should().BeEquivalentTo(
-                await this.Connection.QuerySingleAsync<EntityWithComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-                )
-            );
     }
 
     [Fact]

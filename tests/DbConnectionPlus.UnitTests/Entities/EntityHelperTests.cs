@@ -217,17 +217,7 @@ public class EntityHelperTests : UnitTestsBase
                 )
             );
 
-        metadata.ComputedProperties
-            .Should().BeEquivalentTo(
-                allPropertiesMetadata.Where(a => a is
-                    {
-                        IsNotMapped: false,
-                        DatabaseGeneratedOption: DatabaseGeneratedOption.Computed
-                    }
-                )
-            );
-
-        metadata.IdentityAndComputedProperties
+        metadata.DatabaseGeneratedProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
                     {

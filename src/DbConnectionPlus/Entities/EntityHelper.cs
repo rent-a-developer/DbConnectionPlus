@@ -185,15 +185,7 @@ public static class EntityHelper
                     DatabaseGeneratedOption: DatabaseGeneratedOption.None
                 })
                 .ToList(),
-            ComputedProperties: propertiesMetadata
-                .Where(p => p is
-                    {
-                        IsNotMapped: false,
-                        DatabaseGeneratedOption: DatabaseGeneratedOption.Computed
-                    }
-                )
-                .ToList(),
-            IdentityAndComputedProperties: propertiesMetadata
+            DatabaseGeneratedProperties: propertiesMetadata
                 .Where(p => p is
                     {
                         IsNotMapped: false,

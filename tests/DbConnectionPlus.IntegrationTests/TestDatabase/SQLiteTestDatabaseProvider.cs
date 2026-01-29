@@ -176,13 +176,6 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Value INTEGER NULL
         );
 
-        CREATE TABLE EntityWithComputedProperties
-        (
-            Id INTEGER NOT NULL,
-            ComputedValue INTEGER GENERATED ALWAYS AS (BaseValue+999) VIRTUAL,
-            BaseValue INTEGER NOT NULL
-        );
-
         CREATE TABLE EntityWithIdentityAndComputedProperties
         (
             Id INTEGER NOT NULL,

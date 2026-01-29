@@ -194,7 +194,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
             catch (Exception exception) when (
@@ -251,7 +251,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
             catch (Exception exception) when (
@@ -298,7 +298,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
 
                 return numberOfAffectedRows;
             }
@@ -344,7 +344,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
 
                 return numberOfAffectedRows;
             }
@@ -399,7 +399,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
             catch (Exception exception) when (
@@ -456,7 +456,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
             catch (Exception exception) when (
@@ -503,7 +503,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
 
                 return numberOfAffectedRows;
             }
@@ -549,7 +549,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, outputParameters, entity);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
 
                 return numberOfAffectedRows;
             }
@@ -633,8 +633,8 @@ internal class OracleEntityManipulator : IEntityManipulator
             command.Parameters.Add(parameter);
         }
 
-        // Add output parameters for identity and computed properties to retrieve their values after the insert:
-        foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+        // Add output parameters for the database generated properties to retrieve their values after the insert:
+        foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "return_" + property.PropertyName;
@@ -684,8 +684,8 @@ internal class OracleEntityManipulator : IEntityManipulator
             command.Parameters.Add(parameter);
         }
 
-        // Add output parameters for identity and computed properties to retrieve their values after the update:
-        foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+        // Add output parameters for the database generated properties to retrieve their values after the update:
+        foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "return_" + property.PropertyName;
@@ -811,14 +811,14 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 sqlBuilder.AppendLine(")");
 
-                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
                 {
                     sqlBuilder.AppendLine("RETURNING");
                     sqlBuilder.Append(Constants.Indent);
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -839,7 +839,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -930,7 +930,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 sqlBuilder.AppendLine();
 
-                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
                 {
                     sqlBuilder.AppendLine("RETURNING");
 
@@ -938,7 +938,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -959,7 +959,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -1003,22 +1003,22 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Updates the identity and computed properties of the provided entity from the provided output parameters.
+    /// Updates the database generated properties of the provided entity from the provided output parameters.
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
     /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
     /// <param name="entity">The entity to update.</param>
-    private static void UpdateIdentityAndComputedProperties(
+    private static void UpdateDatabaseGeneratedProperties(
         EntityTypeMetadata entityTypeMetadata,
         DbParameter[] outputParameters,
         Object entity
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
         {
-            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
             {
-                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
                 if (!property.CanWrite)
                 {
                     continue;

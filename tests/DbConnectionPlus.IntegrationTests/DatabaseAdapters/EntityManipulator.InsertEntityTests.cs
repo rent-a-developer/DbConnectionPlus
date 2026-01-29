@@ -110,26 +110,6 @@ public abstract class EntityManipulator_InsertEntityTests
     }
 
     [Fact]
-    public void InsertEntity_ShouldHandleComputedColumns()
-    {
-        var entity = Generate.Single<EntityWithComputedProperties>();
-
-        this.manipulator.InsertEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        entity
-            .Should().BeEquivalentTo(
-                this.Connection.QuerySingle<EntityWithComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-                )
-            );
-    }
-
-    [Fact]
     public void InsertEntity_ShouldHandleIdentityAndComputedColumns()
     {
         var entity = Generate.Single<EntityWithIdentityAndComputedProperties>();
@@ -322,26 +302,6 @@ public abstract class EntityManipulator_InsertEntityTests
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity.Enum.ToString());
-    }
-
-    [Fact]
-    public async Task InsertEntityAsync_ShouldHandleComputedColumns()
-    {
-        var entity = Generate.Single<EntityWithComputedProperties>();
-
-        await this.manipulator.InsertEntityAsync(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        entity
-            .Should().BeEquivalentTo(
-                await this.Connection.QuerySingleAsync<EntityWithComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithComputedProperties")}"
-                )
-            );
     }
 
     [Fact]

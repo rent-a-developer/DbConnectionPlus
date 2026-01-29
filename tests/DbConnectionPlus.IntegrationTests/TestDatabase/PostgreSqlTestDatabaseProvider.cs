@@ -183,13 +183,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Value" bigint NULL
         );
 
-        CREATE TABLE "EntityWithComputedProperties"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "ComputedValue" bigint GENERATED ALWAYS AS ("BaseValue"+(999)),
-            "BaseValue" bigint NOT NULL
-        );
-
         CREATE TABLE "EntityWithIdentityAndComputedProperties"
         (
             "Id" bigint NOT NULL PRIMARY KEY,
@@ -259,7 +252,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
         TRUNCATE TABLE "EntityWithNonNullableProperty";
         TRUNCATE TABLE "EntityWithNullableProperty";
-        TRUNCATE TABLE "EntityWithComputedProperties";
         TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";
         TRUNCATE TABLE "EntityWithCompositeKey";
         TRUNCATE TABLE "EntityWithNotMappedProperty";

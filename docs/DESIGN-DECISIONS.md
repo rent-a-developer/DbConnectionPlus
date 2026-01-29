@@ -637,8 +637,7 @@ public static class EntityHelper
   - Key properties (marked with `[Key]`)
   - Insert properties (properties to be included when inserting an entity)
   - Update properties (properties to be included when updating an entity)
-  - Computed properties (marked with `[DatabaseGenerated(DatabaseGeneratedOption.Computed)]`)
-  - Identity and computed properties (marked with `[DatabaseGenerated(DatabaseGeneratedOption.Identity)]` or `[DatabaseGenerated(DatabaseGeneratedOption.Computed)]`)
+  - Database generated properties (marked with `[DatabaseGenerated(DatabaseGeneratedOption.Identity)]` or `[DatabaseGenerated(DatabaseGeneratedOption.Computed)]`)
 
 **Performance Impact:**
 - First entity operation: few ms for metadata extraction

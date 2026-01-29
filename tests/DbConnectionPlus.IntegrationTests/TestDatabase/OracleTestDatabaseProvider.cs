@@ -196,14 +196,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE "EntityWithComputedProperties"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "ComputedValue" generated always as (("BaseValue"+999)),
-            "BaseValue" NUMBER(19) NOT NULL
-        );
-        GO
-
         CREATE TABLE "EntityWithIdentityAndComputedProperties"
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
@@ -258,9 +250,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithComputedProperties" PURGE;
-        GO
-
         DROP TABLE IF EXISTS "EntityWithIdentityAndComputedProperties" PURGE;
         GO
 
@@ -292,9 +281,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithNullableProperty";
-        GO
-
-        TRUNCATE TABLE "EntityWithComputedProperties";
         GO
 
         TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";

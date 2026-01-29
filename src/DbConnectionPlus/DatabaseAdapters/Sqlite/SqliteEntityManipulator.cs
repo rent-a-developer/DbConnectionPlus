@@ -188,7 +188,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, reader, entity, cancellationToken);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
@@ -247,7 +247,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateIdentityAndComputedPropertiesAsync(
+                    await UpdateDatabaseGeneratedPropertiesAsync(
                         entityTypeMetadata,
                         reader,
                         entity,
@@ -299,7 +299,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, reader, entity, cancellationToken);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
                 return reader.RecordsAffected;
             }
@@ -346,7 +346,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                await UpdateIdentityAndComputedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
 
                 return reader.RecordsAffected;
@@ -400,7 +400,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
-                    UpdateIdentityAndComputedProperties(entityTypeMetadata, reader, entity, cancellationToken);
+                    UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
@@ -459,7 +459,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateIdentityAndComputedPropertiesAsync(
+                    await UpdateDatabaseGeneratedPropertiesAsync(
                         entityTypeMetadata,
                         reader,
                         entity,
@@ -511,7 +511,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
-                UpdateIdentityAndComputedProperties(entityTypeMetadata, reader, entity, cancellationToken);
+                UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
                 return reader.RecordsAffected;
             }
@@ -559,7 +559,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                await UpdateIdentityAndComputedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
 
                 return reader.RecordsAffected;
@@ -794,7 +794,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 sqlBuilder.Append(')');
 
-                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
                 {
                     sqlBuilder.AppendLine(";");
 
@@ -805,7 +805,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -832,7 +832,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     sqlBuilder.Append(Constants.Indent);
 
-                    var identityProperty = entityTypeMetadata.IdentityAndComputedProperties.FirstOrDefault(a =>
+                    var identityProperty = entityTypeMetadata.DatabaseGeneratedProperties.FirstOrDefault(a =>
                         a.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity
                     );
 
@@ -941,7 +941,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
                     prependSeparator = true;
                 }
 
-                if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0)
+                if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
                 {
                     sqlBuilder.AppendLine(";");
 
@@ -953,7 +953,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var property in entityTypeMetadata.IdentityAndComputedProperties)
+                    foreach (var property in entityTypeMetadata.DatabaseGeneratedProperties)
                     {
                         if (prependSeparator)
                         {
@@ -1028,26 +1028,26 @@ internal class SqliteEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Updates the identity and computed properties of the provided entity from the provided data reader.
+    /// Updates the database generated properties of the provided entity from the provided data reader.
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
     /// <param name="reader">The data reader from which to read the values for the properties.</param>
     /// <param name="entity">The entity to update.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    private static void UpdateIdentityAndComputedProperties(
+    private static void UpdateDatabaseGeneratedProperties(
         EntityTypeMetadata entityTypeMetadata,
         DbDataReader reader,
         Object entity,
         CancellationToken cancellationToken
     )
     {
-        if (entityTypeMetadata.IdentityAndComputedProperties.Count > 0 && reader.Read())
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 && reader.Read())
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
             {
-                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
 
                 if (!property.CanWrite)
                 {
@@ -1062,7 +1062,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Asynchronously updates the identity and computed properties of the provided entity from the provided data
+    /// Asynchronously updates the database generated properties of the provided entity from the provided data
     /// reader.
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
@@ -1070,7 +1070,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
     /// <param name="entity">The entity to update.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    private static async Task UpdateIdentityAndComputedPropertiesAsync(
+    private static async Task UpdateDatabaseGeneratedPropertiesAsync(
         EntityTypeMetadata entityTypeMetadata,
         DbDataReader reader,
         Object entity,
@@ -1078,13 +1078,13 @@ internal class SqliteEntityManipulator : IEntityManipulator
     )
     {
         if (
-            entityTypeMetadata.IdentityAndComputedProperties.Count > 0 &&
+            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 &&
             await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
         )
         {
-            for (var i = 0; i < entityTypeMetadata.IdentityAndComputedProperties.Count; i++)
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
             {
-                var property = entityTypeMetadata.IdentityAndComputedProperties[i];
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
 
                 if (!property.CanWrite)
                 {
