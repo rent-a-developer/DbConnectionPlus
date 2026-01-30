@@ -67,7 +67,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = DbCommandBuilder.BuildDbCommand(
             statement,
@@ -159,7 +159,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
             statement,

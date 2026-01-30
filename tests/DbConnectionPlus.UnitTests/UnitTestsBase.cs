@@ -37,9 +37,9 @@ public class UnitTestsBase
         this.MockDatabaseAdapter = Substitute.For<IDatabaseAdapter>();
         this.MockEntityManipulator = Substitute.For<IEntityManipulator>();
 
-        typeof(DatabaseAdapterRegistry).GetMethod(nameof(DatabaseAdapterRegistry.RegisterAdapter))!
+        typeof(DbConnectionPlusConfiguration).GetMethod(nameof(DbConnectionPlusConfiguration.RegisterDatabaseAdapter))!
             .MakeGenericMethod(this.MockDbConnection.GetType())
-            .Invoke(null, [this.MockDatabaseAdapter]);
+            .Invoke(DbConnectionPlusConfiguration.Instance, [this.MockDatabaseAdapter]);
 
         DbCommandFactory = this.MockCommandFactory;
 

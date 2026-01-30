@@ -109,7 +109,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.UpdateEntities(
             connection,
@@ -222,7 +222,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator
             .UpdateEntitiesAsync(connection, entities, transaction, cancellationToken);

@@ -1,4 +1,14 @@
-﻿using NSubstitute.DbConnection;
+﻿using Microsoft.Data.Sqlite;
+using MySqlConnector;
+using Npgsql;
+using NSubstitute.DbConnection;
+using Oracle.ManagedDataAccess.Client;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Configuration;
@@ -89,6 +99,51 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         Invoking(() => entityPropertyBuilder.IsKey())
             .Should().Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
+    }
+
+    [Fact]
+    public void GetDatabaseAdapter_NoAdapterRegisteredForConnectionType_ShouldThrow() =>
+        Invoking(() => DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionC)))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(
+                "No database adapter is registered for the database connection of the type " +
+                $"{typeof(FakeConnectionC)}. Please call {nameof(DbConnectionExtensions)}." +
+                $"{nameof(DbConnectionExtensions.Configure)} to register an adapter for that connection type."
+            );
+
+    [Fact]
+    public void GetDatabaseAdapter_ShouldGetAdapter()
+    {
+        var adapterA = Substitute.For<IDatabaseAdapter>();
+        var adapterB = Substitute.For<IDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionB>(adapterB);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
+            .Should().BeSameAs(adapterA);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB))
+            .Should().BeSameAs(adapterB);
+    }
+
+    [Fact]
+    public void GetDatabaseAdapter_ShouldGetDefaultAdapters()
+    {
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(MySqlConnection))
+            .Should().BeOfType<MySqlDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(OracleConnection))
+            .Should().BeOfType<OracleDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(NpgsqlConnection))
+            .Should().BeOfType<PostgreSqlDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(SqliteConnection))
+            .Should().BeOfType<SqliteDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(SqlConnection))
+            .Should().BeOfType<SqlServerDatabaseAdapter>();
     }
 
     [Fact]
@@ -211,5 +266,55 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         interceptedTemporaryTables
             .Should().BeEquivalentTo(temporaryTables);
+    }
+
+    [Fact]
+    public void RegisterDatabaseAdapter_ShouldRegisterAdapter()
+    {
+        var adapterA = Substitute.For<IDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
+            .Should().BeSameAs(adapterA);
+
+        var adapterB = Substitute.For<IDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionB>(adapterB);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB))
+            .Should().BeSameAs(adapterB);
+    }
+
+    [Fact]
+    public void RegisterDatabaseAdapter_ShouldReplaceRegisteredAdapter()
+    {
+        var adapterA = Substitute.For<IDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
+            .Should().BeSameAs(adapterA);
+
+        var adapterB = Substitute.For<IDatabaseAdapter>();
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterB);
+
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
+            .Should().BeSameAs(adapterB);
+    }
+
+    [Fact]
+    public void ShouldGuardAgainstNullArguments()
+    {
+        ArgumentNullGuardVerifier.Verify(() =>
+            DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(SqlConnection))
+        );
+
+        ArgumentNullGuardVerifier.Verify(() =>
+            DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqlConnection>(
+                new SqlServerDatabaseAdapter()
+            )
+        );
     }
 }

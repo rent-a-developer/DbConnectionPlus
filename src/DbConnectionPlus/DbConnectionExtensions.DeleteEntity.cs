@@ -76,7 +76,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entity);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.DeleteEntity(
             connection,
@@ -157,7 +157,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entity);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.DeleteEntityAsync(
             connection,

@@ -143,9 +143,6 @@ public static class EntityHelper
     /// </exception>
     private static EntityTypeMetadata CreateEntityTypeMetadata(Type entityType)
     {
-        // TODO: Throw exception when there is more than one identity property and change
-        // EntityTypeMetadata.IdentityProperties to a single property.
-
         String tableName;
 
         DbConnectionPlusConfiguration.Instance.GetEntityTypeBuilders()

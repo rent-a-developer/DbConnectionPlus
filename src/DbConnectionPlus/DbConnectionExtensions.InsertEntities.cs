@@ -91,7 +91,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.InsertEntities(
             connection,
@@ -185,7 +185,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator
             .InsertEntitiesAsync(

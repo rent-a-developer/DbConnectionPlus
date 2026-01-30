@@ -1,10 +1,32 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Configuration;
+﻿using Microsoft.Data.Sqlite;
+using MySqlConnector;
+using Npgsql;
+using Oracle.ManagedDataAccess.Client;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
+
+namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 /// <summary>
 /// The configuration for DbConnectionPlus.
 /// </summary>
 public sealed class DbConnectionPlusConfiguration : IFreezable
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DbConnectionPlusConfiguration" /> class.
+    /// </summary>
+    internal DbConnectionPlusConfiguration()
+    {
+        this.databaseAdapters.TryAdd(typeof(MySqlConnection), new MySqlDatabaseAdapter());
+        this.databaseAdapters.TryAdd(typeof(OracleConnection), new OracleDatabaseAdapter());
+        this.databaseAdapters.TryAdd(typeof(NpgsqlConnection), new PostgreSqlDatabaseAdapter());
+        this.databaseAdapters.TryAdd(typeof(SqliteConnection), new SqliteDatabaseAdapter());
+        this.databaseAdapters.TryAdd(typeof(SqlConnection), new SqlServerDatabaseAdapter());
+    }
+
     /// <summary>
     /// <para>
     /// Controls how <see cref="Enum" /> values are serialized when they are sent to a database using one of the
@@ -88,6 +110,26 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         );
     }
 
+    /// <summary>
+    /// Registers a database adapter for the connection type <typeparamref name="TConnection" />.
+    /// If an adapter is already registered for the connection type <typeparamref name="TConnection" />, the existing
+    /// adapter is replaced.
+    /// </summary>
+    /// <typeparam name="TConnection">
+    /// The type of database connection for which <paramref name="adapter" /> is being registered.
+    /// </typeparam>
+    /// <param name="adapter">
+    /// The database adapter to associate with the connection type <typeparamref name="TConnection" />.
+    /// </param>
+    /// <exception cref="ArgumentNullException"><paramref name="adapter" /> is <see langword="null" />.</exception>
+    public void RegisterDatabaseAdapter<TConnection>(IDatabaseAdapter adapter)
+        where TConnection : DbConnection
+    {
+        ArgumentNullException.ThrowIfNull(adapter);
+
+        this.databaseAdapters.AddOrUpdate(typeof(TConnection), adapter, (_, _) => adapter);
+    }
+
     /// <inheritdoc />
     void IFreezable.Freeze()
     {
@@ -103,6 +145,35 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// The singleton instance of <see cref="DbConnectionPlusConfiguration" />.
     /// </summary>
     public static DbConnectionPlusConfiguration Instance { get; internal set; } = new();
+
+    /// <summary>
+    /// Retrieves the database adapter associated with the connection type <paramref name="connectionType" />.
+    /// </summary>
+    /// <param name="connectionType">
+    /// The type of the database connection for which to retrieve the adapter.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IDatabaseAdapter" /> instance that supports database connections of the type
+    /// <paramref name="connectionType" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="connectionType" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No adapter is registered for the connection type <paramref name="connectionType" />.
+    /// </exception>
+    internal IDatabaseAdapter GetDatabaseAdapter(Type connectionType)
+    {
+        ArgumentNullException.ThrowIfNull(connectionType);
+
+        return this.databaseAdapters.TryGetValue(connectionType, out var adapter)
+            ? adapter
+            : throw new InvalidOperationException(
+                $"No database adapter is registered for the database connection of the type {connectionType}. " +
+                $"Please call {nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)} to " +
+                "register an adapter for that connection type."
+            );
+    }
 
     /// <summary>
     /// Gets the configured entity type builders.
@@ -122,6 +193,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         }
     }
 
+    private readonly ConcurrentDictionary<Type, IDatabaseAdapter> databaseAdapters = [];
     private readonly ConcurrentDictionary<Type, IEntityTypeBuilder> entityTypeBuilders = new();
     private Boolean isFrozen;
 }
