@@ -832,14 +832,10 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     sqlBuilder.Append(Constants.Indent);
 
-                    var identityProperty = entityTypeMetadata.DatabaseGeneratedProperties.FirstOrDefault(a =>
-                        a.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity
-                    );
-
-                    if (identityProperty is not null)
+                    if (entityTypeMetadata.IdentityProperty is not null)
                     {
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(identityProperty.ColumnName);
+                        sqlBuilder.Append(entityTypeMetadata.IdentityProperty.ColumnName);
                         sqlBuilder.Append("\" = last_insert_rowid()");
                     }
                     else

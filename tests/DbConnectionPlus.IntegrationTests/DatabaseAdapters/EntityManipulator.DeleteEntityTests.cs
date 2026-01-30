@@ -1,4 +1,5 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+﻿using System.Data.Common;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -30,8 +31,12 @@ public abstract class EntityManipulator_DeleteEntityTests
     protected EntityManipulator_DeleteEntityTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
-    [Fact]
-    public void DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -41,164 +46,8 @@ public abstract class EntityManipulator_DeleteEntityTests
 
         this.DbCommandFactory.DelayNextDbCommand = true;
 
-        Invoking(() => this.manipulator.DeleteEntity(
-                    this.Connection,
-                    entityToDelete,
-                    null,
-                    cancellationToken
-                )
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        // Since the operation was cancelled, the entity should still exist.
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public void DeleteEntity_MissingKeyProperty_ShouldThrow()
-    {
-        var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
-
-        Invoking(() => this.manipulator.DeleteEntity(
-                    this.Connection,
-                    entityWithoutKeyProperty,
-                    null,
-                    TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                "Make sure that at least one instance property of that type is denoted with a " +
-                $"{typeof(KeyAttribute)}."
-            );
-    }
-
-    [Fact]
-    public void DeleteEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
-    {
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        this.manipulator.DeleteEntity(
-            this.Connection,
-            entityToDelete,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void DeleteEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
-    {
-        var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
-
-        this.manipulator.DeleteEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void DeleteEntity_ShouldHandleEntityWithCompositeKey()
-    {
-        var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
-
-        this.manipulator.DeleteEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void DeleteEntity_ShouldReturnNumberOfAffectedRows()
-    {
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        this.manipulator.DeleteEntity(
-                this.Connection,
-                entityToDelete,
-                null,
-                TestContext.Current.CancellationToken
-            )
-            .Should().Be(1);
-
-        this.manipulator.DeleteEntity(
-                this.Connection,
-                entityToDelete,
-                null,
-                TestContext.Current.CancellationToken
-            )
-            .Should().Be(0);
-    }
-
-    [Fact]
-    public void DeleteEntity_ShouldUseConfiguredColumnNames()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
-
-        this.manipulator.DeleteEntity(
-            this.Connection,
-            entityWithColumnAttributes,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void DeleteEntity_Transaction_ShouldUseTransaction()
-    {
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            this.manipulator.DeleteEntity(
-                this.Connection,
-                entityToDelete,
-                transaction,
-                TestContext.Current.CancellationToken
-            );
-
-            this.ExistsEntityInDb(entityToDelete, transaction)
-                .Should().BeFalse();
-
-            transaction.Rollback();
-        }
-
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task DeleteEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        await Invoking(() => this.manipulator.DeleteEntityAsync(
+        await Invoking(() => this.CallApi(
+                    useAsyncApi,
                     this.Connection,
                     entityToDelete,
                     null,
@@ -213,12 +62,55 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Should().BeTrue();
     }
 
-    [Fact]
-    public Task DeleteEntityAsync_MissingKeyProperty_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+        Boolean useAsyncApi
+    )
+    {
+        var entityToDelete = this.CreateEntityInDb<Entity>();
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entityToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entity,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entity)
+            .Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task DeleteEntityAsync_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
-        return Invoking(() => this.manipulator.DeleteEntityAsync(
+        return Invoking(() => this.CallApi(
+                    useAsyncApi,
                     this.Connection,
                     entityWithoutKeyProperty,
                     null,
@@ -233,44 +125,15 @@ public abstract class EntityManipulator_DeleteEntityTests
             );
     }
 
-    [Fact]
-    public async Task DeleteEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
-    {
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        await this.manipulator.DeleteEntityAsync(
-            this.Connection,
-            entityToDelete,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task DeleteEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
-    {
-        var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
-
-        await this.manipulator.DeleteEntityAsync(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task DeleteEntityAsync_ShouldHandleEntityWithCompositeKey()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
 
-        await this.manipulator.DeleteEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entity,
             null,
@@ -281,12 +144,15 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task DeleteEntityAsync_ShouldReturnNumberOfAffectedRows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
-        (await this.manipulator.DeleteEntityAsync(
+        (await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 entityToDelete,
                 null,
@@ -294,7 +160,8 @@ public abstract class EntityManipulator_DeleteEntityTests
             ))
             .Should().Be(1);
 
-        (await this.manipulator.DeleteEntityAsync(
+        (await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 entityToDelete,
                 null,
@@ -303,13 +170,16 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Should().Be(0);
     }
 
-    [Fact]
-    public async Task DeleteEntityAsync_ShouldUseConfiguredColumnNames()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
 
-        await this.manipulator.DeleteEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entityWithColumnAttributes,
             null,
@@ -320,14 +190,17 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task DeleteEntityAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
-            await this.manipulator.DeleteEntityAsync(
+            await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 entityToDelete,
                 transaction,
@@ -342,6 +215,32 @@ public abstract class EntityManipulator_DeleteEntityTests
 
         this.ExistsEntityInDb(entityToDelete)
             .Should().BeTrue();
+    }
+
+    private Task<Int32> CallApi<TEntity>(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction = null,
+        CancellationToken cancellationToken = default
+    )
+        where TEntity : class
+    {
+        if (useAsyncApi)
+        {
+            return this.manipulator.DeleteEntityAsync(connection, entity, transaction, cancellationToken);
+        }
+
+        try
+        {
+            return Task.FromResult(
+                this.manipulator.DeleteEntity(connection, entity, transaction, cancellationToken)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<Int32>(ex);
+        }
     }
 
     private readonly IEntityManipulator manipulator;

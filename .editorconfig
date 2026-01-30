@@ -47,6 +47,9 @@ dotnet_diagnostic.RCS1227.severity = none
 # RCS1124: Inline local variable
 dotnet_diagnostic.RCS1124.severity = suggestion
 
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = none
+
 [*.{cs,vb}]
 #### Naming styles ####
 

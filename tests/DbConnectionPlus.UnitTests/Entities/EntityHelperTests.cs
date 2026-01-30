@@ -1,6 +1,4 @@
-﻿#pragma warning disable IDE0200
-
-using System.Reflection;
+﻿using System.Reflection;
 using AutoFixture;
 using AutoFixture.Kernel;
 using Bogus;
@@ -154,6 +152,16 @@ public class EntityHelperTests : UnitTestsBase
     }
 
     [Fact]
+    public void GetEntityTypeMetadata_MoreThanOneIdentityProperty_ShouldThrow() =>
+        Invoking(() => EntityHelper.GetEntityTypeMetadata(typeof(EntityWithMultipleIdentityProperties)))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(
+                "There are multiple identity properties defined for the entity type " +
+                $"{typeof(EntityWithMultipleIdentityProperties)}. Only one property can be marked as an identity " +
+                "property per entity type."
+            );
+
+    [Fact]
     public void GetEntityTypeMetadata_FluentAPIConfig_ShouldGetMetadataBasedOnFluentAPIConfig()
     {
         var tableName = Generate.Single<String>();
@@ -228,8 +236,8 @@ public class EntityHelperTests : UnitTestsBase
         metadata.ComputedProperties
             .Should().Contain(int16ValueProperty);
 
-        metadata.IdentityProperties
-            .Should().Contain(int32ValueProperty);
+        metadata.IdentityProperty
+            .Should().Be(int32ValueProperty);
 
         metadata.InsertProperties
             .Should().Contain([idProperty, booleanValueProperty]);
@@ -291,9 +299,9 @@ public class EntityHelperTests : UnitTestsBase
             .Should()
             .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsComputed: true }));
 
-        metadata.IdentityProperties
+        metadata.IdentityProperty
             .Should()
-            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsIdentity: true }));
+            .Be(allPropertiesMetadata.FirstOrDefault(a => a is { IsIgnored: false, IsIdentity: true }));
 
         metadata.DatabaseGeneratedProperties
             .Should()

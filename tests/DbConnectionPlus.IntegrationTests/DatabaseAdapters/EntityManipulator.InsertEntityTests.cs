@@ -1,3 +1,4 @@
+using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
@@ -30,210 +31,12 @@ public abstract class EntityManipulator_InsertEntityTests
     protected EntityManipulator_InsertEntityTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
-    [Fact]
-    public void InsertEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var entity = Generate.Single<Entity>();
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() => this.manipulator.InsertEntity(this.Connection, entity, null, cancellationToken))
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        // Since the operation was cancelled, the entity should not have been inserted.
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void InsertEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
-    {
-        var entity = Generate.Single<Entity>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public void InsertEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
-    {
-        var entity = Generate.Single<EntityWithTableAttribute>();
-
-        this.manipulator.InsertEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public void InsertEntity_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
-    {
-        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
-
-        var entity = Generate.Single<EntityWithEnumStoredAsInteger>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<Int32>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be((Int32)entity.Enum);
-    }
-
-    [Fact]
-    public void InsertEntity_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
-    {
-        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        var entity = Generate.Single<EntityWithEnumStoredAsString>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<String>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity.Enum.ToString());
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldHandleIdentityAndComputedColumns()
-    {
-        var entity = Generate.Single<EntityWithIdentityAndComputedProperties>();
-
-        this.manipulator.InsertEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        entity
-            .Should().BeEquivalentTo(
-                this.Connection.QuerySingle<EntityWithIdentityAndComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-                )
-            );
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldIgnorePropertiesDenotedWithNotMappedAttribute()
-    {
-        var entity = Generate.Single<EntityWithNotMappedProperty>();
-        entity.NotMappedValue = "ShouldNotBePersisted";
-
-        this.manipulator.InsertEntity(
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Id")}, {Q("NotMappedValue")} FROM {Q("EntityWithNotMappedProperty")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        while (reader.Read())
-        {
-            reader.IsDBNull(reader.GetOrdinal("NotMappedValue"))
-                .Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldInsertEntity()
-    {
-        var entity = Generate.Single<Entity>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldReturnNumberOfAffectedRows()
-    {
-        var entity = Generate.Single<Entity>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken)
-            .Should().Be(1);
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldSupportDateTimeOffsetValues()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var entity = Generate.Single<EntityWithDateTimeOffset>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<EntityWithDateTimeOffset>(
-                $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void InsertEntity_ShouldUseConfiguredColumnNames()
-    {
-        var entity = Generate.Single<EntityWithColumnAttributes>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<EntityWithColumnAttributes>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void InsertEntity_Transaction_ShouldUseTransaction()
-    {
-        var entity = Generate.Single<Entity>();
-
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            this.manipulator.InsertEntity(
-                    this.Connection,
-                    entity,
-                    transaction,
-                    TestContext.Current.CancellationToken
-                )
-                .Should().Be(1);
-
-            this.ExistsEntityInDb(entity, transaction)
-                .Should().BeTrue();
-
-            transaction.Rollback();
-        }
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task InsertEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -244,7 +47,7 @@ public abstract class EntityManipulator_InsertEntityTests
         this.DbCommandFactory.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                this.manipulator.InsertEntityAsync(this.Connection, entity, null, cancellationToken)
+                this.CallApi(useAsyncApi, this.Connection, entity, null, cancellationToken)
             )
             .Should().ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
@@ -254,12 +57,17 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+        Boolean useAsyncApi
+    )
     {
         var entity = Generate.Single<Entity>();
 
-        await this.manipulator.InsertEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entity,
             null,
@@ -270,12 +78,15 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeTrue();
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithTableAttribute>();
 
-        await this.manipulator.InsertEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entity,
             null,
@@ -286,14 +97,18 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeTrue();
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+        Boolean useAsyncApi
+    )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entity = Generate.Single<EntityWithEnumStoredAsInteger>();
 
-        await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QuerySingleAsync<Int32>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
@@ -302,14 +117,18 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().Be((Int32)entity.Enum);
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+        Boolean useAsyncApi
+    )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entity = Generate.Single<EntityWithEnumStoredAsString>();
 
-        await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QuerySingleAsync<String>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
@@ -318,12 +137,15 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(entity.Enum.ToString());
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldHandleIdentityAndComputedColumns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithIdentityAndComputedProperties>();
 
-        await this.manipulator.InsertEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entity,
             null,
@@ -338,13 +160,16 @@ public abstract class EntityManipulator_InsertEntityTests
             );
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithNotMappedProperty>();
         entity.NotMappedValue = "ShouldNotBePersisted";
 
-        await this.manipulator.InsertEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             entity,
             null,
@@ -363,12 +188,14 @@ public abstract class EntityManipulator_InsertEntityTests
         }
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldInsertEntity()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldInsertEntity(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 
-        (await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken))
+        (await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken))
             .Should().Be(1);
 
         (await this.Connection.QuerySingleAsync<Entity>(
@@ -378,23 +205,27 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldReturnNumberOfAffectedRows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 
-        (await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken))
+        (await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken))
             .Should().Be(1);
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldSupportDateTimeOffsetValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var entity = Generate.Single<EntityWithDateTimeOffset>();
 
-        await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
@@ -403,12 +234,14 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_ShouldUseConfiguredColumnNames()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithColumnAttributes>();
 
-        await this.manipulator.InsertEntityAsync(this.Connection, entity, null, TestContext.Current.CancellationToken);
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
                 $"SELECT * FROM {Q("Entity")}",
@@ -417,14 +250,17 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task InsertEntityAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
-            (await this.manipulator.InsertEntityAsync(
+            (await this.CallApi(
+                    useAsyncApi,
                     this.Connection,
                     entity,
                     transaction,
@@ -440,6 +276,32 @@ public abstract class EntityManipulator_InsertEntityTests
 
         this.ExistsEntityInDb(entity)
             .Should().BeFalse();
+    }
+
+    private Task<Int32> CallApi<TEntity>(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction = null,
+        CancellationToken cancellationToken = default
+    )
+        where TEntity : class
+    {
+        if (useAsyncApi)
+        {
+            return this.manipulator.InsertEntityAsync(connection, entity, transaction, cancellationToken);
+        }
+
+        try
+        {
+            return Task.FromResult(
+                this.manipulator.InsertEntity(connection, entity, transaction, cancellationToken)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<Int32>(ex);
+        }
     }
 
     private readonly IEntityManipulator manipulator;

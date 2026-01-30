@@ -79,7 +79,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_EntitiesWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+    public async Task DeleteEntities_EntitiesWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
         Boolean useAsyncApi
     )
     {
@@ -103,7 +103,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_EntitiesWithTableAttribute_ShouldUseTableNameFromAttribute(
+    public async Task DeleteEntities_EntitiesWithTableAttribute_ShouldUseTableNameFromAttribute(
         Boolean useAsyncApi
     )
     {
@@ -127,7 +127,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task DeleteEntitiesAsync_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    public Task DeleteEntities_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
@@ -149,7 +149,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_MoreThan10Entities_ShouldBatchDeleteIfPossible(Boolean useAsyncApi)
+    public async Task DeleteEntities_MoreThan10Entities_ShouldBatchDeleteIfPossible(Boolean useAsyncApi)
     {
         // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
         // to test that as well.
@@ -174,7 +174,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_MoreThan10Entities_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task DeleteEntities_MoreThan10Entities_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
         // to test that as well.
@@ -200,7 +200,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
+    public async Task DeleteEntities_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<EntityWithCompositeKey>();
 
@@ -222,7 +222,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task DeleteEntities_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
 
@@ -248,7 +248,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task DeleteEntities_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
         var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
@@ -271,7 +271,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntitiesAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task DeleteEntities_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
 
@@ -300,6 +300,8 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                 .Should().BeTrue();
         }
     }
+
+    // Refactor all tests to use this strategy.
 
     private Task<Int32> CallApi<TEntity>(
         Boolean useAsyncApi,

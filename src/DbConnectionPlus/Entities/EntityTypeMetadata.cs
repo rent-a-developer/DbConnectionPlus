@@ -23,8 +23,9 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <param name="ComputedProperties">
 /// The metadata of the computed properties of the entity type.
 /// </param>
-/// <param name="IdentityProperties">
-/// The metadata of the identity properties of the entity type.
+/// <param name="IdentityProperty">
+/// The metadata of the identity property of the entity type.
+/// This is <see langword="null"/> if the entity type does not have an identity property.
 /// </param>
 /// <param name="DatabaseGeneratedProperties">
 /// The metadata of the database-generated properties of the entity type.
@@ -43,7 +44,7 @@ public sealed record EntityTypeMetadata(
     IReadOnlyList<EntityPropertyMetadata> MappedProperties,
     IReadOnlyList<EntityPropertyMetadata> KeyProperties,
     IReadOnlyList<EntityPropertyMetadata> ComputedProperties,
-    IReadOnlyList<EntityPropertyMetadata> IdentityProperties,
+    EntityPropertyMetadata? IdentityProperty,
     IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties,
     IReadOnlyList<EntityPropertyMetadata> InsertProperties,
     IReadOnlyList<EntityPropertyMetadata> UpdateProperties

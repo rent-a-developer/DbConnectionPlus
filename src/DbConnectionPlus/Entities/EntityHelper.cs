@@ -112,6 +112,9 @@ public static class EntityHelper
     /// <exception cref="ArgumentNullException">
     /// <paramref name="entityType" /> is <see langword="null" />.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// There is more than one identity property defined for the entity type <paramref name="entityType" />.
+    /// </exception>
     public static EntityTypeMetadata GetEntityTypeMetadata(Type entityType)
     {
         ArgumentNullException.ThrowIfNull(entityType);
@@ -135,6 +138,9 @@ public static class EntityHelper
     /// <returns>
     /// An instance of <see cref="EntityTypeMetadata" /> containing the created metadata.
     /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// There is more than one identity property defined for the entity type <paramref name="entityType" />.
+    /// </exception>
     private static EntityTypeMetadata CreateEntityTypeMetadata(Type entityType)
     {
         // TODO: Throw exception when there is more than one identity property and change
@@ -208,33 +214,32 @@ public static class EntityHelper
             }
         }
 
+        var identityProperties = propertiesMetadata.Where(a => a.IsIdentity).ToList();
+
+        if (identityProperties.Count > 1)
+        {
+            throw new InvalidOperationException(
+                $"There are multiple identity properties defined for the entity type {entityType}. Only one property " +
+                "can be marked as an identity property per entity type."
+            );
+        }
+
         return new(
             entityType,
             tableName,
             propertiesMetadata,
-            propertiesMetadata
-                .ToDictionary(p => p.PropertyName),
-            propertiesMetadata
-                .Where(p => !p.IsIgnored)
-                .ToList(),
-            propertiesMetadata
-                .Where(p => p is { IsIgnored: false, IsKey: true })
-                .ToList(),
-            propertiesMetadata
-                .Where(p => p is { IsIgnored: false, IsComputed: true })
-                .ToList(),
-            propertiesMetadata
-                .Where(p => p is { IsIgnored: false, IsIdentity: true })
-                .ToList(),
-            propertiesMetadata
-                .Where(p => !p.IsIgnored && (p.IsComputed || p.IsIdentity))
-                .ToList(),
-            propertiesMetadata
-                .Where(p => p is { IsIgnored: false, IsComputed: false, IsIdentity: false })
-                .ToList(),
-            propertiesMetadata
-                .Where(p => p is { IsIgnored: false, IsKey: false, IsComputed: false, IsIdentity: false })
-                .ToList()
+            propertiesMetadata.ToDictionary(p => p.PropertyName),
+            [.. propertiesMetadata.Where(p => !p.IsIgnored)],
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsKey: true })],
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsComputed: true })],
+            identityProperties.FirstOrDefault(),
+            [.. propertiesMetadata.Where(p => !p.IsIgnored && (p.IsComputed || p.IsIdentity))],
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsComputed: false, IsIdentity: false })],
+            [
+                .. propertiesMetadata.Where(p => p is
+                    { IsIgnored: false, IsKey: false, IsComputed: false, IsIdentity: false }
+                )
+            ]
         );
     }
 

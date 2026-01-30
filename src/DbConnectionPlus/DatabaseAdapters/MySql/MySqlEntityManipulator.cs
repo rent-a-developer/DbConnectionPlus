@@ -1172,14 +1172,10 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                     sqlBuilder.Append(Constants.Indent);
 
-#pragma warning disable CA1826
-                    var identityProperty = entityTypeMetadata.IdentityProperties.FirstOrDefault();
-#pragma warning restore CA1826
-
-                    if (identityProperty is not null)
+                    if (entityTypeMetadata.IdentityProperty is not null)
                     {
                         sqlBuilder.Append('`');
-                        sqlBuilder.Append(identityProperty.ColumnName);
+                        sqlBuilder.Append(entityTypeMetadata.IdentityProperty.ColumnName);
                         sqlBuilder.Append("` = LAST_INSERT_ID()");
                     }
                     else

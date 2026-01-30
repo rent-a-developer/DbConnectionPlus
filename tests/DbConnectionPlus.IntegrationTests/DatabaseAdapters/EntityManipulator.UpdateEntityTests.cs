@@ -1,3 +1,4 @@
+using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
@@ -30,311 +31,12 @@ public abstract class EntityManipulator_UpdateEntityTests
     protected EntityManipulator_UpdateEntityTests() =>
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
-    [Fact]
-    public void UpdateEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() => this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, cancellationToken))
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        // Since the operation was cancelled, the entity should not have been updated.
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void UpdateEntity_MissingKeyProperty_ShouldThrow() =>
-        Invoking(() =>
-                this.manipulator.UpdateEntity(
-                    this.Connection,
-                    new EntityWithoutKeyProperty(),
-                    null,
-                    TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. Make " +
-                $"sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
-            );
-
-    [Fact]
-    public void UpdateEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
-    {
-        var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.QuerySingle<EntityWithTableAttribute>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
-    {
-        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
-
-        var entity = Generate.Single<EntityWithEnumStoredAsInteger>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        // Make sure the enum is stored as integer:
-        this.Connection.QuerySingle<Int32>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be((Int32)entity.Enum);
-
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        // Make sure the enum is stored as integer:
-        this.Connection.QuerySingle<Int32>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be((Int32)updatedEntity.Enum);
-    }
-
-    [Fact]
-    public void UpdateEntity_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
-    {
-        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        var entity = Generate.Single<EntityWithEnumStoredAsString>();
-
-        this.manipulator.InsertEntity(this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        // Make sure the enum is stored as string:
-        this.Connection.QuerySingle<String>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity.Enum.ToString());
-
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        // Make sure the enum is stored as string:
-        this.Connection.QuerySingle<String>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity.Enum.ToString());
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldHandleEntityWithCompositeKey()
-    {
-        var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.QuerySingle<EntityWithCompositeKey>(
-                $"SELECT * FROM {Q("EntityWithCompositeKey")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldHandleIdentityAndComputedColumns()
-    {
-        var entity = this.CreateEntityInDb<EntityWithIdentityAndComputedProperties>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        updatedEntity
-            .Should().BeEquivalentTo(
-                this.Connection.QuerySingle<EntityWithIdentityAndComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-                )
-            );
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldIgnorePropertiesDenotedWithNotMappedAttribute()
-    {
-        var entity = this.CreateEntityInDb<EntityWithNotMappedProperty>();
-
-        var updatedEntity = Generate.UpdateFor(entity);
-        updatedEntity.NotMappedValue = "ShouldNotBePersisted";
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Id")}, {Q("NotMappedValue")} FROM {Q("EntityWithNotMappedProperty")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        while (reader.Read())
-        {
-            reader.IsDBNull(reader.GetOrdinal("NotMappedValue"))
-                .Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldReturnNumberOfAffectedRows()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken)
-            .Should().Be(1);
-
-        var nonExistentEntity = Generate.Single<Entity>();
-
-        this.manipulator.UpdateEntity(this.Connection, nonExistentEntity, null, TestContext.Current.CancellationToken)
-            .Should().Be(0);
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldSupportDateTimeOffsetValues()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(
-            this.Connection,
-            updatedEntity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.QuerySingle<EntityWithDateTimeOffset>(
-                $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldUpdateEntity()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_ShouldUseConfiguredColumnNames()
-    {
-        var entity = this.CreateEntityInDb<EntityWithColumnAttributes>();
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.manipulator.UpdateEntity(this.Connection, updatedEntity, null, TestContext.Current.CancellationToken);
-
-        this.Connection.QuerySingle<EntityWithColumnAttributes>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(updatedEntity);
-    }
-
-    [Fact]
-    public void UpdateEntity_Transaction_ShouldUseTransaction()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            var updatedEntity = Generate.UpdateFor(entity);
-
-            this.manipulator.UpdateEntity(
-                    this.Connection,
-                    updatedEntity,
-                    transaction,
-                    TestContext.Current.CancellationToken
-                )
-                .Should().Be(1);
-
-            this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
-                .Should().BeEquivalentTo(updatedEntity);
-
-            transaction.Rollback();
-        }
-
-        this.Connection.QuerySingle<Entity>($"SELECT * FROM {Q("Entity")}")
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public async Task UpdateEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -346,7 +48,7 @@ public abstract class EntityManipulator_UpdateEntityTests
         this.DbCommandFactory.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                this.manipulator.UpdateEntityAsync(this.Connection, updatedEntity, null, cancellationToken)
+                this.CallApi(useAsyncApi, this.Connection, updatedEntity, null, cancellationToken)
             )
             .Should().ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
@@ -359,29 +61,18 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public Task UpdateEntityAsync_MissingKeyProperty_ShouldThrow() =>
-        Invoking(() =>
-                this.manipulator.UpdateEntityAsync(
-                    this.Connection,
-                    new EntityWithoutKeyProperty(),
-                    null,
-                    TestContext.Current.CancellationToken
-                )
-            )
-            .Should().ThrowAsync<ArgumentException>()
-            .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. Make " +
-                $"sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
-            );
-
-    [Fact]
-    public async Task UpdateEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+        Boolean useAsyncApi
+    )
     {
         var entity = this.CreateEntityInDb<Entity>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -395,13 +86,16 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -415,8 +109,12 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+        Boolean useAsyncApi
+    )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
@@ -433,7 +131,8 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -448,8 +147,12 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().Be((Int32)updatedEntity.Enum);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+        Boolean useAsyncApi
+    )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
@@ -466,7 +169,8 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -481,13 +185,35 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity.Enum.ToString());
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldHandleEntityWithCompositeKey()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task UpdateEntityAsync_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi) =>
+        Invoking(() =>
+                this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    new EntityWithoutKeyProperty(),
+                    null,
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage(
+                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. Make " +
+                $"sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
+            );
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -501,13 +227,16 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldHandleIdentityAndComputedColumns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithIdentityAndComputedProperties>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -522,15 +251,18 @@ public abstract class EntityManipulator_UpdateEntityTests
             );
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithNotMappedProperty>();
 
         var updatedEntity = Generate.UpdateFor(entity);
         updatedEntity.NotMappedValue = "ShouldNotBePersisted";
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -549,13 +281,16 @@ public abstract class EntityManipulator_UpdateEntityTests
         }
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldReturnNumberOfAffectedRows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        (await this.manipulator.UpdateEntityAsync(
+        (await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 updatedEntity,
                 null,
@@ -565,7 +300,8 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         var nonExistentEntity = Generate.Single<Entity>();
 
-        (await this.manipulator.UpdateEntityAsync(
+        (await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 nonExistentEntity,
                 null,
@@ -574,15 +310,18 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().Be(0);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldSupportDateTimeOffsetValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -596,13 +335,16 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldUpdateEntity()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldUpdateEntity(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        (await this.manipulator.UpdateEntityAsync(
+        (await this.CallApi(
+                useAsyncApi,
                 this.Connection,
                 updatedEntity,
                 null,
@@ -617,13 +359,16 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_ShouldUseConfiguredColumnNames()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithColumnAttributes>();
         var updatedEntity = Generate.UpdateFor(entity);
 
-        await this.manipulator.UpdateEntityAsync(
+        await this.CallApi(
+            useAsyncApi,
             this.Connection,
             updatedEntity,
             null,
@@ -637,8 +382,10 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(updatedEntity);
     }
 
-    [Fact]
-    public async Task UpdateEntityAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -646,7 +393,8 @@ public abstract class EntityManipulator_UpdateEntityTests
         {
             var updatedEntity = Generate.UpdateFor(entity);
 
-            (await this.manipulator.UpdateEntityAsync(
+            (await this.CallApi(
+                    useAsyncApi,
                     this.Connection,
                     updatedEntity,
                     transaction,
@@ -662,6 +410,32 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         (await this.Connection.QuerySingleAsync<Entity>($"SELECT * FROM {Q("Entity")}"))
             .Should().BeEquivalentTo(entity);
+    }
+
+    private Task<Int32> CallApi<TEntity>(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        TEntity entity,
+        DbTransaction? transaction = null,
+        CancellationToken cancellationToken = default
+    )
+        where TEntity : class
+    {
+        if (useAsyncApi)
+        {
+            return this.manipulator.UpdateEntityAsync(connection, entity, transaction, cancellationToken);
+        }
+
+        try
+        {
+            return Task.FromResult(
+                this.manipulator.UpdateEntity(connection, entity, transaction, cancellationToken)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<Int32>(ex);
+        }
     }
 
     private readonly IEntityManipulator manipulator;
