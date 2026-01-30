@@ -8,6 +8,7 @@ global using AwesomeAssertions;
 global using Microsoft.Data.SqlClient;
 global using NSubstitute;
 global using RentADeveloper.ArgumentNullGuards;
+global using RentADeveloper.DbConnectionPlus.Configuration;
 global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 global using static AwesomeAssertions.FluentActions;
 global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;

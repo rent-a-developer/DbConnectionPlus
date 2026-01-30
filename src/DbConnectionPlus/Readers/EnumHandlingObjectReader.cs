@@ -10,7 +10,7 @@ namespace RentADeveloper.DbConnectionPlus.Readers;
 /// <summary>
 /// <para>
 /// A version of <see cref="ObjectReader" /> that handles enum serialization according to the setting
-/// <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+/// <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
 /// </para>
 /// <para>
 /// For Enum fields <see cref="GetFieldType" /> returns the type that corresponds to the enum serialization mode.
@@ -34,7 +34,7 @@ internal class EnumHandlingObjectReader : ObjectReader
 
         if (fieldType?.IsEnumOrNullableEnumType() == true)
         {
-            return DbConnectionExtensions.EnumSerializationMode switch
+            return DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
             {
                 EnumSerializationMode.Strings =>
                     typeof(String),
@@ -42,7 +42,7 @@ internal class EnumHandlingObjectReader : ObjectReader
                     typeof(Int32),
                 _ =>
                     ThrowHelper.ThrowInvalidEnumSerializationModeException<Type>(
-                        DbConnectionExtensions.EnumSerializationMode
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                     )
             };
         }
@@ -101,7 +101,10 @@ internal class EnumHandlingObjectReader : ObjectReader
             switch (values[i])
             {
                 case Enum enumValue:
-                    values[i] = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                    values[i] = EnumSerializer.SerializeEnum(
+                        enumValue,
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    );
                     break;
 
                 case Char charValue:

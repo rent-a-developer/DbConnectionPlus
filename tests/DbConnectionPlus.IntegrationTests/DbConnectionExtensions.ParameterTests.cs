@@ -27,7 +27,7 @@ public abstract class
     [Fact]
     public void Parameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         // The variable name must be different from the variable name used in
         // Parameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString.
@@ -46,7 +46,7 @@ public abstract class
     [Fact]
     public void Parameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         // The variable name must be different from the variable name used in
         // Parameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger.

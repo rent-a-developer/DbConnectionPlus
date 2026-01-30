@@ -1,4 +1,4 @@
-﻿using System.Data.SqlTypes;
+using System.Data.SqlTypes;
 using System.Numerics;
 using NSubstitute.ExceptionExtensions;
 using RentADeveloper.DbConnectionPlus.Materializers;

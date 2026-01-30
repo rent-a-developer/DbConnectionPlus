@@ -132,10 +132,16 @@ internal static class EnumConverter
                     ThrowCouldNotConvertNumericValueToEnumType(value, targetType);
                 }
 
-                return (TTarget?)Enum.ToObject(effectiveTargetType, valueConvertedToEnumUnderlyingType);
+                return (TTarget?)Enum.ToObject(
+                    effectiveTargetType,
+                    valueConvertedToEnumUnderlyingType
+                );
 
             default:
-                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(value, targetType);
+                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
+                    value,
+                    targetType
+                );
                 return default; // Just to satisfy the compiler.
         }
     }

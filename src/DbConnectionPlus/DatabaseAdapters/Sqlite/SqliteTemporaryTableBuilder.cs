@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using FastMember;
@@ -65,7 +65,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -84,7 +84,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -142,7 +142,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -163,7 +163,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -181,7 +181,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         await using var reader = CreateValuesDataReader(values, valuesType);
 #pragma warning restore CA2007
 
-        await PopulateTemporaryTableAsync(sqliteConnection, sqliteTransaction, name, valuesType, reader, cancellationToken)
+        await PopulateTemporaryTableAsync(
+                sqliteConnection,
+                sqliteTransaction,
+                name,
+                valuesType,
+                reader,
+                cancellationToken
+            )
             .ConfigureAwait(false);
 
         return new(
@@ -306,7 +313,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead).ToList();
+            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+                .ToList();
 
             for (var i = 0; i < properties.Count; i++)
             {
@@ -457,7 +465,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
                 if (value is Enum enumValue)
                 {
-                    value = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                    value = EnumSerializer.SerializeEnum(
+                        enumValue,
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    );
                 }
 
                 parameters[i].Value = value;
@@ -510,7 +521,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 
                 if (value is Enum enumValue)
                 {
-                    value = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                    value = EnumSerializer.SerializeEnum(
+                        enumValue,
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    );
                 }
 
                 parameters[i].Value = value;

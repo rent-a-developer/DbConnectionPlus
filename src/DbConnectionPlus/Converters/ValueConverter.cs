@@ -134,7 +134,10 @@ internal static class ValueConverter
             case String stringValue when effectiveTargetType == typeof(Char):
                 if (stringValue.Length != 1)
                 {
-                    ThrowCouldNotConvertNonSingleCharStringToCharException(stringValue, targetType);
+                    ThrowCouldNotConvertNonSingleCharStringToCharException(
+                        stringValue,
+                        targetType
+                    );
                 }
 
                 return (TTarget)(Object)stringValue[0];
@@ -201,13 +204,21 @@ internal static class ValueConverter
 
                 try
                 {
-                    return (TTarget?)Convert.ChangeType(value, effectiveTargetType, CultureInfo.InvariantCulture);
+                    return (TTarget?)Convert.ChangeType(
+                        value,
+                        effectiveTargetType,
+                        CultureInfo.InvariantCulture
+                    );
                 }
                 catch (Exception exception) when (
                     exception is ArgumentException or InvalidCastException or FormatException or OverflowException
                 )
                 {
-                    ThrowCouldNotConvertValueToTargetTypeException(value, targetType, exception);
+                    ThrowCouldNotConvertValueToTargetTypeException(
+                        value,
+                        targetType,
+                        exception
+                    );
                     return default; // Just to satisfy the compiler
                 }
         }

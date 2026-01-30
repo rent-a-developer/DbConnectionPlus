@@ -13,6 +13,7 @@ using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
+// TODO: Move to DbConnectionPlusConfiguration.
 /// <summary>
 /// A registry for database adapters that adopt DbConnectionPlus to specific database systems.
 /// </summary>

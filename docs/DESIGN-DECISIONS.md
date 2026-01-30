@@ -1,6 +1,6 @@
 # DbConnectionPlus - Design Decisions Document
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Last Updated:** January 2026  
 **Author:** David Liebeherr
 
@@ -579,6 +579,45 @@ public static InterpolatedParameter Parameter(
 
 ## Entity Mapping Strategy
 
+### Fluent API-based Configuration
+
+**Decision:** Provide optional fluent API for entity configuration.
+
+**Example:**
+```csharp
+DbConnectionExtensions.Configure(config =>
+    {
+        // Table name mapping:
+        config.Entity<Product>()
+            .ToTable("Products");
+
+        // Column name mapping:
+        config.Entity<Product>()
+            .Property(a => a.Name)
+            .HasColumnName("ProductName");
+
+        // Key column mapping:
+        config.Entity<Product>()
+            .Property(a => a.Id)
+            .IsKey();
+
+        // Database generated column mapping:
+        config.Entity<Product>()
+            .Property(a => a.DiscountedPrice)
+            .IsDatabaseGenerated();
+
+        // Ignored property mapping:
+        config.Entity<Product>()
+            .Property(a => a.IsOnSale)
+            .Ignore();
+    }
+);
+```
+
+**Benefits:**
+- **Mostly EF Core compatible**: Similar API as of EF core
+- **Convenient**: Provides convinient way to configure entities without attributes
+
 ### Attribute-Based Configuration
 
 **Decision:** Use standard .NET data annotations for entity metadata.
@@ -631,13 +670,15 @@ public static class EntityHelper
 ```
 
 **Cached Information:**
-- Table name (from `[Table]` attribute or type name)
+- Table name (from `[Table]` attribute, fluent API config or type name)
 - Metadata of properties:
-  - Mapped properties (excluding `[NotMapped]`)
-  - Key properties (marked with `[Key]`)
+  - Mapped properties (excluding ignored properties)
+  - Key properties
+  - Computed properties
+  - Identity properties
+  - Database generated properties
   - Insert properties (properties to be included when inserting an entity)
   - Update properties (properties to be included when updating an entity)
-  - Database generated properties (marked with `[DatabaseGenerated(DatabaseGeneratedOption.Identity)]` or `[DatabaseGenerated(DatabaseGeneratedOption.Computed)]`)
 
 **Performance Impact:**
 - First entity operation: few ms for metadata extraction
@@ -993,6 +1034,8 @@ public List<Product> Query_Entities_DbConnectionPlus()
 ---
 
 ## Configuration and Extensibility
+
+TODO: Update this section.
 
 ### Global Configuration
 

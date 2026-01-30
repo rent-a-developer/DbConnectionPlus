@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -80,7 +80,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Fact]
     public void InsertEntity_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entity = Generate.Single<EntityWithEnumStoredAsInteger>();
 
@@ -96,7 +96,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Fact]
     public void InsertEntity_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entity = Generate.Single<EntityWithEnumStoredAsString>();
 
@@ -289,7 +289,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Fact]
     public async Task InsertEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entity = Generate.Single<EntityWithEnumStoredAsInteger>();
 
@@ -305,7 +305,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Fact]
     public async Task InsertEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entity = Generate.Single<EntityWithEnumStoredAsString>();
 

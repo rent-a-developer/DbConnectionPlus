@@ -626,7 +626,10 @@ public abstract class
             ("Id", entities[0].Id)
         );
 
-        this.Connection.QueryFirstOrDefault<Entity>(statement, cancellationToken: TestContext.Current.CancellationToken)
+        this.Connection.QueryFirstOrDefault<Entity>(
+                statement,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
             .Should().Be(entities[0]);
     }
 

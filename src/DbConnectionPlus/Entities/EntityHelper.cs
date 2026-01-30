@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.Reflection;
@@ -123,6 +123,12 @@ public static class EntityHelper
     }
 
     /// <summary>
+    /// Resets the cached entity types metadata.
+    /// </summary>
+    internal static void ResetEntityTypeMetadataCache() =>
+        entityTypeMetadataPerEntityType.Clear();
+
+    /// <summary>
     /// Creates the metadata for the entity type <paramref name="entityType" />.
     /// </summary>
     /// <param name="entityType">The entity type for which to create the metadata.</param>
@@ -131,7 +137,27 @@ public static class EntityHelper
     /// </returns>
     private static EntityTypeMetadata CreateEntityTypeMetadata(Type entityType)
     {
-        var tableName = entityType.GetCustomAttribute<TableAttribute>()?.Name ?? entityType.Name;
+        // TODO: Throw exception when there is more than one identity property and change
+        // EntityTypeMetadata.IdentityProperties to a single property.
+
+        String tableName;
+
+        DbConnectionPlusConfiguration.Instance.GetEntityTypeBuilders()
+            .TryGetValue(entityType, out var entityTypeBuilder);
+
+        if (entityTypeBuilder is not null)
+        {
+            tableName = !String.IsNullOrWhiteSpace(entityTypeBuilder.TableName)
+                ? entityTypeBuilder.TableName
+                : entityType.Name;
+        }
+        else
+        {
+            tableName = !String.IsNullOrWhiteSpace(entityType.GetCustomAttribute<TableAttribute>()?.Name)
+                ? entityType.GetCustomAttribute<TableAttribute>()?.Name!
+                : entityType.Name;
+        }
+
         var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         var propertiesMetadata = new EntityPropertyMetadata[properties.Length];
 
@@ -139,60 +165,75 @@ public static class EntityHelper
         {
             var property = properties[i];
 
-            propertiesMetadata[i] = new(
-                property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name,
-                property.Name,
-                property.PropertyType,
-                property,
-                property.GetCustomAttribute<NotMappedAttribute>() is not null,
-                property.GetCustomAttribute<KeyAttribute>() is not null,
-                property.CanRead,
-                property.CanWrite,
-                property.CanRead ? Reflect.PropertyGetter(property) : null,
-                property.CanWrite ? Reflect.PropertySetter(property) : null,
-                property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption ??
-                DatabaseGeneratedOption.None
-            );
+            if (
+                entityTypeBuilder is not null &&
+                entityTypeBuilder.PropertyBuilders.TryGetValue(property.Name, out var propertyBuilder)
+            )
+            {
+                propertiesMetadata[i] = new(
+                    !String.IsNullOrWhiteSpace(propertyBuilder.ColumnName)
+                        ? propertyBuilder.ColumnName
+                        : property.Name,
+                    property.Name,
+                    property.PropertyType,
+                    property,
+                    propertyBuilder.IsIgnored,
+                    propertyBuilder.IsKey,
+                    propertyBuilder.IsComputed,
+                    propertyBuilder.IsIdentity,
+                    property.CanRead,
+                    property.CanWrite,
+                    property.CanRead ? Reflect.PropertyGetter(property) : null,
+                    property.CanWrite ? Reflect.PropertySetter(property) : null
+                );
+            }
+            else
+            {
+                propertiesMetadata[i] = new(
+                    property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name,
+                    property.Name,
+                    property.PropertyType,
+                    property,
+                    property.GetCustomAttribute<NotMappedAttribute>() is not null,
+                    property.GetCustomAttribute<KeyAttribute>() is not null,
+                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
+                        DatabaseGeneratedOption.Computed,
+                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
+                        DatabaseGeneratedOption.Identity,
+                    property.CanRead,
+                    property.CanWrite,
+                    property.CanRead ? Reflect.PropertyGetter(property) : null,
+                    property.CanWrite ? Reflect.PropertySetter(property) : null
+                );
+            }
         }
 
         return new(
             entityType,
             tableName,
-            AllProperties: propertiesMetadata,
-            AllPropertiesByPropertyName: propertiesMetadata
+            propertiesMetadata,
+            propertiesMetadata
                 .ToDictionary(p => p.PropertyName),
-            MappedProperties: propertiesMetadata
-                .Where(p => !p.IsNotMapped)
+            propertiesMetadata
+                .Where(p => !p.IsIgnored)
                 .ToList(),
-            KeyProperties: propertiesMetadata
-                .Where(p => p is
-                {
-                    IsNotMapped: false, 
-                    IsKeyProperty: true
-                })
+            propertiesMetadata
+                .Where(p => p is { IsIgnored: false, IsKey: true })
                 .ToList(),
-            InsertProperties: propertiesMetadata
-                .Where(p => p is
-                {
-                    IsNotMapped: false, 
-                    DatabaseGeneratedOption: DatabaseGeneratedOption.None
-                })
+            propertiesMetadata
+                .Where(p => p is { IsIgnored: false, IsComputed: true })
                 .ToList(),
-            UpdateProperties: propertiesMetadata
-                .Where(p => p is
-                {
-                    IsNotMapped: false,
-                    IsKeyProperty: false,
-                    DatabaseGeneratedOption: DatabaseGeneratedOption.None
-                })
+            propertiesMetadata
+                .Where(p => p is { IsIgnored: false, IsIdentity: true })
                 .ToList(),
-            DatabaseGeneratedProperties: propertiesMetadata
-                .Where(p => p is
-                    {
-                        IsNotMapped: false,
-                        DatabaseGeneratedOption: DatabaseGeneratedOption.Identity or DatabaseGeneratedOption.Computed
-                    }
-                )
+            propertiesMetadata
+                .Where(p => !p.IsIgnored && (p.IsComputed || p.IsIdentity))
+                .ToList(),
+            propertiesMetadata
+                .Where(p => p is { IsIgnored: false, IsComputed: false, IsIdentity: false })
+                .ToList(),
+            propertiesMetadata
+                .Where(p => p is { IsIgnored: false, IsKey: false, IsComputed: false, IsIdentity: false })
                 .ToList()
         );
     }

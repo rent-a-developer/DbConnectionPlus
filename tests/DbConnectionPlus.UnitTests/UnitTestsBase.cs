@@ -6,6 +6,7 @@ using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 using RentADeveloper.DbConnectionPlus.DbCommands;
+using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
@@ -26,8 +27,8 @@ public class UnitTestsBase
 
 
         // Reset all settings to defaults before each test.
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-        DbConnectionExtensions.InterceptDbCommand = null;
+        DbConnectionPlusConfiguration.Instance = new();
+        EntityHelper.ResetEntityTypeMetadataCache();
         OracleDatabaseAdapter.AllowTemporaryTables = false;
 
         this.MockDbConnection = Substitute.For<DbConnection>().SetupCommands();
@@ -106,7 +107,7 @@ public class UnitTestsBase
 
                     if (value is Enum enumValue)
                     {
-                        parameter.DbType = DbConnectionExtensions.EnumSerializationMode switch
+                        parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                         {
                             EnumSerializationMode.Integers =>
                                 DbType.Int32,
@@ -117,12 +118,15 @@ public class UnitTestsBase
                             _ =>
                                 throw new NotSupportedException(
                                     $"The {nameof(EnumSerializationMode)} " +
-                                    $"{DbConnectionExtensions.EnumSerializationMode.ToDebugString()} is not supported."
+                                    $"{DbConnectionPlusConfiguration.Instance.EnumSerializationMode.ToDebugString()} is not supported."
                                 )
                         };
 
                         parameter.Value =
-                            EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                            EnumSerializer.SerializeEnum(
+                                enumValue,
+                                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                            );
                     }
                     else
                     {

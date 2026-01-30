@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -55,7 +55,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     }
 
     [Fact]
-    public void UpdateEntities_EntitiesHaveNoKeyProperty_ShouldThrow() =>
+    public void UpdateEntities_MissingKeyProperty_ShouldThrow() =>
         Invoking(() =>
                 this.manipulator.UpdateEntities(
                     this.Connection,
@@ -108,7 +108,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Fact]
     public void UpdateEntities_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
@@ -141,7 +141,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Fact]
     public void UpdateEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
@@ -365,7 +365,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     }
 
     [Fact]
-    public Task UpdateEntitiesAsync_EntitiesHaveNoKeyProperty_ShouldThrow() =>
+    public Task UpdateEntitiesAsync_MissingKeyProperty_ShouldThrow() =>
         Invoking(() =>
                 this.manipulator.UpdateEntitiesAsync(
                     this.Connection,
@@ -423,7 +423,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Fact]
     public async Task UpdateEntitiesAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
@@ -461,7 +461,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Fact]
     public async Task UpdateEntitiesAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 

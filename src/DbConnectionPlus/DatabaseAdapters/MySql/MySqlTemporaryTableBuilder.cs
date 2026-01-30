@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
@@ -65,7 +65,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -84,7 +84,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -167,7 +167,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -190,7 +190,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -351,7 +351,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                     if (value is Enum enumValue)
                     {
                         enumValues.Add(
-                            EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode)
+                            EnumSerializer.SerializeEnum(
+                                enumValue,
+                                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                            )
                         );
                     }
                     else
@@ -360,7 +363,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                     }
                 }
 
-                var newValuesType = DbConnectionExtensions.EnumSerializationMode switch
+                var newValuesType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
                     EnumSerializationMode.Integers =>
                         typeof(Int32?),
@@ -370,7 +373,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
                     _ =>
                         ThrowHelper.ThrowInvalidEnumSerializationModeException<Type>(
-                            DbConnectionExtensions.EnumSerializationMode
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                         )
                 };
 

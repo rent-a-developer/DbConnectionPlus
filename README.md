@@ -27,6 +27,8 @@ Other database systems and database connectors can be supported by implementing 
 
 All examples in this document use SQL Server.
 
+TODO: Update for Fluent API and update version
+
 ## Table of contents
 - **[Quick start](#quick-start)**
 - [Examples](#examples)

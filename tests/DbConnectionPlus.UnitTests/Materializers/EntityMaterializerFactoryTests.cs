@@ -599,24 +599,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     }
 
     [Fact]
-    public void Materializer_ShouldUseConfiguredColumnNames()
-    {
-        var entities = Generate.Multiple<Entity>(1);
-        var entityWithColumnAttribute = Generate.MapTo<EntityWithColumnAttributes>(entities[0]);
-
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
-
-        dataReader.Read();
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithColumnAttributes>(dataReader);
-
-        var materializedEntity = materializer(dataReader);
-
-        materializedEntity
-            .Should().BeEquivalentTo(entityWithColumnAttribute);
-    }
-
-    [Fact]
     public void Materializer_ShouldMaterializeBinaryData()
     {
         var dataReader = Substitute.For<DbDataReader>();
@@ -665,6 +647,25 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         materializedEntity
             .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public void Materializer_ShouldUseConfiguredColumnNames()
+    {
+        var entities = Generate.Multiple<Entity>(1);
+        var entityWithColumnAttribute = Generate.MapTo<EntityWithColumnAttributes>(entities[0]);
+
+        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+
+        dataReader.Read();
+
+        var materializer =
+            EntityMaterializerFactory.GetMaterializer<EntityWithColumnAttributes>(dataReader);
+
+        var materializedEntity = materializer(dataReader);
+
+        materializedEntity
+            .Should().BeEquivalentTo(entityWithColumnAttribute);
     }
 
     [Fact]

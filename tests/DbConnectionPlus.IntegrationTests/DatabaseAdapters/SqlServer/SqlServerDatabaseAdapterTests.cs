@@ -1,4 +1,4 @@
-﻿// ReSharper disable AccessToDisposedClosure
+// ReSharper disable AccessToDisposedClosure
 
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 

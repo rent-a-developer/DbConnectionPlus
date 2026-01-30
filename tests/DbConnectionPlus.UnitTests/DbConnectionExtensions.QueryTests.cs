@@ -1,4 +1,5 @@
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
+
 #pragma warning disable NS1000, NS1004, CA1806
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests;

@@ -57,7 +57,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     }
 
     [Fact]
-    public void DeleteEntity_EntityHasNoKeyProperty_ShouldThrow()
+    public void DeleteEntity_MissingKeyProperty_ShouldThrow()
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
@@ -214,7 +214,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     }
 
     [Fact]
-    public Task DeleteEntityAsync_EntityHasNoKeyProperty_ShouldThrow()
+    public Task DeleteEntityAsync_MissingKeyProperty_ShouldThrow()
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 

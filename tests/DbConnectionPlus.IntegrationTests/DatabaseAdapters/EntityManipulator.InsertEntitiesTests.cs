@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -89,7 +89,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Fact]
     public void InsertEntities_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
@@ -105,7 +105,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Fact]
     public void InsertEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
@@ -327,7 +327,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Fact]
     public async Task InsertEntitiesAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
@@ -348,7 +348,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Fact]
     public async Task InsertEntitiesAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 

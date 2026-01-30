@@ -1,4 +1,5 @@
-﻿// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedParameter.Local
+
 #pragma warning disable NS1001
 
 using RentADeveloper.DbConnectionPlus.SqlStatements;
@@ -146,7 +147,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public void
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -170,7 +171,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public void
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -540,7 +541,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Fact]
     public void BuildDbCommand_Parameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -564,7 +565,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Fact]
     public void BuildDbCommand_Parameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -733,7 +734,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public async Task
         BuildDbCommandAsync_InterpolatedParameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -757,7 +758,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public async Task
         BuildDbCommandAsync_InterpolatedParameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -1139,7 +1140,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public async Task
         BuildDbCommandAsync_Parameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var enumValue = Generate.Single<TestEnum>();
 
@@ -1168,7 +1169,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     public async Task
         BuildDbCommandAsync_Parameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var enumValue = Generate.Single<TestEnum>();
 

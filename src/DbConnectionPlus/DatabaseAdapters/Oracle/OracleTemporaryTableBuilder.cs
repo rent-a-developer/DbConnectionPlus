@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using FastMember;
@@ -76,7 +76,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                     // ReSharper disable once PossibleMultipleEnumeration
                     values,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -95,7 +95,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     quotedTableName,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -166,7 +166,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                     // ReSharper disable once PossibleMultipleEnumeration
                     values,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -187,7 +187,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     quotedTableName,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );

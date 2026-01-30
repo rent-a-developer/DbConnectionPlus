@@ -24,7 +24,7 @@ public interface IDatabaseAdapter
     /// </para>
     /// <para>
     /// If <paramref name="value" /> is an <see cref="Enum" /> value, it is serialized according to the setting
-    /// <see cref="DbConnectionExtensions.EnumSerializationMode" /> before being assigned to the parameter.
+    /// <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" /> before being assigned to the parameter.
     /// </para>
     /// </summary>
     /// <param name="parameter">The parameter to bind <paramref name="value" /> to.</param>

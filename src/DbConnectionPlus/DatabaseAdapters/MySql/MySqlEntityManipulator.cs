@@ -900,6 +900,58 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
+    /// Creates the SQL code to create a temporary table for the keys of the provided entity type.
+    /// </summary>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="entityTypeMetadata">The metadata for the entity type to create the table for.</param>
+    /// <returns>The SQL code to create the temporary table.</returns>
+    private String CreateEntityKeysTemporaryTableSqlCode(
+        String tableName,
+        EntityTypeMetadata entityTypeMetadata
+    )
+    {
+        if (entityTypeMetadata.KeyProperties.Count == 0)
+        {
+            ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
+        }
+
+        using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
+
+        createKeysTableSqlBuilder.Append("CREATE TEMPORARY TABLE `");
+        createKeysTableSqlBuilder.Append(tableName);
+        createKeysTableSqlBuilder.AppendLine("`");
+
+        createKeysTableSqlBuilder.Append(Constants.Indent);
+        createKeysTableSqlBuilder.Append("(");
+
+        var prependSeparator = false;
+
+        foreach (var property in entityTypeMetadata.KeyProperties)
+        {
+            if (prependSeparator)
+            {
+                createKeysTableSqlBuilder.Append(", ");
+            }
+
+            createKeysTableSqlBuilder.Append('`');
+            createKeysTableSqlBuilder.Append(property.PropertyName);
+            createKeysTableSqlBuilder.Append("` ");
+            createKeysTableSqlBuilder.Append(
+                this.databaseAdapter.GetDataType(
+                    property.PropertyType,
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                )
+            );
+
+            prependSeparator = true;
+        }
+
+        createKeysTableSqlBuilder.AppendLine(")");
+
+        return createKeysTableSqlBuilder.ToString();
+    }
+
+    /// <summary>
     /// Creates a command to insert an entity.
     /// </summary>
     /// <param name="connection">The connection to use to create the command.</param>
@@ -971,58 +1023,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
         }
 
         return (command, parameters);
-    }
-
-    /// <summary>
-    /// Creates the SQL code to create a temporary table for the keys of the provided entity type.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="entityTypeMetadata">The metadata for the entity type to create the table for.</param>
-    /// <returns>The SQL code to create the temporary table.</returns>
-    private String CreateEntityKeysTemporaryTableSqlCode(
-        String tableName,
-        EntityTypeMetadata entityTypeMetadata
-    )
-    {
-        if (entityTypeMetadata.KeyProperties.Count == 0)
-        {
-            ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
-        }
-
-        using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
-
-        createKeysTableSqlBuilder.Append("CREATE TEMPORARY TABLE `");
-        createKeysTableSqlBuilder.Append(tableName);
-        createKeysTableSqlBuilder.AppendLine("`");
-
-        createKeysTableSqlBuilder.Append(Constants.Indent);
-        createKeysTableSqlBuilder.Append("(");
-
-        var prependSeparator = false;
-
-        foreach (var property in entityTypeMetadata.KeyProperties)
-        {
-            if (prependSeparator)
-            {
-                createKeysTableSqlBuilder.Append(", ");
-            }
-
-            createKeysTableSqlBuilder.Append('`');
-            createKeysTableSqlBuilder.Append(property.PropertyName);
-            createKeysTableSqlBuilder.Append("` ");
-            createKeysTableSqlBuilder.Append(
-                this.databaseAdapter.GetDataType(
-                    property.PropertyType,
-                    DbConnectionExtensions.EnumSerializationMode
-                )
-            );
-
-            prependSeparator = true;
-        }
-
-        createKeysTableSqlBuilder.AppendLine(")");
-
-        return createKeysTableSqlBuilder.ToString();
     }
 
     /// <summary>
@@ -1172,9 +1172,9 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                     sqlBuilder.Append(Constants.Indent);
 
-                    var identityProperty = entityTypeMetadata.DatabaseGeneratedProperties.FirstOrDefault(a =>
-                        a.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity
-                    );
+#pragma warning disable CA1826
+                    var identityProperty = entityTypeMetadata.IdentityProperties.FirstOrDefault();
+#pragma warning restore CA1826
 
                     if (identityProperty is not null)
                     {

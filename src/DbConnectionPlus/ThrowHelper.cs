@@ -12,6 +12,18 @@ namespace RentADeveloper.DbConnectionPlus;
 public static class ThrowHelper
 {
     /// <summary>
+    /// Throws an <see cref="InvalidOperationException" /> indicating that the configuration of DbConnectionPlus is
+    /// frozen and can no longer be modified.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Always thrown.</exception>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    public static void ThrowConfigurationIsFrozenException() =>
+        throw new InvalidOperationException(
+            "The configuration of DbConnectionPlus is frozen and can no longer be modified."
+        );
+
+    /// <summary>
     /// Throws an <see cref="NotSupportedException" /> indicating that an attempt was made to use the temporary tables
     /// feature of DbConnectionPlus, but the database adapter for the current database system does not support
     /// temporary tables.

@@ -1,5 +1,6 @@
-﻿// ReSharper disable ConvertToLambdaExpression
+// ReSharper disable ConvertToLambdaExpression
 // ReSharper disable RedundantTypeArgumentsOfMethod
+
 #pragma warning disable IDE0053
 
 using AutoFixture;
@@ -128,8 +129,8 @@ public static class Generate
                     ValueString = entity.StringValue,
                     ValueTimeSpan = entity.TimeSpanValue,
                     ValueTimeOnly = entity.TimeOnlyValue
-            }
-        );
+                }
+            );
     }
 
     /// <summary>
@@ -164,7 +165,7 @@ public static class Generate
     /// <summary>
     /// Maps <paramref name="obj" /> to an instance of <typeparamref name="TTarget" /> containing the same data.
     /// </summary>
-    /// <typeparam name="TTarget">The type of object to map <paramref name="obj"/> to.</typeparam>
+    /// <typeparam name="TTarget">The type of object to map <paramref name="obj" /> to.</typeparam>
     /// <param name="obj">The object to map.</param>
     /// <returns>
     /// An instance of <typeparamref name="TTarget" /> containing the same data as <paramref name="obj" />.

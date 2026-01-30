@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using FastMember;
@@ -65,7 +65,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -84,7 +84,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -142,7 +142,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateSingleColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -163,7 +163,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
                 this.BuildCreateMultiColumnTemporaryTableSqlCode(
                     name,
                     valuesType,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -288,7 +288,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         var npgsqlDbTypes = dataReader
             .GetFieldTypes()
-            .Select(t => this.databaseAdapter.GetDbType(t, DbConnectionExtensions.EnumSerializationMode))
+            .Select(t => 
+                this.databaseAdapter.GetDbType(t, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
+            )
             .ToArray();
 
         while (dataReader.Read())
@@ -309,7 +311,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
                     if (value is Enum enumValue)
                     {
-                        value = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                        value = EnumSerializer.SerializeEnum(
+                            enumValue,
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                        );
                     }
 
                     importer.Write(value, npgsqlDbTypes[i]);
@@ -344,7 +349,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         var npgsqlDbTypes = dataReader
             .GetFieldTypes()
-            .Select(a => this.databaseAdapter.GetDbType(a, DbConnectionExtensions.EnumSerializationMode))
+            .Select(a => 
+                this.databaseAdapter.GetDbType(a, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
+            )
             .ToArray();
 
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -365,7 +372,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
                     if (value is Enum enumValue)
                     {
-                        value = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                        value = EnumSerializer.SerializeEnum(
+                            enumValue,
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                        );
                     }
 
                     await importer.WriteAsync(value, npgsqlDbTypes[i], cancellationToken).ConfigureAwait(false);

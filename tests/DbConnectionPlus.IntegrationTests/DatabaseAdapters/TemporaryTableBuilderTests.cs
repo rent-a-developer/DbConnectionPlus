@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 
@@ -57,7 +57,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
@@ -96,7 +96,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
@@ -138,7 +138,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
@@ -289,7 +289,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var values = Generate.Multiple<TestEnum>();
 
@@ -328,7 +328,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Fact]
     public void BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.Multiple<TestEnum>();
 
@@ -370,7 +370,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         using var tableDisposer = this.builder.BuildTemporaryTable(
             this.Connection,
@@ -391,7 +391,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public void
         BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.MultipleNullable<TestEnum>();
 
@@ -521,7 +521,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public async Task
         BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
@@ -561,7 +561,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public async Task
         BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
@@ -603,7 +603,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
@@ -756,7 +756,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public async Task
         BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var values = Generate.Multiple<TestEnum>();
 
@@ -796,7 +796,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public async Task
         BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.Multiple<TestEnum>();
 
@@ -838,7 +838,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
             this.Connection,
@@ -859,7 +859,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     public async Task
         BuildTemporaryTableAsync_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.MultipleNullable<TestEnum>();
 

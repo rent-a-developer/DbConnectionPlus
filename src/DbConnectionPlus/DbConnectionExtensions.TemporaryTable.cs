@@ -129,7 +129,7 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// <para>
     /// If you pass enum values or objects containing enum properties, the enum values are serialized according to the
-    /// setting <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+    /// setting <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
     /// </para>
     /// </remarks>
     public static InterpolatedTemporaryTable TemporaryTable<T>(

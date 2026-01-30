@@ -188,6 +188,11 @@ public static partial class DbConnectionExtensions
         var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator
-            .InsertEntitiesAsync(connection, entities, transaction, cancellationToken);
+            .InsertEntitiesAsync(
+                connection,
+                entities,
+                transaction,
+                cancellationToken
+            );
     }
 }
