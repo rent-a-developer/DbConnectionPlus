@@ -83,6 +83,6 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
 
         Invoking(() => Configure(configuration => configuration.EnumSerializationMode = EnumSerializationMode.Strings))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This configuration is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 }

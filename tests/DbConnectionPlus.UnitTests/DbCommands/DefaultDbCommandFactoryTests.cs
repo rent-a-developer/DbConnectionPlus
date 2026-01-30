@@ -5,7 +5,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DbCommands;
 public class DefaultDbCommandFactoryTests : UnitTestsBase
 {
     [Fact]
-    public void CreateSqlCommand_NoTimeout_ShouldUseDefaultTimeout()
+    public void CreateDbCommand_NoTimeout_ShouldUseDefaultTimeout()
     {
         var command = this.factory.CreateDbCommand(this.MockDbConnection, "SELECT 1");
 
@@ -14,7 +14,7 @@ public class DefaultDbCommandFactoryTests : UnitTestsBase
     }
 
     [Fact]
-    public void CreateSqlCommand_ShouldCreateSqlCommandWithSpecifiedSettings()
+    public void CreateDbCommand_ShouldCreateDbCommandWithSpecifiedSettings()
     {
         using var transaction = this.MockDbConnection.BeginTransaction();
 

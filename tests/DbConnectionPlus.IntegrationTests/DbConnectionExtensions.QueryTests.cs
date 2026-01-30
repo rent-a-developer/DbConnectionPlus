@@ -1,3 +1,4 @@
+using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.IntegrationTests.Assertions;
 
@@ -27,217 +28,10 @@ public abstract class
     DbConnectionExtensions_QueryTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void Query_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() =>
-                this.Connection.Query($"SELECT * FROM {Q("Entity")}", cancellationToken: cancellationToken).ToList()
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-    }
-
-    [Fact]
-    public void Query_CommandType_ShouldUseCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
-
-        var entities = this.CreateEntitiesInDb<Entity>();
-
-        var dynamicObjects = this.Connection.Query(
-            "GetEntities",
-            commandType: CommandType.StoredProcedure,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
-    }
-
-    [Fact]
-    public void Query_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = Generate.Multiple<Entity>(2);
-
-        InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable(entities)}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var enumerator = this.Connection.Query(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).GetEnumerator();
-
-        enumerator.MoveNext()
-            .Should().BeTrue();
-
-        if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
-        {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
-        }
-
-        enumerator.MoveNext()
-            .Should().BeTrue();
-
-        enumerator.MoveNext()
-            .Should().BeFalse();
-
-        enumerator.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void Query_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = Generate.Multiple<Entity>();
-
-        var dynamicObjects = this.Connection.Query(
-            $"SELECT * FROM {TemporaryTable(entities)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
-    }
-
-    [Fact]
-    public void Query_InterpolatedParameter_ShouldPassInterpolatedParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var dynamicObjects = this.Connection.Query(
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
-    }
-
-    [Fact]
-    public void Query_Parameter_ShouldPassParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var statement = new InterpolatedSqlStatement(
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {P("Id")}",
-            ("Id", entity.Id)
-        );
-
-        var dynamicObjects = this.Connection.Query(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
-    }
-
-    [Fact]
-    public void Query_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids(2);
-
-        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var enumerator = this.Connection.Query(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).GetEnumerator();
-
-        enumerator.MoveNext()
-            .Should().BeTrue();
-
-        if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
-        {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
-        }
-
-        enumerator.MoveNext()
-            .Should().BeTrue();
-
-        enumerator.MoveNext()
-            .Should().BeFalse();
-
-        enumerator.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void Query_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids();
-
-        var dynamicObjects = this.Connection.Query(
-            $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        for (var i = 0; i < entityIds.Count; i++)
-        {
-            ValueConverter.ConvertValueToType<Int64>((Object)dynamicObjects[i].Id)
-                .Should().Be(entityIds[i]);
-        }
-    }
-
-    [Fact]
-    public void Query_ShouldReturnDynamicObjectsForQueryResult()
-    {
-        var entities = this.CreateEntitiesInDb<Entity>();
-
-        var dynamicObjects = this.Connection.Query(
-            $"SELECT * FROM {Q("Entity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToList();
-
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
-    }
-
-    [Fact]
-    public void Query_Transaction_ShouldUseTransaction()
-    {
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
-
-            var dynamicObjects = this.Connection.Query(
-                $"SELECT * FROM {Q("Entity")}",
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToList();
-
-            EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
-
-            transaction.Rollback();
-        }
-
-        this.Connection.Query(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task QueryAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -246,7 +40,9 @@ public abstract class
         this.DbCommandFactory.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                this.Connection.QueryAsync(
+                CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: cancellationToken
                 ).ToListAsync(cancellationToken).AsTask()
@@ -255,14 +51,18 @@ public abstract class
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
-    [Fact]
-    public async Task QueryAsync_CommandType_ShouldUseCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             "GetEntities",
             commandType: CommandType.StoredProcedure,
             cancellationToken: TestContext.Current.CancellationToken
@@ -271,8 +71,12 @@ public abstract class
         EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
     }
 
-    [Fact]
-    public async Task QueryAsync_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -282,7 +86,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var enumerator = this.Connection.QueryAsync(
+        var enumerator = CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         ).GetAsyncEnumerator();
@@ -308,14 +114,20 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task QueryAsync_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = Generate.Multiple<Entity>();
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {TemporaryTable(entities)}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
@@ -323,12 +135,16 @@ public abstract class
         EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
     }
 
-    [Fact]
-    public async Task QueryAsync_InterpolatedParameter_ShouldPassInterpolatedParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
@@ -336,8 +152,10 @@ public abstract class
         EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
     }
 
-    [Fact]
-    public async Task QueryAsync_Parameter_ShouldPassParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_Parameter_ShouldPassParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -346,7 +164,9 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
@@ -354,8 +174,12 @@ public abstract class
         EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
     }
 
-    [Fact]
-    public async Task QueryAsync_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterEnumerationIsFinished(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -365,7 +189,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var enumerator = this.Connection.QueryAsync(
+        var enumerator = CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         ).GetAsyncEnumerator();
@@ -391,14 +217,20 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task QueryAsync_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entityIds = Generate.Ids();
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
@@ -410,12 +242,16 @@ public abstract class
         }
     }
 
-    [Fact]
-    public async Task QueryAsync_ShouldReturnDynamicObjectsForQueryResult()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_ShouldReturnDynamicObjectsForQueryResult(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        var dynamicObjects = await this.Connection.QueryAsync(
+        var dynamicObjects = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {Q("Entity")}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
@@ -423,14 +259,18 @@ public abstract class
         EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
     }
 
-    [Fact]
-    public async Task QueryAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
 
-            var dynamicObjects = await this.Connection.QueryAsync(
+            var dynamicObjects = await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 transaction,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -441,10 +281,42 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        (await this.Connection.QueryAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEmpty();
+    }
+
+    private static IAsyncEnumerable<dynamic> CallApi(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        InterpolatedSqlStatement statement,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return connection.QueryAsync(
+                statement,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        return connection.Query(
+            statement,
+            transaction,
+            commandTimeout,
+            commandType,
+            cancellationToken
+        ).ToAsyncEnumerable();
     }
 }

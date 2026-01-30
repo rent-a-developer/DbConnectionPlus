@@ -10,23 +10,23 @@ public class EntityPropertyBuilderTests
 
         Invoking(() => builder.HasColumnName("Identifier"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsComputed())
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsIdentity())
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsIgnored())
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsKey())
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 
     [Fact]

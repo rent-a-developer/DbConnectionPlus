@@ -34,7 +34,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+    public async Task InsertEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
     {
@@ -60,7 +60,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+    public async Task InsertEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
         Boolean useAsyncApi
     )
     {
@@ -81,7 +81,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
+    public async Task InsertEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithTableAttribute>();
 
@@ -100,7 +100,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+    public async Task InsertEntity_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
         Boolean useAsyncApi
     )
     {
@@ -120,7 +120,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+    public async Task InsertEntity_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
         Boolean useAsyncApi
     )
     {
@@ -140,7 +140,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithIdentityAndComputedProperties>();
 
@@ -163,7 +163,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithNotMappedProperty>();
         entity.NotMappedValue = "ShouldNotBePersisted";
@@ -191,7 +191,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldInsertEntity(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldInsertEntity(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 
@@ -208,7 +208,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 
@@ -219,7 +219,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
@@ -237,7 +237,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task InsertEntity_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = Generate.Single<EntityWithColumnAttributes>();
 
@@ -253,7 +253,7 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task InsertEntity_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
 

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.IntegrationTests.Assertions;
 
@@ -27,217 +28,12 @@ public abstract class
     DbConnectionExtensions_QuerySingleTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() =>
-                this.Connection.QuerySingle($"SELECT * FROM {Q("Entity")}", cancellationToken: cancellationToken)
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-    }
-
-    [Fact]
-    public void QuerySingle_CommandType_ShouldUseCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var dynamicObject = this.Connection.QuerySingle(
-            "GetFirstEntity",
-            commandType: CommandType.StoredProcedure,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-    }
-
-    [Fact]
-    public void QuerySingle_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entity = Generate.Single<Entity>();
-
-        InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable([entity])}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var dynamicObject = this.Connection.QuerySingle(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void QuerySingle_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entity = Generate.Single<Entity>();
-
-        var dynamicObject = this.Connection.QuerySingle(
-            $"SELECT * FROM {TemporaryTable([entity])}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-    }
-
-    [Fact]
-    public void QuerySingle_InterpolatedParameter_ShouldPassInterpolatedParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var dynamicObject = this.Connection.QuerySingle(
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-    }
-
-    [Fact]
-    public void QuerySingle_Parameter_ShouldPassParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var statement = new InterpolatedSqlStatement(
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {P("Id")}",
-            ("Id", entity.Id)
-        );
-
-        var dynamicObject = this.Connection.QuerySingle(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-    }
-
-    [Fact]
-    public void QuerySingle_QueryReturnedMoreThanOneRow_ShouldThrow()
-    {
-        this.CreateEntitiesInDb<Entity>(2);
-
-        Invoking(() => this.Connection.QuerySingle(
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "The SQL statement did return more than one row."
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_QueryReturnedNoRows_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingle(
-                    $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "The SQL statement did not return any rows."
-            );
-
-    [Fact]
-    public void QuerySingle_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityId = Generate.Id();
-
-        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var dynamicObject = this.Connection.QuerySingle(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        ((Object?)dynamicObject)
-            .Should().NotBeNull();
-
-        ((Object?)dynamicObject.Id)
-            .Should().Be(entityId);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void QuerySingle_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityId = Generate.Id();
-
-        var dynamicObject = this.Connection.QuerySingle(
-            $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        ValueConverter.ConvertValueToType<Int64>((Object)dynamicObject.Id)
-            .Should().Be(entityId);
-    }
-
-    [Fact]
-    public void QuerySingle_ShouldReturnDynamicObjectForFirstRow()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var dynamicObject = this.Connection.QuerySingle(
-            $"SELECT * FROM {Q("Entity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-    }
-
-    [Fact]
-    public void QuerySingle_Transaction_ShouldUseTransaction()
-    {
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            var entity = this.CreateEntityInDb<Entity>(transaction);
-
-            var dynamicObject = this.Connection.QuerySingle(
-                $"SELECT * FROM {Q("Entity")}",
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            );
-
-            EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
-
-            transaction.Rollback();
-        }
-
-        Invoking(() => this.Connection.QuerySingle(
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>();
-    }
-
-    [Fact]
-    public async Task QuerySingleAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -246,7 +42,9 @@ public abstract class
         this.DbCommandFactory.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                this.Connection.QuerySingleAsync(
+                CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: cancellationToken
                 )
@@ -255,14 +53,18 @@ public abstract class
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_CommandType_ShouldUseCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             "GetFirstEntity",
             commandType: CommandType.StoredProcedure,
             cancellationToken: TestContext.Current.CancellationToken
@@ -271,8 +73,12 @@ public abstract class
         EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -282,7 +88,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -293,15 +101,21 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
+        QuerySingle_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entity = Generate.Single<Entity>();
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {TemporaryTable([entity])}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -309,12 +123,16 @@ public abstract class
         EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_InterpolatedParameter_ShouldPassInterpolatedParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -322,8 +140,10 @@ public abstract class
         EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_Parameter_ShouldPassParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_Parameter_ShouldPassParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -332,7 +152,9 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -340,12 +162,16 @@ public abstract class
         EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_QueryReturnedMoreThanOneRow_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_QueryReturnedMoreThanOneRow_ShouldThrow(Boolean useAsyncApi)
     {
         this.CreateEntitiesInDb<Entity>(2);
 
-        await Invoking(() => this.Connection.QuerySingleAsync(
+        await Invoking(() => CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -357,9 +183,13 @@ public abstract class
     }
 
 
-    [Fact]
-    public Task QuerySingleAsync_QueryReturnedNoRows_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingleAsync(
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_QueryReturnedNoRows_ShouldThrow(Boolean useAsyncApi) =>
+        Invoking(() => CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -369,8 +199,12 @@ public abstract class
                 "The SQL statement did not return any rows."
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -380,7 +214,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -395,15 +231,21 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
+        QuerySingle_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entityId = Generate.Id();
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -412,12 +254,16 @@ public abstract class
             .Should().Be(entityId);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_ShouldReturnDynamicObjectForFirstRow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ShouldReturnDynamicObjectForFirstRow(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await this.Connection.QuerySingleAsync(
+        var dynamicObject = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {Q("Entity")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -425,14 +271,18 @@ public abstract class
         EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             var entity = this.CreateEntityInDb<Entity>(transaction);
 
-            var dynamicObject = await this.Connection.QuerySingleAsync(
+            var dynamicObject = await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 transaction,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -443,11 +293,52 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        await Invoking(() => this.Connection.QuerySingleAsync(
+        await Invoking(() => CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
             .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    private static Task<dynamic> CallApi(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        InterpolatedSqlStatement statement,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return connection.QuerySingleAsync(
+                statement,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult<dynamic>(
+                connection.QuerySingle(
+                    statement,
+                    transaction,
+                    commandTimeout,
+                    commandType,
+                    cancellationToken
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<dynamic>(ex);
+        }
     }
 }

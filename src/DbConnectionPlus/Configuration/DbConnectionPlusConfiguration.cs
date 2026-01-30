@@ -38,6 +38,10 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </para>
     /// <para>The default is <see cref="DbConnectionPlus.EnumSerializationMode.Strings" />.</para>
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// An attempt was made to modify this property and the configuration of DbConnectionPlus is already frozen and
+    /// can no longer be modified.
+    /// </exception>
     public EnumSerializationMode EnumSerializationMode
     {
         get;
@@ -52,6 +56,10 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// A function that can be used to intercept database commands executed via DbConnectionPlus.
     /// Can be used for logging or modifying commands before execution.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// An attempt was made to modify this property and the configuration of DbConnectionPlus is already frozen and
+    /// can no longer be modified.
+    /// </exception>
     public InterceptDbCommand? InterceptDbCommand
     {
         get;
@@ -67,6 +75,9 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity to configure.</typeparam>
     /// <returns>A builder to configure the entity type.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityTypeBuilder<TEntity> Entity<TEntity>()
     {
         this.EnsureNotFrozen();
@@ -99,6 +110,10 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// <returns>The configured entity type builders.</returns>
     internal IReadOnlyDictionary<Type, IEntityTypeBuilder> GetEntityTypeBuilders() => this.entityTypeBuilders;
 
+    /// <summary>
+    /// Ensures this instance is not frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">This object is already frozen.</exception>
     private void EnsureNotFrozen()
     {
         if (this.isFrozen)

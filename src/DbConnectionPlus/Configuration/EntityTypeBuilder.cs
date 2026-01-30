@@ -18,14 +18,19 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// </param>
     /// <returns>The builder for the specified property.</returns>
     /// <exception cref="ArgumentException">
-    /// <paramref name="propertyExpression"/> is not a valid property access expression.
+    /// <paramref name="propertyExpression" /> is not a valid property access expression.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="propertyExpression" /> is <see langword="null" />.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityPropertyBuilder Property<TProperty>(Expression<Func<TEntity, TProperty>> propertyExpression)
     {
         ArgumentNullException.ThrowIfNull(propertyExpression);
+
+        this.EnsureNotFrozen();
 
         var propertyName = GetPropertyNameFromPropertyExpression(propertyExpression);
 
@@ -41,6 +46,10 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// </summary>
     /// <param name="tableName">The name of the table to map the entity to.</param>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
+    // ReSharper disable once ParameterHidesMember
     public EntityTypeBuilder<TEntity> ToTable(String tableName)
     {
         this.EnsureNotFrozen();
@@ -49,6 +58,9 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
 
         return this;
     }
+
+    /// <inheritdoc />
+    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
 
     /// <inheritdoc />
     void IFreezable.Freeze()
@@ -62,15 +74,16 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     }
 
     /// <inheritdoc />
-    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
-
-    /// <inheritdoc />
     IReadOnlyDictionary<String, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders =>
         this.propertyBuilders;
 
     /// <inheritdoc />
     String? IEntityTypeBuilder.TableName => this.tableName;
 
+    /// <summary>
+    /// Ensures this instance is not frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">This object is already frozen.</exception>
     private void EnsureNotFrozen()
     {
         if (this.isFrozen)
@@ -79,6 +92,14 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
         }
     }
 
+    /// <summary>
+    /// Gets the name of the property accessed in the specified property access expression.
+    /// </summary>
+    /// <param name="propertyExpression">The property access expression to get the property name from.</param>
+    /// <returns>The name of the property accessed in <paramref name="propertyExpression" />.</returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="propertyExpression" /> is not a valid property access expression.
+    /// </exception>
     private static String GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression)
     {
         if (propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }) return propertyInfo.Name;

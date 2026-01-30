@@ -6,11 +6,11 @@ namespace RentADeveloper.DbConnectionPlus.Configuration
         public DbConnectionPlusConfiguration() { }
         public RentADeveloper.DbConnectionPlus.EnumSerializationMode EnumSerializationMode { get; set; }
         public RentADeveloper.DbConnectionPlus.Configuration.InterceptDbCommand? InterceptDbCommand { get; set; }
+        public static RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration Instance { get; }
         public RentADeveloper.DbConnectionPlus.Configuration.EntityTypeBuilder<TEntity> Entity<TEntity>() { }
     }
     public sealed class EntityPropertyBuilder : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
     {
-        public EntityPropertyBuilder() { }
         public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder HasColumnName(string columnName) { }
         public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsComputed() { }
         public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsIdentity() { }
@@ -155,6 +155,8 @@ namespace RentADeveloper.DbConnectionPlus
     public static class ThrowHelper
     {
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowConfigurationIsFrozenException() { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static void ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter databaseAdapter) { }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static void ThrowEntityTypeHasNoKeyPropertyException(System.Type entityType) { }
@@ -225,13 +227,13 @@ namespace RentADeveloper.DbConnectionPlus.Entities
     }
     public sealed record EntityTypeMetadata : System.IEquatable<RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata>
     {
-        public EntityTypeMetadata(System.Type EntityType, string TableName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties, System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> IdentityProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties) { }
+        public EntityTypeMetadata(System.Type EntityType, string TableName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties, System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata? IdentityProperty, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties) { }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties { get; init; }
         public System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties { get; init; }
         public System.Type EntityType { get; init; }
-        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> IdentityProperties { get; init; }
+        public RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata? IdentityProperty { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties { get; init; }

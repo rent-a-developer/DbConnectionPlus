@@ -26,13 +26,25 @@ public sealed class
 // TODO: Implement integration test (CRUD, Query, Temporary Tables) for fluent API config as well as attribute based
 // config.
 
-// TODO: Table mapping via Type Name
-// TODO: Table Name mapping via Attribute
-// TODO: Table Name mapping via Fluent API
-// TODO: Column Name mapping via Attribute
-// TODO: Column Name mapping via Fluent API
-// TODO: Key Property mapping via Attribute
-// TODO: Key Property mapping via Fluent API
+// TODO: Table Name -> via Type Name
+// TODO: Table Name -> via Attribute
+// TODO: Table Name -> via Fluent API
+
+// TODO: Column Name -> via Property Name
+// TODO: Column Name -> via Attribute
+// TODO: Column Name -> via Fluent API
+
+// TODO: Key Property -> via Attribute
+// TODO: Key Property -> via Fluent API
+
+// TODO: Computed Property -> via Attribute
+// TODO: Computed Property -> via Fluent API
+
+// TODO: Identity Property -> via Attribute
+// TODO: Identity Property -> via Fluent API
+
+// TODO: Ignore Property -> via Attribute
+// TODO: Ignore Property -> via Fluent API
 
 public abstract class EntityManipulator_DeleteEntitiesTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>

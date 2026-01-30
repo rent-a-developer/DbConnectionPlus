@@ -60,23 +60,35 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         entityTypeBuilder.ToTable("Entities");
 
+        var entityPropertyBuilder = entityTypeBuilder.Property(a => a.Id);
+
+        entityPropertyBuilder.IsKey();
+
         ((IFreezable)configuration).Freeze();
 
         Invoking(() => configuration.EnumSerializationMode = EnumSerializationMode.Integers)
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This configuration is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => configuration.InterceptDbCommand = null)
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This configuration is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => configuration.Entity<Entity>())
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This configuration is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => entityTypeBuilder.ToTable("Entities"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
+
+        Invoking(() => entityTypeBuilder.Property(a => a.Id))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
+
+        Invoking(() => entityPropertyBuilder.IsKey())
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 
     [Fact]

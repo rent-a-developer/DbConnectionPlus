@@ -36,7 +36,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset(
+    public async Task BuildTemporaryTable_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset(
         Boolean useAsyncApi
     )
     {
@@ -65,7 +65,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
             Boolean useAsyncApi
         )
     {
@@ -110,7 +110,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
             Boolean useAsyncApi
         )
     {
@@ -155,7 +155,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
             Boolean useAsyncApi
         )
     {
@@ -183,7 +183,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_NotMappedProperties_ShouldNotCreateColumnsForNotMappedProperties(
+        BuildTemporaryTable_ComplexObjects_NotMappedProperties_ShouldNotCreateColumnsForNotMappedProperties(
             Boolean useAsyncApi
         )
     {
@@ -212,7 +212,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldCreateMultiColumnTable(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable(Boolean useAsyncApi)
     {
         var items = Generate.Multiple<TemporaryTableTestItem>();
 
@@ -236,7 +236,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns(
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns(
         Boolean useAsyncApi
     )
     {
@@ -261,7 +261,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entities = Generate.Multiple<Entity>();
         var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
@@ -286,7 +286,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_WithNullables_ShouldHandleNullValues(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_WithNullables_ShouldHandleNullValues(Boolean useAsyncApi)
     {
         var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
 
@@ -310,7 +310,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset(
+    public async Task BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset(
         Boolean useAsyncApi
     )
     {
@@ -339,7 +339,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
             Boolean useAsyncApi
         )
     {
@@ -384,7 +384,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
             Boolean useAsyncApi
         )
     {
@@ -429,7 +429,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
             Boolean useAsyncApi
         )
     {
@@ -457,7 +457,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls(Boolean useAsyncApi)
+        BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls(Boolean useAsyncApi)
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
@@ -483,7 +483,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ScalarValues_ShouldCreateSingleColumnTable(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable(Boolean useAsyncApi)
     {
         var values = Generate.Multiple<Int32>();
 
@@ -507,7 +507,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns(
+    public async Task BuildTemporaryTable_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns(
         Boolean useAsyncApi
     )
     {
@@ -532,7 +532,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ScalarValuesWithNullValues_ShouldHandleNullValues(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(Boolean useAsyncApi)
     {
         var values = Generate.MultipleNullable<Int32>();
 
@@ -556,7 +556,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTableAsync_ShouldReturnDisposerThatDropsTableAsync(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ShouldReturnDisposerThatDropsTableAsync(Boolean useAsyncApi)
     {
         var disposer = await this.CallApi(
             useAsyncApi,

@@ -34,7 +34,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+    public async Task UpdateEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
     {
@@ -64,7 +64,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+    public async Task UpdateEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
         Boolean useAsyncApi
     )
     {
@@ -89,7 +89,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
+    public async Task UpdateEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -112,7 +112,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+    public async Task UpdateEntity_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
         Boolean useAsyncApi
     )
     {
@@ -150,7 +150,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+    public async Task UpdateEntity_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
         Boolean useAsyncApi
     )
     {
@@ -188,7 +188,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task UpdateEntityAsync_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi) =>
+    public Task UpdateEntity_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 this.CallApi(
                     useAsyncApi,
@@ -207,7 +207,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -230,7 +230,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithIdentityAndComputedProperties>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -254,7 +254,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithNotMappedProperty>();
 
@@ -284,7 +284,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -313,7 +313,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
@@ -338,7 +338,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldUpdateEntity(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldUpdateEntity(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -362,7 +362,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task UpdateEntity_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithColumnAttributes>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -385,7 +385,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task UpdateEntity_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 

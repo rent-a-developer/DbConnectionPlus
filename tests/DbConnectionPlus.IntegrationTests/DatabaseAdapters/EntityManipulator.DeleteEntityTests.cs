@@ -34,7 +34,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+    public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
     {
@@ -65,7 +65,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
+    public async Task DeleteEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
         Boolean useAsyncApi
     )
     {
@@ -86,7 +86,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
+    public async Task DeleteEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
 
@@ -105,7 +105,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task DeleteEntityAsync_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    public Task DeleteEntity_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
@@ -128,7 +128,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
+    public async Task DeleteEntity_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
 
@@ -147,7 +147,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task DeleteEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
@@ -173,7 +173,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task DeleteEntity_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
         var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
@@ -193,7 +193,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntityAsync_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task DeleteEntity_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 

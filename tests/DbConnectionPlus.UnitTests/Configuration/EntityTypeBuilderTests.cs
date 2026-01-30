@@ -15,15 +15,15 @@ public class EntityTypeBuilderTests
 
         Invoking(() => builder.ToTable("Entities2"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.Property(a => a.Id).HasColumnName("Identifier"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.Property(a => a.StringValue).HasColumnName("String"))
             .Should().Throw<InvalidOperationException>()
-            .WithMessage("This builder is frozen and can no longer be modified.");
+            .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 
     [Fact]

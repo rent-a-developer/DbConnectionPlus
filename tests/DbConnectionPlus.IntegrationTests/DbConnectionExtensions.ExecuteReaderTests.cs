@@ -1,3 +1,5 @@
+using System.Data.Common;
+
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
 public sealed class
@@ -24,289 +26,12 @@ public abstract class
     DbConnectionExtensions_ExecuteReaderTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void ExecuteReader_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() =>
-                {
-                    using var reader = this.Connection.ExecuteReader(
-                        $"SELECT * FROM {Q("Entity")}",
-                        cancellationToken: cancellationToken
-                    );
-                }
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-    }
-
-    [Fact]
-    public void ExecuteReader_CommandBehavior_ShouldPassUseCommandBehavior()
-    {
-        var reader = this.Connection.ExecuteReader(
-            $"SELECT * FROM {Q("Entity")}",
-            commandBehavior: CommandBehavior.CloseConnection,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.Dispose();
-
-        this.Connection.State
-            .Should().Be(ConnectionState.Closed);
-    }
-
-    [Fact]
-    public void ExecuteReader_CommandType_ShouldUseCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
-
-        var entities = this.CreateEntitiesInDb<Entity>();
-
-        using var reader = this.Connection.ExecuteReader(
-            Q("GetEntityIdsAndStringValues"),
-            commandType: CommandType.StoredProcedure,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entities)
-        {
-            reader.Read()
-                .Should().BeTrue();
-
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
-
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
-        }
-    }
-
-    [Fact]
-    public void ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = Generate.Multiple<Entity>();
-
-        InterpolatedSqlStatement statement = $"""
-                                              SELECT     {Q("Id")}
-                                              FROM       {TemporaryTable(entities)}
-                                              """;
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var reader = this.Connection.ExecuteReader(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
-        {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
-        }
-
-        reader.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteReader_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = Generate.Multiple<Entity>();
-
-        using var reader = this.Connection.ExecuteReader(
-            $"""
-             SELECT     {Q("Id")}, {Q("StringValue")}, {Q("DecimalValue")}
-             FROM       {TemporaryTable(entities)}
-             """,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entities)
-        {
-            reader.Read()
-                .Should().BeTrue();
-
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
-
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
-
-            reader.GetDecimal(2)
-                .Should().Be(entity.DecimalValue);
-        }
-    }
-
-    [Fact]
-    public void ExecuteReader_InterpolatedParameter_ShouldPassInterpolatedParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("StringValue")} FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.Read()
-            .Should().BeTrue();
-
-        reader.GetString(0)
-            .Should().Be(entity.StringValue);
-    }
-
-    [Fact]
-    public void ExecuteReader_Parameter_ShouldPassParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var statement = new InterpolatedSqlStatement(
-            $"SELECT {Q("StringValue")} FROM {Q("Entity")} WHERE {Q("Id")} = {P("Id")}",
-            ("Id", entity.Id)
-        );
-
-        using var reader = this.Connection.ExecuteReader(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.Read()
-            .Should().BeTrue();
-
-        reader.GetString(0)
-            .Should().Be(entity.StringValue);
-    }
-
-    [Fact]
-    public void ExecuteReader_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids(2);
-
-        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        var reader = this.Connection.ExecuteReader(
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
-        {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
-        }
-
-        reader.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteReader_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids();
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        foreach (var entityId in entityIds)
-        {
-            reader.Read()
-                .Should().BeTrue();
-
-            reader.GetInt64(0)
-                .Should().Be(entityId);
-        }
-    }
-
-    [Fact]
-    public void ExecuteReader_ShouldReturnDataReaderForQueryResult()
-    {
-        var entities = this.CreateEntitiesInDb<Entity>();
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entities)
-        {
-            reader.Read()
-                .Should().BeTrue();
-
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
-
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
-        }
-
-        reader.Read()
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteReader_Transaction_ShouldUseTransaction()
-    {
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
-
-            var reader = this.Connection.ExecuteReader(
-                $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            );
-
-            reader.HasRows
-                .Should().BeTrue();
-
-            foreach (var entity in entities)
-            {
-                reader.Read()
-                    .Should().BeTrue();
-
-                reader.GetInt64(0)
-                    .Should().Be(entity.Id);
-
-                reader.GetString(1)
-                    .Should().Be(entity.StringValue);
-            }
-
-            reader.Dispose();
-
-            transaction.Rollback();
-        }
-
-        using var reader2 = this.Connection.ExecuteReader(
-            $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader2.HasRows
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task ExecuteReaderAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -316,7 +41,9 @@ public abstract class
 
         await Invoking(async () =>
                 {
-                    await using var reader = await this.Connection.ExecuteReaderAsync(
+                    await using var reader = await CallApi(
+                        useAsyncApi,
+                        this.Connection,
                         $"SELECT * FROM {Q("Entity")}",
                         cancellationToken: cancellationToken
                     );
@@ -326,10 +53,14 @@ public abstract class
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_CommandBehavior_ShouldUseCommandBehavior()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_CommandBehavior_ShouldUseCommandBehavior(Boolean useAsyncApi)
     {
-        var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT * FROM {Q("Entity")}",
             commandBehavior: CommandBehavior.CloseConnection,
             cancellationToken: TestContext.Current.CancellationToken
@@ -341,14 +72,18 @@ public abstract class
             .Should().Be(ConnectionState.Closed);
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_CommandType_ShouldUseCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             Q("GetEntityIdsAndStringValues"),
             commandType: CommandType.StoredProcedure,
             cancellationToken: TestContext.Current.CancellationToken
@@ -367,9 +102,13 @@ public abstract class
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        ExecuteReaderAsync_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal()
+        ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -381,7 +120,9 @@ public abstract class
                                               """;
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -398,15 +139,21 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        ExecuteReaderAsync_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
+        ExecuteReader_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = Generate.Multiple<Entity>();
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"""
              SELECT     {Q("Id")}, {Q("StringValue")}, {Q("DecimalValue")}
              FROM       {TemporaryTable(entities)}
@@ -430,12 +177,16 @@ public abstract class
         }
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_InterpolatedParameter_ShouldPassInterpolatedParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT {Q("StringValue")} FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -447,8 +198,10 @@ public abstract class
             .Should().Be(entity.StringValue);
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_Parameter_ShouldPassParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_Parameter_ShouldPassParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -457,7 +210,9 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -469,8 +224,12 @@ public abstract class
             .Should().Be(entity.StringValue);
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -480,7 +239,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -497,15 +258,21 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        ExecuteReaderAsync_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
+        ExecuteReader_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entityIds = Generate.Ids();
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -520,12 +287,16 @@ public abstract class
         }
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_ShouldReturnDataReaderForQueryResult()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_ShouldReturnDataReaderForQueryResult(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        await using var reader = await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -546,14 +317,18 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task ExecuteReaderAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteReader_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
 
-            var reader = await this.Connection.ExecuteReaderAsync(
+            var reader = await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
                 transaction,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -579,10 +354,54 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        (await this.Connection.ExecuteReaderAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             )).HasRows
             .Should().BeFalse();
+    }
+
+    private static Task<DbDataReader> CallApi(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        InterpolatedSqlStatement statement,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandBehavior commandBehavior = CommandBehavior.Default,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return connection.ExecuteReaderAsync(
+                statement,
+                transaction,
+                commandTimeout,
+                commandBehavior,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult(
+                connection.ExecuteReader(
+                    statement,
+                    transaction,
+                    commandTimeout,
+                    commandBehavior,
+                    commandType,
+                    cancellationToken
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<DbDataReader>(ex);
+        }
     }
 }

@@ -45,9 +45,11 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         OracleDatabaseAdapter.AllowTemporaryTables = true;
 
         // Reset all settings to defaults before each test.
-        DbConnectionPlusConfiguration.Instance = new();
-        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
-        DbConnectionPlusConfiguration.Instance.InterceptDbCommand = DbCommandLogger.LogDbCommand;
+        DbConnectionPlusConfiguration.Instance = new()
+        {
+            EnumSerializationMode = EnumSerializationMode.Strings,
+            InterceptDbCommand = DbCommandLogger.LogDbCommand
+        };
     }
 
     /// <inheritdoc />

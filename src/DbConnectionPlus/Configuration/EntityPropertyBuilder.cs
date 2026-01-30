@@ -5,6 +5,11 @@
 /// </summary>
 public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EntityPropertyBuilder"/> class.
+    /// </summary>
+    /// <param name="entityTypeBuilder">The entity type builder this property builder belongs to.</param>
+    /// <param name="propertyName">The name of the property being configured.</param>
     internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, String propertyName)
     {
         this.entityTypeBuilder = entityTypeBuilder;
@@ -16,6 +21,10 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// </summary>
     /// <param name="columnName">The name of the column to map the property to.</param>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
+    // ReSharper disable once ParameterHidesMember
     public EntityPropertyBuilder HasColumnName(String columnName)
     {
         this.EnsureNotFrozen();
@@ -30,6 +39,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// Their values will be read back from the database after an insert or update and populated on the entity.
     /// </summary>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityPropertyBuilder IsComputed()
     {
         this.EnsureNotFrozen();
@@ -47,6 +59,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// Another property is already marked as an identity property for the entity type.
     /// </exception>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityPropertyBuilder IsIdentity()
     {
         this.EnsureNotFrozen();
@@ -73,6 +88,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// Marks the property to not be mapped to a database column.
     /// </summary>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityPropertyBuilder IsIgnored()
     {
         this.EnsureNotFrozen();
@@ -85,6 +103,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// Marks the property as a key property.
     /// </summary>
     /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
     public EntityPropertyBuilder IsKey()
     {
         this.EnsureNotFrozen();
@@ -114,6 +135,10 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// <inheritdoc />
     String IEntityPropertyBuilder.PropertyName => this.propertyName;
 
+    /// <summary>
+    /// Ensures this instance is not frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">This object is already frozen.</exception>
     private void EnsureNotFrozen()
     {
         if (this.isFrozen)
