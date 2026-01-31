@@ -117,7 +117,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi)
+    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntity>(2);
         var entityToDelete = entities[0];

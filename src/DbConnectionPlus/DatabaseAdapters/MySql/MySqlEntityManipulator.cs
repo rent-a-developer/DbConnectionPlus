@@ -3,6 +3,7 @@
 
 using LinkDotNet.StringBuilder;
 using MySqlConnector;
+using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -1389,6 +1390,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 var value = reader.GetValue(i);
 
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
                 property.PropertySetter!(entity, value);
             }
         }
@@ -1425,6 +1428,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                 }
 
                 var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
 
                 property.PropertySetter!(entity, value);
             }

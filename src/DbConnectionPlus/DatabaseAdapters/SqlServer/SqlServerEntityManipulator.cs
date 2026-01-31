@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
+using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -1305,6 +1306,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
 
                 var value = reader.GetValue(i);
 
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
                 property.PropertySetter!(entity, value);
             }
         }
@@ -1341,6 +1344,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                 }
 
                 var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
 
                 property.PropertySetter!(entity, value);
             }

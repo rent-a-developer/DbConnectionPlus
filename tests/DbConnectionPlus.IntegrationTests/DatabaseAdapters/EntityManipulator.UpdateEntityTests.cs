@@ -55,8 +55,8 @@ public abstract class EntityManipulator_UpdateEntityTests
             $"""
                 SELECT  *
                 FROM    {Q("MappingTestEntity")}
-                WHERE   KeyColumn1 = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2_)}
+                WHERE   {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
                 """
         );
 
@@ -135,8 +135,8 @@ public abstract class EntityManipulator_UpdateEntityTests
             $"""
                 SELECT  *
                 FROM    {Q("MappingTestEntity")}
-                WHERE   KeyColumn1 = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2_)}
+                WHERE   {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
                 """
         );
 
@@ -159,7 +159,7 @@ public abstract class EntityManipulator_UpdateEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntity_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi)
+    public async Task UpdateEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<MappingTestEntity>();
         var updatedEntity = Generate.UpdateFor(entity);
@@ -176,8 +176,8 @@ public abstract class EntityManipulator_UpdateEntityTests
             $"""
                 SELECT  *
                 FROM    {Q("MappingTestEntity")}
-                WHERE   KeyColumn1 = {Parameter(updatedEntity.KeyColumn1)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2)}
+                WHERE   {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2)}
                 """
         );
 

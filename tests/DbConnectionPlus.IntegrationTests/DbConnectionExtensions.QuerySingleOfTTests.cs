@@ -758,18 +758,117 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QuerySingle_EntityType_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
+    public async Task QuerySingle_EntityType_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
     {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
+        var entity = this.CreateEntityInDb<MappingTestEntityAttributes>();
 
-        (await CallApi<EntityWithColumnAttributes>(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entityWithColumnAttributes);
+        var readBackEntity = await CallApi<MappingTestEntityAttributes>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        readBackEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        readBackEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        readBackEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        Configure(config =>
+        {
+            config.Entity<MappingTestEntityFluentApi>()
+                .ToTable("MappingTestEntity");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn1_)
+                .HasColumnName("KeyColumn1")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn2_)
+                .HasColumnName("KeyColumn2")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ValueColumn_)
+                .HasColumnName("ValueColumn");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ComputedColumn_)
+                .HasColumnName("ComputedColumn")
+                .IsComputed();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.IdentityColumn_)
+                .HasColumnName("IdentityColumn")
+                .IsIdentity();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.NotMappedColumn)
+                .IsIgnored();
+        }
+        );
+
+        var entity = this.CreateEntityInDb<MappingTestEntityFluentApi>();
+
+        var readBackEntity = await CallApi<MappingTestEntityFluentApi>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        readBackEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        readBackEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        readBackEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<MappingTestEntity>();
+
+        var readBackEntity = await CallApi<MappingTestEntity>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn
+            .Should().Be(entity.ValueColumn);
     }
 
     [Theory]

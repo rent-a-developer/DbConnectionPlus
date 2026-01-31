@@ -3,6 +3,7 @@
 
 using LinkDotNet.StringBuilder;
 using Npgsql;
+using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -1336,6 +1337,8 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
 
                 var value = reader.GetValue(i);
 
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
                 property.PropertySetter!(entity, value);
             }
         }
@@ -1372,6 +1375,8 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
                 }
 
                 var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
 
                 property.PropertySetter!(entity, value);
             }

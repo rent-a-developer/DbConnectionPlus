@@ -182,13 +182,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        BuildTemporaryTable_ComplexObjects_NotMappedProperties_ShouldNotCreateColumnsForNotMappedProperties(
-            Boolean useAsyncApi
-        )
+    public async Task BuildTemporaryTable_ComplexObjects_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
     {
-        var entities = Generate.Multiple<EntityWithNotMappedProperty>();
-        entities.ForEach(a => a.NotMappedValue = "ShouldNotBePersisted");
+        var entities = Generate.Multiple<MappingTestEntityAttributes>();
+        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -196,7 +193,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Objects",
             entities,
-            typeof(EntityWithNotMappedProperty),
+            typeof(MappingTestEntityAttributes),
             TestContext.Current.CancellationToken
         );
 
@@ -206,7 +203,164 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(EntityWithNotMappedProperty.NotMappedValue));
+            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMappedColumn));
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityAttributes>(
+                $"""
+                 SELECT *
+                 FROM   {QT("Objects")}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(entity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(entity.KeyColumn2_)}
+                 """
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn_
+                .Should().Be(entity.ValueColumn_);
+
+            readBackEntity.ComputedColumn_
+                .Should().Be(entity.ComputedColumn_);
+
+            readBackEntity.IdentityColumn_
+                .Should().Be(entity.IdentityColumn_);
+
+            readBackEntity.NotMappedColumn
+                .Should().BeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        Configure(config =>
+        {
+            config.Entity<MappingTestEntityFluentApi>()
+                .ToTable("MappingTestEntity");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn1_)
+                .HasColumnName("KeyColumn1")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn2_)
+                .HasColumnName("KeyColumn2")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ValueColumn_)
+                .HasColumnName("ValueColumn");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ComputedColumn_)
+                .HasColumnName("ComputedColumn")
+                .IsComputed();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.IdentityColumn_)
+                .HasColumnName("IdentityColumn")
+                .IsIdentity();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.NotMappedColumn)
+                .IsIgnored();
+        }
+        );
+
+        var entities = Generate.Multiple<MappingTestEntityFluentApi>();
+        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            null,
+            "Objects",
+            entities,
+            typeof(MappingTestEntityFluentApi),
+            TestContext.Current.CancellationToken
+        );
+
+        await using var reader = await this.Connection.ExecuteReaderAsync(
+            $"SELECT * FROM {QT("Objects")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        reader.GetFieldNames()
+            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMappedColumn));
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityFluentApi>(
+                $"""
+                 SELECT *
+                 FROM   {QT("Objects")}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(entity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(entity.KeyColumn2_)}
+                 """
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn_
+                .Should().Be(entity.ValueColumn_);
+
+            readBackEntity.ComputedColumn_
+                .Should().Be(entity.ComputedColumn_);
+
+            readBackEntity.IdentityColumn_
+                .Should().Be(entity.IdentityColumn_);
+
+            readBackEntity.NotMappedColumn
+                .Should().BeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entities = Generate.Multiple<MappingTestEntity>();
+
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            null,
+            "Objects",
+            entities,
+            typeof(MappingTestEntity),
+            TestContext.Current.CancellationToken
+        );
+
+        await using var reader = await this.Connection.ExecuteReaderAsync(
+            $"SELECT * FROM {QT("Objects")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntity>(
+                $"""
+                 SELECT *
+                 FROM   {QT("Objects")}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(entity.KeyColumn1)} AND 
+                        {Q("KeyColumn2")} = {Parameter(entity.KeyColumn2)}
+                 """
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn
+                .Should().Be(entity.ValueColumn);
+        }
     }
 
     [Theory]
@@ -256,31 +410,6 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
 
         columnCollation
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        var entities = Generate.Multiple<Entity>();
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        await using var tableDisposer = await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            null,
-            "Objects",
-            entitiesWithColumnAttributes,
-            typeof(EntityWithColumnAttributes),
-            TestContext.Current.CancellationToken
-        );
-
-        (await this.Connection.QueryAsync<Entity>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync())
-            .Should().BeEquivalentTo(entities);
     }
 
     [Theory]

@@ -195,32 +195,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             "Value" NUMBER(19) NULL
         );
         GO
-
-        CREATE TABLE "EntityWithIdentityAndComputedProperties"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "IdentityValue" NUMBER(19) GENERATED ALWAYS as IDENTITY(START with 1 INCREMENT by 1),
-            "ComputedValue" generated always as (("BaseValue"+999)),
-            "BaseValue" NUMBER(19) NOT NULL
-        );
-        GO
-
-        CREATE TABLE "EntityWithCompositeKey"
-        (
-            "Key1" NUMBER(19) NOT NULL,
-            "Key2" NUMBER(19) NOT NULL,
-            "StringValue" NVARCHAR2(200) NOT NULL,
-            PRIMARY KEY ("Key1", "Key2")
-        );
-        GO
-
-        CREATE TABLE "EntityWithNotMappedProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "MappedValue" NVARCHAR2(200) NOT NULL,
-            "NotMappedValue" NVARCHAR2(200) NULL
-        );
-        GO
         
         CREATE TABLE "MappingTestEntity"
         (
@@ -262,15 +236,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithIdentityAndComputedProperties" PURGE;
-        GO
-
-        DROP TABLE IF EXISTS "EntityWithCompositeKey" PURGE;
-        GO
-
-        DROP TABLE IF EXISTS "EntityWithNotMappedProperty" PURGE;
-        GO
-
         DROP TABLE IF EXISTS "MappingTestEntity" PURGE;
         GO
 
@@ -296,15 +261,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithNullableProperty";
-        GO
-
-        TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";
-        GO
-
-        TRUNCATE TABLE "EntityWithCompositeKey";
-        GO
-
-        TRUNCATE TABLE "EntityWithNotMappedProperty";
         GO
 
         TRUNCATE TABLE "MappingTestEntity";

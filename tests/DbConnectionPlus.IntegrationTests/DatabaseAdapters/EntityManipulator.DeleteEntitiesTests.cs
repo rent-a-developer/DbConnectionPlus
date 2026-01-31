@@ -23,29 +23,6 @@ public sealed class
     EntityManipulator_DeleteEntitiesTests_SqlServer :
     EntityManipulator_DeleteEntitiesTests<SqlServerTestDatabaseProvider>;
 
-// TODO: Implement integration test (CRUD, Query, Temporary Tables) for fluent API config as well as attribute based
-// config.
-
-// TODO: Table Name -> via Type Name
-// TODO: Table Name -> via Attribute
-// TODO: Table Name -> via Fluent API
-
-// TODO: Column Name -> via Property Name
-// TODO: Column Name -> via Attribute
-// TODO: Column Name -> via Fluent API
-
-// TODO: Key Property -> via Attribute
-// TODO: Key Property -> via Fluent API
-
-// TODO: Computed Property -> via Attribute
-// TODO: Computed Property -> via Fluent API
-
-// TODO: Identity Property -> via Attribute
-// TODO: Identity Property -> via Fluent API
-
-// TODO: Ignore Property -> via Attribute
-// TODO: Ignore Property -> via Fluent API
-
 public abstract class EntityManipulator_DeleteEntitiesTests
     <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
@@ -164,7 +141,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     // to test that as well.
     [InlineData(false, 30)]
     [InlineData(true, 30)]
-    public async Task DeleteEntities_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi, Int32 numberOfEntities)
+    public async Task DeleteEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi, Int32 numberOfEntities)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntity>(numberOfEntities);
         var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();

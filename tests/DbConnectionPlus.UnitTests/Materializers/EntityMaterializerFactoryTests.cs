@@ -304,6 +304,222 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     }
 
     [Fact]
+    public void Materializer_Mapping_Attributes_ShouldUseAttributesMapping()
+    {
+        var entity = Generate.Single<MappingTestEntityAttributes>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(6);
+
+        var ordinal = 0;
+        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ValueColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ComputedColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.ComputedColumn_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("IdentityColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.IdentityColumn_);
+
+        ordinal++;
+        var notMappedColumnOrdinal = ordinal;
+        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMappedColumn");
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+
+        var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntityAttributes>(dataReader);
+
+        var materializedEntity = materializer(dataReader);
+
+        _ = dataReader.DidNotReceive().IsDBNull(notMappedColumnOrdinal);
+        _ = dataReader.DidNotReceive().GetString(notMappedColumnOrdinal);
+
+        materializedEntity.KeyColumn1_
+            .Should().Be(entity.KeyColumn1_);
+
+        materializedEntity.KeyColumn2_
+            .Should().Be(entity.KeyColumn2_);
+
+        materializedEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        materializedEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        materializedEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        materializedEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void Materializer_Mapping_FluentApi_ShouldUseFluentApiMapping()
+    {
+        Configure(config =>
+            {
+                config.Entity<MappingTestEntityFluentApi>()
+                    .ToTable("MappingTestEntity");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn1_)
+                    .HasColumnName("KeyColumn1")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn2_)
+                    .HasColumnName("KeyColumn2")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ValueColumn_)
+                    .HasColumnName("ValueColumn");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ComputedColumn_)
+                    .HasColumnName("ComputedColumn")
+                    .IsComputed();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.IdentityColumn_)
+                    .HasColumnName("IdentityColumn")
+                    .IsIdentity();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMappedColumn)
+                    .IsIgnored();
+            }
+        );
+
+        var entity = Generate.Single<MappingTestEntityFluentApi>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(6);
+
+        var ordinal = 0;
+        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ValueColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ComputedColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.ComputedColumn_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("IdentityColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.IdentityColumn_);
+
+        ordinal++;
+        var notMappedColumnOrdinal = ordinal;
+        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMappedColumn");
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+
+        var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntityFluentApi>(dataReader);
+
+        var materializedEntity = materializer(dataReader);
+
+        _ = dataReader.DidNotReceive().IsDBNull(notMappedColumnOrdinal);
+        _ = dataReader.DidNotReceive().GetString(notMappedColumnOrdinal);
+
+        materializedEntity.KeyColumn1_
+            .Should().Be(entity.KeyColumn1_);
+
+        materializedEntity.KeyColumn2_
+            .Should().Be(entity.KeyColumn2_);
+
+        materializedEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        materializedEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        materializedEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        materializedEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void Materializer_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames()
+    {
+        var entity = Generate.Single<MappingTestEntity>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(3);
+
+        var ordinal = 0;
+        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ValueColumn");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn);
+
+        var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntity>(dataReader);
+
+        var materializedEntity = materializer(dataReader);
+
+        materializedEntity.KeyColumn1
+            .Should().Be(entity.KeyColumn1);
+
+        materializedEntity.KeyColumn2
+            .Should().Be(entity.KeyColumn2);
+
+        materializedEntity.ValueColumn
+            .Should().Be(entity.ValueColumn);
+    }
+
+    [Fact]
     public void Materializer_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow()
     {
         var dataReader = Substitute.For<DbDataReader>();
@@ -448,46 +664,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
                 "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding " +
                 $"property of the type {typeof(Entity)} is non-nullable.*"
             );
-    }
-
-    [Fact]
-    public void Materializer_NotMappedProperty_ShouldBeIgnored()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(3);
-
-        var id = Generate.Id();
-        var mappedValue = Generate.Single<String>();
-
-        dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetInt64(0).Returns(id);
-
-        dataReader.GetName(1).Returns("MappedValue");
-        dataReader.GetFieldType(1).Returns(typeof(String));
-        dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetString(1).Returns(mappedValue);
-
-        dataReader.GetName(2).Returns("NotMappedValue");
-        dataReader.GetFieldType(2).Returns(typeof(String));
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithNotMappedProperty>(dataReader);
-
-        var entity = materializer(dataReader);
-
-        entity.Id
-            .Should().Be(id);
-
-        entity.MappedValue
-            .Should().Be(mappedValue);
-
-        entity.NotMappedValue
-            .Should().BeNull();
-
-        _ = dataReader.DidNotReceive().IsDBNull(2);
-        _ = dataReader.DidNotReceive().GetString(2);
     }
 
     [Fact]
@@ -647,25 +823,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         materializedEntity
             .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void Materializer_ShouldUseConfiguredColumnNames()
-    {
-        var entities = Generate.Multiple<Entity>(1);
-        var entityWithColumnAttribute = Generate.MapTo<EntityWithColumnAttributes>(entities[0]);
-
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
-
-        dataReader.Read();
-
-        var materializer =
-            EntityMaterializerFactory.GetMaterializer<EntityWithColumnAttributes>(dataReader);
-
-        var materializedEntity = materializer(dataReader);
-
-        materializedEntity
-            .Should().BeEquivalentTo(entityWithColumnAttribute);
     }
 
     [Fact]

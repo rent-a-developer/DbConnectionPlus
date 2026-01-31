@@ -61,8 +61,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  KeyColumn1 = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2_)}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
                  """
             );
 
@@ -148,8 +148,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  KeyColumn1 = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2_)}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
                  """
             );
 
@@ -173,7 +173,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntities_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi)
+    public async Task UpdateEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntity>();
         var updatedEntities = Generate.UpdateFor(entities);
@@ -192,8 +192,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  KeyColumn1 = {Parameter(updatedEntity.KeyColumn1)} AND 
-                        KeyColumn2 = {Parameter(updatedEntity.KeyColumn2)}
+                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1)} AND 
+                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2)}
                  """
             );
 

@@ -319,9 +319,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        Query_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            Boolean useAsyncApi
-        )
+        Query_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -410,9 +408,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task Query_EntityType_ColumnDataTypeNotCompatibleWithEntityPropertyType_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task Query_EntityType_ColumnDataTypeNotCompatibleWithEntityPropertyType_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<Entity>(
                     useAsyncApi,
@@ -463,9 +459,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Query_EntityType_CompatiblePrivateConstructor_ShouldUsePrivateConstructor(
-        Boolean useAsyncApi
-    )
+    public async Task Query_EntityType_CompatiblePrivateConstructor_ShouldUsePrivateConstructor(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
 
@@ -621,9 +615,144 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task Query_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public async Task Query_EntityType_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
+
+        var readBackEntities = await CallApi<MappingTestEntityAttributes>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        ).ToListAsync(TestContext.Current.CancellationToken);
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = readBackEntities.FirstOrDefault(a =>
+                a.KeyColumn1_ == entity.KeyColumn1_ && a.KeyColumn2_ == entity.KeyColumn2_
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn_
+                .Should().Be(entity.ValueColumn_);
+
+            readBackEntity.ComputedColumn_
+                .Should().Be(entity.ComputedColumn_);
+
+            readBackEntity.IdentityColumn_
+                .Should().Be(entity.IdentityColumn_);
+
+            readBackEntity.NotMappedColumn
+                .Should().BeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        Configure(config =>
+            {
+                config.Entity<MappingTestEntityFluentApi>()
+                    .ToTable("MappingTestEntity");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn1_)
+                    .HasColumnName("KeyColumn1")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn2_)
+                    .HasColumnName("KeyColumn2")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ValueColumn_)
+                    .HasColumnName("ValueColumn");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ComputedColumn_)
+                    .HasColumnName("ComputedColumn")
+                    .IsComputed();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.IdentityColumn_)
+                    .HasColumnName("IdentityColumn")
+                    .IsIdentity();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMappedColumn)
+                    .IsIgnored();
+            }
+        );
+
+        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>();
+
+        var readBackEntities = await CallApi<MappingTestEntityFluentApi>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        ).ToListAsync(TestContext.Current.CancellationToken);
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = readBackEntities.FirstOrDefault(a =>
+                a.KeyColumn1_ == entity.KeyColumn1_ && a.KeyColumn2_ == entity.KeyColumn2_
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn_
+                .Should().Be(entity.ValueColumn_);
+
+            readBackEntity.ComputedColumn_
+                .Should().Be(entity.ComputedColumn_);
+
+            readBackEntity.IdentityColumn_
+                .Should().Be(entity.IdentityColumn_);
+
+            readBackEntity.NotMappedColumn
+                .Should().BeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Query_EntityType_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>();
+
+        var readBackEntities = await CallApi<MappingTestEntity>(
+            useAsyncApi,
+            this.Connection,
+            $"SELECT * FROM {Q("MappingTestEntity")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        ).ToListAsync(TestContext.Current.CancellationToken);
+
+        foreach (var entity in entities)
+        {
+            var readBackEntity = readBackEntities.FirstOrDefault(a =>
+                a.KeyColumn1 == entity.KeyColumn1 && a.KeyColumn2 == entity.KeyColumn2
+            );
+
+            readBackEntity
+                .Should().NotBeNull();
+
+            readBackEntity.ValueColumn
+                .Should().Be(entity.ValueColumn);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task Query_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<EntityWithPublicConstructor>(useAsyncApi, this.Connection, $"SELECT 1 AS {Q("NonExistent")}")
                     .ToListAsync(TestContext.Current.CancellationToken).AsTask()
@@ -702,9 +831,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Query_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull(
-        Boolean useAsyncApi
-    )
+    public async Task Query_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull(Boolean useAsyncApi)
     {
         await this.Connection.ExecuteNonQueryAsync(
             $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
@@ -751,23 +878,6 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(entities);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Query_EntityType_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<Entity>();
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        (await CallApi<EntityWithColumnAttributes>(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entitiesWithColumnAttributes);
     }
 
     [Theory]
@@ -877,9 +987,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        Query_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            Boolean useAsyncApi
-        )
+        Query_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -1051,9 +1159,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task Query_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidString_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task Query_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidString_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<ValueTuple<TestEnum>>(
                     useAsyncApi,

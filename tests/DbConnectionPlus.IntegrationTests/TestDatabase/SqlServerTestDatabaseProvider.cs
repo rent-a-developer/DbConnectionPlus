@@ -220,32 +220,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE EntityWithIdentityAndComputedProperties
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            IdentityValue BIGINT IDENTITY(1,1) NOT NULL,
-            ComputedValue AS ([BaseValue]+(999)),
-            BaseValue BIGINT NOT NULL
-        );
-        GO
-
-        CREATE TABLE EntityWithCompositeKey
-        (
-            Key1 BIGINT NOT NULL,
-            Key2 BIGINT NOT NULL,
-            StringValue NVARCHAR(200) NOT NULL,
-            PRIMARY KEY (Key1, Key2)
-        );
-        GO
-
-        CREATE TABLE EntityWithNotMappedProperty
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            MappedValue NVARCHAR(200) NOT NULL,
-            NotMappedValue NVARCHAR(200) NULL
-        );
-        GO
-
         CREATE TABLE MappingTestEntity
         (
             KeyColumn1 BIGINT NOT NULL,
@@ -321,15 +295,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithNullableProperty;
-        GO
-
-        TRUNCATE TABLE EntityWithIdentityAndComputedProperties;
-        GO
-
-        TRUNCATE TABLE EntityWithCompositeKey;
-        GO
-
-        TRUNCATE TABLE EntityWithNotMappedProperty;
         GO
 
         TRUNCATE TABLE MappingTestEntity;

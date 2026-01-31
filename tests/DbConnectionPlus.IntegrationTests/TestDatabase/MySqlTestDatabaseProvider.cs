@@ -207,43 +207,15 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `Value` BIGINT NULL
         );
         GO
-
-        CREATE TABLE `EntityWithIdentityAndComputedProperties`
-        (
-            `Id` BIGINT NOT NULL,
-            `IdentityValue` BIGINT AUTO_INCREMENT NOT NULL,
-            `ComputedValue` BIGINT AS (`BaseValue`+999),
-            `BaseValue` BIGINT NOT NULL,
-            PRIMARY KEY (`IdentityValue`)
-        );
-        GO
-
-        CREATE TABLE `EntityWithCompositeKey`
-        (
-            `Key1` BIGINT NOT NULL,
-            `Key2` BIGINT NOT NULL,
-            `StringValue` VARCHAR(200) NOT NULL,
-            PRIMARY KEY (`Key1`, `Key2`)
-        );
-        GO
-
-        CREATE TABLE `EntityWithNotMappedProperty`
-        (
-            `Id` BIGINT NOT NULL PRIMARY KEY,
-            `MappedValue` VARCHAR(200) NOT NULL,
-            `NotMappedValue` VARCHAR(200) NULL
-        );
-        GO
         
         CREATE TABLE `MappingTestEntity`
         (
             `KeyColumn1` BIGINT NOT NULL,
             `KeyColumn2` BIGINT NOT NULL,
             `ValueColumn` INT NOT NULL,
-            `ComputedColumn` AS (`ValueColumn`+999),
-            `IdentityColumn` INT AUTO_INCREMENT NOT NULL,
-            `NotMappedColumn` TEXT NULL,
-            PRIMARY KEY (`KeyColumn1`, `KeyColumn2`)
+            `ComputedColumn` INT AS (`ValueColumn`+999),
+            `IdentityColumn` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+            `NotMappedColumn` TEXT NULL
         );
         GO
         
@@ -301,15 +273,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithNullableProperty`;
-        GO
-
-        TRUNCATE TABLE `EntityWithIdentityAndComputedProperties`;
-        GO
-
-        TRUNCATE TABLE `EntityWithCompositeKey`;
-        GO
-
-        TRUNCATE TABLE `EntityWithNotMappedProperty`;
         GO
 
         TRUNCATE TABLE `MappingTestEntity`;

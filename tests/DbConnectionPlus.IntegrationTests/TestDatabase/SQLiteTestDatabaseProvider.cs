@@ -175,29 +175,6 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Id INTEGER NOT NULL,
             Value INTEGER NULL
         );
-
-        CREATE TABLE EntityWithIdentityAndComputedProperties
-        (
-            Id INTEGER NOT NULL,
-            IdentityValue INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            ComputedValue INTEGER GENERATED ALWAYS AS (BaseValue+999) VIRTUAL,
-            BaseValue INTEGER NOT NULL
-        );
-
-        CREATE TABLE EntityWithCompositeKey
-        (
-            Key1 INTEGER NOT NULL,
-            Key2 INTEGER NOT NULL,
-            StringValue TEXT NOT NULL,
-            PRIMARY KEY (Key1, Key2)
-        );
-
-        CREATE TABLE EntityWithNotMappedProperty
-        (
-            Id INTEGER NOT NULL PRIMARY KEY,
-            MappedValue TEXT NOT NULL,
-            NotMappedValue TEXT NULL
-        );
         
         CREATE TABLE MappingTestEntity
         (
