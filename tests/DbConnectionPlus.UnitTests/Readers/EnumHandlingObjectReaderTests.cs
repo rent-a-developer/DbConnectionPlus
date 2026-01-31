@@ -2,7 +2,7 @@
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
-public class EnumHandlingObjectReaderTests
+public class EnumHandlingObjectReaderTests : UnitTestsBase
 {
     [Fact]
     public void GetFieldType_CharProperty_ShouldReturnString()

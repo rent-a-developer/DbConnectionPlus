@@ -1,6 +1,6 @@
 ﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.Configuration;
 
-public class EntityTypeBuilderTests
+public class EntityTypeBuilderTests : UnitTestsBase
 {
     [Fact]
     public void Freeze_ShouldFreezeBuilderAndAllPropertyBuilders()

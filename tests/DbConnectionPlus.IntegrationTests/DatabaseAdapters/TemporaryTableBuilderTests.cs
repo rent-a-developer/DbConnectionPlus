@@ -199,13 +199,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             TestContext.Current.CancellationToken
         );
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await this.Connection.ExecuteReaderAsync(
             $"SELECT * FROM {QT("Objects")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         reader.GetFieldNames()
             .Should().NotContain(nameof(MappingTestEntityAttributes.NotMappedColumn));
+
+        await reader.DisposeAsync();
 
         this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {QT("Objects")}")
             .Should().BeEquivalentTo(
@@ -237,13 +239,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             TestContext.Current.CancellationToken
         );
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await this.Connection.ExecuteReaderAsync(
             $"SELECT * FROM {QT("Objects")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         reader.GetFieldNames()
             .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMappedColumn));
+
+        await reader.DisposeAsync();
 
         this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {QT("Objects")}")
             .Should().BeEquivalentTo(
