@@ -111,7 +111,14 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         // ReSharper disable once PossibleMultipleEnumeration
         using var reader = CreateValuesDataReader(values, valuesType);
 
-        this.PopulateTemporaryTable(oracleConnection, oracleTransaction, quotedTableName, valuesType, reader, cancellationToken);
+        this.PopulateTemporaryTable(
+            oracleConnection,
+            oracleTransaction,
+            quotedTableName,
+            valuesType,
+            reader,
+            cancellationToken
+        );
 
         return new(
             () => DropTemporaryTable(quotedTableName, oracleConnection, oracleTransaction),
@@ -469,7 +476,8 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead).ToList();
+            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+                .ToList();
 
             for (var i = 0; i < properties.Count; i++)
             {

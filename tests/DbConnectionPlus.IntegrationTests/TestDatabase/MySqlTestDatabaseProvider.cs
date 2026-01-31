@@ -207,7 +207,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `Value` BIGINT NULL
         );
         GO
-        
+
         CREATE TABLE `MappingTestEntity`
         (
             `KeyColumn1` BIGINT NOT NULL,
@@ -218,7 +218,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `NotMappedColumn` TEXT NULL
         );
         GO
-        
+
         CREATE PROCEDURE `GetEntities` ()
         BEGIN
         	SELECT * FROM `Entity`;

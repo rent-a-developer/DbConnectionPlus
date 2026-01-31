@@ -195,7 +195,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             "Value" NUMBER(19) NULL
         );
         GO
-        
+
         CREATE TABLE "MappingTestEntity"
         (
             "KeyColumn1" NUMBER(19) NOT NULL,
@@ -207,7 +207,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             PRIMARY KEY ("KeyColumn1", "KeyColumn2")
         );
         GO
-        
+
         CREATE OR REPLACE NONEDITIONABLE PROCEDURE "DeleteAllEntities" AS
         BEGIN
             DELETE FROM "Entity";

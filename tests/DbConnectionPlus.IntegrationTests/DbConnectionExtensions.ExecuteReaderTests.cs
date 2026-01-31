@@ -106,9 +106,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(
-            Boolean useAsyncApi
-        )
+        ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 

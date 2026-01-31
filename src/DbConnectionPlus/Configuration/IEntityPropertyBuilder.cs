@@ -6,11 +6,6 @@
 internal interface IEntityPropertyBuilder : IFreezable
 {
     /// <summary>
-    /// The name of the property being configured.
-    /// </summary>
-    internal String PropertyName { get; }
-
-    /// <summary>
     /// The name of the column the property is mapped to.
     /// </summary>
     internal String? ColumnName { get; }
@@ -34,4 +29,9 @@ internal interface IEntityPropertyBuilder : IFreezable
     /// Determines whether the property is mapped to a key database column.
     /// </summary>
     internal Boolean IsKey { get; }
+
+    /// <summary>
+    /// The name of the property being configured.
+    /// </summary>
+    internal String PropertyName { get; }
 }

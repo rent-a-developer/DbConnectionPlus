@@ -288,7 +288,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         var npgsqlDbTypes = dataReader
             .GetFieldTypes()
-            .Select(t => 
+            .Select(t =>
                 this.databaseAdapter.GetDbType(t, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
             )
             .ToArray();
@@ -349,7 +349,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         var npgsqlDbTypes = dataReader
             .GetFieldTypes()
-            .Select(a => 
+            .Select(a =>
                 this.databaseAdapter.GetDbType(a, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
             )
             .ToArray();

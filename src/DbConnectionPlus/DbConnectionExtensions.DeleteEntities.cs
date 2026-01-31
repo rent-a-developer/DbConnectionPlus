@@ -8,6 +8,7 @@ namespace RentADeveloper.DbConnectionPlus;
 /// </summary>
 public static partial class DbConnectionExtensions
 {
+    // TODO: Update ALL documentation regarding attributes and Fluent API.
     /// <summary>
     /// Deletes the specified entities, identified by their key property/properties, from the database.
     /// </summary>

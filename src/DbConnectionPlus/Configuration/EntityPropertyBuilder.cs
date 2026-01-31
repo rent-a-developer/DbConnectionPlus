@@ -6,7 +6,7 @@
 public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EntityPropertyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="EntityPropertyBuilder" /> class.
     /// </summary>
     /// <param name="entityTypeBuilder">The entity type builder this property builder belongs to.</param>
     /// <param name="propertyName">The name of the property being configured.</param>

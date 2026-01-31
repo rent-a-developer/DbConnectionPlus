@@ -126,9 +126,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirstOrDefault_InterpolatedParameter_ShouldPassInterpolatedParameter(
-        Boolean useAsyncApi
-    )
+    public async Task QueryFirstOrDefault_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>(2);
 

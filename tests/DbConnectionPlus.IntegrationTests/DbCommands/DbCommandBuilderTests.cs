@@ -76,9 +76,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables(
-        Boolean useAsyncApi
-    )
+    public async Task BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 

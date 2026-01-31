@@ -49,10 +49,7 @@ internal static class MaterializerFactoryHelper
     /// </summary>
     internal static MethodInfo ValueConverterConvertValueToTypeMethod { get; } = typeof(ValueConverter)
         .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-        .First(m => 
-            m.Name == nameof(ValueConverter.ConvertValueToType) &&
-            m.IsGenericMethod
-        )!;
+        .First(m => m is { Name: nameof(ValueConverter.ConvertValueToType), IsGenericMethod: true });
 
     /// <summary>
     /// Creates an <see cref="Expression" /> that gets the value of a field of the specified field type from a

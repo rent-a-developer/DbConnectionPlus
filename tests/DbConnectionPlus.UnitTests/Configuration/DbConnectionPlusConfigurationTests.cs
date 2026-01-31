@@ -108,7 +108,7 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             .WithMessage(
                 "No database adapter is registered for the database connection of the type " +
                 $"{typeof(FakeConnectionC)}. Please call {nameof(DbConnectionExtensions)}." +
-                $"{nameof(DbConnectionExtensions.Configure)} to register an adapter for that connection type."
+                $"{nameof(Configure)} to register an adapter for that connection type."
             );
 
     [Fact]

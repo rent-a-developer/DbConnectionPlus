@@ -64,9 +64,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
-    )
+    public async Task Exists_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 

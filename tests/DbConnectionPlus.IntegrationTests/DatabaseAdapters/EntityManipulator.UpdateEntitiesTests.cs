@@ -34,202 +34,6 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntities_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
-        
-        var updatedEntities = Generate.UpdateFor(entities);
-        updatedEntities.ForEach(a =>
-        {
-            a.ComputedColumn_ = 0;
-            a.IdentityColumn_ = 0;
-            a.NotMappedColumn = "ShouldNotBePersisted";
-        }
-        );
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        foreach (var updatedEntity in updatedEntities)
-        {
-            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityAttributes>(
-                $"""
-                 SELECT *
-                 FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
-                 """
-            );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn_
-                .Should().Be(updatedEntity.ValueColumn_);
-
-            readBackEntity.ComputedColumn_
-                .Should().Be(updatedEntity.ComputedColumn_);
-
-            readBackEntity.IdentityColumn_
-                .Should().Be(updatedEntity.IdentityColumn_);
-
-            readBackEntity.NotMappedColumn
-                .Should().BeNull();
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UpdateEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
-    {
-        Configure(config =>
-        {
-            config.Entity<MappingTestEntityFluentApi>()
-                .ToTable("MappingTestEntity");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn1_)
-                .HasColumnName("KeyColumn1")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn2_)
-                .HasColumnName("KeyColumn2")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ValueColumn_)
-                .HasColumnName("ValueColumn");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ComputedColumn_)
-                .HasColumnName("ComputedColumn")
-                .IsComputed();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.IdentityColumn_)
-                .HasColumnName("IdentityColumn")
-                .IsIdentity();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.NotMappedColumn)
-                .IsIgnored();
-        }
-        );
-
-        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>();
-
-        var updatedEntities = Generate.UpdateFor(entities);
-        updatedEntities.ForEach(a =>
-        {
-            a.ComputedColumn_ = 0;
-            a.IdentityColumn_ = 0;
-            a.NotMappedColumn = "ShouldNotBePersisted";
-        }
-        );
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        foreach (var updatedEntity in updatedEntities)
-        {
-            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityFluentApi>(
-                $"""
-                 SELECT *
-                 FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1_)} AND 
-                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2_)}
-                 """
-            );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn_
-                .Should().Be(updatedEntity.ValueColumn_);
-
-            readBackEntity.ComputedColumn_
-                .Should().Be(updatedEntity.ComputedColumn_);
-
-            readBackEntity.IdentityColumn_
-                .Should().Be(updatedEntity.IdentityColumn_);
-
-            readBackEntity.NotMappedColumn
-                .Should().BeNull();
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task UpdateEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<MappingTestEntity>();
-        var updatedEntities = Generate.UpdateFor(entities);
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        foreach (var updatedEntity in updatedEntities)
-        {
-            var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntity>(
-                $"""
-                 SELECT *
-                 FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("KeyColumn1")} = {Parameter(updatedEntity.KeyColumn1)} AND 
-                        {Q("KeyColumn2")} = {Parameter(updatedEntity.KeyColumn2)}
-                 """
-            );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn
-                .Should().Be(updatedEntity.ValueColumn);
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public Task UpdateEntities_Mapping_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
-    {
-        var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
-
-        return Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    [entityWithoutKeyProperty],
-                    null,
-                    TestContext.Current.CancellationToken
-                )
-            )
-            .Should().ThrowAsync<ArgumentException>()
-            .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                $"Make sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
-            );
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
     public async Task UpdateEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
@@ -303,9 +107,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
-        Boolean useAsyncApi
-    )
+    public async Task UpdateEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(Boolean useAsyncApi)
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
@@ -341,6 +143,114 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(updatedEntities.Select(a => a.Enum.ToString()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntities_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
+
+        var updatedEntities = Generate.UpdateFor(entities);
+        updatedEntities.ForEach(a =>
+            {
+                a.ComputedColumn_ = 0;
+                a.IdentityColumn_ = 0;
+                a.NotMappedColumn = "ShouldNotBePersisted";
+            }
+        );
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            updatedEntities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}")
+            .Should().BeEquivalentTo(
+                updatedEntities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        MappingTestEntityFluentApi.Configure();
+
+        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>();
+
+        var updatedEntities = Generate.UpdateFor(entities);
+        updatedEntities.ForEach(a =>
+            {
+                a.ComputedColumn_ = 0;
+                a.IdentityColumn_ = 0;
+                a.NotMappedColumn = "ShouldNotBePersisted";
+            }
+        );
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            updatedEntities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}")
+            .Should().BeEquivalentTo(
+                updatedEntities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task UpdateEntities_Mapping_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
+
+        return Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    [entityWithoutKeyProperty],
+                    null,
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage(
+                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
+                $"Make sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>();
+        var updatedEntities = Generate.UpdateFor(entities);
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            updatedEntities,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<MappingTestEntity>($"SELECT * FROM {Q("MappingTestEntity")}")
+            .Should().BeEquivalentTo(updatedEntities);
     }
 
     [Theory]

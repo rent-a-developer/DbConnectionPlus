@@ -152,16 +152,6 @@ public class EntityHelperTests : UnitTestsBase
     }
 
     [Fact]
-    public void GetEntityTypeMetadata_MoreThanOneIdentityProperty_ShouldThrow() =>
-        Invoking(() => EntityHelper.GetEntityTypeMetadata(typeof(EntityWithMultipleIdentityProperties)))
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "There are multiple identity properties defined for the entity type " +
-                $"{typeof(EntityWithMultipleIdentityProperties)}. Only one property can be marked as an identity " +
-                "property per entity type."
-            );
-
-    [Fact]
     public void GetEntityTypeMetadata_FluentApiMapping_ShouldGetMetadataBasedOnFluentApiMapping()
     {
         var tableName = Generate.Single<String>();
@@ -245,6 +235,16 @@ public class EntityHelperTests : UnitTestsBase
         metadata.UpdateProperties
             .Should().Contain([booleanValueProperty]);
     }
+
+    [Fact]
+    public void GetEntityTypeMetadata_MoreThanOneIdentityProperty_ShouldThrow() =>
+        Invoking(() => EntityHelper.GetEntityTypeMetadata(typeof(EntityWithMultipleIdentityProperties)))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(
+                "There are multiple identity properties defined for the entity type " +
+                $"{typeof(EntityWithMultipleIdentityProperties)}. Only one property can be marked as an identity " +
+                "property per entity type."
+            );
 
     [Theory]
     [InlineData(typeof(MappingTestEntity))]

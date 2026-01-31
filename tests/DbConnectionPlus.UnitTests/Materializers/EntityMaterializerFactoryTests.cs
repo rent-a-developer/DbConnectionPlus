@@ -376,40 +376,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     [Fact]
     public void Materializer_Mapping_FluentApi_ShouldUseFluentApiMapping()
     {
-        Configure(config =>
-            {
-                config.Entity<MappingTestEntityFluentApi>()
-                    .ToTable("MappingTestEntity");
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn1_)
-                    .HasColumnName("KeyColumn1")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn2_)
-                    .HasColumnName("KeyColumn2")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ValueColumn_)
-                    .HasColumnName("ValueColumn");
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ComputedColumn_)
-                    .HasColumnName("ComputedColumn")
-                    .IsComputed();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.IdentityColumn_)
-                    .HasColumnName("IdentityColumn")
-                    .IsIdentity();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.NotMappedColumn)
-                    .IsIgnored();
-            }
-        );
+        MappingTestEntityFluentApi.Configure();
 
         var entity = Generate.Single<MappingTestEntityFluentApi>();
 

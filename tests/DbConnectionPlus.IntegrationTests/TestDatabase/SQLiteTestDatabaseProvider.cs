@@ -175,7 +175,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Id INTEGER NOT NULL,
             Value INTEGER NULL
         );
-        
+
         CREATE TABLE MappingTestEntity
         (
             KeyColumn1 INTEGER NOT NULL,

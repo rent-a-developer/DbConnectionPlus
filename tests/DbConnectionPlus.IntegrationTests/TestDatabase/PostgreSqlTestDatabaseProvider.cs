@@ -182,7 +182,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Id" bigint NOT NULL PRIMARY KEY,
             "Value" bigint NULL
         );
-        
+
         CREATE TABLE "MappingTestEntity"
         (
             "KeyColumn1" bigint NOT NULL,
@@ -193,7 +193,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "NotMappedColumn" text NULL,
             PRIMARY KEY ("KeyColumn1", "KeyColumn2")
         );
-        
+
         CREATE PROCEDURE "GetEntities" ()
         LANGUAGE SQL
         AS $$

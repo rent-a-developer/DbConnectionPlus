@@ -31,9 +31,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
-    )
+    public async Task QueryFirst_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -182,9 +180,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
-    )
+    public async Task QueryFirst_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 

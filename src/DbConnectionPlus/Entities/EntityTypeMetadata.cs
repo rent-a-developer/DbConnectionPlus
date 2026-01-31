@@ -25,7 +25,7 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// </param>
 /// <param name="IdentityProperty">
 /// The metadata of the identity property of the entity type.
-/// This is <see langword="null"/> if the entity type does not have an identity property.
+/// This is <see langword="null" /> if the entity type does not have an identity property.
 /// </param>
 /// <param name="DatabaseGeneratedProperties">
 /// The metadata of the database-generated properties of the entity type.

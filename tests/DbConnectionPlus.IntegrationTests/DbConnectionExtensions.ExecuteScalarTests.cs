@@ -327,9 +327,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        ExecuteScalar_TargetTypeIsChar_ColumnValueIsStringWithLengthOne_ShouldGetFirstCharacter(
-            Boolean useAsyncApi
-        )
+        ExecuteScalar_TargetTypeIsChar_ColumnValueIsStringWithLengthOne_ShouldGetFirstCharacter(Boolean useAsyncApi)
     {
         var character = Generate.Single<Char>();
 
@@ -400,9 +398,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsString_ShouldConvertStringToEnum(
-        Boolean useAsyncApi
-    )
+    public async Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsString_ShouldConvertStringToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 

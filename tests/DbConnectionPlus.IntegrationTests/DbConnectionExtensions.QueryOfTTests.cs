@@ -619,34 +619,17 @@ public abstract class
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
 
-        var readBackEntities = await CallApi<MappingTestEntityAttributes>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
-
-        foreach (var entity in entities)
-        {
-            var readBackEntity = readBackEntities.FirstOrDefault(a =>
-                a.KeyColumn1_ == entity.KeyColumn1_ && a.KeyColumn2_ == entity.KeyColumn2_
+        (await CallApi<MappingTestEntityAttributes>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(
+                entities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
             );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn_
-                .Should().Be(entity.ValueColumn_);
-
-            readBackEntity.ComputedColumn_
-                .Should().Be(entity.ComputedColumn_);
-
-            readBackEntity.IdentityColumn_
-                .Should().Be(entity.IdentityColumn_);
-
-            readBackEntity.NotMappedColumn
-                .Should().BeNull();
-        }
     }
 
     [Theory]
@@ -654,71 +637,21 @@ public abstract class
     [InlineData(true)]
     public async Task Query_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
     {
-        Configure(config =>
-            {
-                config.Entity<MappingTestEntityFluentApi>()
-                    .ToTable("MappingTestEntity");
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn1_)
-                    .HasColumnName("KeyColumn1")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn2_)
-                    .HasColumnName("KeyColumn2")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ValueColumn_)
-                    .HasColumnName("ValueColumn");
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ComputedColumn_)
-                    .HasColumnName("ComputedColumn")
-                    .IsComputed();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.IdentityColumn_)
-                    .HasColumnName("IdentityColumn")
-                    .IsIdentity();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.NotMappedColumn)
-                    .IsIgnored();
-            }
-        );
+        MappingTestEntityFluentApi.Configure();
 
         var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>();
 
-        var readBackEntities = await CallApi<MappingTestEntityFluentApi>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
-
-        foreach (var entity in entities)
-        {
-            var readBackEntity = readBackEntities.FirstOrDefault(a =>
-                a.KeyColumn1_ == entity.KeyColumn1_ && a.KeyColumn2_ == entity.KeyColumn2_
+        (await CallApi<MappingTestEntityFluentApi>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(
+                entities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
             );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn_
-                .Should().Be(entity.ValueColumn_);
-
-            readBackEntity.ComputedColumn_
-                .Should().Be(entity.ComputedColumn_);
-
-            readBackEntity.IdentityColumn_
-                .Should().Be(entity.IdentityColumn_);
-
-            readBackEntity.NotMappedColumn
-                .Should().BeNull();
-        }
     }
 
     [Theory]
@@ -728,25 +661,13 @@ public abstract class
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntity>();
 
-        var readBackEntities = await CallApi<MappingTestEntity>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
-
-        foreach (var entity in entities)
-        {
-            var readBackEntity = readBackEntities.FirstOrDefault(a =>
-                a.KeyColumn1 == entity.KeyColumn1 && a.KeyColumn2 == entity.KeyColumn2
-            );
-
-            readBackEntity
-                .Should().NotBeNull();
-
-            readBackEntity.ValueColumn
-                .Should().Be(entity.ValueColumn);
-        }
+        (await CallApi<MappingTestEntity>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ).ToListAsync(TestContext.Current.CancellationToken))
+            .Should().BeEquivalentTo(entities);
     }
 
     [Theory]

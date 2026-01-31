@@ -99,9 +99,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QuerySingle_BuiltInType_ColumnValueCannotBeConvertedToTargetType_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task QuerySingle_BuiltInType_ColumnValueCannotBeConvertedToTargetType_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<Int32>(
                     useAsyncApi,
@@ -119,9 +117,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidInteger_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidInteger_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<TestEnum>(
                     useAsyncApi,
@@ -139,9 +135,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidString_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidString_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<TestEnum>(
                     useAsyncApi,
@@ -192,9 +186,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QuerySingle_BuiltInType_NonNullableTargetType_ColumnContainsNull_ShouldThrow(
-        Boolean useAsyncApi
-    ) =>
+    public Task QuerySingle_BuiltInType_NonNullableTargetType_ColumnContainsNull_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
                 CallApi<Int32>(
                     useAsyncApi,
@@ -244,9 +236,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
-    )
+    public async Task QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -336,9 +326,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthNotOne_ShouldThrow(
-            Boolean useAsyncApi
-        )
+        QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthNotOne_ShouldThrow(Boolean useAsyncApi)
     {
         if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
         {
@@ -479,9 +467,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QuerySingle_EntityType_CompatiblePublicConstructor_ShouldUsePublicConstructor(
-        Boolean useAsyncApi
-    )
+    public async Task QuerySingle_EntityType_CompatiblePublicConstructor_ShouldUsePublicConstructor(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -622,6 +608,48 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task QuerySingle_EntityType_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<MappingTestEntityAttributes>();
+
+        (await CallApi<MappingTestEntityAttributes>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(
+                entity,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        MappingTestEntityFluentApi.Configure();
+
+        var entity = this.CreateEntityInDb<MappingTestEntityFluentApi>();
+
+        (await CallApi<MappingTestEntityFluentApi>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(
+                entity,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public Task QuerySingle_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow(
         Boolean useAsyncApi
     ) =>
@@ -678,9 +706,23 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QuerySingle_EntityType_NonNullableEntityProperty_ColumnContainsNull_ShouldThrow(
-        Boolean useAsyncApi
-    )
+    public async Task QuerySingle_EntityType_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<MappingTestEntity>();
+
+        (await CallApi<MappingTestEntity>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_EntityType_NonNullableEntityProperty_ColumnContainsNull_ShouldThrow(Boolean useAsyncApi)
     {
         this.Connection.ExecuteNonQuery(
             $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
@@ -753,122 +795,6 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task QuerySingle_EntityType_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
-    {
-        var entity = this.CreateEntityInDb<MappingTestEntityAttributes>();
-
-        var readBackEntity = await CallApi<MappingTestEntityAttributes>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        readBackEntity
-            .Should().NotBeNull();
-
-        readBackEntity.ValueColumn_
-            .Should().Be(entity.ValueColumn_);
-
-        readBackEntity.ComputedColumn_
-            .Should().Be(entity.ComputedColumn_);
-
-        readBackEntity.IdentityColumn_
-            .Should().Be(entity.IdentityColumn_);
-
-        readBackEntity.NotMappedColumn
-            .Should().BeNull();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task QuerySingle_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
-    {
-        Configure(config =>
-        {
-            config.Entity<MappingTestEntityFluentApi>()
-                .ToTable("MappingTestEntity");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn1_)
-                .HasColumnName("KeyColumn1")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn2_)
-                .HasColumnName("KeyColumn2")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ValueColumn_)
-                .HasColumnName("ValueColumn");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ComputedColumn_)
-                .HasColumnName("ComputedColumn")
-                .IsComputed();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.IdentityColumn_)
-                .HasColumnName("IdentityColumn")
-                .IsIdentity();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.NotMappedColumn)
-                .IsIgnored();
-        }
-        );
-
-        var entity = this.CreateEntityInDb<MappingTestEntityFluentApi>();
-
-        var readBackEntity = await CallApi<MappingTestEntityFluentApi>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        readBackEntity
-            .Should().NotBeNull();
-
-        readBackEntity.ValueColumn_
-            .Should().Be(entity.ValueColumn_);
-
-        readBackEntity.ComputedColumn_
-            .Should().Be(entity.ComputedColumn_);
-
-        readBackEntity.IdentityColumn_
-            .Should().Be(entity.IdentityColumn_);
-
-        readBackEntity.NotMappedColumn
-            .Should().BeNull();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task QuerySingle_EntityType_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
-    {
-        var entity = this.CreateEntityInDb<MappingTestEntity>();
-
-        var readBackEntity = await CallApi<MappingTestEntity>(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("MappingTestEntity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        readBackEntity
-            .Should().NotBeNull();
-
-        readBackEntity.ValueColumn
-            .Should().Be(entity.ValueColumn);
     }
 
     [Theory]
@@ -1200,9 +1126,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertIntegerToEnum(
-        Boolean useAsyncApi
-    )
+    public async Task QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertIntegerToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 

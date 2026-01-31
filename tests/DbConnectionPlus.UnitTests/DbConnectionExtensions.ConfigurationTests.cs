@@ -7,35 +7,35 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
     {
         InterceptDbCommand interceptDbCommand = (_, _) => { };
 
-        Configure(configuration =>
+        Configure(config =>
             {
-                configuration.EnumSerializationMode = EnumSerializationMode.Integers;
-                configuration.InterceptDbCommand = interceptDbCommand;
+                config.EnumSerializationMode = EnumSerializationMode.Integers;
+                config.InterceptDbCommand = interceptDbCommand;
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .ToTable("MappingTestEntity");
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.KeyColumn1_)
                     .HasColumnName("KeyColumn1")
                     .IsKey();
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.KeyColumn2_)
                     .HasColumnName("KeyColumn2")
                     .IsKey();
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.ComputedColumn_)
                     .HasColumnName("ComputedColumn")
                     .IsComputed();
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.IdentityColumn_)
                     .HasColumnName("IdentityColumn")
                     .IsIdentity();
 
-                configuration.Entity<MappingTestEntityFluentApi>()
+                config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.NotMappedColumn)
                     .IsIgnored();
             }

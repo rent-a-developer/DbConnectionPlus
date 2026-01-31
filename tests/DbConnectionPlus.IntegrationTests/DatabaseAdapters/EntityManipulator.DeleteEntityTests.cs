@@ -34,6 +34,35 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
+    {
+        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
+
+        var entityToDelete = this.CreateEntityInDb<Entity>();
+
+        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
+
+        this.DbCommandFactory.DelayNextDbCommand = true;
+
+        await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityToDelete,
+                    null,
+                    cancellationToken
+                )
+            )
+            .Should().ThrowAsync<OperationCanceledException>()
+            .Where(a => a.CancellationToken == cancellationToken);
+
+        // Since the operation was cancelled, the entity should still exist.
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DeleteEntity_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(2);
@@ -60,66 +89,9 @@ public abstract class EntityManipulator_DeleteEntityTests
     [InlineData(true)]
     public async Task DeleteEntity_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
     {
-        Configure(config =>
-        {
-            config.Entity<MappingTestEntityFluentApi>()
-                .ToTable("MappingTestEntity");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn1_)
-                .HasColumnName("KeyColumn1")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.KeyColumn2_)
-                .HasColumnName("KeyColumn2")
-                .IsKey();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ValueColumn_)
-                .HasColumnName("ValueColumn");
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.ComputedColumn_)
-                .HasColumnName("ComputedColumn")
-                .IsComputed();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.IdentityColumn_)
-                .HasColumnName("IdentityColumn")
-                .IsIdentity();
-
-            config.Entity<MappingTestEntityFluentApi>()
-                .Property(a => a.NotMappedColumn)
-                .IsIgnored();
-        }
-        );
+        MappingTestEntityFluentApi.Configure();
 
         var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>(2);
-        var entityToDelete = entities[0];
-        var entityToKeep = entities[1];
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entityToDelete,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeFalse();
-
-        this.ExistsEntityInDb(entityToKeep)
-            .Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<MappingTestEntity>(2);
         var entityToDelete = entities[0];
         var entityToKeep = entities[1];
 
@@ -163,31 +135,24 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
-    )
+    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
     {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>(2);
+        var entityToDelete = entities[0];
+        var entityToKeep = entities[1];
 
-        var entityToDelete = this.CreateEntityInDb<Entity>();
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entityToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
 
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        await Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    entityToDelete,
-                    null,
-                    cancellationToken
-                )
-            )
-            .Should().ThrowAsync<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        // Since the operation was cancelled, the entity should still exist.
         this.ExistsEntityInDb(entityToDelete)
+            .Should().BeFalse();
+
+        this.ExistsEntityInDb(entityToKeep)
             .Should().BeTrue();
     }
 
