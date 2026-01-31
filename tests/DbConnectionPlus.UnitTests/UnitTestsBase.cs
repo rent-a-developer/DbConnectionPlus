@@ -27,7 +27,11 @@ public class UnitTestsBase
 
 
         // Reset all settings to defaults before each test.
-        DbConnectionPlusConfiguration.Instance = new();
+        DbConnectionPlusConfiguration.Instance = new()
+        {
+            EnumSerializationMode = EnumSerializationMode.Strings,
+            InterceptDbCommand = null
+        };
         EntityHelper.ResetEntityTypeMetadataCache();
         OracleDatabaseAdapter.AllowTemporaryTables = false;
 

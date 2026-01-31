@@ -12,20 +12,31 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
                 configuration.EnumSerializationMode = EnumSerializationMode.Integers;
                 configuration.InterceptDbCommand = interceptDbCommand;
 
-                configuration.Entity<Entity>()
-                    .ToTable("Entities");
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .ToTable("MappingTestEntity");
 
-                configuration.Entity<Entity>()
-                    .Property(a => a.Id)
-                    .HasColumnName("Identifier")
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn1_)
+                    .HasColumnName("KeyColumn1")
                     .IsKey();
 
-                configuration.Entity<EntityWithIdentityAndComputedProperties>()
-                    .Property(a => a.ComputedValue)
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn2_)
+                    .HasColumnName("KeyColumn2")
+                    .IsKey();
+
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ComputedColumn_)
+                    .HasColumnName("ComputedColumn")
                     .IsComputed();
 
-                configuration.Entity<EntityWithNotMappedProperty>()
-                    .Property(a => a.NotMappedValue)
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.IdentityColumn_)
+                    .HasColumnName("IdentityColumn")
+                    .IsIdentity();
+
+                configuration.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMappedColumn)
                     .IsIgnored();
             }
         );
@@ -39,40 +50,35 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
         var entityTypeBuilders = DbConnectionPlusConfiguration.Instance.GetEntityTypeBuilders();
 
         entityTypeBuilders
-            .Should().HaveCount(3);
+            .Should().HaveCount(1);
 
         entityTypeBuilders
             .Should().ContainKeys(
-                typeof(Entity),
-                typeof(EntityWithIdentityAndComputedProperties),
-                typeof(EntityWithNotMappedProperty)
+                typeof(MappingTestEntityFluentApi)
             );
 
-        entityTypeBuilders[typeof(Entity)].TableName
-            .Should().Be("Entities");
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].TableName
+            .Should().Be("MappingTestEntity");
 
-        entityTypeBuilders[typeof(Entity)].PropertyBuilders["Id"].ColumnName
-            .Should().Be("Identifier");
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["KeyColumn1_"].ColumnName
+            .Should().Be("KeyColumn1");
 
-        entityTypeBuilders[typeof(Entity)].PropertyBuilders["Id"].IsKey
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["KeyColumn2_"].ColumnName
+            .Should().Be("KeyColumn2");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ComputedColumn_"].ColumnName
+            .Should().Be("ComputedColumn");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ComputedColumn_"].IsComputed
             .Should().BeTrue();
 
-        entityTypeBuilders
-            .Should().ContainKey(typeof(EntityWithIdentityAndComputedProperties));
-
-        entityTypeBuilders[typeof(EntityWithIdentityAndComputedProperties)].TableName
-            .Should().BeNull();
-
-        entityTypeBuilders[typeof(EntityWithIdentityAndComputedProperties)].PropertyBuilders["ComputedValue"].IsComputed
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["IdentityColumn_"].IsIdentity
             .Should().BeTrue();
 
-        entityTypeBuilders
-            .Should().ContainKey(typeof(EntityWithNotMappedProperty));
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["IdentityColumn_"].ColumnName
+            .Should().Be("IdentityColumn");
 
-        entityTypeBuilders[typeof(EntityWithNotMappedProperty)].TableName
-            .Should().BeNull();
-
-        entityTypeBuilders[typeof(EntityWithNotMappedProperty)].PropertyBuilders["NotMappedValue"].IsIgnored
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["NotMappedColumn"].IsIgnored
             .Should().BeTrue();
     }
 

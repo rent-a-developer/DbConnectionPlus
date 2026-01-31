@@ -234,7 +234,19 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `NotMappedValue` VARCHAR(200) NULL
         );
         GO
-
+        
+        CREATE TABLE `MappingTestEntity`
+        (
+            `KeyColumn1` BIGINT NOT NULL,
+            `KeyColumn2` BIGINT NOT NULL,
+            `ValueColumn` INT NOT NULL,
+            `ComputedColumn` AS (`ValueColumn`+999),
+            `IdentityColumn` INT AUTO_INCREMENT NOT NULL,
+            `NotMappedColumn` TEXT NULL,
+            PRIMARY KEY (`KeyColumn1`, `KeyColumn2`)
+        );
+        GO
+        
         CREATE PROCEDURE `GetEntities` ()
         BEGIN
         	SELECT * FROM `Entity`;
@@ -298,6 +310,9 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithNotMappedProperty`;
+        GO
+
+        TRUNCATE TABLE `MappingTestEntity`;
         GO
         """;
 

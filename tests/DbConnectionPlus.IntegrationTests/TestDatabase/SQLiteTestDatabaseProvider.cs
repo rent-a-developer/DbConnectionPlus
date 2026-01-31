@@ -198,5 +198,15 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             MappedValue TEXT NOT NULL,
             NotMappedValue TEXT NULL
         );
+        
+        CREATE TABLE MappingTestEntity
+        (
+            KeyColumn1 INTEGER NOT NULL,
+            KeyColumn2 INTEGER NOT NULL,
+            ValueColumn INTEGER NOT NULL,
+            ComputedColumn INTEGER GENERATED ALWAYS AS (ValueColumn+999) VIRTUAL,
+            IdentityColumn INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            NotMappedColumn TEXT NULL
+        );
         """;
 }

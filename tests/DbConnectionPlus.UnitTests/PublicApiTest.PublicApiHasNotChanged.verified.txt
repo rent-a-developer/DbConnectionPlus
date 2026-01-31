@@ -3,11 +3,12 @@ namespace RentADeveloper.DbConnectionPlus.Configuration
 {
     public sealed class DbConnectionPlusConfiguration : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
     {
-        public DbConnectionPlusConfiguration() { }
         public RentADeveloper.DbConnectionPlus.EnumSerializationMode EnumSerializationMode { get; set; }
         public RentADeveloper.DbConnectionPlus.Configuration.InterceptDbCommand? InterceptDbCommand { get; set; }
         public static RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration Instance { get; }
         public RentADeveloper.DbConnectionPlus.Configuration.EntityTypeBuilder<TEntity> Entity<TEntity>() { }
+        public void RegisterDatabaseAdapter<TConnection>(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter adapter)
+            where TConnection : System.Data.Common.DbConnection { }
     }
     public sealed class EntityPropertyBuilder : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
     {
@@ -35,11 +36,6 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters
     {
         public const string Indent = "    ";
         public const string SingleColumnTemporaryTableColumnName = "Value";
-    }
-    public static class DatabaseAdapterRegistry
-    {
-        public static void RegisterAdapter<TConnection>(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter adapter)
-            where TConnection : System.Data.Common.DbConnection { }
     }
     public interface IDatabaseAdapter
     {

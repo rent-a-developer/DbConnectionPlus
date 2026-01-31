@@ -34,6 +34,158 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task InsertEntity_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entity = Generate.Single<MappingTestEntityAttributes>();
+        entity.ComputedColumn_ = 0;
+        entity.IdentityColumn_ = 0;
+        entity.NotMappedColumn = "ShouldNotBePersisted";
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entity,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityAttributes>(
+            $"""
+                SELECT  *
+                FROM    {Q("MappingTestEntity")}
+                WHERE   KeyColumn1 = {Parameter(entity.KeyColumn1_)} AND 
+                        KeyColumn2 = {Parameter(entity.KeyColumn2_)}
+                """
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        readBackEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        readBackEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        readBackEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntity_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        Configure(config =>
+        {
+            config.Entity<MappingTestEntityFluentApi>()
+                .ToTable("MappingTestEntity");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn1_)
+                .HasColumnName("KeyColumn1")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn2_)
+                .HasColumnName("KeyColumn2")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ValueColumn_)
+                .HasColumnName("ValueColumn");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ComputedColumn_)
+                .HasColumnName("ComputedColumn")
+                .IsComputed();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.IdentityColumn_)
+                .HasColumnName("IdentityColumn")
+                .IsIdentity();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.NotMappedColumn)
+                .IsIgnored();
+        }
+        );
+
+        var entity = Generate.Single<MappingTestEntityFluentApi>();
+        entity.ComputedColumn_ = 0;
+        entity.IdentityColumn_ = 0;
+        entity.NotMappedColumn = "ShouldNotBePersisted";
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entity,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntityFluentApi>(
+            $"""
+                SELECT  *
+                FROM    {Q("MappingTestEntity")}
+                WHERE   KeyColumn1 = {Parameter(entity.KeyColumn1_)} AND 
+                        KeyColumn2 = {Parameter(entity.KeyColumn2_)}
+                """
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn_
+            .Should().Be(entity.ValueColumn_);
+
+        readBackEntity.ComputedColumn_
+            .Should().Be(entity.ComputedColumn_);
+
+        readBackEntity.IdentityColumn_
+            .Should().Be(entity.IdentityColumn_);
+
+        readBackEntity.NotMappedColumn
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InsertEntity_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi)
+    {
+        var entity = Generate.Single<MappingTestEntity>();
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entity,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        var readBackEntity = this.Connection.QueryFirstOrDefault<MappingTestEntity>(
+            $"""
+                SELECT  *
+                FROM    {Q("MappingTestEntity")}
+                WHERE   KeyColumn1 = {Parameter(entity.KeyColumn1)} AND 
+                        KeyColumn2 = {Parameter(entity.KeyColumn2)}
+                """
+        );
+
+        readBackEntity
+            .Should().NotBeNull();
+
+        readBackEntity.ValueColumn
+            .Should().Be(entity.ValueColumn);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task InsertEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
@@ -55,46 +207,6 @@ public abstract class EntityManipulator_InsertEntityTests
         // Since the operation was cancelled, the entity should not have been inserted.
         this.ExistsEntityInDb(entity)
             .Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InsertEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
-        Boolean useAsyncApi
-    )
-    {
-        var entity = Generate.Single<Entity>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InsertEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
-    {
-        var entity = Generate.Single<EntityWithTableAttribute>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
     }
 
     [Theory]
@@ -140,57 +252,6 @@ public abstract class EntityManipulator_InsertEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntity_ShouldHandleIdentityAndComputedColumns(Boolean useAsyncApi)
-    {
-        var entity = Generate.Single<EntityWithIdentityAndComputedProperties>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        entity
-            .Should().BeEquivalentTo(
-                await this.Connection.QuerySingleAsync<EntityWithIdentityAndComputedProperties>(
-                    $"SELECT * FROM {Q("EntityWithIdentityAndComputedProperties")}"
-                )
-            );
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InsertEntity_ShouldIgnorePropertiesDenotedWithNotMappedAttribute(Boolean useAsyncApi)
-    {
-        var entity = Generate.Single<EntityWithNotMappedProperty>();
-        entity.NotMappedValue = "ShouldNotBePersisted";
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        await using var reader = await this.Connection.ExecuteReaderAsync(
-            $"SELECT {Q("Id")}, {Q("NotMappedValue")} FROM {Q("EntityWithNotMappedProperty")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        while (await reader.ReadAsync(TestContext.Current.CancellationToken))
-        {
-            reader.IsDBNull(reader.GetOrdinal("NotMappedValue"))
-                .Should().BeTrue();
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
     public async Task InsertEntity_ShouldInsertEntity(Boolean useAsyncApi)
     {
         var entity = Generate.Single<Entity>();
@@ -229,22 +290,6 @@ public abstract class EntityManipulator_InsertEntityTests
 
         (await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InsertEntity_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        var entity = Generate.Single<EntityWithColumnAttributes>();
-
-        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
-
-        (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
-                $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);

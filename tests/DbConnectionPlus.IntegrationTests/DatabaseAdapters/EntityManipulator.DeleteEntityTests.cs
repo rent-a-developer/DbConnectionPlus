@@ -34,6 +34,135 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DeleteEntity_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(2);
+        var entityToDelete = entities[0];
+        var entityToKeep = entities[1];
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entityToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeFalse();
+
+        this.ExistsEntityInDb(entityToKeep)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntity_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        Configure(config =>
+        {
+            config.Entity<MappingTestEntityFluentApi>()
+                .ToTable("MappingTestEntity");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn1_)
+                .HasColumnName("KeyColumn1")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.KeyColumn2_)
+                .HasColumnName("KeyColumn2")
+                .IsKey();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ValueColumn_)
+                .HasColumnName("ValueColumn");
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.ComputedColumn_)
+                .HasColumnName("ComputedColumn")
+                .IsComputed();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.IdentityColumn_)
+                .HasColumnName("IdentityColumn")
+                .IsIdentity();
+
+            config.Entity<MappingTestEntityFluentApi>()
+                .Property(a => a.NotMappedColumn)
+                .IsIgnored();
+        }
+        );
+
+        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>(2);
+        var entityToDelete = entities[0];
+        var entityToKeep = entities[1];
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entityToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeFalse();
+
+        this.ExistsEntityInDb(entityToKeep)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>(2);
+        var entityToDelete = entities[0];
+        var entityToKeep = entities[1];
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entityToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeFalse();
+
+        this.ExistsEntityInDb(entityToKeep)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task DeleteEntity_Mapping_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
+
+        return Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityWithoutKeyProperty,
+                    null,
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage(
+                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
+                $"Make sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
         Boolean useAsyncApi
     )
@@ -65,88 +194,6 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_EntityWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
-        Boolean useAsyncApi
-    )
-    {
-        var entityToDelete = this.CreateEntityInDb<Entity>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entityToDelete,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entityToDelete)
-            .Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntity_EntityWithTableAttribute_ShouldUseTableNameFromAttribute(Boolean useAsyncApi)
-    {
-        var entity = this.CreateEntityInDb<EntityWithTableAttribute>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public Task DeleteEntity_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
-    {
-        var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
-
-        return Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    entityWithoutKeyProperty,
-                    null,
-                    TestContext.Current.CancellationToken
-                )
-            )
-            .Should().ThrowAsync<ArgumentException>()
-            .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                "Make sure that at least one instance property of that type is denoted with a " +
-                $"{typeof(KeyAttribute)}."
-            );
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntity_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
-    {
-        var entity = this.CreateEntityInDb<EntityWithCompositeKey>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
     public async Task DeleteEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
@@ -168,26 +215,6 @@ public abstract class EntityManipulator_DeleteEntityTests
                 TestContext.Current.CancellationToken
             ))
             .Should().Be(0);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntity_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entityWithColumnAttributes,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
     }
 
     [Theory]

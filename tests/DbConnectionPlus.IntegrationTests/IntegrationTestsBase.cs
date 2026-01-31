@@ -50,6 +50,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
             EnumSerializationMode = EnumSerializationMode.Strings,
             InterceptDbCommand = DbCommandLogger.LogDbCommand
         };
+        EntityHelper.ResetEntityTypeMetadataCache();
     }
 
     /// <inheritdoc />

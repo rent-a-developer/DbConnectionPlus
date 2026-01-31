@@ -152,27 +152,21 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         var configuration = new DbConnectionPlusConfiguration();
 
         var entityBuilder = configuration.Entity<Entity>();
-        var entityWithIdentityAndComputedPropertiesBuilder =
-            configuration.Entity<EntityWithIdentityAndComputedProperties>();
-        var entityWithNotMappedPropertyBuilder = configuration.Entity<EntityWithNotMappedProperty>();
+        var mappingTestEntityFluentApiBuilder = configuration.Entity<MappingTestEntityFluentApi>();
 
         var entityTypeBuilders = configuration.GetEntityTypeBuilders();
 
         entityTypeBuilders
             .Should().ContainKeys(
                 typeof(Entity),
-                typeof(EntityWithIdentityAndComputedProperties),
-                typeof(EntityWithNotMappedProperty)
+                typeof(MappingTestEntityFluentApi)
             );
 
         entityTypeBuilders[typeof(Entity)]
             .Should().BeSameAs(entityBuilder);
 
-        entityTypeBuilders[typeof(EntityWithIdentityAndComputedProperties)]
-            .Should().BeSameAs(entityWithIdentityAndComputedPropertiesBuilder);
-
-        entityTypeBuilders[typeof(EntityWithNotMappedProperty)]
-            .Should().BeSameAs(entityWithNotMappedPropertyBuilder);
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)]
+            .Should().BeSameAs(mappingTestEntityFluentApiBuilder);
     }
 
     [Fact]

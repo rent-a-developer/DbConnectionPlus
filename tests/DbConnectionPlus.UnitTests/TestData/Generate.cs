@@ -303,7 +303,7 @@ public static class Generate
     /// A list with copies of <paramref name="entities" /> where all properties except the key property / properties
     /// have new values.
     /// </returns>
-    public static List<T> UpdatesFor<T>(List<T> entities) =>
+    public static List<T> UpdateFor<T>(List<T> entities) =>
         [.. entities.Select(UpdateFor)];
 
     /// <summary>

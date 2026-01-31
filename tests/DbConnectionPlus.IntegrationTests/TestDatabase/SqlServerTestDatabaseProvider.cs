@@ -246,6 +246,18 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
+        CREATE TABLE MappingTestEntity
+        (
+            KeyColumn1 BIGINT NOT NULL,
+            KeyColumn2 BIGINT NOT NULL,
+            ValueColumn INT NOT NULL,
+            ComputedColumn AS ([ValueColumn]+(999)),
+            IdentityColumn INT IDENTITY(1,1) NOT NULL,
+            NotMappedColumn VARCHAR(200) NULL,
+            PRIMARY KEY (KeyColumn1, KeyColumn2)
+        );
+        GO
+
         CREATE PROCEDURE GetEntities
         AS
         BEGIN
@@ -318,6 +330,9 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithNotMappedProperty;
+        GO
+
+        TRUNCATE TABLE MappingTestEntity;
         GO
         """;
 

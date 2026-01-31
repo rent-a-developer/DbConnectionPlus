@@ -55,47 +55,17 @@ public abstract class EntityManipulator_DeleteEntitiesTests
         this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
-    )
+    [InlineData(false, 10)]
+    [InlineData(true, 10)]
+    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
+    // to test that as well.
+    [InlineData(false, 30)]
+    [InlineData(true, 30)]
+    public async Task DeleteEntities_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi, Int32 numberOfEntities)
     {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        await Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    entitiesToDelete,
-                    null,
-                    cancellationToken
-                )
-            )
-            .Should().ThrowAsync<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        foreach (var entity in entitiesToDelete)
-        {
-            // Since the operation was cancelled, the entities should still exist.
-            this.ExistsEntityInDb(entity)
-                .Should().BeTrue();
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_EntitiesWithoutTableAttribute_ShouldUseEntityTypeNameAsTableName(
-        Boolean useAsyncApi
-    )
-    {
-        var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(numberOfEntities);
+        var entitiesToDelete = entities.Take(numberOfEntities/2).ToList();
+        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
 
         await this.CallApi(
             useAsyncApi,
@@ -110,36 +80,121 @@ public abstract class EntityManipulator_DeleteEntitiesTests
             this.ExistsEntityInDb(entity)
                 .Should().BeFalse();
         }
+
+        foreach (var entity in entitiesToKeep)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeTrue();
+        }
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_EntitiesWithTableAttribute_ShouldUseTableNameFromAttribute(
-        Boolean useAsyncApi
-    )
+    [InlineData(false, 10)]
+    [InlineData(true, 10)]
+    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
+    // to test that as well.
+    [InlineData(false, 30)]
+    [InlineData(true, 30)]
+    public async Task DeleteEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi, Int32 numberOfEntities)
     {
-        var entities = this.CreateEntitiesInDb<EntityWithTableAttribute>();
+        Configure(config =>
+            {
+                config.Entity<MappingTestEntityFluentApi>()
+                    .ToTable("MappingTestEntity");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn1_)
+                    .HasColumnName("KeyColumn1")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.KeyColumn2_)
+                    .HasColumnName("KeyColumn2")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ValueColumn_)
+                    .HasColumnName("ValueColumn");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.ComputedColumn_)
+                    .HasColumnName("ComputedColumn")
+                    .IsComputed();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.IdentityColumn_)
+                    .HasColumnName("IdentityColumn")
+                    .IsIdentity();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMappedColumn)
+                    .IsIgnored();
+            }
+        );
+
+        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>(numberOfEntities);
+        var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();
+        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
 
         await this.CallApi(
             useAsyncApi,
             this.Connection,
-            entities,
+            entitiesToDelete,
             null,
             TestContext.Current.CancellationToken
         );
 
-        foreach (var entity in entities)
+        foreach (var entity in entitiesToDelete)
         {
             this.ExistsEntityInDb(entity)
                 .Should().BeFalse();
+        }
+
+        foreach (var entity in entitiesToKeep)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeTrue();
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 10)]
+    [InlineData(true, 10)]
+    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
+    // to test that as well.
+    [InlineData(false, 30)]
+    [InlineData(true, 30)]
+    public async Task DeleteEntities_Mapping_NoMapping_ShouldUseDefaults(Boolean useAsyncApi, Int32 numberOfEntities)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>(numberOfEntities);
+        var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();
+        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
+
+        await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            entitiesToDelete,
+            null,
+            TestContext.Current.CancellationToken
+        );
+
+        foreach (var entity in entitiesToDelete)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
+
+        foreach (var entity in entitiesToKeep)
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeTrue();
         }
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task DeleteEntities_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    public Task DeleteEntities_Mapping_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
@@ -161,73 +216,35 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntities_MoreThan10Entities_ShouldBatchDeleteIfPossible(Boolean useAsyncApi)
+    public async Task DeleteEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
-        // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
-        // to test that as well.
+        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
-        var entitiesToDelete = this.CreateEntitiesInDb<Entity>(20);
+        var entities = this.CreateEntitiesInDb<Entity>(10);
+        var entitiesToDelete = entities.Take(5).ToList();
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entitiesToDelete,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        foreach (var entity in entitiesToDelete)
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
-        }
-    }
+        this.DbCommandFactory.DelayNextDbCommand = true;
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_MoreThan10Entities_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
-        // to test that as well.
-
-        var entities = this.CreateEntitiesInDb<Entity>(20);
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entitiesWithColumnAttributes,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entitiesToDelete,
+                    null,
+                    cancellationToken
+                )
+            )
+            .Should().ThrowAsync<OperationCanceledException>()
+            .Where(a => a.CancellationToken == cancellationToken);
 
         foreach (var entity in entities)
         {
+            // Since the operation was cancelled, all entities should still exist.
             this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
-        }
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_ShouldHandleEntityWithCompositeKey(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<EntityWithCompositeKey>();
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entities,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entities)
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
+                .Should().BeTrue();
         }
     }
 
@@ -255,29 +272,6 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                 TestContext.Current.CancellationToken
             ))
             .Should().Be(0);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task DeleteEntities_ShouldUseConfiguredColumnNames(Boolean useAsyncApi)
-    {
-        var entities = this.CreateEntitiesInDb<Entity>();
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entitiesWithColumnAttributes,
-            null,
-            TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entities)
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
-        }
     }
 
     [Theory]
@@ -312,8 +306,6 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                 .Should().BeTrue();
         }
     }
-
-    // Refactor all tests to use this strategy.
 
     private Task<Int32> CallApi<TEntity>(
         Boolean useAsyncApi,

@@ -1421,7 +1421,7 @@ public class Benchmarks
 
         for (var i = 0; i < UpdateEntities_OperationsPerInvoke; i++)
         {
-            var updatedEntities = Generate.UpdatesFor(this.entitiesInDb);
+            var updatedEntities = Generate.UpdateFor(this.entitiesInDb);
 
             using var command = connection.CreateCommand();
             command.CommandText = """
@@ -1547,7 +1547,7 @@ public class Benchmarks
 
         for (var i = 0; i < UpdateEntities_OperationsPerInvoke; i++)
         {
-            var updatesEntities = Generate.UpdatesFor(this.entitiesInDb);
+            var updatesEntities = Generate.UpdateFor(this.entitiesInDb);
 
             connection.UpdateEntities(updatesEntities);
         }

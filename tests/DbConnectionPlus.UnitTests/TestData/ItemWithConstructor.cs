@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE0290
+﻿// ReSharper disable ConvertToPrimaryConstructor
+#pragma warning disable IDE0290
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 

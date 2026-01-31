@@ -221,7 +221,19 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             "NotMappedValue" NVARCHAR2(200) NULL
         );
         GO
-
+        
+        CREATE TABLE "MappingTestEntity"
+        (
+            "KeyColumn1" NUMBER(19) NOT NULL,
+            "KeyColumn2" NUMBER(19) NOT NULL,
+            "ValueColumn" NUMBER(10) NOT NULL,
+            "ComputedColumn" GENERATED ALWAYS AS (("ValueColumn"+999)),
+            "IdentityColumn" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
+            "NotMappedColumn" CLOB NULL,
+            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+        );
+        GO
+        
         CREATE OR REPLACE NONEDITIONABLE PROCEDURE "DeleteAllEntities" AS
         BEGIN
             DELETE FROM "Entity";
@@ -259,6 +271,9 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithNotMappedProperty" PURGE;
         GO
 
+        DROP TABLE IF EXISTS "MappingTestEntity" PURGE;
+        GO
+
         DROP PROCEDURE IF EXISTS "DeleteAllEntities";
         GO
         """;
@@ -290,6 +305,9 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithNotMappedProperty";
+        GO
+
+        TRUNCATE TABLE "MappingTestEntity";
         GO
         """;
 

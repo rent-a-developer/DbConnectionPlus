@@ -67,7 +67,6 @@ public static partial class DbConnectionExtensions
     /// 
     /// class Product
     /// {
-    ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Int64 SupplierId { get; set; }
     ///     public String Name { get; set; }
@@ -161,7 +160,6 @@ public static partial class DbConnectionExtensions
     /// 
     /// class Product
     /// {
-    ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Int64 SupplierId { get; set; }
     ///     public String Name { get; set; }

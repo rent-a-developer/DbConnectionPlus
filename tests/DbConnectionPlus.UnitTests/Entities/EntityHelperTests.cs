@@ -162,7 +162,7 @@ public class EntityHelperTests : UnitTestsBase
             );
 
     [Fact]
-    public void GetEntityTypeMetadata_FluentAPIConfig_ShouldGetMetadataBasedOnFluentAPIConfig()
+    public void GetEntityTypeMetadata_FluentApiMapping_ShouldGetMetadataBasedOnFluentApiMapping()
     {
         var tableName = Generate.Single<String>();
         var columnName = Generate.Single<String>();
@@ -247,11 +247,9 @@ public class EntityHelperTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Entity))]
-    [InlineData(typeof(EntityWithTableAttribute))]
-    [InlineData(typeof(EntityWithIdentityAndComputedProperties))]
-    [InlineData(typeof(EntityWithColumnAttributes))]
-    public void GetEntityTypeMetadata_NoFluentAPIConfig_ShouldGetMetadataBasedOnDataAnnotationAttributes(
+    [InlineData(typeof(MappingTestEntity))]
+    [InlineData(typeof(MappingTestEntityAttributes))]
+    public void GetEntityTypeMetadata_NoFluentApiMapping_ShouldGetMetadataBasedOnDataAnnotationAttributes(
         Type entityType
     )
     {

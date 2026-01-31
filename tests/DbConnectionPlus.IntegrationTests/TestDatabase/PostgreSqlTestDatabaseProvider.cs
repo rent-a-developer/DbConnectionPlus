@@ -206,6 +206,18 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "NotMappedValue" text NULL
         );
 
+        
+        CREATE TABLE "MappingTestEntity"
+        (
+            "KeyColumn1" bigint NOT NULL,
+            "KeyColumn2" bigint NOT NULL,
+            "ValueColumn" integer NOT NULL,
+            "ComputedColumn" integer GENERATED ALWAYS AS ("ValueColumn"+(999)),
+            "IdentityColumn" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+            "NotMappedColumn" text NULL,
+            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+        );
+        
         CREATE PROCEDURE "GetEntities" ()
         LANGUAGE SQL
         AS $$
@@ -255,6 +267,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";
         TRUNCATE TABLE "EntityWithCompositeKey";
         TRUNCATE TABLE "EntityWithNotMappedProperty";
+        TRUNCATE TABLE "MappingTestEntity";
         """;
 
     private static readonly String connectionString;
