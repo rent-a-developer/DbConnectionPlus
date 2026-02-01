@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
  
-## [1.1.0] - TODO: Add date of release
+## [1.1.0] - 2026-02-01
 
 ### Added
 - Fluent configuration API for general settings and entity mappings (Fixes [issue #3](https://github.com/rent-a-developer/DbConnectionPlus/issues/3))

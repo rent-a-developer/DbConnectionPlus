@@ -1,7 +1,7 @@
 [![NuGet Version](https://img.shields.io/nuget/v/RentADeveloper.DbConnectionPlus)](https://www.nuget.org/packages/RentADeveloper.DbConnectionPlus/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rent-a-developer_DbConnectionPlus&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rent-a-developer_DbConnectionPlus)
 [![license](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE.md)
-![semver](https://img.shields.io/badge/semver-1.0.0-blue)
+![semver](https://img.shields.io/badge/semver-1.1.0-blue)
 
 # ![image icon](https://raw.githubusercontent.com/rent-a-developer/DbConnectionPlus/main/icon.png) DbConnectionPlus
 A lightweight .NET ORM and extension library for the type

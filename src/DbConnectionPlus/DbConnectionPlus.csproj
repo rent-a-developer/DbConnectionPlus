@@ -21,8 +21,8 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.0.0</Version>
-		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+		<Version>1.1.0</Version>
+		<PackageReleaseNotes>See CHANGELOG.md.</PackageReleaseNotes>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
