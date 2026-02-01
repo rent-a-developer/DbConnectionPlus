@@ -1,4 +1,3 @@
-global using System.ComponentModel.DataAnnotations;
 global using System.Data;
 global using Xunit;
 global using AwesomeAssertions;

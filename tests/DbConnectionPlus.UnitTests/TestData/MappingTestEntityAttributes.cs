@@ -1,4 +1,6 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+﻿// ReSharper disable InconsistentNaming
+
+namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 [Table("MappingTestEntity")]
 public record MappingTestEntityAttributes

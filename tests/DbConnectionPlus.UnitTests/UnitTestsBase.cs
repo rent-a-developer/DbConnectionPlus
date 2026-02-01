@@ -122,7 +122,8 @@ public class UnitTestsBase
                             _ =>
                                 throw new NotSupportedException(
                                     $"The {nameof(EnumSerializationMode)} " +
-                                    $"{DbConnectionPlusConfiguration.Instance.EnumSerializationMode.ToDebugString()} is not supported."
+                                    $"{DbConnectionPlusConfiguration.Instance.EnumSerializationMode.ToDebugString()} " +
+                                    "is not supported."
                                 )
                         };
 
