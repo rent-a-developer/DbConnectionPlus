@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
 using Oracle.ManagedDataAccess.Client;
@@ -66,13 +66,13 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public EnumSerializationMode EnumSerializationMode
     {
-        get;
+        get => this.enumSerializationMode;
         set
         {
             this.EnsureNotFrozen();
-            field = value;
+            this.enumSerializationMode = value;
         }
-    } = EnumSerializationMode.Strings;
+    }
 
     /// <summary>
     /// A function that can be used to intercept database commands executed via DbConnectionPlus.
@@ -84,11 +84,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public InterceptDbCommand? InterceptDbCommand
     {
-        get;
+        get => this.interceptDbCommand;
         set
         {
             this.EnsureNotFrozen();
-            field = value;
+            this.interceptDbCommand = value;
         }
     }
 
@@ -195,5 +195,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
 
     private readonly ConcurrentDictionary<Type, IDatabaseAdapter> databaseAdapters = [];
     private readonly ConcurrentDictionary<Type, IEntityTypeBuilder> entityTypeBuilders = new();
+    private EnumSerializationMode enumSerializationMode = EnumSerializationMode.Strings;
+    private InterceptDbCommand? interceptDbCommand;
     private Boolean isFrozen;
 }
