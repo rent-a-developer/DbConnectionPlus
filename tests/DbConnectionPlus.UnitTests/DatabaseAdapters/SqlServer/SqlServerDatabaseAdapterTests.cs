@@ -39,7 +39,7 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void BindParameterValue_EnumValue_EnumSerializationModeIsIntegers_ShouldBindEnumAsInteger()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var parameter = Substitute.For<DbParameter>();
 
@@ -57,7 +57,7 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void BindParameterValue_EnumValue_EnumSerializationModeIsStrings_ShouldBindEnumAsString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var parameter = Substitute.For<DbParameter>();
 

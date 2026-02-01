@@ -38,25 +38,26 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entities will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
-    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
-    /// as the column name.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or <see cref="Configure" />)
+    /// are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -67,7 +68,6 @@ public static partial class DbConnectionExtensions
     /// 
     /// class Product
     /// {
-    ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Int64 SupplierId { get; set; }
     ///     public String Name { get; set; }
@@ -91,7 +91,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.InsertEntities(
             connection,
@@ -132,25 +132,26 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entities will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
-    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
-    /// as the column name.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or <see cref="Configure" />)
+    /// are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -161,7 +162,6 @@ public static partial class DbConnectionExtensions
     /// 
     /// class Product
     /// {
-    ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Int64 SupplierId { get; set; }
     ///     public String Name { get; set; }
@@ -185,9 +185,14 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator
-            .InsertEntitiesAsync(connection, entities, transaction, cancellationToken);
+            .InsertEntitiesAsync(
+                connection,
+                entities,
+                transaction,
+                cancellationToken
+            );
     }
 }

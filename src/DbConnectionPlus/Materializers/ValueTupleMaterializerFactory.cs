@@ -61,7 +61,9 @@ internal static class ValueTupleMaterializerFactory
     ///     </list>
     /// </exception>
     /// <remarks>
-    /// <para>The order of the fields in the value tuple must match the order of the fields in <paramref name="dataReader" />.</para>
+    /// <para>
+    /// The order of the fields in the value tuple must match the order of the fields in <paramref name="dataReader" />.
+    /// </para>
     /// <para>
     /// The field types of the fields in <paramref name="dataReader" /> must be compatible with the field types of the
     /// fields in <paramref name="dataReader" />.

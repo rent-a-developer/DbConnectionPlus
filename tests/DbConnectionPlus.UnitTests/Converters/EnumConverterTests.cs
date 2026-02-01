@@ -6,7 +6,7 @@ public class EnumConverterTests : UnitTestsBase
 {
     [Fact]
     public void ConvertValueToEnumMember_EmptyStringValue_ShouldThrow() =>
-        Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(String.Empty))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(String.Empty, typeof(TestEnum)))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "Could not convert an empty string or a string that consists only of white-space characters to an " +
@@ -15,6 +15,118 @@ public class EnumConverterTests : UnitTestsBase
 
     [Fact]
     public void ConvertValueToEnumMember_NonEnumTargetType_ShouldThrow()
+    {
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(Int32)))
+            .Should().Throw<ArgumentException>()
+            .WithMessage(
+                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
+                $"{typeof(Int32)}, because the type {typeof(Int32)} is not an enum type.*"
+            );
+
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(Int32?)))
+            .Should().Throw<ArgumentException>()
+            .WithMessage(
+                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
+                $"{typeof(Int32?)}, because the type {typeof(Int32?)} is not an enum type.*"
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToEnumMember_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
+    {
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(DBNull.Value, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert {{null}} to an enum member of the type {typeof(TestEnum)}."
+            );
+
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(null, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert {{null}} to an enum member of the type {typeof(TestEnum)}."
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToEnumMember_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
+    {
+        EnumConverter.ConvertValueToEnumMember(DBNull.Value, typeof(TestEnum?))
+            .Should().BeNull();
+
+        EnumConverter.ConvertValueToEnumMember(null, typeof(TestEnum?))
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void ConvertValueToEnumMember_NumericValueNotMatchingAnyEnumMemberValue_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(999, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members."
+            );
+
+    [Theory]
+    [MemberData(nameof(GetConvertValueToEnumMemberTestData))]
+    public void
+        ConvertValueToEnumMember_ShouldConvertValueToEnumMember(Object value, TestEnum expectedResult)
+    {
+        EnumConverter.ConvertValueToEnumMember(value, typeof(TestEnum))
+            .Should().Be(expectedResult);
+
+        EnumConverter.ConvertValueToEnumMember(value, typeof(TestEnum?))
+            .Should().Be(expectedResult);
+    }
+
+    [Fact]
+    public void ConvertValueToEnumMember_StringValueNotMatchingAnyEnumMemberName_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("NonExistent", typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
+                "That string does not match any of the names of the enum's members."
+            );
+
+    [Fact]
+    public void ConvertValueToEnumMember_ValueIsNeitherEnumValueNorStringNorNumeric_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(Guid.Empty, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '{Guid.Empty}' ({typeof(Guid)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. The value must either be an enum value of that type or a string or a numeric " +
+                "value."
+            );
+
+    [Fact]
+    public void ConvertValueToEnumMember_ValueIsOfDifferentEnumType_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(ConsoleColor.Red, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value 'Red' ({typeof(ConsoleColor)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. The value must either be an enum value of that type or a string or a numeric " +
+                "value."
+            );
+
+    [Fact]
+    public void ConvertValueToEnumMember_WhitespaceStringValue_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("   ", typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "Could not convert an empty string or a string that consists only of white-space characters to an " +
+                $"enum member of the type {typeof(TestEnum)}."
+            );
+
+    [Fact]
+    public void ConvertValueToEnumMemberOfT_EmptyStringValue_ShouldThrow() =>
+        Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(String.Empty))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "Could not convert an empty string or a string that consists only of white-space characters to an " +
+                $"enum member of the type {typeof(TestEnum)}."
+            );
+
+    [Fact]
+    public void ConvertValueToEnumMemberOfT_NonEnumTargetType_ShouldThrow()
     {
         Invoking(() => EnumConverter.ConvertValueToEnumMember<Int32>("ValueA"))
             .Should().Throw<ArgumentException>()
@@ -32,7 +144,7 @@ public class EnumConverterTests : UnitTestsBase
     }
 
     [Fact]
-    public void ConvertValueToEnumMember_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
+    public void ConvertValueToEnumMemberOfT_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
     {
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(DBNull.Value))
             .Should().Throw<InvalidCastException>()
@@ -48,7 +160,7 @@ public class EnumConverterTests : UnitTestsBase
     }
 
     [Fact]
-    public void ConvertValueToEnumMember_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
+    public void ConvertValueToEnumMemberOfT_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
     {
         EnumConverter.ConvertValueToEnumMember<TestEnum?>(DBNull.Value)
             .Should().BeNull();
@@ -58,7 +170,7 @@ public class EnumConverterTests : UnitTestsBase
     }
 
     [Fact]
-    public void ConvertValueToEnumMember_NumericValueNotMatchingAnyEnumMemberValue_ShouldThrow() =>
+    public void ConvertValueToEnumMemberOfT_NumericValueNotMatchingAnyEnumMemberValue_ShouldThrow() =>
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(999))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
@@ -69,7 +181,7 @@ public class EnumConverterTests : UnitTestsBase
     [Theory]
     [MemberData(nameof(GetConvertValueToEnumMemberTestData))]
     public void
-        ConvertValueToEnumMember_ShouldConvertValueToEnumMember(Object value, TestEnum expectedResult)
+        ConvertValueToEnumMemberOfT_ShouldConvertValueToEnumMember(Object value, TestEnum expectedResult)
     {
         EnumConverter.ConvertValueToEnumMember<TestEnum>(value)
             .Should().Be(expectedResult);
@@ -79,7 +191,7 @@ public class EnumConverterTests : UnitTestsBase
     }
 
     [Fact]
-    public void ConvertValueToEnumMember_StringValueNotMatchingAnyEnumMemberName_ShouldThrow() =>
+    public void ConvertValueToEnumMemberOfT_StringValueNotMatchingAnyEnumMemberName_ShouldThrow() =>
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>("NonExistent"))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
@@ -88,7 +200,7 @@ public class EnumConverterTests : UnitTestsBase
             );
 
     [Fact]
-    public void ConvertValueToEnumMember_ValueIsNeitherEnumValueNorStringNorNumeric_ShouldThrow() =>
+    public void ConvertValueToEnumMemberOfT_ValueIsNeitherEnumValueNorStringNorNumeric_ShouldThrow() =>
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(Guid.Empty))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
@@ -98,7 +210,7 @@ public class EnumConverterTests : UnitTestsBase
             );
 
     [Fact]
-    public void ConvertValueToEnumMember_ValueIsOfDifferentEnumType_ShouldThrow() =>
+    public void ConvertValueToEnumMemberOfT_ValueIsOfDifferentEnumType_ShouldThrow() =>
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(ConsoleColor.Red))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
@@ -108,7 +220,7 @@ public class EnumConverterTests : UnitTestsBase
             );
 
     [Fact]
-    public void ConvertValueToEnumMember_WhitespaceStringValue_ShouldThrow() =>
+    public void ConvertValueToEnumMemberOfT_WhitespaceStringValue_ShouldThrow() =>
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>("   "))
             .Should().Throw<InvalidCastException>()
             .WithMessage(

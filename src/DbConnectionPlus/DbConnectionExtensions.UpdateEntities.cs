@@ -20,7 +20,7 @@ public static partial class DbConnectionExtensions
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>The number of rows that were affected by the update operation.</returns>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
@@ -41,29 +41,30 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entities will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
-    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
-    /// as the column name.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or <see cref="Configure" />)
+    /// are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -109,7 +110,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator.UpdateEntities(
             connection,
@@ -132,7 +133,7 @@ public static partial class DbConnectionExtensions
     /// <see cref="Task{TResult}.Result" /> will contain the number of rows that were affected by the update operation.
     /// </returns>
     /// <exception cref="ArgumentException">
-    /// No instance property (with a public getter) of the type <typeparamref name="TEntity" /> is denoted with a
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// <see cref="KeyAttribute" />.
     /// </exception>
     /// <exception cref="ArgumentNullException">
@@ -154,29 +155,30 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entities will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
-    /// If a property is denoted with the <see cref="ColumnAttribute" />, the name specified in the attribute is used
-    /// as the column name.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or <see cref="Configure" />)
+    /// are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -222,7 +224,7 @@ public static partial class DbConnectionExtensions
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         return databaseAdapter.EntityManipulator
             .UpdateEntitiesAsync(connection, entities, transaction, cancellationToken);

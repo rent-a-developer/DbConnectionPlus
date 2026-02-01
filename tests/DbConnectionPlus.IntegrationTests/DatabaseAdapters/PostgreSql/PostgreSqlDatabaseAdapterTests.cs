@@ -1,4 +1,4 @@
-﻿// ReSharper disable AccessToDisposedClosure
+// ReSharper disable AccessToDisposedClosure
 
 using Npgsql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;

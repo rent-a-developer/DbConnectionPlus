@@ -1,4 +1,4 @@
-﻿// ReSharper disable AccessToDisposedClosure
+// ReSharper disable AccessToDisposedClosure
 
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;

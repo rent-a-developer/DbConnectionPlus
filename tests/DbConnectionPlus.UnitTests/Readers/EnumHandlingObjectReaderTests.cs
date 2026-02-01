@@ -2,7 +2,7 @@
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
-public class EnumHandlingObjectReaderTests
+public class EnumHandlingObjectReaderTests : UnitTestsBase
 {
     [Fact]
     public void GetFieldType_CharProperty_ShouldReturnString()
@@ -18,7 +18,7 @@ public class EnumHandlingObjectReaderTests
     [Fact]
     public void GetFieldType_EnumValues_EnumSerializationModeIsIntegers_ShouldReturnInt32()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>(1);
 
@@ -31,7 +31,7 @@ public class EnumHandlingObjectReaderTests
     [Fact]
     public void GetFieldType_EnumValues_EnumSerializationModeIsStrings_ShouldReturnString()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>(1);
 
@@ -108,7 +108,7 @@ public class EnumHandlingObjectReaderTests
     [Fact]
     public void GetValues_EnumValues_EnumSerializationModeIsIntegers_ShouldSerializeEnumsAsIntegers()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
@@ -132,7 +132,7 @@ public class EnumHandlingObjectReaderTests
     [Fact]
     public void GetValues_EnumValues_EnumSerializationModeIsStrings_ShouldSerializeEnumsAsStrings()
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 

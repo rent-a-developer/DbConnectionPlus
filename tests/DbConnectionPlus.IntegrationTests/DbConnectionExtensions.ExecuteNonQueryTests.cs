@@ -1,3 +1,5 @@
+using System.Data.Common;
+
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
 public sealed class
@@ -24,8 +26,12 @@ public abstract class
     DbConnectionExtensions_ExecuteNonQueryTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void ExecuteNonQuery_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -35,246 +41,9 @@ public abstract class
 
         this.DbCommandFactory.DelayNextDbCommand = true;
 
-        Invoking(() =>
-                this.Connection.ExecuteNonQuery(
-                    $"DELETE FROM {Q("Entity")}",
-                    cancellationToken: cancellationToken
-                )
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-
-        // Since the operation was cancelled, the entity should still exist.
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_CommandType_ShouldPassUseCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.ExecuteNonQuery(
-            Q("DeleteAllEntities"),
-            commandType: CommandType.StoredProcedure,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = this.CreateEntitiesInDb<Entity>(5);
-        var entitiesToDelete = entities.Take(2).ToList();
-
-        InterpolatedSqlStatement statement =
-            $"""
-             DELETE FROM   {Q("Entity")}
-             WHERE         EXISTS (
-                               SELECT  1
-                               FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
-                               WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
-                                       {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
-                                       {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
-                           )
-             """;
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        this.Connection.ExecuteNonQuery(
-                statement,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(entitiesToDelete.Count);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = this.CreateEntitiesInDb<Entity>(5);
-        var entitiesToDelete = entities.Take(2).ToList();
-
-        this.Connection.ExecuteNonQuery(
-                $"""
-                 DELETE FROM   {Q("Entity")}
-                 WHERE         EXISTS (
-                                   SELECT  1
-                                   FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
-                                   WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
-                                           {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
-                                           {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
-                               )
-                 """,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(entitiesToDelete.Count);
-
-        foreach (var entity in entitiesToDelete)
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
-        }
-
-        foreach (var entity in entities.Except(entitiesToDelete))
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_InterpolatedParameter_ShouldPassInterpolatedParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.ExecuteNonQuery(
-            $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_Parameter_ShouldPassParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var statement = new InterpolatedSqlStatement(
-            $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {P("Id")}",
-            ("Id", entity.Id)
-        );
-
-        this.Connection.ExecuteNonQuery(statement, cancellationToken: TestContext.Current.CancellationToken);
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = this.CreateEntitiesInDb<Entity>(5);
-        var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
-
-        InterpolatedSqlStatement statement =
-            $"""
-             DELETE FROM    {Q("Entity")}
-             WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
-             """;
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        this.Connection.ExecuteNonQuery(
-                statement,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(idsOfEntitiesToDelete.Count);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entities = this.CreateEntitiesInDb<Entity>(5);
-        var entitiesToDelete = entities.Take(2).ToList();
-        var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
-
-        this.Connection.ExecuteNonQuery(
-            $"""
-             DELETE FROM    {Q("Entity")}
-             WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
-             """,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        foreach (var entity in entitiesToDelete)
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
-        }
-
-        foreach (var entity in entities.Except(entitiesToDelete))
-        {
-            this.ExistsEntityInDb(entity)
-                .Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_ShouldReturnNumberOfAffectedRows()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.ExecuteNonQuery(
-                $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(1);
-
-        this.Connection.ExecuteNonQuery(
-                $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(0);
-    }
-
-    [Fact]
-    public void ExecuteNonQuery_Transaction_ShouldUseTransaction()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            this.Connection.ExecuteNonQuery(
-                $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            );
-
-            this.ExistsEntityInDb(entity, transaction)
-                .Should().BeFalse();
-
-            transaction.Rollback();
-        }
-
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ExecuteNonQueryAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        await Invoking(() =>
-                this.Connection.ExecuteNonQueryAsync(
+        await Invoking(() => CallApi(
+                    useAsyncApi,
+                    this.Connection,
                     $"DELETE FROM {Q("Entity")}",
                     cancellationToken: cancellationToken
                 )
@@ -287,14 +56,18 @@ public abstract class
             .Should().BeTrue();
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_CommandType_ShouldPassUseCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_CommandType_ShouldPassUseCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
 
         var entity = this.CreateEntityInDb<Entity>();
 
-        await this.Connection.ExecuteNonQueryAsync(
+        await CallApi(
+            useAsyncApi,
+            this.Connection,
             Q("DeleteAllEntities"),
             commandType: CommandType.StoredProcedure,
             cancellationToken: TestContext.Current.CancellationToken
@@ -304,8 +77,12 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -326,7 +103,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await this.Connection.ExecuteNonQueryAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -336,16 +115,22 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        ExecuteNonQueryAsync_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
+        ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
 
-        await this.Connection.ExecuteNonQueryAsync(
+        await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"""
              DELETE FROM   {Q("Entity")}
              WHERE         EXISTS (
@@ -372,12 +157,16 @@ public abstract class
         }
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_InterpolatedParameter_ShouldPassInterpolatedParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        await this.Connection.ExecuteNonQueryAsync(
+        await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -386,8 +175,10 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_Parameter_ShouldPassParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_Parameter_ShouldPassParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -396,14 +187,23 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        await this.Connection.ExecuteNonQueryAsync(statement, cancellationToken: TestContext.Current.CancellationToken);
+        await CallApi(
+            useAsyncApi,
+            this.Connection,
+            statement,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
 
         this.ExistsEntityInDb(entity)
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -419,7 +219,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await this.Connection.ExecuteNonQueryAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -429,9 +231,13 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        ExecuteNonQueryAsync_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
+        ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -439,7 +245,9 @@ public abstract class
         var entitiesToDelete = entities.Take(2).ToList();
         var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
-        await this.Connection.ExecuteNonQueryAsync(
+        await CallApi(
+            useAsyncApi,
+            this.Connection,
             $"""
              DELETE FROM    {Q("Entity")}
              WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
@@ -460,32 +268,42 @@ public abstract class
         }
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_ShouldReturnNumberOfAffectedRows()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.ExecuteNonQueryAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(1);
 
-        (await this.Connection.ExecuteNonQueryAsync(
+        (await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(0);
     }
 
-    [Fact]
-    public async Task ExecuteNonQueryAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExecuteNonQuery_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
-            await this.Connection.ExecuteNonQueryAsync(
+            await CallApi(
+                useAsyncApi,
+                this.Connection,
                 $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 transaction,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -499,5 +317,38 @@ public abstract class
 
         this.ExistsEntityInDb(entity)
             .Should().BeTrue();
+    }
+
+    private static Task<Int32> CallApi(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        InterpolatedSqlStatement statement,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return connection.ExecuteNonQueryAsync(
+                statement,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult(
+                connection.ExecuteNonQuery(statement, transaction, commandTimeout, commandType, cancellationToken)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<Int32>(ex);
+        }
     }
 }

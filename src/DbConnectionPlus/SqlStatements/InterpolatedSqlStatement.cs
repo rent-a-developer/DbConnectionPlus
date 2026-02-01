@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.ComponentModel;
@@ -64,7 +64,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <exception cref="ArgumentException"><paramref name="parameters" /> contains a duplicate parameter.</exception>
     /// <remarks>
     /// If a parameter value is an <see cref="Enum" />, it is serialized according to
-    /// <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+    /// <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
     /// </remarks>
     public InterpolatedSqlStatement(String code, params (String Name, Object? Value)[] parameters)
     {

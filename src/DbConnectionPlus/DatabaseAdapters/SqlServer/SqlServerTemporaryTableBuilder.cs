@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using FastMember;
@@ -72,7 +72,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                     values,
                     valuesType,
                     databaseCollation,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -92,7 +92,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                     name,
                     valuesType,
                     databaseCollation,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -118,12 +118,15 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            sqlBulkCopy.ColumnMappings.Add(Constants.SingleColumnTemporaryTableColumnName, Constants.SingleColumnTemporaryTableColumnName);
+            sqlBulkCopy.ColumnMappings.Add(
+                Constants.SingleColumnTemporaryTableColumnName,
+                Constants.SingleColumnTemporaryTableColumnName
+            );
         }
         else
         {
             var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead);
-            
+
             foreach (var property in properties)
             {
                 sqlBulkCopy.ColumnMappings.Add(property.PropertyName, property.ColumnName);
@@ -182,7 +185,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                     values,
                     valuesType,
                     databaseCollation,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -204,7 +207,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
                     name,
                     valuesType,
                     databaseCollation,
-                    DbConnectionExtensions.EnumSerializationMode
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 ),
                 transaction
             );
@@ -233,7 +236,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            sqlBulkCopy.ColumnMappings.Add(Constants.SingleColumnTemporaryTableColumnName, Constants.SingleColumnTemporaryTableColumnName);
+            sqlBulkCopy.ColumnMappings.Add(
+                Constants.SingleColumnTemporaryTableColumnName,
+                Constants.SingleColumnTemporaryTableColumnName
+            );
         }
         else
         {

@@ -1,3 +1,5 @@
+using System.Data.Common;
+
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
 public sealed class
@@ -24,941 +26,21 @@ public abstract class
     DbConnectionExtensions_QuerySingleOfTTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void QuerySingle_BuiltInType_CharTargetType_ColumnContainsStringWithLengthNotOne_ShouldThrow()
-    {
-        if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
-        {
-            // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
-
-            Invoking(() =>
-                    this.Connection.QuerySingle<Char>(
-                        "SELECT ''",
-                        cancellationToken: TestContext.Current.CancellationToken
-                    )
-                )
-                .Should().Throw<InvalidCastException>()
-                .WithMessage(
-                    $"The first column returned by the SQL statement contains the value '' ({typeof(String)}), which " +
-                    $"could not be converted to the type {typeof(Char)}. See inner exception for details.*"
-                )
-                .WithInnerException<InvalidCastException>()
-                .WithMessage(
-                    $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly " +
-                    "one character long."
-                );
-        }
-
-        Invoking(() =>
-                this.Connection.QuerySingle<Char>(
-                    "SELECT 'ab'",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"The first column returned by the SQL statement contains the value 'ab' ({typeof(String)}), which " +
-                $"could not be converted to the type {typeof(Char)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
-                "one character long."
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_BuiltInType_CharTargetType_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
-    {
-        var character = Generate.Single<Char>();
-
-        this.Connection.QuerySingle<Char>(
-                $"SELECT '{character}'",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(character);
-    }
-
-    [Fact]
-    public void QuerySingle_BuiltInType_ColumnValueCannotBeConvertedToTargetType_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<Int32>(
-                    "SELECT 'A'",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"The first column returned by the SQL statement contains the value 'A' ({typeof(String)}), which " +
-                $"could not be converted to the type {typeof(Int32)}. See inner exception for details.*"
-            );
-
-    [Fact]
-    public void QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidInteger_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<TestEnum>(
-                    "SELECT 999",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The first column returned by the SQL statement contains the value '999*' (System.*), which " +
-                $"could not be converted to the type {typeof(TestEnum)}. See inner exception for details.*"
-            );
-
-    [Fact]
-    public void QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidString_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<TestEnum>(
-                    "SELECT 'NonExistent'",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The first column returned by the SQL statement contains the value 'NonExistent' " +
-                $"({typeof(String)}), which could not be converted to the type {typeof(TestEnum)}. See inner " +
-                "exception for details.*"
-            );
-
-    [Fact]
-    public void QuerySingle_BuiltInType_EnumTargetType_ShouldConvertIntegerToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<TestEnum>(
-                $"SELECT {(Int32)enumValue}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(enumValue);
-    }
-
-    [Fact]
-    public void QuerySingle_BuiltInType_EnumTargetType_ShouldConvertStringToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<TestEnum>(
-                $"SELECT '{enumValue.ToString()}'",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(enumValue);
-    }
-
-    [Fact]
-    public void QuerySingle_BuiltInType_NonNullableTargetType_ColumnContainsNull_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<Int32>(
-                    "SELECT NULL",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The first column returned by the SQL statement contains a NULL value, which could not be converted " +
-                $"to the type {typeof(Int32)}. See inner exception for details.*"
-            );
-
-    [Fact]
-    public void QuerySingle_BuiltInType_NullableTargetType_ColumnContainsNull_ShouldReturnNull() =>
-        this.Connection.QuerySingle<Int32?>(
-                "SELECT NULL",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeNull();
-
-    [Fact]
-    public void QuerySingle_BuiltInType_ShouldSupportDateTimeOffsetValues()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
-
-        this.Connection.QuerySingle<DateTimeOffset>(
-                $"SELECT {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(entity.DateTimeOffsetValue);
-    }
-
-    [Fact]
-    public void QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        this.DbCommandFactory.DelayNextDbCommand = true;
-
-        Invoking(() =>
-                this.Connection.QuerySingle<Entity>(
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: cancellationToken
-                )
-            )
-            .Should().Throw<OperationCanceledException>()
-            .Where(a => a.CancellationToken == cancellationToken);
-    }
-
-    [Fact]
-    public void QuerySingle_CommandType_ShouldUseCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<Entity>(
-                "GetFirstEntity",
-                commandType: CommandType.StoredProcedure,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entity = Generate.Single<Entity>();
-
-        InterpolatedSqlStatement statement = $"SELECT * FROM {TemporaryTable([entity])}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        this.Connection.QuerySingle<Entity>(
-                statement,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void QuerySingle_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entity = Generate.Single<Entity>();
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {TemporaryTable([entity])}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthNotOne_ShouldThrow()
-    {
-        if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
-        {
-            // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
-
-            Invoking(() =>
-                    this.Connection.QuerySingle<EntityWithCharProperty>(
-                        $"SELECT '' AS {Q("Char")}",
-                        cancellationToken: TestContext.Current.CancellationToken
-                    )
-                )
-                .Should().Throw<InvalidCastException>()
-                .WithMessage(
-                    "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
-                    $"to the type {typeof(Char)} of the corresponding property of the type " +
-                    $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
-                )
-                .WithInnerException<InvalidCastException>()
-                .WithMessage(
-                    $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    "exactly one character long."
-                );
-        }
-
-        Invoking(() =>
-                this.Connection.QuerySingle<EntityWithCharProperty>(
-                    $"SELECT 'ab' AS {Q("Char")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                "exactly one character long."
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
-    {
-        var character = Generate.Single<Char>();
-
-        this.Connection.QuerySingle<EntityWithCharProperty>(
-                $"SELECT '{character}' AS {Q("Char")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_ColumnDataTypeNotCompatibleWithEntityPropertyType_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<Entity>(
-                    $"SELECT 123 AS {Q("TimeSpanValue")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The data type System.* of the column 'TimeSpanValue' returned by the SQL statement is not " +
-                $"compatible with the property type {typeof(TimeSpan)} of the corresponding property of the type " +
-                $"{typeof(Entity)}.*"
-            );
-
-    [Fact]
-    public void QuerySingle_EntityType_ColumnHasNoName_ShouldThrow()
-    {
-        InterpolatedSqlStatement statement = this.TestDatabaseProvider switch
-        {
-            SqlServerTestDatabaseProvider =>
-                "SELECT 1",
-
-            PostgreSqlTestDatabaseProvider or OracleTestDatabaseProvider =>
-                "SELECT 1 AS \" \"",
-
-            _ =>
-                "SELECT 1 AS ''"
-        };
-
-        Invoking(() =>
-                this.Connection.QuerySingle<Entity>(
-                    statement,
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The 1st column returned by the SQL statement does not have a name. Make sure that all columns the " +
-                "statement returns have a name.*"
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_CompatiblePrivateConstructor_ShouldUsePrivateConstructor()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<EntityWithPrivateConstructor>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_CompatiblePublicConstructor_ShouldUsePublicConstructor()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<EntityWithPublicConstructor>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_EntityTypeHasNoCorrespondingPropertyForColumn_ShouldIgnoreColumn()
-    {
-        var entity = Invoking(() =>
-                this.Connection.QuerySingle<EntityWithNonNullableProperty>(
-                    $"SELECT 1 AS {Q("Id")}, 2 AS {Q("Value")}, 3 AS {Q("NonExistent")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().NotThrow().Subject;
-
-        entity
-            .Should().BeEquivalentTo(new EntityWithNonNullableProperty { Id = 1, Value = 2 });
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_EntityTypeWithPropertiesWithDifferentCasing_ShouldMaterializeEntities()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithDifferentCasingProperties = Generate.MapTo<EntityWithDifferentCasingProperties>(entity);
-
-        this.Connection.QuerySingle<EntityWithDifferentCasingProperties>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_EnumEntityProperty_ColumnContainsInvalidInteger_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingle<EntityWithEnumStoredAsInteger>(
-                    $"SELECT 1 AS {Q("Id")}, 999 AS {Q("Enum")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Enum' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(TestEnum)} of the corresponding property of the type " +
-                $"{typeof(EntityWithEnumStoredAsInteger)}. See inner exception for details.*"
-            )
-            .WithInnerException(typeof(InvalidCastException))
-            .WithMessage(
-                "Could not convert the value '999*' (System.*) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
-            );
-
-    [Fact]
-    public void QuerySingle_EntityType_EnumEntityProperty_ColumnContainsInvalidString_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingle<EntityWithEnumStoredAsString>(
-                    $"SELECT 1 AS {Q("Id")}, 'NonExistent' AS {Q("Enum")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding property of the type " +
-                $"{typeof(EntityWithEnumStoredAsString)}. See inner exception for details.*"
-            )
-            .WithInnerException(typeof(InvalidCastException))
-            .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                "That string does not match any of the names of the enum's members.*"
-            );
-
-    [Fact]
-    public void QuerySingle_EntityType_EnumEntityProperty_ShouldConvertIntegerToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<EntityWithEnumStoredAsInteger>(
-                $"SELECT 1 AS {Q("Id")}, {(Int32)enumValue} AS {Q("Enum")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Enum
-            .Should().Be(enumValue);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_EnumEntityProperty_ShouldConvertStringToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<EntityWithEnumStoredAsInteger>(
-                $"SELECT 1 AS {Q("Id")}, '{enumValue.ToString()}' AS {Q("Enum")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Enum
-            .Should().Be(enumValue);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<EntityWithPublicConstructor>($"SELECT 1 AS {Q("NonExistent")}")
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                $"Could not materialize an instance of the type {typeof(EntityWithPublicConstructor)}. The type " +
-                "either needs to have a parameterless constructor or a constructor whose parameters match the " +
-                "columns returned by the SQL statement, e.g. a constructor that has the following " +
-                $"signature:{Environment.NewLine}" +
-                "(* NonExistent).*"
-            );
-
-    [Fact]
-    public void
-        QuerySingle_EntityType_NoCompatibleConstructor_PrivateParameterlessConstructor_ShouldUsePrivateConstructorAndProperties()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<EntityWithPrivateParameterlessConstructor>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void
-        QuerySingle_EntityType_NoCompatibleConstructor_PublicParameterlessConstructor_ShouldUsePublicConstructorAndProperties()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_NonNullableEntityProperty_ColumnContainsNull_ShouldThrow()
-    {
-        this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
-        );
-
-        Invoking(() =>
-                this.Connection.QuerySingle<EntityWithNonNullableProperty>(
-                    $"SELECT * FROM {Q("EntityWithNonNullableProperty")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a " +
-                $"NULL value, but the corresponding property of the type {typeof(EntityWithNonNullableProperty)} " +
-                "is non-nullable.*"
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull()
-    {
-        this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
-        );
-
-        this.Connection.QuerySingle<EntityWithNullableProperty>(
-                $"SELECT * FROM {Q("EntityWithNullableProperty")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(new EntityWithNullableProperty { Id = 1, Value = null });
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_ShouldMaterializeBinaryData()
-    {
-        var bytes = Generate.Single<Byte[]>();
-
-        this.Connection.QuerySingle<EntityWithBinaryProperty>(
-                $"SELECT {Parameter(bytes)} AS BinaryData",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(new EntityWithBinaryProperty { BinaryData = bytes });
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_ShouldSupportDateTimeOffsetValues()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
-
-        this.Connection.QuerySingle<EntityWithDateTimeOffset>(
-                $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_ShouldUseConfiguredColumnNames()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
-
-        this.Connection.QuerySingle<EntityWithColumnAttributes>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entityWithColumnAttributes);
-    }
-
-    [Fact]
-    public void QuerySingle_EntityType_UnsupportedFieldType_ShouldThrow()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.HasUnsupportedDataType, "");
-
-        var literal = this.TestDatabaseProvider.GetUnsupportedDataTypeLiteral();
-
-        Invoking(() =>
-                this.Connection.QuerySingle<EntityWithObjectProperty>(
-                    $"SELECT {literal} AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The data type System.* of the column 'Value' returned by the SQL statement is not supported.*"
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_InterpolatedParameter_ShouldPassInterpolatedParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        this.Connection.QuerySingle<Entity>(
-                $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_Parameter_ShouldPassParameter()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-
-        var statement = new InterpolatedSqlStatement(
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {P("Id")}",
-            ("Id", entity.Id)
-        );
-
-        this.Connection.QuerySingle<Entity>(statement, cancellationToken: TestContext.Current.CancellationToken)
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_QueryReturnedMoreThanOneRow_ShouldThrow()
-    {
-        this.CreateEntitiesInDb<Entity>(2);
-
-        Invoking(() => this.Connection.QuerySingle<Entity>(
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "The SQL statement did return more than one row."
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_QueryReturnedNoRows_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingle<Entity>(
-                    $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "The SQL statement did not return any rows."
-            );
-
-    [Fact]
-    public void QuerySingle_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityId = Generate.Id();
-
-        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} AS Id FROM {TemporaryTable([entityId])}";
-
-        var temporaryTableName = statement.TemporaryTables[0].Name;
-
-        this.Connection.QuerySingle<Int64>(
-                statement,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(entityId);
-
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void QuerySingle_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityId = entity.Id;
-
-        this.Connection.QuerySingle<Entity>(
-                $"""
-                 SELECT *
-                 FROM   {Q("Entity")}
-                 WHERE  {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable([entityId])})
-                 """,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entity);
-    }
-
-    [Fact]
-    public void QuerySingle_Transaction_ShouldUseTransaction()
-    {
-        using (var transaction = this.Connection.BeginTransaction())
-        {
-            var entity = this.CreateEntityInDb<Entity>(transaction);
-
-            this.Connection.QuerySingle<Entity>(
-                    $"SELECT * FROM {Q("Entity")}",
-                    transaction,
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-                .Should().BeEquivalentTo(entity);
-
-            transaction.Rollback();
-        }
-
-        Invoking(() => this.Connection.QuerySingle<Entity>(
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidOperationException>();
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthNotOne_ShouldThrow()
-    {
-        if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
-        {
-            // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
-
-            Invoking(() =>
-                    this.Connection.QuerySingle<ValueTuple<Char>>(
-                        $"SELECT '' AS {Q("Value")}",
-                        cancellationToken: TestContext.Current.CancellationToken
-                    )
-                )
-                .Should().Throw<InvalidCastException>()
-                .WithMessage(
-                    "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
-                    $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
-                    $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
-                )
-                .WithInnerException<InvalidCastException>()
-                .WithMessage(
-                    $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
-                    "exactly one character long."
-                );
-        }
-
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<Char>>(
-                    $"SELECT 'ab' AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
-                "exactly one character long."
-            );
-    }
-
-    [Fact]
-    public void
-        QuerySingle_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
-    {
-        var character = Generate.Single<Char>();
-
-        this.Connection.QuerySingle<ValueTuple<Char>>(
-                $"SELECT '{character}'",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(ValueTuple.Create(character));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_ColumnDataTypeNotCompatibleWithValueTupleFieldType_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<TimeSpan>>(
-                    $"SELECT 123 AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The data type System.* of the column 'Value' returned by the SQL statement is not compatible with " +
-                $"the field type {typeof(TimeSpan)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TimeSpan>)}.*"
-            );
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidInteger_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<TestEnum>>(
-                    $"SELECT 999 AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                "Could not convert the value '999*' (System.*) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
-            );
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidString_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<TestEnum>>(
-                    $"SELECT 'NonExistent' AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                "That string does not match any of the names of the enum's members.*"
-            );
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertIntegerToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<ValueTuple<TestEnum>>(
-                $"SELECT {(Int32)enumValue}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(ValueTuple.Create(enumValue));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertStringToEnum()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        this.Connection.QuerySingle<ValueTuple<TestEnum>>(
-                $"SELECT '{enumValue}'",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(ValueTuple.Create(enumValue));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_NonNullableValueTupleField_ColumnContainsNull_ShouldThrow()
-    {
-        this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
-        );
-
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<Int32>>(
-                    $"SELECT {Q("Value")} FROM {Q("EntityWithNonNullableProperty")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
-                $"field of the value tuple type {typeof(ValueTuple<Int32>)} is non-nullable.*"
-            );
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_NullableValueTupleField_ColumnContainsNull_ShouldReturnNull()
-    {
-        this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
-        );
-
-        this.Connection.QuerySingle<ValueTuple<Int32?>>(
-                $"SELECT {Q("Value")} FROM {Q("EntityWithNullableProperty")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().Be(new(null));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_NumberOfColumnsDoesNotMatchNumberOfValueTupleFields_ShouldThrow() =>
-        Invoking(() =>
-                this.Connection.QuerySingle<(Int32, Int32)>(
-                    "SELECT 1",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                $"The SQL statement returned 1 column, but the value tuple type {typeof((Int32, Int32))} has 2 " +
-                "fields. Make sure that the SQL statement returns the same number of columns as the number of " +
-                "fields in the value tuple type.*"
-            );
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_ShouldMaterializeBinaryData()
-    {
-        var bytes = Generate.Single<Byte[]>();
-
-        this.Connection.QuerySingle<ValueTuple<Byte[]>>(
-                $"SELECT {Parameter(bytes)} AS BinaryData",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(ValueTuple.Create(bytes));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_ShouldSupportDateTimeOffsetValues()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
-
-        this.Connection.QuerySingle<(Int64 Id, DateTimeOffset DateTimeOffsetValue)>(
-                $"SELECT {Q("Id")}, {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo((entity.Id, entity.DateTimeOffsetValue));
-    }
-
-    [Fact]
-    public void QuerySingle_ValueTupleType_UnsupportedFieldType_ShouldThrow()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.HasUnsupportedDataType, "");
-
-        var literal = this.TestDatabaseProvider.GetUnsupportedDataTypeLiteral();
-
-        Invoking(() =>
-                this.Connection.QuerySingle<ValueTuple<Object>>(
-                    $"SELECT {literal} AS {Q("Value")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-            )
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The data type System.* of the column 'Value' returned by the SQL statement is not supported.*"
-            );
-    }
-
-    [Fact]
-    public async Task QuerySingleAsync_BuiltInType_CharTargetType_ColumnContainsStringWithLengthNotOne_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_BuiltInType_CharTargetType_ColumnContainsStringWithLengthNotOne_ShouldThrow(
+        Boolean useAsyncApi
+    )
     {
         if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
         {
             // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
 
             (await Invoking(() =>
-                        this.Connection.QuerySingleAsync<Char>(
+                        CallApi<Char>(
+                            useAsyncApi,
+                            this.Connection,
                             "SELECT ''",
                             cancellationToken: TestContext.Current.CancellationToken
                         )
@@ -976,7 +58,9 @@ public abstract class
         }
 
         (await Invoking(() =>
-                    this.Connection.QuerySingleAsync<Char>(
+                    CallApi<Char>(
+                        useAsyncApi,
+                        this.Connection,
                         "SELECT 'ab'",
                         cancellationToken: TestContext.Current.CancellationToken
                     )
@@ -993,23 +77,33 @@ public abstract class
             );
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_BuiltInType_CharTargetType_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
+        QuerySingle_BuiltInType_CharTargetType_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter(
+            Boolean useAsyncApi
+        )
     {
         var character = Generate.Single<Char>();
 
-        (await this.Connection.QuerySingleAsync<Char>(
+        (await CallApi<Char>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT '{character}'",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(character);
     }
 
-    [Fact]
-    public Task QuerySingleAsync_BuiltInType_ColumnValueCannotBeConvertedToTargetType_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_BuiltInType_ColumnValueCannotBeConvertedToTargetType_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<Int32>(
+                CallApi<Int32>(
+                    useAsyncApi,
+                    this.Connection,
                     "SELECT 'A'",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1020,10 +114,14 @@ public abstract class
                 $"could not be converted to the type {typeof(Int32)}. See inner exception for details.*"
             );
 
-    [Fact]
-    public Task QuerySingleAsync_BuiltInType_EnumTargetType_ColumnContainsInvalidInteger_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidInteger_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<TestEnum>(
+                CallApi<TestEnum>(
+                    useAsyncApi,
+                    this.Connection,
                     "SELECT 999",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1034,10 +132,14 @@ public abstract class
                 $"could not be converted to the type {typeof(TestEnum)}. See inner exception for details.*"
             );
 
-    [Fact]
-    public Task QuerySingleAsync_BuiltInType_EnumTargetType_ColumnContainsInvalidString_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_BuiltInType_EnumTargetType_ColumnContainsInvalidString_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<TestEnum>(
+                CallApi<TestEnum>(
+                    useAsyncApi,
+                    this.Connection,
                     "SELECT 'NonExistent'",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1049,34 +151,46 @@ public abstract class
                 "exception for details.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_BuiltInType_EnumTargetType_ShouldConvertIntegerToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_BuiltInType_EnumTargetType_ShouldConvertIntegerToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<TestEnum>(
+        (await CallApi<TestEnum>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {(Int32)enumValue}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(enumValue);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_BuiltInType_EnumTargetType_ShouldConvertStringToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_BuiltInType_EnumTargetType_ShouldConvertStringToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<TestEnum>(
+        (await CallApi<TestEnum>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT '{enumValue.ToString()}'",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(enumValue);
     }
 
-    [Fact]
-    public Task QuerySingleAsync_BuiltInType_NonNullableTargetType_ColumnContainsNull_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_BuiltInType_NonNullableTargetType_ColumnContainsNull_ShouldThrow(Boolean useAsyncApi) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<Int32>(
+                CallApi<Int32>(
+                    useAsyncApi,
+                    this.Connection,
                     "SELECT NULL",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1087,30 +201,42 @@ public abstract class
                 $"to the type {typeof(Int32)}. See inner exception for details.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_BuiltInType_NullableTargetType_ColumnContainsNull_ShouldReturnNull() =>
-        (await this.Connection.QuerySingleAsync<Int32?>(
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_BuiltInType_NullableTargetType_ColumnContainsNull_ShouldReturnNull(
+        Boolean useAsyncApi
+    ) =>
+        (await CallApi<Int32?>(
+            useAsyncApi,
+            this.Connection,
             "SELECT NULL",
             cancellationToken: TestContext.Current.CancellationToken
         ))
         .Should().BeNull();
 
-    [Fact]
-    public async Task QuerySingleAsync_BuiltInType_ShouldSupportDateTimeOffsetValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_BuiltInType_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
 
-        (await this.Connection.QuerySingleAsync<DateTimeOffset>(
+        (await CallApi<DateTimeOffset>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(entity.DateTimeOffsetValue);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_CancellationToken_ShouldCancelOperationIfCancellationIsRequested()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -1119,7 +245,9 @@ public abstract class
         this.DbCommandFactory.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                this.Connection.QuerySingleAsync<Entity>(
+                CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: cancellationToken
                 )
@@ -1128,14 +256,18 @@ public abstract class
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_CommandType_ShouldUseCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 "GetFirstEntity",
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -1143,9 +275,11 @@ public abstract class
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+        QuerySingle_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -1155,7 +289,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -1165,31 +301,41 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable()
+        QuerySingle_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entity = Generate.Single<Entity>();
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {TemporaryTable([entity])}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_EntityType_CharEntityProperty_ColumnContainsStringWithLengthNotOne_ShouldThrow()
+        QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthNotOne_ShouldThrow(Boolean useAsyncApi)
     {
         if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
         {
             // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
 
             await Invoking(() =>
-                    this.Connection.QuerySingleAsync<EntityWithCharProperty>(
+                    CallApi<EntityWithCharProperty>(
+                        useAsyncApi,
+                        this.Connection,
                         $"SELECT '' AS {Q("Char")}",
                         cancellationToken: TestContext.Current.CancellationToken
                     )
@@ -1208,7 +354,9 @@ public abstract class
         }
 
         await Invoking(() =>
-                this.Connection.QuerySingleAsync<EntityWithCharProperty>(
+                CallApi<EntityWithCharProperty>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 'ab' AS {Q("Char")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1226,23 +374,35 @@ public abstract class
             );
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_EntityType_CharEntityProperty_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
+        QuerySingle_EntityType_CharEntityProperty_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter(
+            Boolean useAsyncApi
+        )
     {
         var character = Generate.Single<Char>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithCharProperty>(
+        (await CallApi<EntityWithCharProperty>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT '{character}' AS {Q("Char")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
     }
 
-    [Fact]
-    public Task QuerySingleAsync_EntityType_ColumnDataTypeNotCompatibleWithEntityPropertyType_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_EntityType_ColumnDataTypeNotCompatibleWithEntityPropertyType_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<Entity>(
+                CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 123 AS {Q("TimeSpanValue")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1254,8 +414,10 @@ public abstract class
                 $"{typeof(Entity)}.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_ColumnHasNoName_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_ColumnHasNoName_ShouldThrow(Boolean useAsyncApi)
     {
         InterpolatedSqlStatement statement = this.TestDatabaseProvider switch
         {
@@ -1270,7 +432,9 @@ public abstract class
         };
 
         await Invoking(() =>
-                this.Connection.QuerySingleAsync<Entity>(
+                CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     statement,
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1282,35 +446,51 @@ public abstract class
             );
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_CompatiblePrivateConstructor_ShouldUsePrivateConstructor()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_CompatiblePrivateConstructor_ShouldUsePrivateConstructor(
+        Boolean useAsyncApi
+    )
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithPrivateConstructor>(
+        (await CallApi<EntityWithPrivateConstructor>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_CompatiblePublicConstructor_ShouldUsePublicConstructor()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_CompatiblePublicConstructor_ShouldUsePublicConstructor(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithPublicConstructor>(
+        (await CallApi<EntityWithPublicConstructor>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_EntityTypeHasNoCorrespondingPropertyForColumn_ShouldIgnoreColumn()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_EntityTypeHasNoCorrespondingPropertyForColumn_ShouldIgnoreColumn(
+        Boolean useAsyncApi
+    )
     {
         var entity = (await Invoking(() =>
-                this.Connection.QuerySingleAsync<EntityWithNonNullableProperty>(
+                CallApi<EntityWithNonNullableProperty>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 1 AS {Q("Id")}, 2 AS {Q("Value")}, 3 AS {Q("NonExistent")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1321,23 +501,35 @@ public abstract class
             .Should().BeEquivalentTo(new EntityWithNonNullableProperty { Id = 1, Value = 2 });
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_EntityType_EntityTypeWithPropertiesWithDifferentCasing_ShouldMaterializeEntities()
+        QuerySingle_EntityType_EntityTypeWithPropertiesWithDifferentCasing_ShouldMaterializeEntities(
+            Boolean useAsyncApi
+        )
     {
         var entity = this.CreateEntityInDb<Entity>();
         var entityWithDifferentCasingProperties = Generate.MapTo<EntityWithDifferentCasingProperties>(entity);
 
-        (await this.Connection.QuerySingleAsync<EntityWithDifferentCasingProperties>(
+        (await CallApi<EntityWithDifferentCasingProperties>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_EnumEntityProperty_ColumnContainsInvalidInteger_ShouldThrow() =>
-        await Invoking(() => this.Connection.QuerySingleAsync<EntityWithEnumStoredAsInteger>(
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_EnumEntityProperty_ColumnContainsInvalidInteger_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
+        await Invoking(() => CallApi<EntityWithEnumStoredAsInteger>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 1 AS {Q("Id")}, 999 AS {Q("Enum")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1354,9 +546,15 @@ public abstract class
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_EnumEntityProperty_ColumnContainsInvalidString_ShouldThrow() =>
-        await Invoking(() => this.Connection.QuerySingleAsync<EntityWithEnumStoredAsString>(
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_EnumEntityProperty_ColumnContainsInvalidString_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
+        await Invoking(() => CallApi<EntityWithEnumStoredAsString>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 1 AS {Q("Id")}, 'NonExistent' AS {Q("Enum")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1373,12 +571,16 @@ public abstract class
                 "That string does not match any of the names of the enum's members.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_EnumEntityProperty_ShouldConvertIntegerToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_EnumEntityProperty_ShouldConvertIntegerToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithEnumStoredAsInteger>(
+        (await CallApi<EntityWithEnumStoredAsInteger>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT 1 AS {Q("Id")}, {(Int32)enumValue} AS {Q("Enum")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -1386,12 +588,16 @@ public abstract class
             .Should().Be(enumValue);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_EnumEntityProperty_ShouldConvertStringToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_EnumEntityProperty_ShouldConvertStringToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithEnumStoredAsInteger>(
+        (await CallApi<EntityWithEnumStoredAsInteger>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT 1 AS {Q("Id")}, '{enumValue.ToString()}' AS {Q("Enum")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -1399,10 +605,56 @@ public abstract class
             .Should().Be(enumValue);
     }
 
-    [Fact]
-    public Task QuerySingleAsync_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<MappingTestEntityAttributes>();
+
+        (await CallApi<MappingTestEntityAttributes>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(
+                entity,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    {
+        MappingTestEntityFluentApi.Configure();
+
+        var entity = this.CreateEntityInDb<MappingTestEntityFluentApi>();
+
+        (await CallApi<MappingTestEntityFluentApi>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(
+                entity,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_EntityType_NoCompatibleConstructor_NoParameterlessConstructor_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<EntityWithPublicConstructor>($"SELECT 1 AS {Q("NonExistent")}")
+                CallApi<EntityWithPublicConstructor>(useAsyncApi, this.Connection, $"SELECT 1 AS {Q("NonExistent")}")
             )
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
@@ -1413,41 +665,73 @@ public abstract class
                 "(* NonExistent).*"
             );
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_EntityType_NoCompatibleConstructor_PrivateParameterlessConstructor_ShouldUsePrivateConstructorAndProperties()
+        QuerySingle_EntityType_NoCompatibleConstructor_PrivateParameterlessConstructor_ShouldUsePrivateConstructorAndProperties(
+            Boolean useAsyncApi
+        )
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithPrivateParameterlessConstructor>(
+        (await CallApi<EntityWithPrivateParameterlessConstructor>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_EntityType_NoCompatibleConstructor_PublicParameterlessConstructor_ShouldUsePublicConstructorAndProperties()
+        QuerySingle_EntityType_NoCompatibleConstructor_PublicParameterlessConstructor_ShouldUsePublicConstructorAndProperties(
+            Boolean useAsyncApi
+        )
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public Task QuerySingleAsync_EntityType_NonNullableEntityProperty_ColumnContainsNull_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    {
+        var entity = this.CreateEntityInDb<MappingTestEntity>();
+
+        (await CallApi<MappingTestEntity>(
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("MappingTestEntity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_EntityType_NonNullableEntityProperty_ColumnContainsNull_ShouldThrow(Boolean useAsyncApi)
     {
         this.Connection.ExecuteNonQuery(
             $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
         );
 
         return Invoking(() =>
-                this.Connection.QuerySingleAsync<EntityWithNonNullableProperty>(
+                CallApi<EntityWithNonNullableProperty>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("EntityWithNonNullableProperty")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1459,68 +743,73 @@ public abstract class
             );
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull(
+        Boolean useAsyncApi
+    )
     {
         await this.Connection.ExecuteNonQueryAsync(
             $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
         );
 
-        (await this.Connection.QuerySingleAsync<EntityWithNullableProperty>(
+        (await CallApi<EntityWithNullableProperty>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("EntityWithNullableProperty")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(new EntityWithNullableProperty { Id = 1, Value = null });
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_ShouldMaterializeBinaryData()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_ShouldMaterializeBinaryData(Boolean useAsyncApi)
     {
         var bytes = Generate.Single<Byte[]>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithBinaryProperty>(
+        (await CallApi<EntityWithBinaryProperty>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Parameter(bytes)} AS BinaryData",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(new EntityWithBinaryProperty { BinaryData = bytes });
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_ShouldSupportDateTimeOffsetValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_EntityType_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
 
-        (await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
+        (await CallApi<EntityWithDateTimeOffset>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_EntityType_ShouldUseConfiguredColumnNames()
-    {
-        var entity = this.CreateEntityInDb<Entity>();
-        var entityWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entity);
-
-        (await this.Connection.QuerySingleAsync<EntityWithColumnAttributes>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entityWithColumnAttributes);
-    }
-
-    [Fact]
-    public Task QuerySingleAsync_EntityType_UnsupportedFieldType_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_EntityType_UnsupportedFieldType_ShouldThrow(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.HasUnsupportedDataType, "");
 
         var literal = this.TestDatabaseProvider.GetUnsupportedDataTypeLiteral();
 
         return Invoking(() =>
-                this.Connection.QuerySingleAsync<EntityWithObjectProperty>(
+                CallApi<EntityWithObjectProperty>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT {literal} AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1531,20 +820,26 @@ public abstract class
             );
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_InterpolatedParameter_ShouldPassInterpolatedParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_Parameter_ShouldPassParameter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_Parameter_ShouldPassParameter(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -1553,19 +848,25 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_QueryReturnedMoreThanOneRow_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_QueryReturnedMoreThanOneRow_ShouldThrow(Boolean useAsyncApi)
     {
         this.CreateEntitiesInDb<Entity>(2);
 
-        await Invoking(() => this.Connection.QuerySingleAsync<Entity>(
+        await Invoking(() => CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1576,9 +877,13 @@ public abstract class
             );
     }
 
-    [Fact]
-    public Task QuerySingleAsync_QueryReturnedNoRows_ShouldThrow() =>
-        Invoking(() => this.Connection.QuerySingleAsync<Entity>(
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_QueryReturnedNoRows_ShouldThrow(Boolean useAsyncApi) =>
+        Invoking(() => CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1588,9 +893,11 @@ public abstract class
                 "The SQL statement did not return any rows."
             );
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution()
+        QuerySingle_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -1601,7 +908,9 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await this.Connection.QuerySingleAsync<Int64>(
+        (await CallApi<Int64>(
+                useAsyncApi,
+                this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -1611,16 +920,22 @@ public abstract class
             .Should().BeFalse();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable()
+        QuerySingle_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entity = this.CreateEntityInDb<Entity>();
         var entityId = entity.Id;
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (await CallApi<Entity>(
+                useAsyncApi,
+                this.Connection,
                 $"""
                  SELECT *
                  FROM   {Q("Entity")}
@@ -1631,14 +946,18 @@ public abstract class
             .Should().BeEquivalentTo(entity);
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_Transaction_ShouldUseTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             var entity = this.CreateEntityInDb<Entity>(transaction);
 
-            (await this.Connection.QuerySingleAsync<Entity>(
+            (await CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     transaction,
                     cancellationToken: TestContext.Current.CancellationToken
@@ -1648,7 +967,9 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        await Invoking(() => this.Connection.QuerySingleAsync<Entity>(
+        await Invoking(() => CallApi<Entity>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1656,16 +977,22 @@ public abstract class
             .Should().ThrowAsync<InvalidOperationException>();
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthNotOne_ShouldThrow()
+        QuerySingle_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthNotOne_ShouldThrow(
+            Boolean useAsyncApi
+        )
     {
         if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
         {
             // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
 
             await Invoking(() =>
-                    this.Connection.QuerySingleAsync<ValueTuple<Char>>(
+                    CallApi<ValueTuple<Char>>(
+                        useAsyncApi,
+                        this.Connection,
                         $"SELECT '' AS {Q("Value")}",
                         cancellationToken: TestContext.Current.CancellationToken
                     )
@@ -1684,7 +1011,9 @@ public abstract class
         }
 
         await Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<Char>>(
+                CallApi<ValueTuple<Char>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 'ab' AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1702,23 +1031,35 @@ public abstract class
             );
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        QuerySingleAsync_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter()
+        QuerySingle_ValueTupleType_CharValueTupleField_ColumnContainsStringWithLengthOne_ShouldGetFirstCharacter(
+            Boolean useAsyncApi
+        )
     {
         var character = Generate.Single<Char>();
 
-        (await this.Connection.QuerySingleAsync<ValueTuple<Char>>(
+        (await CallApi<ValueTuple<Char>>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT '{character}'",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(ValueTuple.Create(character));
     }
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_ColumnDataTypeNotCompatibleWithValueTupleFieldType_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_ColumnDataTypeNotCompatibleWithValueTupleFieldType_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<TimeSpan>>(
+                CallApi<ValueTuple<TimeSpan>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 123 AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1730,10 +1071,16 @@ public abstract class
                 $"{typeof(ValueTuple<TimeSpan>)}.*"
             );
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidInteger_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidInteger_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<TestEnum>>(
+                CallApi<ValueTuple<TestEnum>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 999 AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1750,10 +1097,16 @@ public abstract class
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidString_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_EnumValueTupleField_ColumnContainsInvalidString_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<TestEnum>>(
+                CallApi<ValueTuple<TestEnum>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT 'NonExistent' AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1770,39 +1123,53 @@ public abstract class
                 "That string does not match any of the names of the enum's members.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_ValueTupleType_EnumValueTupleField_ShouldConvertIntegerToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertIntegerToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<ValueTuple<TestEnum>>(
+        (await CallApi<ValueTuple<TestEnum>>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {(Int32)enumValue}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(ValueTuple.Create(enumValue));
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_ValueTupleType_EnumValueTupleField_ShouldConvertStringToEnum()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ValueTupleType_EnumValueTupleField_ShouldConvertStringToEnum(Boolean useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        (await this.Connection.QuerySingleAsync<ValueTuple<TestEnum>>(
+        (await CallApi<ValueTuple<TestEnum>>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT '{enumValue}'",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(ValueTuple.Create(enumValue));
     }
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_NonNullableValueTupleField_ColumnContainsNull_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_NonNullableValueTupleField_ColumnContainsNull_ShouldThrow(
+        Boolean useAsyncApi
+    )
     {
         this.Connection.ExecuteNonQuery(
             $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
         );
 
         return Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<Int32>>(
+                CallApi<ValueTuple<Int32>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT {Q("Value")} FROM {Q("EntityWithNonNullableProperty")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1814,24 +1181,36 @@ public abstract class
             );
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_ValueTupleType_NullableValueTupleField_ColumnContainsNull_ShouldReturnNull()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ValueTupleType_NullableValueTupleField_ColumnContainsNull_ShouldReturnNull(
+        Boolean useAsyncApi
+    )
     {
         await this.Connection.ExecuteNonQueryAsync(
             $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
         );
 
-        (await this.Connection.QuerySingleAsync<ValueTuple<Int32?>>(
+        (await CallApi<ValueTuple<Int32?>>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Q("Value")} FROM {Q("EntityWithNullableProperty")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(new(null));
     }
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_NumberOfColumnsDoesNotMatchNumberOfValueTupleFields_ShouldThrow() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_NumberOfColumnsDoesNotMatchNumberOfValueTupleFields_ShouldThrow(
+        Boolean useAsyncApi
+    ) =>
         Invoking(() =>
-                this.Connection.QuerySingleAsync<(Int32, Int32)>(
+                CallApi<(Int32, Int32)>(
+                    useAsyncApi,
+                    this.Connection,
                     "SELECT 1",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1843,41 +1222,53 @@ public abstract class
                 "fields in the value tuple type.*"
             );
 
-    [Fact]
-    public async Task QuerySingleAsync_ValueTupleType_ShouldMaterializeBinaryData()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ValueTupleType_ShouldMaterializeBinaryData(Boolean useAsyncApi)
     {
         var bytes = Generate.Single<Byte[]>();
 
-        (await this.Connection.QuerySingleAsync<ValueTuple<Byte[]>>(
+        (await CallApi<ValueTuple<Byte[]>>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Parameter(bytes)} AS BinaryData",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo(ValueTuple.Create(bytes));
     }
 
-    [Fact]
-    public async Task QuerySingleAsync_ValueTupleType_ShouldSupportDateTimeOffsetValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuerySingle_ValueTupleType_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var entity = this.CreateEntityInDb<EntityWithDateTimeOffset>();
 
-        (await this.Connection.QuerySingleAsync<(Int64 Id, DateTimeOffset DateTimeOffsetValue)>(
+        (await CallApi<(Int64 Id, DateTimeOffset DateTimeOffsetValue)>(
+                useAsyncApi,
+                this.Connection,
                 $"SELECT {Q("Id")}, {Q("DateTimeOffsetValue")} FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().BeEquivalentTo((entity.Id, entity.DateTimeOffsetValue));
     }
 
-    [Fact]
-    public Task QuerySingleAsync_ValueTupleType_UnsupportedFieldType_ShouldThrow()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task QuerySingle_ValueTupleType_UnsupportedFieldType_ShouldThrow(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.HasUnsupportedDataType, "");
 
         var literal = this.TestDatabaseProvider.GetUnsupportedDataTypeLiteral();
 
         return Invoking(() =>
-                this.Connection.QuerySingleAsync<ValueTuple<Object>>(
+                CallApi<ValueTuple<Object>>(
+                    useAsyncApi,
+                    this.Connection,
                     $"SELECT {literal} AS {Q("Value")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
@@ -1886,5 +1277,44 @@ public abstract class
             .WithMessage(
                 "The data type System.* of the column 'Value' returned by the SQL statement is not supported.*"
             );
+    }
+
+    private static Task<T> CallApi<T>(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        InterpolatedSqlStatement statement,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return connection.QuerySingleAsync<T>(
+                statement,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult(
+                connection.QuerySingle<T>(
+                    statement,
+                    transaction,
+                    commandTimeout,
+                    commandType,
+                    cancellationToken
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<T>(ex);
+        }
     }
 }

@@ -1,5 +1,6 @@
 // ReSharper disable StaticMemberInGenericType
 // ReSharper disable InconsistentNaming
+
 #pragma warning disable RCS1158
 
 using System.Data.Common;
@@ -25,9 +26,6 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
                 Thread.CurrentThread.CurrentCulture =
                     Thread.CurrentThread.CurrentUICulture = new("en-US");
 
-        // Reset all settings to defaults before each test.
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
         DbCommandLogger.LogCommands = false;
 
         this.TestDatabaseProvider = new();
@@ -41,10 +39,18 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
 
         this.DbCommandFactory = new(this.TestDatabaseProvider);
         DbConnectionExtensions.DbCommandFactory = this.DbCommandFactory;
-        DbConnectionExtensions.InterceptDbCommand = DbCommandLogger.LogDbCommand;
+
         DbCommandLogger.LogCommands = true;
 
         OracleDatabaseAdapter.AllowTemporaryTables = true;
+
+        // Reset all settings to defaults before each test.
+        DbConnectionPlusConfiguration.Instance = new()
+        {
+            EnumSerializationMode = EnumSerializationMode.Strings,
+            InterceptDbCommand = DbCommandLogger.LogDbCommand
+        };
+        EntityHelper.ResetEntityTypeMetadataCache();
     }
 
     /// <inheritdoc />
@@ -231,7 +237,11 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// </returns>
     protected Boolean ExistsTemporaryTableInDb(String tableName, DbTransaction? transaction = null) =>
         ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.ExistsTemporaryTable(tableName, this.Connection, transaction)
+            this.TestDatabaseProvider.ExistsTemporaryTable(
+                tableName,
+                this.Connection,
+                transaction
+            )
         );
 
     /// <summary>
@@ -260,7 +270,11 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         String columnName
     ) =>
         ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(temporaryTableName, columnName, this.Connection)
+            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(
+                temporaryTableName,
+                columnName,
+                this.Connection
+            )
         );
 
     /// <summary>

@@ -20,14 +20,21 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <param name="KeyProperties">
 /// The metadata of the key properties of the entity type.
 /// </param>
+/// <param name="ComputedProperties">
+/// The metadata of the computed properties of the entity type.
+/// </param>
+/// <param name="IdentityProperty">
+/// The metadata of the identity property of the entity type.
+/// This is <see langword="null" /> if the entity type does not have an identity property.
+/// </param>
+/// <param name="DatabaseGeneratedProperties">
+/// The metadata of the database-generated properties of the entity type.
+/// </param>
 /// <param name="InsertProperties">
 /// The metadata of the properties needed to insert an entity of the entity type into the database.
 /// </param>
 /// <param name="UpdateProperties">
 /// The metadata of the properties needed to update an entity of the entity type in the database.
-/// </param>
-/// <param name="DatabaseGeneratedProperties">
-/// The metadata of the database generated properties of the entity type.
 /// </param>
 public sealed record EntityTypeMetadata(
     Type EntityType,
@@ -36,7 +43,9 @@ public sealed record EntityTypeMetadata(
     IReadOnlyDictionary<String, EntityPropertyMetadata> AllPropertiesByPropertyName,
     IReadOnlyList<EntityPropertyMetadata> MappedProperties,
     IReadOnlyList<EntityPropertyMetadata> KeyProperties,
+    IReadOnlyList<EntityPropertyMetadata> ComputedProperties,
+    EntityPropertyMetadata? IdentityProperty,
+    IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties,
     IReadOnlyList<EntityPropertyMetadata> InsertProperties,
-    IReadOnlyList<EntityPropertyMetadata> UpdateProperties,
-    IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties
+    IReadOnlyList<EntityPropertyMetadata> UpdateProperties
 );

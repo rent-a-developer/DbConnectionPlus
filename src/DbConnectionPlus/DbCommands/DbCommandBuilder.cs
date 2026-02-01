@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
@@ -203,7 +203,7 @@ internal static class DbCommandBuilder
                     {
                         parameterValue = EnumSerializer.SerializeEnum(
                             enumValue,
-                            DbConnectionExtensions.EnumSerializationMode
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                         );
                     }
 
@@ -241,7 +241,7 @@ internal static class DbCommandBuilder
                     {
                         parameterValue = EnumSerializer.SerializeEnum(
                             enumValue,
-                            DbConnectionExtensions.EnumSerializationMode
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                         );
                     }
 

@@ -1,4 +1,6 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using System.Collections;
+using System.Data.Common;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 
@@ -31,477 +33,19 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     protected TemporaryTableBuilderTests() =>
         this.builder = this.DatabaseAdapter.TemporaryTableBuilder;
 
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         var items = Generate.Multiple<TemporaryTableTestItemWithDateTimeOffset>();
 
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            items,
-            typeof(TemporaryTableTestItemWithDateTimeOffset),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<TemporaryTableTestItemWithDateTimeOffset>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(items);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
-    {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
-
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            entities,
-            typeof(EntityWithEnumProperty),
-            TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.CanRetrieveStructureOfTemporaryTables)
-        {
-            this.GetDataTypeOfTemporaryTableColumn("Objects", "Enum")
-                .Should().Be(this.DatabaseAdapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers));
-        }
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Enum")} FROM {QT("Objects")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.GetFieldType(0)
-            .Should().BeAnyOf(typeof(Int32), typeof(Int64));
-
-        foreach (var entity in entities)
-        {
-            reader.Read();
-
-            reader.GetInt32(0)
-                .Should().Be((Int32)entity.Enum);
-        }
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
-    {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            entities,
-            typeof(EntityWithEnumProperty),
-            TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.CanRetrieveStructureOfTemporaryTables)
-        {
-            this.DatabaseAdapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings)
-                .Should().StartWith(this.GetDataTypeOfTemporaryTableColumn("Objects", "Enum"));
-        }
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Enum")} FROM {QT("Objects")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.GetFieldType(0)
-            .Should().Be(typeof(String));
-
-        foreach (var entity in entities)
-        {
-            reader.Read();
-
-            reader.GetString(0)
-                .Should().Be(entity.Enum.ToString());
-        }
-    }
-
-    [Fact]
-    public void
-        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns()
-    {
-        Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
-
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            Generate.Multiple<EntityWithEnumProperty>(),
-            typeof(EntityWithEnumProperty),
-            TestContext.Current.CancellationToken
-        );
-
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "Enum");
-
-        columnCollation
-            .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_NotMappedProperties_ShouldNotCreateColumnsForNotMappedProperties()
-    {
-        var entities = Generate.Multiple<EntityWithNotMappedProperty>();
-        entities.ForEach(a => a.NotMappedValue = "ShouldNotBePersisted");
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            entities,
-            typeof(EntityWithNotMappedProperty),
-            TestContext.Current.CancellationToken
-        );
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT * FROM {QT("Objects")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.GetFieldNames()
-            .Should().NotContain(nameof(EntityWithNotMappedProperty.NotMappedValue));
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_NullableProperties_ShouldHandleNullValues()
-    {
-        var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            itemsWithNulls,
-            typeof(TemporaryTableTestItemWithNullableProperties),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<TemporaryTableTestItemWithNullableProperties>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(itemsWithNulls);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable()
-    {
-        var items = Generate.Multiple<TemporaryTableTestItem>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            items,
-            typeof(TemporaryTableTestItem),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<TemporaryTableTestItem>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(items);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns()
-    {
-        Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            Generate.Multiple<EntityWithStringProperty>(),
-            typeof(EntityWithStringProperty),
-            TestContext.Current.CancellationToken
-        );
-
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "String");
-
-        columnCollation
-            .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ComplexObjects_ShouldUseConfiguredColumnNames()
-    {
-        var entities = Generate.Multiple<Entity>();
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Objects",
-            entitiesWithColumnAttributes,
-            typeof(EntityWithColumnAttributes),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<Entity>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(entities);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        DateTimeOffset[] values = [Generate.Single<DateTimeOffset>()];
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            values,
-            typeof(DateTimeOffset),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<DateTimeOffset>(
-                $"SELECT * FROM {QT("Values")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(values);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
-    {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
-
-        var values = Generate.Multiple<TestEnum>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            values,
-            typeof(TestEnum),
-            TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.CanRetrieveStructureOfTemporaryTables)
-        {
-            this.DatabaseAdapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers)
-                .Should().StartWith(this.GetDataTypeOfTemporaryTableColumn("Values", "Value"));
-        }
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Value")} FROM {QT("Values")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.GetFieldType(0)
-            .Should().BeAnyOf(typeof(Int32), typeof(Int64));
-
-        foreach (var value in values)
-        {
-            reader.Read();
-
-            reader.GetInt32(0)
-                .Should().Be((Int32)value);
-        }
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
-    {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        var values = Generate.Multiple<TestEnum>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            values,
-            typeof(TestEnum),
-            TestContext.Current.CancellationToken
-        );
-
-        if (this.TestDatabaseProvider.CanRetrieveStructureOfTemporaryTables)
-        {
-            this.DatabaseAdapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings)
-                .Should().StartWith(this.GetDataTypeOfTemporaryTableColumn("Values", "Value"));
-        }
-
-        using var reader = this.Connection.ExecuteReader(
-            $"SELECT {Q("Value")} FROM {QT("Values")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-        reader.GetFieldType(0)
-            .Should().Be(typeof(String));
-
-        foreach (var value in values)
-        {
-            reader.Read();
-
-            reader.GetString(0)
-                .Should().Be(value.ToString());
-        }
-    }
-
-    [Fact]
-    public void
-        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns()
-    {
-        Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
-
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            Generate.Multiple<TestEnum>(),
-            typeof(TestEnum),
-            TestContext.Current.CancellationToken
-        );
-
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Values", "Value");
-
-        columnCollation
-            .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
-    }
-
-    [Fact]
-    public void
-        BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls()
-    {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
-
-        var values = Generate.MultipleNullable<TestEnum>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            values,
-            typeof(TestEnum?),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<TestEnum?>(
-                $"SELECT {Q("Value")} FROM {QT("Values")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(values);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable()
-    {
-        var values = Generate.Multiple<Int32>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            values,
-            typeof(Int32),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<Int32>(
-                $"SELECT {Q("Value")} FROM {QT("Values")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(values);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns()
-    {
-        Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            Generate.Multiple<String>(),
-            typeof(String),
-            TestContext.Current.CancellationToken
-        );
-
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Values", "Value");
-
-        columnCollation
-            .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues()
-    {
-        var values = Generate.MultipleNullable<Int32>();
-
-        using var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "NullValues",
-            values,
-            typeof(Int32?),
-            TestContext.Current.CancellationToken
-        );
-
-        this.Connection.Query<Int32?>(
-                $"SELECT {Q("Value")} FROM {QT("NullValues")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Should().BeEquivalentTo(values);
-    }
-
-    [Fact]
-    public void BuildTemporaryTable_ShouldReturnDisposerThatDropsTable()
-    {
-        var tableDisposer = this.builder.BuildTemporaryTable(
-            this.Connection,
-            null,
-            "Values",
-            Generate.Multiple<Int32>(),
-            typeof(Int32),
-            TestContext.Current.CancellationToken
-        );
-
-        this.ExistsTemporaryTableInDb("Values")
-            .Should().BeTrue();
-
-        tableDisposer.Dispose();
-
-        this.ExistsTemporaryTableInDb("Values")
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
-
-        var items = Generate.Multiple<TemporaryTableTestItemWithDateTimeOffset>();
-
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -517,15 +61,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(items);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+            Boolean useAsyncApi
+        )
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -557,15 +106,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+            Boolean useAsyncApi
+        )
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var entities = Generate.Multiple<EntityWithEnumProperty>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -597,15 +151,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns()
+        BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -620,37 +179,116 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
     }
 
-    [Fact]
-    public async Task
-        BuildTemporaryTableAsync_ComplexObjects_NotMappedProperties_ShouldNotCreateColumnsForNotMappedProperties()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_Mapping_Attributes_ShouldUseAttributesMapping(
+        Boolean useAsyncApi
+    )
     {
-        var entities = Generate.Multiple<EntityWithNotMappedProperty>();
-        entities.ForEach(a => a.NotMappedValue = "ShouldNotBePersisted");
+        var entities = Generate.Multiple<MappingTestEntityAttributes>();
+        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
             entities,
-            typeof(EntityWithNotMappedProperty),
+            typeof(MappingTestEntityAttributes),
             TestContext.Current.CancellationToken
         );
 
-        await using var reader = await this.Connection.ExecuteReaderAsync(
+        var reader = await this.Connection.ExecuteReaderAsync(
             $"SELECT * FROM {QT("Objects")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(EntityWithNotMappedProperty.NotMappedValue));
+            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMappedColumn));
+
+        await reader.DisposeAsync();
+
+        this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {QT("Objects")}")
+            .Should().BeEquivalentTo(
+                entities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldCreateMultiColumnTable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_Mapping_FluentApi_ShouldUseFluentApiMapping(
+        Boolean useAsyncApi
+    )
+    {
+        MappingTestEntityFluentApi.Configure();
+
+        var entities = Generate.Multiple<MappingTestEntityFluentApi>();
+        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            null,
+            "Objects",
+            entities,
+            typeof(MappingTestEntityFluentApi),
+            TestContext.Current.CancellationToken
+        );
+
+        var reader = await this.Connection.ExecuteReaderAsync(
+            $"SELECT * FROM {QT("Objects")}",
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+        reader.GetFieldNames()
+            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMappedColumn));
+
+        await reader.DisposeAsync();
+
+        this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {QT("Objects")}")
+            .Should().BeEquivalentTo(
+                entities,
+                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+            );
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(
+        Boolean useAsyncApi
+    )
+    {
+        var entities = Generate.Multiple<MappingTestEntity>();
+
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            null,
+            "Objects",
+            entities,
+            typeof(MappingTestEntity),
+            TestContext.Current.CancellationToken
+        );
+
+        this.Connection.Query<MappingTestEntity>($"SELECT * FROM {QT("Objects")}")
+            .Should().BeEquivalentTo(entities);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable(Boolean useAsyncApi)
     {
         var items = Generate.Multiple<TemporaryTableTestItem>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -666,12 +304,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(items);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns(Boolean useAsyncApi)
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -686,34 +327,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_ShouldUseConfiguredColumnNames()
-    {
-        var entities = Generate.Multiple<Entity>();
-        var entitiesWithColumnAttributes = Generate.MapTo<EntityWithColumnAttributes>(entities);
-
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
-            this.Connection,
-            null,
-            "Objects",
-            entitiesWithColumnAttributes,
-            typeof(EntityWithColumnAttributes),
-            TestContext.Current.CancellationToken
-        );
-
-        (await this.Connection.QueryAsync<Entity>(
-                $"SELECT * FROM {QT("Objects")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync())
-            .Should().BeEquivalentTo(entities);
-    }
-
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ComplexObjects_WithNullables_ShouldHandleNullValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ComplexObjects_WithNullables_ShouldHandleNullValues(Boolean useAsyncApi)
     {
         var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Objects",
@@ -729,14 +351,19 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(itemsWithNulls);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset(
+        Boolean useAsyncApi
+    )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
         DateTimeOffset[] values = [Generate.Single<DateTimeOffset>()];
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -752,15 +379,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(values);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers()
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
+            Boolean useAsyncApi
+        )
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         var values = Generate.Multiple<TestEnum>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -792,15 +424,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings()
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
+            Boolean useAsyncApi
+        )
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.Multiple<TestEnum>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -832,15 +469,20 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         }
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns()
+        BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
+            Boolean useAsyncApi
+        )
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -855,15 +497,18 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
-        BuildTemporaryTableAsync_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls()
+        BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls(Boolean useAsyncApi)
     {
-        DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Strings;
+        DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         var values = Generate.MultipleNullable<TestEnum>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -879,12 +524,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(values);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ScalarValues_ShouldCreateSingleColumnTable()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable(Boolean useAsyncApi)
     {
         var values = Generate.Multiple<Int32>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -900,12 +548,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(values);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns(Boolean useAsyncApi)
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -920,12 +571,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ScalarValuesWithNullValues_ShouldHandleNullValues()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(Boolean useAsyncApi)
     {
         var values = Generate.MultipleNullable<Int32>();
 
-        await using var tableDisposer = await this.builder.BuildTemporaryTableAsync(
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "NullValues",
@@ -941,10 +595,13 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(values);
     }
 
-    [Fact]
-    public async Task BuildTemporaryTableAsync_ShouldReturnDisposerThatDropsTableAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildTemporaryTable_ShouldReturnDisposerThatDropsTableAsync(Boolean useAsyncApi)
     {
-        var disposer = await this.builder.BuildTemporaryTableAsync(
+        var disposer = await this.CallApi(
+            useAsyncApi,
             this.Connection,
             null,
             "Values",
@@ -960,6 +617,40 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
 
         this.ExistsTemporaryTableInDb("Values")
             .Should().BeFalse();
+    }
+
+    private Task<TemporaryTableDisposer> CallApi(
+        Boolean useAsyncApi,
+        DbConnection connection,
+        DbTransaction? transaction,
+        String name,
+        IEnumerable values,
+        Type valuesType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return this.builder.BuildTemporaryTableAsync(
+                connection,
+                transaction,
+                name,
+                values,
+                valuesType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult(
+                this.builder.BuildTemporaryTable(connection, transaction, name, values, valuesType, cancellationToken)
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<TemporaryTableDisposer>(ex);
+        }
     }
 
     private readonly ITemporaryTableBuilder builder;

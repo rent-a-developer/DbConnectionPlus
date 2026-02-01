@@ -1,7 +1,8 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
+using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -832,14 +833,10 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     sqlBuilder.Append(Constants.Indent);
 
-                    var identityProperty = entityTypeMetadata.DatabaseGeneratedProperties.FirstOrDefault(a =>
-                        a.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity
-                    );
-
-                    if (identityProperty is not null)
+                    if (entityTypeMetadata.IdentityProperty is not null)
                     {
                         sqlBuilder.Append('"');
-                        sqlBuilder.Append(identityProperty.ColumnName);
+                        sqlBuilder.Append(entityTypeMetadata.IdentityProperty.ColumnName);
                         sqlBuilder.Append("\" = last_insert_rowid()");
                     }
                     else
@@ -1056,6 +1053,8 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 var value = reader.GetValue(i);
 
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
                 property.PropertySetter!(entity, value);
             }
         }
@@ -1092,6 +1091,8 @@ internal class SqliteEntityManipulator : IEntityManipulator
                 }
 
                 var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
 
                 property.PropertySetter!(entity, value);
             }

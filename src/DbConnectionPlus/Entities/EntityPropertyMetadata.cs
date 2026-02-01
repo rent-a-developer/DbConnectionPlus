@@ -13,8 +13,10 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <param name="PropertyName">The name of the property.</param>
 /// <param name="PropertyType">The property type of the property.</param>
 /// <param name="PropertyInfo">The property info of the property.</param>
-/// <param name="IsNotMapped">Determines whether the property is not mapped to a database column.</param>
-/// <param name="IsKeyProperty">Determines whether the property is a key property.</param>
+/// <param name="IsIgnored">Determines whether the property is ignored and not mapped to a database column.</param>
+/// <param name="IsKey">Determines whether the property is a key property.</param>
+/// <param name="IsComputed">Determines whether the property is a computed property.</param>
+/// <param name="IsIdentity">Determines whether the property is an identity property.</param>
 /// <param name="CanRead">Determines whether the property can be read.</param>
 /// <param name="CanWrite">Determines whether the property can be written to.</param>
 /// <param name="PropertyGetter">
@@ -25,17 +27,17 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// The setter function for the property.
 /// This is <see langword="null" /> if the property has no setter.
 /// </param>
-/// <param name="DatabaseGeneratedOption">The database generated option for the property.</param>
 public sealed record EntityPropertyMetadata(
     String ColumnName,
     String PropertyName,
     Type PropertyType,
     PropertyInfo PropertyInfo,
-    Boolean IsNotMapped,
-    Boolean IsKeyProperty,
+    Boolean IsIgnored,
+    Boolean IsKey,
+    Boolean IsComputed,
+    Boolean IsIdentity,
     Boolean CanRead,
     Boolean CanWrite,
     MemberGetter? PropertyGetter,
-    MemberSetter? PropertySetter,
-    DatabaseGeneratedOption DatabaseGeneratedOption
+    MemberSetter? PropertySetter
 );

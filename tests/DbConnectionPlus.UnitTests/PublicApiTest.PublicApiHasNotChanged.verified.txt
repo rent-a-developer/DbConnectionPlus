@@ -1,15 +1,41 @@
 ﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/rent-a-developer/DbConnectionPlus.git")]
+namespace RentADeveloper.DbConnectionPlus.Configuration
+{
+    public sealed class DbConnectionPlusConfiguration : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
+    {
+        public RentADeveloper.DbConnectionPlus.EnumSerializationMode EnumSerializationMode { get; set; }
+        public RentADeveloper.DbConnectionPlus.Configuration.InterceptDbCommand? InterceptDbCommand { get; set; }
+        public static RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration Instance { get; }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityTypeBuilder<TEntity> Entity<TEntity>() { }
+        public void RegisterDatabaseAdapter<TConnection>(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter adapter)
+            where TConnection : System.Data.Common.DbConnection { }
+    }
+    public sealed class EntityPropertyBuilder : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
+    {
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder HasColumnName(string columnName) { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsComputed() { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsIdentity() { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsIgnored() { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder IsKey() { }
+    }
+    public sealed class EntityTypeBuilder<TEntity> : RentADeveloper.DbConnectionPlus.Configuration.IFreezable
+    {
+        public EntityTypeBuilder() { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityPropertyBuilder Property<TProperty>(System.Linq.Expressions.Expression<System.Func<TEntity, TProperty>> propertyExpression) { }
+        public RentADeveloper.DbConnectionPlus.Configuration.EntityTypeBuilder<TEntity> ToTable(string tableName) { }
+    }
+    public interface IFreezable
+    {
+        void Freeze();
+    }
+    public delegate void InterceptDbCommand(System.Data.Common.DbCommand dbCommand, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable> temporaryTables);
+}
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters
 {
     public static class Constants
     {
         public const string Indent = "    ";
         public const string SingleColumnTemporaryTableColumnName = "Value";
-    }
-    public static class DatabaseAdapterRegistry
-    {
-        public static void RegisterAdapter<TConnection>(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter adapter)
-            where TConnection : System.Data.Common.DbConnection { }
     }
     public interface IDatabaseAdapter
     {
@@ -61,8 +87,7 @@ namespace RentADeveloper.DbConnectionPlus
 {
     public static class DbConnectionExtensions
     {
-        public static RentADeveloper.DbConnectionPlus.EnumSerializationMode EnumSerializationMode { get; set; }
-        public static RentADeveloper.DbConnectionPlus.InterceptDbCommand? InterceptDbCommand { get; set; }
+        public static void Configure(System.Action<RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration> configureAction) { }
         public static int DeleteEntities<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
             where TEntity :  class { }
         public static System.Threading.Tasks.Task<int> DeleteEntitiesAsync<TEntity>(this System.Data.Common.DbConnection connection, System.Collections.Generic.IEnumerable<TEntity> entities, System.Data.Common.DbTransaction? transaction = null, System.Threading.CancellationToken cancellationToken = default)
@@ -123,9 +148,10 @@ namespace RentADeveloper.DbConnectionPlus
         Integers = 0,
         Strings = 1,
     }
-    public delegate void InterceptDbCommand(System.Data.Common.DbCommand dbCommand, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable> temporaryTables);
     public static class ThrowHelper
     {
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowConfigurationIsFrozenException() { }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static void ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter databaseAdapter) { }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
@@ -181,13 +207,14 @@ namespace RentADeveloper.DbConnectionPlus.Entities
     }
     public sealed record EntityPropertyMetadata : System.IEquatable<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata>
     {
-        public EntityPropertyMetadata(string ColumnName, string PropertyName, System.Type PropertyType, System.Reflection.PropertyInfo PropertyInfo, bool IsNotMapped, bool IsKeyProperty, bool CanRead, bool CanWrite, Fasterflect.MemberGetter? PropertyGetter, Fasterflect.MemberSetter? PropertySetter, System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption DatabaseGeneratedOption) { }
+        public EntityPropertyMetadata(string ColumnName, string PropertyName, System.Type PropertyType, System.Reflection.PropertyInfo PropertyInfo, bool IsIgnored, bool IsKey, bool IsComputed, bool IsIdentity, bool CanRead, bool CanWrite, Fasterflect.MemberGetter? PropertyGetter, Fasterflect.MemberSetter? PropertySetter) { }
         public bool CanRead { get; init; }
         public bool CanWrite { get; init; }
         public string ColumnName { get; init; }
-        public System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption DatabaseGeneratedOption { get; init; }
-        public bool IsKeyProperty { get; init; }
-        public bool IsNotMapped { get; init; }
+        public bool IsComputed { get; init; }
+        public bool IsIdentity { get; init; }
+        public bool IsIgnored { get; init; }
+        public bool IsKey { get; init; }
         public Fasterflect.MemberGetter? PropertyGetter { get; init; }
         public System.Reflection.PropertyInfo PropertyInfo { get; init; }
         public string PropertyName { get; init; }
@@ -196,11 +223,13 @@ namespace RentADeveloper.DbConnectionPlus.Entities
     }
     public sealed record EntityTypeMetadata : System.IEquatable<RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata>
     {
-        public EntityTypeMetadata(System.Type EntityType, string TableName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties, System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties) { }
+        public EntityTypeMetadata(System.Type EntityType, string TableName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties, System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata? IdentityProperty, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties, System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties) { }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllProperties { get; init; }
         public System.Collections.Generic.IReadOnlyDictionary<string, RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> AllPropertiesByPropertyName { get; init; }
+        public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> ComputedProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> DatabaseGeneratedProperties { get; init; }
         public System.Type EntityType { get; init; }
+        public RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata? IdentityProperty { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> InsertProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> KeyProperties { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> MappedProperties { get; init; }

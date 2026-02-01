@@ -196,29 +196,15 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE "EntityWithIdentityAndComputedProperties"
+        CREATE TABLE "MappingTestEntity"
         (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "IdentityValue" NUMBER(19) GENERATED ALWAYS as IDENTITY(START with 1 INCREMENT by 1),
-            "ComputedValue" generated always as (("BaseValue"+999)),
-            "BaseValue" NUMBER(19) NOT NULL
-        );
-        GO
-
-        CREATE TABLE "EntityWithCompositeKey"
-        (
-            "Key1" NUMBER(19) NOT NULL,
-            "Key2" NUMBER(19) NOT NULL,
-            "StringValue" NVARCHAR2(200) NOT NULL,
-            PRIMARY KEY ("Key1", "Key2")
-        );
-        GO
-
-        CREATE TABLE "EntityWithNotMappedProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "MappedValue" NVARCHAR2(200) NOT NULL,
-            "NotMappedValue" NVARCHAR2(200) NULL
+            "KeyColumn1" NUMBER(19) NOT NULL,
+            "KeyColumn2" NUMBER(19) NOT NULL,
+            "ValueColumn" NUMBER(10) NOT NULL,
+            "ComputedColumn" GENERATED ALWAYS AS (("ValueColumn"+999)),
+            "IdentityColumn" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
+            "NotMappedColumn" CLOB NULL,
+            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
         );
         GO
 
@@ -250,13 +236,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithIdentityAndComputedProperties" PURGE;
-        GO
-
-        DROP TABLE IF EXISTS "EntityWithCompositeKey" PURGE;
-        GO
-
-        DROP TABLE IF EXISTS "EntityWithNotMappedProperty" PURGE;
+        DROP TABLE IF EXISTS "MappingTestEntity" PURGE;
         GO
 
         DROP PROCEDURE IF EXISTS "DeleteAllEntities";
@@ -283,13 +263,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "EntityWithNullableProperty";
         GO
 
-        TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";
-        GO
-
-        TRUNCATE TABLE "EntityWithCompositeKey";
-        GO
-
-        TRUNCATE TABLE "EntityWithNotMappedProperty";
+        TRUNCATE TABLE "MappingTestEntity";
         GO
         """;
 

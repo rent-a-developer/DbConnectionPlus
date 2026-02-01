@@ -1,4 +1,4 @@
-﻿#pragma warning disable NS5000, NS1001, NS1000
+#pragma warning disable NS5000, NS1001, NS1000
 
 using System.Reflection;
 using AutoFixture;

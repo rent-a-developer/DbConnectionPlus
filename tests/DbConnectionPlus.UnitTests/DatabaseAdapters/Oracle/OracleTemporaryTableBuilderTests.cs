@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Oracle;
 

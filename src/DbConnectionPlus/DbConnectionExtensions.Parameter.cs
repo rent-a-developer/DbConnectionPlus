@@ -62,7 +62,7 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// <para>
     /// If you pass an <see cref="Enum" /> value as a parameter, the enum value is serialized according to the setting
-    /// <see cref="DbConnectionExtensions.EnumSerializationMode" />.
+    /// <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
     /// </para>
     /// </remarks>
     public static InterpolatedParameter Parameter(

@@ -1,4 +1,5 @@
-﻿// ReSharper disable SpecifyACultureInStringConversionExplicitly
+// ReSharper disable SpecifyACultureInStringConversionExplicitly
+
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning disable IDE0004
 
@@ -14,7 +15,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Converters;
 public class ValueConverterTests : UnitTestsBase
 {
     [Theory]
-    [MemberData(nameof(GetCanConvertTestData))]
+    [MemberData(nameof(GetConvertTestData))]
     public void CanConvert_NullableSourceType_ShouldDetermineIfConversionIsPossible(
         Type sourceType,
         Type targetType,
@@ -38,7 +39,7 @@ public class ValueConverterTests : UnitTestsBase
     }
 
     [Theory]
-    [MemberData(nameof(GetCanConvertTestData))]
+    [MemberData(nameof(GetConvertTestData))]
     public void CanConvert_NullableTargetType_ShouldDetermineIfConversionIsPossible(
         Type sourceType,
         Type targetType,
@@ -62,8 +63,139 @@ public class ValueConverterTests : UnitTestsBase
     }
 
     [Theory]
-    [MemberData(nameof(GetCanConvertTestData))]
+    [MemberData(nameof(GetConvertTestData))]
     public void CanConvert_ShouldDetermineIfConversionIsPossible(
+        Type sourceType,
+        Type targetType,
+        Boolean expectedCanConvert,
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+#pragma warning disable RCS1163 // Unused parameter
+        Object? sourceValue,
+        Object? expectedTargetValue
+#pragma warning restore RCS1163 // Unused parameter
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
+    ) =>
+        ValueConverter.CanConvert(sourceType, targetType)
+            .Should().Be(
+                expectedCanConvert,
+                $"{sourceType} should {(expectedCanConvert ? "" : "not ")}be convertible to {targetType}"
+            );
+
+    [Fact]
+    public void ConvertValueToType_CharTargetType_StringWithLengthOneValue_ShouldGetFirstCharacter()
+    {
+        var character = Generate.Single<Char>();
+
+        ValueConverter.ConvertValueToType(character.ToString(), typeof(Char))
+            .Should().Be(character);
+
+        ValueConverter.ConvertValueToType(character.ToString(), typeof(Char?))
+            .Should().Be(character);
+    }
+
+    [Fact]
+    public void ConvertValueToType_CharTargetType_ValueIsStringWithLengthNotOne_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType(String.Empty, typeof(Char)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
+                "character long."
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType(String.Empty, typeof(Char?)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
+                "character long."
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType("ab", typeof(Char)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
+                "character long."
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType("ab", typeof(Char?)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly one " +
+                "character long."
+            );
+    }
+
+    [Fact]
+    public void
+        ConvertValueToType_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType(999, typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType(999, typeof(TestEnum?)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToType_EnumTargetType_ShouldConvertToEnumMember()
+    {
+        var enumValue = Generate.Single<TestEnum>();
+
+        ValueConverter.ConvertValueToType((Int32)enumValue, typeof(TestEnum))
+            .Should().Be(enumValue);
+
+        ValueConverter.ConvertValueToType((Int32)enumValue, typeof(TestEnum?))
+            .Should().Be(enumValue);
+    }
+
+    [Fact]
+    public void
+        ConvertValueToType_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType("NonExistent", typeof(TestEnum)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
+                "That string does not match any of the names of the enum's members.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType("NonExistent", typeof(TestEnum?)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
+                "That string does not match any of the names of the enum's members.*"
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToType_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType(DBNull.Value, typeof(DateTime)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
+                "type is non-nullable.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType(null, typeof(DateTime)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
+                "non-nullable.*"
+            );
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToType_NullableSourceType_ShouldConvertValueToTargetType(
         Type sourceType,
         Type targetType,
         Boolean expectedCanConvert,
@@ -71,12 +203,300 @@ public class ValueConverterTests : UnitTestsBase
         Object? expectedTargetValue
     )
     {
-        ValueConverter.CanConvert(sourceType, targetType)
-            .Should().Be(
-                expectedCanConvert,
-                $"{sourceType} should {(expectedCanConvert ? "" : "not ")}be convertible to {targetType}"
+        Assert.SkipUnless(sourceType.IsValueType, "");
+
+        sourceType = typeof(Nullable<>).MakeGenericType(sourceType);
+        sourceValue = Activator.CreateInstance(sourceType, sourceValue);
+
+        this.ConvertValueToType_ShouldConvertValueToType(
+            sourceType,
+            targetType,
+            expectedCanConvert,
+            sourceValue,
+            expectedTargetValue
+        );
+    }
+
+    [Fact]
+    public void ConvertValueToType_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
+    {
+        ValueConverter.ConvertValueToType(DBNull.Value, typeof(Object))
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType(DBNull.Value, typeof(Int32?))
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType(null, typeof(Object))
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType(null, typeof(Int32?))
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToType_NullableTargetType_ShouldConvertValueToTargetType(
+        Type sourceType,
+        Type targetType,
+        Boolean expectedCanConvert,
+        Object? sourceValue,
+        Object? expectedTargetValue
+    )
+    {
+        Assert.SkipUnless(targetType.IsValueType, "");
+
+        targetType = typeof(Nullable<>).MakeGenericType(targetType);
+        expectedTargetValue = Activator.CreateInstance(targetType, expectedTargetValue);
+
+        this.ConvertValueToType_ShouldConvertValueToType(
+            sourceType,
+            targetType,
+            expectedCanConvert,
+            sourceValue,
+            expectedTargetValue
+        );
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToType_ShouldConvertValueToType(
+        Type _,
+        Type targetType,
+        Boolean expectedCanConvert,
+        Object? sourceValue,
+        Object? expectedTargetValue
+    )
+    {
+        if (expectedCanConvert)
+        {
+            var result = ValueConverter.ConvertValueToType(sourceValue, targetType);
+
+            if (result is Byte[] resultBytes && expectedTargetValue is Byte[] expectedTargetValueBytes)
+            {
+                resultBytes
+                    .Should().BeEquivalentTo(
+                        expectedTargetValueBytes,
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
+                        $"{expectedTargetValue.ToDebugString()}"
+                    );
+            }
+            else
+            {
+                result
+                    .Should().Be(
+                        expectedTargetValue,
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
+                        $"{expectedTargetValue.ToDebugString()}"
+                    );
+            }
+        }
+        else
+        {
+            Invoking(() => ValueConverter.ConvertValueToType(sourceValue, targetType))
+                .Should().Throw<InvalidCastException>()
+                .WithMessage(
+                    $"Could not convert the value {sourceValue.ToDebugString()} to the type {targetType}.*"
+                );
+        }
+    }
+
+    [Fact]
+    public void ConvertValueToType_ValueCannotBeConvertedToTargetType_ShouldThrow() =>
+        Invoking(() => ValueConverter.ConvertValueToType("NotADate", typeof(DateTime)))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value 'NotADate' ({typeof(String)}) to the type {typeof(DateTime)}. See " +
+                "inner exception for details.*"
+            )
+            .WithInnerException<FormatException>()
+            .WithMessage("The string 'NotADate' was not recognized as a valid DateTime.*");
+
+    [Fact]
+    public void ConvertValueToTypeOfT_CharTargetType_StringWithLengthOneValue_ShouldGetFirstCharacter()
+    {
+        var character = Generate.Single<Char>();
+
+        ValueConverter.ConvertValueToType<Char>(character.ToString())
+            .Should().Be(character);
+
+        ValueConverter.ConvertValueToType<Char?>(character.ToString())
+            .Should().Be(character);
+    }
+
+    [Fact]
+    public void ConvertValueToTypeOfT_CharTargetType_ValueIsStringWithLengthNotOne_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType<Char>(String.Empty))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
+                "character long."
             );
 
+        Invoking(() => ValueConverter.ConvertValueToType<Char?>(String.Empty))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
+                "character long."
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType<Char>("ab"))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
+                "character long."
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType<Char?>("ab"))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly one " +
+                "character long."
+            );
+    }
+
+    [Fact]
+    public void
+        ConvertValueToTypeOfT_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType<TestEnum>(999))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>(999))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToTypeOfT_EnumTargetType_ShouldConvertToEnumMember()
+    {
+        var enumValue = Generate.Single<TestEnum>();
+
+        ValueConverter.ConvertValueToType<TestEnum>((Int32)enumValue)
+            .Should().Be(enumValue);
+
+        ValueConverter.ConvertValueToType<TestEnum?>((Int32)enumValue)
+            .Should().Be(enumValue);
+    }
+
+    [Fact]
+    public void
+        ConvertValueToTypeOfT_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType<TestEnum>("NonExistent"))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
+                "That string does not match any of the names of the enum's members.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>("NonExistent"))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
+                "That string does not match any of the names of the enum's members.*"
+            );
+    }
+
+    [Fact]
+    public void ConvertValueToTypeOfT_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
+    {
+        Invoking(() => ValueConverter.ConvertValueToType<DateTime>(DBNull.Value))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
+                "type is non-nullable.*"
+            );
+
+        Invoking(() => ValueConverter.ConvertValueToType<DateTime>(null))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
+                "non-nullable.*"
+            );
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToTypeOfT_NullableSourceType_ShouldConvertValueToTargetType(
+        Type sourceType,
+        Type targetType,
+        Boolean expectedCanConvert,
+        Object? sourceValue,
+        Object? expectedTargetValue
+    )
+    {
+        Assert.SkipUnless(sourceType.IsValueType, "");
+
+        sourceType = typeof(Nullable<>).MakeGenericType(sourceType);
+        sourceValue = Activator.CreateInstance(sourceType, sourceValue);
+
+        this.ConvertValueToTypeOfT_ShouldConvertValueToType(
+            sourceType,
+            targetType,
+            expectedCanConvert,
+            sourceValue,
+            expectedTargetValue
+        );
+    }
+
+    [Fact]
+    public void ConvertValueToTypeOfT_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
+    {
+        ValueConverter.ConvertValueToType<Object>(DBNull.Value)
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType<Int32?>(DBNull.Value)
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType<Object>(null)
+            .Should().BeNull();
+
+        ValueConverter.ConvertValueToType<Int32?>(null)
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToTypeOfT_NullableTargetType_ShouldConvertValueToTargetType(
+        Type sourceType,
+        Type targetType,
+        Boolean expectedCanConvert,
+        Object? sourceValue,
+        Object? expectedTargetValue
+    )
+    {
+        Assert.SkipUnless(targetType.IsValueType, "");
+
+        targetType = typeof(Nullable<>).MakeGenericType(targetType);
+        expectedTargetValue = Activator.CreateInstance(targetType, expectedTargetValue);
+
+        this.ConvertValueToTypeOfT_ShouldConvertValueToType(
+            sourceType,
+            targetType,
+            expectedCanConvert,
+            sourceValue,
+            expectedTargetValue
+        );
+    }
+
+    [Theory]
+    [MemberData(nameof(GetConvertTestData))]
+    public void ConvertValueToTypeOfT_ShouldConvertValueToType(
+        Type _,
+        Type targetType,
+        Boolean expectedCanConvert,
+        Object? sourceValue,
+        Object? expectedTargetValue
+    )
+    {
         if (expectedCanConvert)
         {
             var result = MaterializerFactoryHelper.ValueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType)
@@ -116,135 +536,7 @@ public class ValueConverterTests : UnitTestsBase
     }
 
     [Fact]
-    public void ConvertValueToType_CharTargetType_StringWithLengthOneValue_ShouldGetFirstCharacter()
-    {
-        var character = Generate.Single<Char>();
-
-        ValueConverter.ConvertValueToType<Char>(character.ToString())
-            .Should().Be(character);
-
-        ValueConverter.ConvertValueToType<Char?>(character.ToString())
-            .Should().Be(character);
-    }
-
-    [Fact]
-    public void ConvertValueToType_CharTargetType_ValueIsStringWithLengthNotOne_ShouldThrow()
-    {
-        Invoking(() => ValueConverter.ConvertValueToType<Char>(String.Empty))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
-                "character long."
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<Char?>(String.Empty))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
-                "character long."
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<Char>("ab"))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
-                "character long."
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<Char?>("ab"))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly one " +
-                "character long."
-            );
-    }
-
-    [Fact]
-    public void
-        ConvertValueToType_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
-    {
-        Invoking(() => ValueConverter.ConvertValueToType<TestEnum>(999))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>(999))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
-                $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
-            );
-    }
-
-    [Fact]
-    public void ConvertValueToType_EnumTargetType_ShouldConvertToEnumMember()
-    {
-        var enumValue = Generate.Single<TestEnum>();
-
-        ValueConverter.ConvertValueToType<TestEnum>((Int32)enumValue)
-            .Should().Be(enumValue);
-
-        ValueConverter.ConvertValueToType<TestEnum?>((Int32)enumValue)
-            .Should().Be(enumValue);
-    }
-
-    [Fact]
-    public void
-        ConvertValueToType_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
-    {
-        Invoking(() => ValueConverter.ConvertValueToType<TestEnum>("NonExistent"))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                "That string does not match any of the names of the enum's members.*"
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>("NonExistent"))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
-                "That string does not match any of the names of the enum's members.*"
-            );
-    }
-
-    [Fact]
-    public void ConvertValueToType_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
-    {
-        Invoking(() => ValueConverter.ConvertValueToType<DateTime>(DBNull.Value))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
-                "type is non-nullable.*"
-            );
-
-        Invoking(() => ValueConverter.ConvertValueToType<DateTime>(null))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
-                "non-nullable.*"
-            );
-    }
-
-    [Fact]
-    public void ConvertValueToType_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
-    {
-        ValueConverter.ConvertValueToType<Object>(DBNull.Value)
-            .Should().BeNull();
-
-        ValueConverter.ConvertValueToType<Int32?>(DBNull.Value)
-            .Should().BeNull();
-
-        ValueConverter.ConvertValueToType<Object>(null)
-            .Should().BeNull();
-
-        ValueConverter.ConvertValueToType<Int32?>(null)
-            .Should().BeNull();
-    }
-
-    [Fact]
-    public void ConvertValueToType_ValueCannotBeConvertedToTargetType_ShouldThrow() =>
+    public void ConvertValueToTypeOfT_ValueCannotBeConvertedToTargetType_ShouldThrow() =>
         Invoking(() => ValueConverter.ConvertValueToType<DateTime>("NotADate"))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
@@ -255,8 +547,11 @@ public class ValueConverterTests : UnitTestsBase
             .WithMessage("The string 'NotADate' was not recognized as a valid DateTime.*");
 
     [Fact]
-    public void ShouldGuardAgainstNullArguments() =>
+    public void ShouldGuardAgainstNullArguments()
+    {
         ArgumentNullGuardVerifier.Verify(() => ValueConverter.CanConvert(typeof(Int16), typeof(Int32)));
+        ArgumentNullGuardVerifier.Verify(() => ValueConverter.ConvertValueToType(1, typeof(Int32)));
+    }
 
     public static IEnumerable<(
             Type SourceType,
@@ -265,7 +560,7 @@ public class ValueConverterTests : UnitTestsBase
             Object SourceValue,
             Object ExpectedTargetValue
             )>
-        GetCanConvertTestData()
+        GetConvertTestData()
     {
         var faker = new Faker();
 

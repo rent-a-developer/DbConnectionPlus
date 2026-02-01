@@ -1,3 +1,7 @@
+using System.Data.Common;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
+
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DbCommands;
 
 public sealed class
@@ -23,8 +27,10 @@ public sealed class
 public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
-    [Fact]
-    public void BuildDbCommand_ShouldCreateTemporaryTables()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldCreateTemporaryTables(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -38,208 +44,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
                                               ON         Entities.Id = Ids.Value
                                               """;
 
-        var (command, _) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
-
-        var temporaryTables = statement.TemporaryTables;
-
-        command.CommandText
-            .Should().Be(
-                $"""
-                 SELECT     Value
-                 FROM       {QT(temporaryTables[0].Name)} AS Ids
-                 INNER JOIN {QT(temporaryTables[1].Name)} AS Entities
-                 ON         Entities.Id = Ids.Value
-                 """
-            );
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name)
-            .Should().BeTrue();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[1].Name)
-            .Should().BeTrue();
-
-        this.Connection.Query<Int64>($"SELECT {Q("Value")} FROM {QT(temporaryTables[0].Name)}")
-            .Should().BeEquivalentTo(entityIds);
-
-        this.Connection.Query<Entity>($"SELECT * FROM {QT(temporaryTables[1].Name)}")
-            .Should().BeEquivalentTo(entities);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids();
-        var entities = Generate.Multiple<Entity>();
-
-        InterpolatedSqlStatement statement = $"""
-                                              SELECT     Value
-                                              FROM       {TemporaryTable(entityIds)} AS Ids
-                                              INNER JOIN {TemporaryTable(entities)} AS Entities
-                                              ON         Entities.Id = Ids.Value
-                                              """;
-
-        var (_, commandDisposer) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
-
-        var temporaryTables = statement.TemporaryTables;
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name)
-            .Should().BeTrue();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[1].Name)
-            .Should().BeTrue();
-
-        commandDisposer.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name)
-            .Should().BeFalse();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[1].Name)
-            .Should().BeFalse();
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldSetCommandTimeout()
-    {
-        var timeout = Generate.Single<TimeSpan>();
-
-        var (command, _) = DbCommandBuilder.BuildDbCommand(
-            "SELECT 1",
-            this.DatabaseAdapter,
-            this.Connection,
-            null,
-            timeout
-        );
-
-        command.CommandTimeout
-            .Should().Be((Int32)timeout.TotalSeconds);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldSetCommandType()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
-
-        var (command, _) = DbCommandBuilder.BuildDbCommand(
-            "GetEntities",
-            this.DatabaseAdapter,
-            this.Connection,
-            commandType: CommandType.StoredProcedure
-        );
-
-        command.CommandType
-            .Should().Be(CommandType.StoredProcedure);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldSetConnection()
-    {
-        var (command, _) = DbCommandBuilder.BuildDbCommand("SELECT 1", this.DatabaseAdapter, this.Connection);
-
-        command.Connection
-            .Should().BeSameAs(this.Connection);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldSetParameters()
-    {
-        var entityId = Generate.Id();
-        var dateTimeValue = DateTime.UtcNow;
-        var stringValue = Generate.Single<String>();
-
-        var (command, _) = DbCommandBuilder.BuildDbCommand(
-            $"""
-             SELECT *
-             FROM   Entity
-             WHERE  Id = {Parameter(entityId)} AND
-                    DateTimeValue = {Parameter(dateTimeValue)} AND
-                    StringValue = {Parameter(stringValue)}
-             """,
-            this.DatabaseAdapter,
-            this.Connection
-        );
-
-        command.CommandText
-            .Should().Be(
-                $"""
-                 SELECT *
-                 FROM   Entity
-                 WHERE  Id = {P("EntityId")} AND
-                        DateTimeValue = {P("DateTimeValue")} AND
-                        StringValue = {P("StringValue")}
-                 """
-            );
-
-        command.Parameters.Count
-            .Should().Be(3);
-
-        command.Parameters["EntityId"]
-            .Value.Should().Be(entityId);
-
-        command.Parameters["DateTimeValue"]
-            .Value.Should().Be(dateTimeValue);
-
-        command.Parameters["StringValue"]
-            .Value.Should().Be(stringValue);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldSetTransaction()
-    {
-        using var transaction = this.Connection.BeginTransaction();
-
-        var (command, _) = DbCommandBuilder.BuildDbCommand(
-            "SELECT 1",
-            this.DatabaseAdapter,
-            this.Connection,
-            transaction
-        );
-
-        command.Transaction
-            .Should().BeSameAs(transaction);
-    }
-
-    [Fact]
-    public void BuildDbCommand_ShouldUseCancellationToken()
-    {
-        Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
-
-        var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
-
-        var (command, _) = DbCommandBuilder.BuildDbCommand(
-            this.TestDatabaseProvider.DelayTwoSecondsStatement,
-            this.DatabaseAdapter,
-            this.Connection,
-            null,
-            null,
-            CommandType.Text,
-            cancellationToken
-        );
-
-        var exception = Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<Exception>().Subject.First();
-
-        this.DatabaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldCreateTemporaryTables()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids();
-        var entities = Generate.Multiple<Entity>();
-
-        InterpolatedSqlStatement statement = $"""
-                                              SELECT     Value
-                                              FROM       {TemporaryTable(entityIds)} AS Ids
-                                              INNER JOIN {TemporaryTable(entities)} AS Entities
-                                              ON         Entities.Id = Ids.Value
-                                              """;
-
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(statement, this.DatabaseAdapter, this.Connection);
+        var (command, _) = await CallApi(useAsyncApi, statement, this.DatabaseAdapter, this.Connection);
 
         var temporaryTables = statement.TemporaryTables;
 
@@ -268,8 +73,10 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().BeEquivalentTo(entities);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -283,7 +90,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
                                               ON         Entities.Id = Ids.Value
                                               """;
         var (_, commandDisposer) =
-            await DbCommandBuilder.BuildDbCommandAsync(statement, this.DatabaseAdapter, this.Connection);
+            await CallApi(useAsyncApi, statement, this.DatabaseAdapter, this.Connection);
 
         var temporaryTables = statement.TemporaryTables;
 
@@ -305,12 +112,15 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().BeFalse();
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldSetCommandTimeout()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldSetCommandTimeout(Boolean useAsyncApi)
     {
         var timeout = Generate.Single<TimeSpan>();
 
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
+        var (command, _) = await CallApi(
+            useAsyncApi,
             "SELECT 1",
             this.DatabaseAdapter,
             this.Connection,
@@ -322,12 +132,15 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().Be((Int32)timeout.TotalSeconds);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldSetCommandType()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldSetCommandType(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
 
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
+        var (command, _) = await CallApi(
+            useAsyncApi,
             "GetEntities",
             this.DatabaseAdapter,
             this.Connection,
@@ -338,24 +151,29 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().Be(CommandType.StoredProcedure);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldSetConnection()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldSetConnection(Boolean useAsyncApi)
     {
         var (command, _) =
-            await DbCommandBuilder.BuildDbCommandAsync("SELECT 1", this.DatabaseAdapter, this.Connection);
+            await CallApi(useAsyncApi, "SELECT 1", this.DatabaseAdapter, this.Connection);
 
         command.Connection
             .Should().BeSameAs(this.Connection);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldSetParameters()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldSetParameters(Boolean useAsyncApi)
     {
         var entityId = Generate.Id();
         var dateTimeValue = DateTime.UtcNow;
         var stringValue = Generate.Single<String>();
 
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
+        var (command, _) = await CallApi(
+            useAsyncApi,
             $"""
              SELECT *
              FROM   Entity
@@ -391,12 +209,15 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().Be(stringValue);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldSetTransaction()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldSetTransaction(Boolean useAsyncApi)
     {
         await using var transaction = await this.Connection.BeginTransactionAsync();
 
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
+        var (command, _) = await CallApi(
+            useAsyncApi,
             "SELECT 1",
             this.DatabaseAdapter,
             this.Connection,
@@ -407,14 +228,17 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
             .Should().BeSameAs(transaction);
     }
 
-    [Fact]
-    public async Task BuildDbCommandAsync_ShouldUseCancellationToken()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDbCommand_ShouldUseCancellationToken(Boolean useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        var (command, _) = await DbCommandBuilder.BuildDbCommandAsync(
+        var (command, _) = await CallApi(
+            useAsyncApi,
             this.TestDatabaseProvider.DelayTwoSecondsStatement,
             this.DatabaseAdapter,
             this.Connection,
@@ -429,5 +253,49 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
 
         this.DatabaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
             .Should().BeTrue();
+    }
+
+    private static Task<(DbCommand, DbCommandDisposer)> CallApi(
+        Boolean useAsyncApi,
+        InterpolatedSqlStatement statement,
+        IDatabaseAdapter databaseAdapter,
+        DbConnection connection,
+        DbTransaction? transaction = null,
+        TimeSpan? commandTimeout = null,
+        CommandType commandType = CommandType.Text,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (useAsyncApi)
+        {
+            return DbCommandBuilder.BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            );
+        }
+
+        try
+        {
+            return Task.FromResult(
+                DbCommandBuilder.BuildDbCommand(
+                    statement,
+                    databaseAdapter,
+                    connection,
+                    transaction,
+                    commandTimeout,
+                    commandType,
+                    cancellationToken
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            return Task.FromException<(DbCommand, DbCommandDisposer)>(ex);
+        }
     }
 }

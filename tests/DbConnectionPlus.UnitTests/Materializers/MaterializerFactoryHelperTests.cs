@@ -187,21 +187,6 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             .Should().BeEquivalentTo([("ordinal", typeof(Int32))]);
     }
 
-    [Fact]
-    public void EnumConverterConvertValueToEnumMemberMethod_ShouldReferenceEnumConverterConvertValueToEnum()
-    {
-        var method = MaterializerFactoryHelper.EnumConverterConvertValueToEnumMemberMethod;
-
-        method.DeclaringType
-            .Should().Be(typeof(EnumConverter));
-
-        method.Name
-            .Should().Be(nameof(EnumConverter.ConvertValueToEnumMember));
-
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().BeEquivalentTo([("value", typeof(Object))]);
-    }
-
     [Theory]
     [InlineData(typeof(Boolean), true)]
     [InlineData(typeof(Byte), true)]

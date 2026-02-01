@@ -1,4 +1,4 @@
-﻿#pragma warning disable NS1001
+#pragma warning disable NS1001
 
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DbCommands;

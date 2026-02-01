@@ -24,7 +24,7 @@ public abstract class DefaultDbCommandFactoryTests<TTestDatabaseProvider> : Inte
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Fact]
-    public void CreateSqlCommand_NoTimeout_ShouldUseDefaultTimeout()
+    public void CreateDbCommand_NoTimeout_ShouldUseDefaultTimeout()
     {
         var command = this.factory.CreateDbCommand(this.Connection, "SELECT 1");
 
@@ -33,7 +33,7 @@ public abstract class DefaultDbCommandFactoryTests<TTestDatabaseProvider> : Inte
     }
 
     [Fact]
-    public void CreateSqlCommand_ShouldCreateSqlCommandWithSpecifiedSettings()
+    public void CreateDbCommand_ShouldCreateDbCommandWithSpecifiedSettings()
     {
         var commandType = this.TestDatabaseProvider.SupportsStoredProcedures
             ? CommandType.StoredProcedure

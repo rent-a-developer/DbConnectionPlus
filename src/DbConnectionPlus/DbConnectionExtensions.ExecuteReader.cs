@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Readers;
@@ -60,7 +60,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = DbCommandBuilder.BuildDbCommand(
             statement,
@@ -155,7 +155,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
             statement,

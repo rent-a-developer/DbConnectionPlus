@@ -27,12 +27,6 @@ internal static class MaterializerFactoryHelper
         .GetMethod(nameof(DbDataReader.IsDBNull))!;
 
     /// <summary>
-    /// The <see cref="EnumConverter.ConvertValueToEnumMember{TTarget}" /> method.
-    /// </summary>
-    internal static MethodInfo EnumConverterConvertValueToEnumMemberMethod { get; } = typeof(EnumConverter)
-        .GetMethod(nameof(EnumConverter.ConvertValueToEnumMember), BindingFlags.Static | BindingFlags.NonPublic)!;
-
-    /// <summary>
     /// The 'Chars' property of the <see cref="String" /> type.
     /// </summary>
     internal static PropertyInfo StringCharsProperty { get; } = typeof(String)
@@ -54,7 +48,8 @@ internal static class MaterializerFactoryHelper
     /// The <see cref="ValueConverter.ConvertValueToType{TTarget}" /> method.
     /// </summary>
     internal static MethodInfo ValueConverterConvertValueToTypeMethod { get; } = typeof(ValueConverter)
-        .GetMethod(nameof(ValueConverter.ConvertValueToType), BindingFlags.Static | BindingFlags.NonPublic)!;
+        .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+        .First(m => m is { Name: nameof(ValueConverter.ConvertValueToType), IsGenericMethod: true });
 
     /// <summary>
     /// Creates an <see cref="Expression" /> that gets the value of a field of the specified field type from a

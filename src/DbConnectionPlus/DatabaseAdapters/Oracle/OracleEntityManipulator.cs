@@ -1,7 +1,8 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
+using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 
@@ -640,7 +641,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             parameter.ParameterName = "return_" + property.ColumnName;
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
-                DbConnectionExtensions.EnumSerializationMode
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
             parameter.Direction = ParameterDirection.Output;
             parameters.Add(parameter);
@@ -691,7 +692,7 @@ internal class OracleEntityManipulator : IEntityManipulator
             parameter.ParameterName = "return_" + property.ColumnName;
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
-                DbConnectionExtensions.EnumSerializationMode
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
             parameter.Direction = ParameterDirection.Output;
             parameters.Add(parameter);
@@ -1025,6 +1026,9 @@ internal class OracleEntityManipulator : IEntityManipulator
                 }
 
                 var value = outputParameters[i].Value;
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
                 property.PropertySetter!(entity, value);
             }
         }

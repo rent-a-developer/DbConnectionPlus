@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
@@ -34,7 +34,7 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
         switch (value)
         {
             case Enum enumValue:
-                parameter.DbType = DbConnectionExtensions.EnumSerializationMode switch
+                parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
                     EnumSerializationMode.Integers =>
                         DbType.Int32,
@@ -44,11 +44,14 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
 
                     _ =>
                         ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionExtensions.EnumSerializationMode
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                         )
                 };
 
-                parameter.Value = EnumSerializer.SerializeEnum(enumValue, DbConnectionExtensions.EnumSerializationMode);
+                parameter.Value = EnumSerializer.SerializeEnum(
+                    enumValue,
+                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                );
                 break;
 
             case DateTime:

@@ -34,20 +34,20 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     public Int32 DeleteEntities<TEntity>(
@@ -85,20 +85,20 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     public Task<Int32> DeleteEntitiesAsync<TEntity>(
@@ -132,20 +132,20 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entity will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     public Int32 DeleteEntity<TEntity>(
@@ -183,20 +183,20 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entity will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entity will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     public Task<Int32> DeleteEntityAsync<TEntity>(
@@ -234,23 +234,27 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entities will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -294,23 +298,26 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entities will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entities will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -350,23 +357,26 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entity will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -410,23 +420,26 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table into which the entity will be inserted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table into which the entity will be inserted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not inserted.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not inserted.
     /// Once an entity is inserted, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -448,7 +461,7 @@ public interface IEntityManipulator
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>The number of rows that were affected by the update operation.</returns>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
@@ -469,27 +482,30 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entities will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -537,27 +553,30 @@ public interface IEntityManipulator
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entities will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entities will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -593,34 +612,37 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entity will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -660,34 +682,37 @@ public interface IEntityManipulator
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table where the entity will be updated is determined by the <see cref="TableAttribute" /> applied to the
-    /// type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table in which the entity will be updated can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>. Per default, the singular name of the type
+    /// <typeparamref name="TEntity" /> is used as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure"/> to configure key properties.
     /// </para>
     /// <para>
-    /// Each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the same name
-    /// (case-sensitive) in the table.
+    /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
+    /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
     /// The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     /// </para>
-    /// <para>Properties denoted with the <see cref="NotMappedAttribute" /> are ignored.</para>
     /// <para>
-    /// Properties denoted with a <see cref="DatabaseGeneratedAttribute" /> where the
-    /// <see cref="DatabaseGeneratedOption" /> is set to <see cref="DatabaseGeneratedOption.Identity" /> or
-    /// <see cref="DatabaseGeneratedOption.Computed" /> are also ignored.
+    /// Properties configured as ignored properties (via <see cref="NotMappedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure" />) are not updated.
+    /// </para>
+    /// <para>
+    /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
+    /// <see cref="DbConnectionExtensions.Configure"/>) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>

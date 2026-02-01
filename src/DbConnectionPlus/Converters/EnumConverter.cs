@@ -132,11 +132,153 @@ internal static class EnumConverter
                     ThrowCouldNotConvertNumericValueToEnumType(value, targetType);
                 }
 
-                return (TTarget?)Enum.ToObject(effectiveTargetType, valueConvertedToEnumUnderlyingType);
+                return (TTarget?)Enum.ToObject(
+                    effectiveTargetType,
+                    valueConvertedToEnumUnderlyingType
+                );
 
             default:
-                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(value, targetType);
+                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
+                    value,
+                    targetType
+                );
                 return default; // Just to satisfy the compiler.
+        }
+    }
+
+    /// <summary>
+    /// Converts <paramref name="value" /> to an enum member of the type <paramref name="targetType" />.
+    /// </summary>
+    /// <param name="value">
+    /// The value to convert to an enum member of the type <paramref name="targetType" />.
+    /// </param>
+    /// <param name="targetType">The type to convert <paramref name="value" /> to.</param>
+    /// <returns>
+    /// <paramref name="value" /> converted to an enum member of the type <paramref name="targetType" />.
+    /// </returns>
+    /// <remarks>
+    /// <paramref name="value" /> must either be a string representing the name of an enum member (case-insensitive)
+    /// of the type <paramref name="targetType" /> or a numeric value representing the value of an enum member of
+    /// the type <paramref name="targetType" />.
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="targetType" /> is not an enum type nor a nullable enum type.
+    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="targetType" /> is <see langword="null" />.</exception>
+    /// <exception cref="InvalidCastException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is <see langword="null" /> and the type
+    /// <paramref name="targetType" /> is non-nullable.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is an empty string.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is a string that consists only of white-space
+    ///                 characters.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is a string that does not match
+    ///                 the name of any enum member of the type <paramref name="targetType" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is of a type that could not be converted to
+    ///                 the underlying type of the type <paramref name="targetType" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is a numeric value that does not match the
+    ///                 value of any enum member of the type <paramref name="targetType" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to an enum member of the type
+    /// <paramref name="targetType" />, because <paramref name="value" /> is neither an enum member of that type
+    ///                 nor a string nor a numeric value.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Object? ConvertValueToEnumMember(Object? value, Type targetType)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        // Unwrap Nullable<T> types:
+        var effectiveTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        if (!effectiveTargetType.IsEnum)
+        {
+            ThrowTypeIsNeitherEnumNorNullableEnumTypeException(value, targetType);
+        }
+
+        switch (value)
+        {
+            case null or DBNull when targetType.IsReferenceTypeOrNullableType():
+                return null;
+
+            case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
+                ThrowCouldNotConvertNullToNonNullableEnumTypeException(targetType);
+                return null!; // Just to satisfy the compiler.
+
+            case not null when value.GetType().IsAssignableTo(effectiveTargetType):
+                return value;
+
+            case String stringValue when String.IsNullOrWhiteSpace(stringValue):
+                ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
+                return null!; // Just to satisfy the compiler.
+
+            case String stringValue:
+                if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
+                {
+                    ThrowCouldNotConvertStringToEnumTypeException(stringValue, targetType);
+                }
+
+                return result;
+
+            case Byte or SByte or Int16 or UInt16 or Int32 or UInt32 or Int64 or UInt64 or Double or Single or Decimal:
+                var enumUnderlyingType = Enum.GetUnderlyingType(effectiveTargetType);
+
+                var valueConvertedToEnumUnderlyingType = Convert.ChangeType(
+                    value,
+                    enumUnderlyingType,
+                    CultureInfo.InvariantCulture
+                );
+
+                if (!Enum.IsDefined(effectiveTargetType, valueConvertedToEnumUnderlyingType))
+                {
+                    ThrowCouldNotConvertNumericValueToEnumType(value, targetType);
+                }
+
+                return Enum.ToObject(
+                    effectiveTargetType,
+                    valueConvertedToEnumUnderlyingType
+                );
+
+            default:
+                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
+                    value,
+                    targetType
+                );
+                return null!; // Just to satisfy the compiler.
         }
     }
 

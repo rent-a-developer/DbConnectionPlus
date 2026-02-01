@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests;
+namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_UpdateEntitiesTests : UnitTestsBase
 {

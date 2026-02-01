@@ -123,7 +123,8 @@ public static partial class DbConnectionExtensions
     ///             2. Have a parameterless constructor and properties (with public setters) that match the columns of
     ///                the result set returned by the statement.
     /// 
-    ///                The names of the properties must match the names of the columns (case-insensitive).
+    ///                Per default, the names of the properties must match the names of the columns (case-insensitive).
+    ///                This can be configured via <see cref="ColumnAttribute" /> or <see cref="Configure" />.
     /// 
     ///                The types of the properties must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
@@ -180,7 +181,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = DbCommandBuilder.BuildDbCommand(
             statement,
@@ -384,7 +385,8 @@ public static partial class DbConnectionExtensions
     ///             2. Have a parameterless constructor and properties (with public setters) that match the columns of
     ///                the result set returned by the statement.
     /// 
-    ///                The names of the properties must match the names of the columns (case-insensitive).
+    ///                Per default, the names of the properties must match the names of the columns (case-insensitive).
+    ///                This can be configured via <see cref="ColumnAttribute" /> or <see cref="Configure" />.
     /// 
     ///                The types of the properties must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
@@ -441,7 +443,7 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        var databaseAdapter = DatabaseAdapterRegistry.GetAdapter(connection.GetType());
+        var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
         var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
             statement,

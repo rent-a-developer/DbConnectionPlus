@@ -3,7 +3,7 @@
 
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
-namespace RentADeveloper.DbConnectionPlus;
+namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 /// <summary>
 /// A delegate for intercepting database commands executed via DbConnectionPlus.

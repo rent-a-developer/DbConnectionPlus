@@ -1,5 +1,6 @@
-﻿// ReSharper disable ConvertToLambdaExpression
+// ReSharper disable ConvertToLambdaExpression
 // ReSharper disable RedundantTypeArgumentsOfMethod
+
 #pragma warning disable IDE0053
 
 using AutoFixture;
@@ -106,30 +107,6 @@ public static class Generate
         TypeAdapterConfig<Entity, EntityWithDifferentCasingProperties>
             .NewConfig()
             .NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
-
-        TypeAdapterConfig<Entity, EntityWithColumnAttributes>
-            .NewConfig()
-            .ConstructUsing(entity => new()
-                {
-                    ValueId = entity.Id,
-                    ValueBoolean = entity.BooleanValue,
-                    ValueByte = entity.ByteValue,
-                    ValueChar = entity.CharValue,
-                    ValueDateOnly = entity.DateOnlyValue,
-                    ValueDateTime = entity.DateTimeValue,
-                    ValueDecimal = entity.DecimalValue,
-                    ValueDouble = entity.DoubleValue,
-                    ValueEnum = entity.EnumValue,
-                    ValueGuid = entity.GuidValue,
-                    ValueInt16 = entity.Int16Value,
-                    ValueInt32 = entity.Int32Value,
-                    ValueInt64 = entity.Int64Value,
-                    ValueSingle = entity.SingleValue,
-                    ValueString = entity.StringValue,
-                    ValueTimeSpan = entity.TimeSpanValue,
-                    ValueTimeOnly = entity.TimeOnlyValue
-            }
-        );
     }
 
     /// <summary>
@@ -164,7 +141,7 @@ public static class Generate
     /// <summary>
     /// Maps <paramref name="obj" /> to an instance of <typeparamref name="TTarget" /> containing the same data.
     /// </summary>
-    /// <typeparam name="TTarget">The type of object to map <paramref name="obj"/> to.</typeparam>
+    /// <typeparam name="TTarget">The type of object to map <paramref name="obj" /> to.</typeparam>
     /// <param name="obj">The object to map.</param>
     /// <returns>
     /// An instance of <typeparamref name="TTarget" /> containing the same data as <paramref name="obj" />.
@@ -302,7 +279,7 @@ public static class Generate
     /// A list with copies of <paramref name="entities" /> where all properties except the key property / properties
     /// have new values.
     /// </returns>
-    public static List<T> UpdatesFor<T>(List<T> entities) =>
+    public static List<T> UpdateFor<T>(List<T> entities) =>
         [.. entities.Select(UpdateFor)];
 
     /// <summary>

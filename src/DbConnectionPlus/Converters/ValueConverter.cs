@@ -134,7 +134,10 @@ internal static class ValueConverter
             case String stringValue when effectiveTargetType == typeof(Char):
                 if (stringValue.Length != 1)
                 {
-                    ThrowCouldNotConvertNonSingleCharStringToCharException(stringValue, targetType);
+                    ThrowCouldNotConvertNonSingleCharStringToCharException(
+                        stringValue,
+                        targetType
+                    );
                 }
 
                 return (TTarget)(Object)stringValue[0];
@@ -201,14 +204,178 @@ internal static class ValueConverter
 
                 try
                 {
-                    return (TTarget?)Convert.ChangeType(value, effectiveTargetType, CultureInfo.InvariantCulture);
+                    return (TTarget?)Convert.ChangeType(
+                        value,
+                        effectiveTargetType,
+                        CultureInfo.InvariantCulture
+                    );
+                }
+                catch (Exception exception) when (
+                    exception is ArgumentException or InvalidCastException or FormatException or OverflowException
+                )
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(
+                        value,
+                        targetType,
+                        exception
+                    );
+                    return default; // Just to satisfy the compiler
+                }
+        }
+    }
+
+    /// <summary>
+    /// Converts <paramref name="value" /> to the type <paramref name="targetType" />.
+    /// </summary>
+    /// <param name="value">The value to convert to the type <paramref name="targetType" />.</param>
+    /// <param name="targetType">The type to convert <paramref name="value" /> to.</param>
+    /// <returns><paramref name="value" /> converted to the type <paramref name="targetType" />.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="targetType" /> is <see langword="null" />.</exception>
+    /// <exception cref="InvalidCastException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> is <see langword="null" /> or a <see cref="DBNull" /> value, but
+    ///                 the type <paramref name="targetType" /> is non-nullable.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="value" /> could not be converted to the type <paramref name="targetType" />,
+    ///                 because that conversion is not supported.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="targetType" /> is <see cref="Char" /> or <see cref="Nullable{Char}" /> and
+    /// <paramref name="value" /> is a string that has a length other than 1.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Object? ConvertValueToType(Object? value, Type targetType)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        // Unwrap Nullable<T> types:
+        var effectiveTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        switch (value)
+        {
+            // Cases are ordered by frequency of use:
+
+            case null or DBNull when targetType.IsReferenceTypeOrNullableType():
+                return null;
+
+            case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
+                ThrowCouldNotConvertNullOrDbNullToNonNullableTargetTypeException(value, targetType);
+                return null!; // Just to satisfy the compiler.
+
+            case not null when value.GetType().IsAssignableTo(effectiveTargetType):
+                return value;
+
+            case String stringValue when effectiveTargetType == typeof(Guid):
+                if (!Guid.TryParse(stringValue, out var guidResult))
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
+                }
+
+                return guidResult;
+
+            case String stringValue when effectiveTargetType == typeof(TimeSpan):
+                if (!TimeSpan.TryParse(stringValue, out var timeSpanResult))
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
+                }
+
+                return timeSpanResult;
+
+            case String stringValue when effectiveTargetType == typeof(Char):
+                if (stringValue.Length != 1)
+                {
+                    ThrowCouldNotConvertNonSingleCharStringToCharException(
+                        stringValue,
+                        targetType
+                    );
+                }
+
+                return stringValue[0];
+
+            case String stringValue when effectiveTargetType == typeof(DateTimeOffset):
+                if (!DateTimeOffset.TryParse(stringValue, out var dateTimeOffsetResult))
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
+                }
+
+                return dateTimeOffsetResult;
+
+            case String stringValue when effectiveTargetType == typeof(DateOnly):
+                if (!DateOnly.TryParse(stringValue, out var dateOnlyResult))
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
+                }
+
+                return dateOnlyResult;
+
+            case String stringValue when effectiveTargetType == typeof(TimeOnly):
+                if (!TimeOnly.TryParse(stringValue, out var timeOnlyResult))
+                {
+                    ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
+                }
+
+                return timeOnlyResult;
+
+            case Guid guid when targetType == typeof(String):
+                return guid.ToString("D");
+
+            case Guid guid when targetType == typeof(Byte[]):
+                return guid.ToByteArray();
+
+            case DateTime dateTime when targetType == typeof(String):
+                return dateTime.ToString("O", CultureInfo.InvariantCulture);
+
+            case DateTime dateTime when effectiveTargetType == typeof(DateOnly):
+                return DateOnly.FromDateTime(dateTime);
+
+            case TimeSpan timeSpan when targetType == typeof(String):
+                return timeSpan.ToString("g", CultureInfo.InvariantCulture);
+
+            case TimeSpan timeSpan when effectiveTargetType == typeof(TimeOnly):
+                return TimeOnly.FromTimeSpan(timeSpan);
+
+            case Byte[] bytes when effectiveTargetType == typeof(Guid):
+                return new Guid(bytes);
+
+            case DateTimeOffset dateTimeOffset when targetType == typeof(String):
+                return dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);
+
+            case DateOnly dateOnly when targetType == typeof(String):
+                return dateOnly.ToString("O", CultureInfo.InvariantCulture);
+
+            case TimeOnly timeOnly when targetType == typeof(String):
+                return timeOnly.ToString("O", CultureInfo.InvariantCulture);
+
+            default:
+                if (effectiveTargetType.IsEnum)
+                {
+                    return EnumConverter.ConvertValueToEnumMember(value, targetType);
+                }
+
+                try
+                {
+                    return Convert.ChangeType(
+                        value,
+                        effectiveTargetType,
+                        CultureInfo.InvariantCulture
+                    );
                 }
                 catch (Exception exception) when (
                     exception is ArgumentException or InvalidCastException or FormatException or OverflowException
                 )
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(value, targetType, exception);
-                    return default; // Just to satisfy the compiler
+                    return null!; // Just to satisfy the compiler
                 }
         }
     }

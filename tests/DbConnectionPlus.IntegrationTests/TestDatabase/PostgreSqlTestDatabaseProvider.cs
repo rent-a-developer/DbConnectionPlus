@@ -183,27 +183,15 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Value" bigint NULL
         );
 
-        CREATE TABLE "EntityWithIdentityAndComputedProperties"
+        CREATE TABLE "MappingTestEntity"
         (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "IdentityValue" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-            "ComputedValue" bigint GENERATED ALWAYS AS ("BaseValue"+(999)),
-            "BaseValue" bigint NOT NULL
-        );
-
-        CREATE TABLE "EntityWithCompositeKey"
-        (
-            "Key1" bigint NOT NULL,
-            "Key2" bigint NOT NULL,
-            "StringValue" text NOT NULL,
-            PRIMARY KEY ("Key1", "Key2")
-        );
-
-        CREATE TABLE "EntityWithNotMappedProperty"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "MappedValue" text NOT NULL,
-            "NotMappedValue" text NULL
+            "KeyColumn1" bigint NOT NULL,
+            "KeyColumn2" bigint NOT NULL,
+            "ValueColumn" integer NOT NULL,
+            "ComputedColumn" integer GENERATED ALWAYS AS ("ValueColumn"+(999)),
+            "IdentityColumn" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+            "NotMappedColumn" text NULL,
+            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
         );
 
         CREATE PROCEDURE "GetEntities" ()
@@ -252,9 +240,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
         TRUNCATE TABLE "EntityWithNonNullableProperty";
         TRUNCATE TABLE "EntityWithNullableProperty";
-        TRUNCATE TABLE "EntityWithIdentityAndComputedProperties";
-        TRUNCATE TABLE "EntityWithCompositeKey";
-        TRUNCATE TABLE "EntityWithNotMappedProperty";
+        TRUNCATE TABLE "MappingTestEntity";
         """;
 
     private static readonly String connectionString;
