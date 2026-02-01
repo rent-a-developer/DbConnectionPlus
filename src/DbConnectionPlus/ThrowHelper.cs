@@ -50,8 +50,8 @@ public static class ThrowHelper
     [DoesNotReturn]
     public static void ThrowEntityTypeHasNoKeyPropertyException(Type entityType) =>
         throw new ArgumentException(
-            $"Could not get the key property / properties of the type {entityType}. Make sure that at least one " +
-            $"instance property of that type is denoted with a {typeof(KeyAttribute)}."
+            $"No property of the type {entityType} is configured as a key property. Make sure that at least one " +
+            "instance property of that type is configured as key property."
         );
 
     /// <summary>

@@ -675,7 +675,7 @@ public static class EntityHelper
   - Mapped properties (excluding ignored properties)
   - Key properties
   - Computed properties
-  - Identity properties
+  - Identity property
   - Database generated properties
   - Insert properties (properties to be included when inserting an entity)
   - Update properties (properties to be included when updating an entity)
@@ -1035,26 +1035,47 @@ public List<Product> Query_Entities_DbConnectionPlus()
 
 ## Configuration and Extensibility
 
-TODO: Update this section.
-
 ### Global Configuration
 
-**Decision:** Use static properties for global settings that rarely change.
-
-**Current Settings:**
-```csharp
-public static class DbConnectionExtensions
-{
-    public static EnumSerializationMode EnumSerializationMode { get; set; }
-        = EnumSerializationMode.Strings;
-}
-```
+**Decision:** Provide a config method for configuring global settings.
 
 **Best Practice:**
 Set during application startup before any database operations:
 ```csharp
 // In Program.cs or Startup.cs
-DbConnectionExtensions.EnumSerializationMode = EnumSerializationMode.Integers;
+
+DbConnectionExtensions.Configure(config =>
+{
+    config.EnumSerializationMode = EnumSerializationMode.Integers;
+});
+```
+
+### Entity type mapping configuration
+
+**Decision:** Provide a Fluent API to configure entity type mapping.
+
+```csharp
+using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+
+DbConnectionExtensions.Configure(config =>
+{
+    config.Entity<Product>()
+        .ToTable("Products");
+
+    config.Entity<Product>()
+        .Property(a => a.Id)
+        .HasColumnName("ProductId");
+        .IsIdentity()
+        .IsKey();
+
+    config.Entity<Product>()
+        .Property(a => a.DiscountedPrice)
+        .IsComputed();
+
+    config.Entity<Product>()
+        .Property(a => a.IsOnSale)
+        .IsIgnored();
+});
 ```
 
 ---
@@ -1079,7 +1100,10 @@ public class MyCustomDatabaseAdapter : IDatabaseAdapter
 }
 
 // Register adapter
-DatabaseAdapterRegistry.RegisterAdapter<MyCustomConnection>(new MyCustomDatabaseAdapter());
+DbConnectionExtensions.Configure(config =>
+{
+    config.RegisterDatabaseAdapter<MyCustomConnection>(new MyCustomDatabaseAdapter());
+});
 ```
 
 **Use Cases:**

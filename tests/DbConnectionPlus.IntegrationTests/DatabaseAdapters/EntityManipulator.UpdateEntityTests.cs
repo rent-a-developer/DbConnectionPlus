@@ -206,8 +206,8 @@ public abstract class EntityManipulator_UpdateEntityTests
             )
             .Should().ThrowAsync<ArgumentException>()
             .WithMessage(
-                $"Could not get the key property / properties of the type {typeof(EntityWithoutKeyProperty)}. " +
-                $"Make sure that at least one instance property of that type is denoted with a {typeof(KeyAttribute)}."
+                $"No property of the type {typeof(EntityWithoutKeyProperty)} is configured as a key property. Make " +
+                "sure that at least one instance property of that type is configured as key property."
             );
     }
 

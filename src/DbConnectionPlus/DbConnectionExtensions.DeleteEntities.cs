@@ -8,7 +8,6 @@ namespace RentADeveloper.DbConnectionPlus;
 /// </summary>
 public static partial class DbConnectionExtensions
 {
-    // TODO: Update ALL documentation regarding attributes and Fluent API.
     /// <summary>
     /// Deletes the specified entities, identified by their key property/properties, from the database.
     /// </summary>
@@ -33,20 +32,20 @@ public static partial class DbConnectionExtensions
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>
@@ -111,20 +110,20 @@ public static partial class DbConnectionExtensions
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// No instance property of the type <typeparamref name="TEntity" /> is denoted with a <see cref="KeyAttribute" />.
+    /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
-    /// The table from which the entities will be deleted is determined by the <see cref="TableAttribute" />
-    /// applied to the type <typeparamref name="TEntity" />.
-    /// If this attribute is not present, the singular name of the type <typeparamref name="TEntity" /> is used.
+    /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
+    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// as the table name.
     /// </para>
     /// <para>
-    /// The type <typeparamref name="TEntity" /> must have at least one instance property denoted with a
-    /// <see cref="KeyAttribute" />.
+    /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>

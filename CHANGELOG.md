@@ -7,12 +7,13 @@ this project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.1.0] - TODO: Add date of release
 
 ### Added
-- Fluent configuration API for global settings and entity mappings
+- Fluent configuration API for general settings and entity mappings (Fixes [issue #3](https://github.com/rent-a-developer/DbConnectionPlus/issues/3))
 - Support for column name mapping via System.ComponentModel.DataAnnotations.Schema.ColumnAttribute (Fixes [issue #1](https://github.com/rent-a-developer/DbConnectionPlus/issues/1))
 - Throw helper for common exceptions
 
 ### Changed
 - Updated all dependencies to latest stable versions
+- Refactored unit and integration tests for better maintainability
 
 ## [1.0.0] - 2026-01-24
  
