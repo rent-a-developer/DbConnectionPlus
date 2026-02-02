@@ -16,28 +16,42 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
                     .ToTable("MappingTestEntity");
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn1_)
-                    .HasColumnName("KeyColumn1")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn2_)
-                    .HasColumnName("KeyColumn2")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ComputedColumn_)
-                    .HasColumnName("ComputedColumn")
+                    .Property(a => a.Computed_)
+                    .HasColumnName("Computed")
                     .IsComputed();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.IdentityColumn_)
-                    .HasColumnName("IdentityColumn")
+                    .Property(a => a.ConcurrencyToken_)
+                    .HasColumnName("ConcurrencyToken")
+                    .IsConcurrencyToken();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Identity_)
+                    .HasColumnName("Identity")
                     .IsIdentity();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.NotMappedColumn)
+                    .Property(a => a.Key1_)
+                    .HasColumnName("Key1")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Key2_)
+                    .HasColumnName("Key2")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Name_)
+                    .HasColumnName("Name");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMapped)
                     .IsIgnored();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.RowVersion_)
+                    .HasColumnName("RowVersion")
+                    .IsRowVersion();
             }
         );
 
@@ -60,25 +74,46 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
         entityTypeBuilders[typeof(MappingTestEntityFluentApi)].TableName
             .Should().Be("MappingTestEntity");
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["KeyColumn1_"].ColumnName
-            .Should().Be("KeyColumn1");
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Computed_"].ColumnName
+            .Should().Be("Computed");
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["KeyColumn2_"].ColumnName
-            .Should().Be("KeyColumn2");
-
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ComputedColumn_"].ColumnName
-            .Should().Be("ComputedColumn");
-
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ComputedColumn_"].IsComputed
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Computed_"].IsComputed
             .Should().BeTrue();
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["IdentityColumn_"].IsIdentity
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ConcurrencyToken_"].ColumnName
+            .Should().Be("ConcurrencyToken");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["ConcurrencyToken_"].IsConcurrencyToken
             .Should().BeTrue();
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["IdentityColumn_"].ColumnName
-            .Should().Be("IdentityColumn");
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Identity_"].ColumnName
+            .Should().Be("Identity");
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["NotMappedColumn"].IsIgnored
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Identity_"].IsIdentity
+            .Should().BeTrue();
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Key1_"].ColumnName
+            .Should().Be("Key1");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Key1_"].IsKey
+            .Should().BeTrue();
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Key2_"].ColumnName
+            .Should().Be("Key2");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Key2_"].IsKey
+            .Should().BeTrue();
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Name_"].ColumnName
+            .Should().Be("Name");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["NotMapped"].IsIgnored
+            .Should().BeTrue();
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["RowVersion_"].ColumnName
+            .Should().Be("RowVersion");
+
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["RowVersion_"].IsRowVersion
             .Should().BeTrue();
     }
 

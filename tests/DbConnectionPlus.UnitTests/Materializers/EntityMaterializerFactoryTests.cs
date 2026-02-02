@@ -310,42 +310,54 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var dataReader = Substitute.For<DbDataReader>();
 
-        dataReader.FieldCount.Returns(6);
+        dataReader.FieldCount.Returns(8);
 
         var ordinal = 0;
-        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetName(ordinal).Returns("Computed");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Computed_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ConcurrencyToken");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetValue(ordinal).Returns(entity.ConcurrencyToken_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Identity");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Identity_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Key1");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1_);
+        dataReader.GetInt64(ordinal).Returns(entity.Key1_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetName(ordinal).Returns("Key2");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2_);
+        dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("ValueColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn_);
-
-        ordinal++;
-        dataReader.GetName(ordinal).Returns("ComputedColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
-        dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.ComputedColumn_);
-
-        ordinal++;
-        dataReader.GetName(ordinal).Returns("IdentityColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
-        dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.IdentityColumn_);
+        dataReader.GetString(ordinal).Returns(entity.Name_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
-        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMappedColumn");
+        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
         dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("RowVersion");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetValue(ordinal).Returns(entity.RowVersion_);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntityAttributes>(dataReader);
 
@@ -354,23 +366,29 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         _ = dataReader.DidNotReceive().IsDBNull(notMappedColumnOrdinal);
         _ = dataReader.DidNotReceive().GetString(notMappedColumnOrdinal);
 
-        materializedEntity.KeyColumn1_
-            .Should().Be(entity.KeyColumn1_);
+        materializedEntity.Computed_
+            .Should().Be(entity.Computed_);
 
-        materializedEntity.KeyColumn2_
-            .Should().Be(entity.KeyColumn2_);
+        materializedEntity.ConcurrencyToken_
+            .Should().BeEquivalentTo(entity.ConcurrencyToken_);
 
-        materializedEntity.ValueColumn_
-            .Should().Be(entity.ValueColumn_);
+        materializedEntity.Identity_
+            .Should().Be(entity.Identity_);
 
-        materializedEntity.ComputedColumn_
-            .Should().Be(entity.ComputedColumn_);
+        materializedEntity.Key1_
+            .Should().Be(entity.Key1_);
 
-        materializedEntity.IdentityColumn_
-            .Should().Be(entity.IdentityColumn_);
+        materializedEntity.Key2_
+            .Should().Be(entity.Key2_);
 
-        materializedEntity.NotMappedColumn
+        materializedEntity.Name_
+            .Should().Be(entity.Name_);
+
+        materializedEntity.NotMapped
             .Should().BeNull();
+
+        materializedEntity.RowVersion_
+            .Should().BeEquivalentTo(entity.RowVersion_);
     }
 
     [Fact]
@@ -382,42 +400,54 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var dataReader = Substitute.For<DbDataReader>();
 
-        dataReader.FieldCount.Returns(6);
+        dataReader.FieldCount.Returns(8);
 
         var ordinal = 0;
-        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetName(ordinal).Returns("Computed");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Computed_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("ConcurrencyToken");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetValue(ordinal).Returns(entity.ConcurrencyToken_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Identity");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Identity_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Key1");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1_);
+        dataReader.GetInt64(ordinal).Returns(entity.Key1_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetName(ordinal).Returns("Key2");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2_);
+        dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("ValueColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn_);
-
-        ordinal++;
-        dataReader.GetName(ordinal).Returns("ComputedColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
-        dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.ComputedColumn_);
-
-        ordinal++;
-        dataReader.GetName(ordinal).Returns("IdentityColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
-        dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.IdentityColumn_);
+        dataReader.GetString(ordinal).Returns(entity.Name_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
-        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMappedColumn");
+        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
         dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("RowVersion");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetValue(ordinal).Returns(entity.RowVersion_);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntityFluentApi>(dataReader);
 
@@ -426,23 +456,29 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         _ = dataReader.DidNotReceive().IsDBNull(notMappedColumnOrdinal);
         _ = dataReader.DidNotReceive().GetString(notMappedColumnOrdinal);
 
-        materializedEntity.KeyColumn1_
-            .Should().Be(entity.KeyColumn1_);
+        materializedEntity.Computed_
+            .Should().Be(entity.Computed_);
 
-        materializedEntity.KeyColumn2_
-            .Should().Be(entity.KeyColumn2_);
+        materializedEntity.ConcurrencyToken_
+            .Should().BeEquivalentTo(entity.ConcurrencyToken_);
 
-        materializedEntity.ValueColumn_
-            .Should().Be(entity.ValueColumn_);
+        materializedEntity.Identity_
+            .Should().Be(entity.Identity_);
 
-        materializedEntity.ComputedColumn_
-            .Should().Be(entity.ComputedColumn_);
+        materializedEntity.Key1_
+            .Should().Be(entity.Key1_);
 
-        materializedEntity.IdentityColumn_
-            .Should().Be(entity.IdentityColumn_);
+        materializedEntity.Key2_
+            .Should().Be(entity.Key2_);
 
-        materializedEntity.NotMappedColumn
+        materializedEntity.Name_
+            .Should().Be(entity.Name_);
+
+        materializedEntity.NotMapped
             .Should().BeNull();
+
+        materializedEntity.RowVersion_
+            .Should().BeEquivalentTo(entity.RowVersion_);
     }
 
     [Fact]
@@ -455,35 +491,35 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(3);
 
         var ordinal = 0;
-        dataReader.GetName(ordinal).Returns("KeyColumn1");
+        dataReader.GetName(ordinal).Returns("Key1");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn1);
+        dataReader.GetInt64(ordinal).Returns(entity.Key1);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("KeyColumn2");
+        dataReader.GetName(ordinal).Returns("Key2");
         dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt64(ordinal).Returns(entity.KeyColumn2);
+        dataReader.GetInt64(ordinal).Returns(entity.Key2);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("ValueColumn");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetInt32(ordinal).Returns(entity.ValueColumn);
+        dataReader.GetString(ordinal).Returns(entity.Name);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntity>(dataReader);
 
         var materializedEntity = materializer(dataReader);
 
-        materializedEntity.KeyColumn1
-            .Should().Be(entity.KeyColumn1);
+        materializedEntity.Key1
+            .Should().Be(entity.Key1);
 
-        materializedEntity.KeyColumn2
-            .Should().Be(entity.KeyColumn2);
+        materializedEntity.Key2
+            .Should().Be(entity.Key2);
 
-        materializedEntity.ValueColumn
-            .Should().Be(entity.ValueColumn);
+        materializedEntity.Name
+            .Should().Be(entity.Name);
     }
 
     [Fact]

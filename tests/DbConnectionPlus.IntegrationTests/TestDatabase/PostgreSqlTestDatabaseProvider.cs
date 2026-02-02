@@ -185,13 +185,13 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE "MappingTestEntity"
         (
-            "KeyColumn1" bigint NOT NULL,
-            "KeyColumn2" bigint NOT NULL,
-            "ValueColumn" integer NOT NULL,
-            "ComputedColumn" integer GENERATED ALWAYS AS ("ValueColumn"+(999)),
-            "IdentityColumn" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
-            "NotMappedColumn" text NULL,
-            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+            "Key1" bigint NOT NULL,
+            "Key2" bigint NOT NULL,
+            "Name" text NOT NULL,
+            "Computed" integer GENERATED ALWAYS AS ("Name"+(999)),
+            "Identity" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+            "NotMapped" text NULL,
+            PRIMARY KEY ("Key1", "Key2")
         );
 
         CREATE PROCEDURE "GetEntities" ()

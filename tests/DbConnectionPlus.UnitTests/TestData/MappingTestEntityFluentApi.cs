@@ -4,12 +4,14 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record MappingTestEntityFluentApi
 {
-    public Int32 ComputedColumn_ { get; set; }
-    public Int32 IdentityColumn_ { get; set; }
-    public Int64 KeyColumn1_ { get; set; }
-    public Int64 KeyColumn2_ { get; set; }
-    public String? NotMappedColumn { get; set; }
-    public Int32 ValueColumn_ { get; set; }
+    public Int32 Computed_ { get; set; }
+    public Byte[]? ConcurrencyToken_ { get; set; }
+    public Int32 Identity_ { get; set; }
+    public Int64 Key1_ { get; set; }
+    public Int64 Key2_ { get; set; }
+    public String Name_ { get; set; }
+    public String? NotMapped { get; set; }
+    public Byte[]? RowVersion_ { get; set; }
 
     /// <summary>
     /// Configures the mapping for this entity using the Fluent API.
@@ -21,32 +23,42 @@ public record MappingTestEntityFluentApi
                     .ToTable("MappingTestEntity");
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn1_)
-                    .HasColumnName("KeyColumn1")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.KeyColumn2_)
-                    .HasColumnName("KeyColumn2")
-                    .IsKey();
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ValueColumn_)
-                    .HasColumnName("ValueColumn");
-
-                config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.ComputedColumn_)
-                    .HasColumnName("ComputedColumn")
+                    .Property(a => a.Computed_)
+                    .HasColumnName("Computed")
                     .IsComputed();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.IdentityColumn_)
-                    .HasColumnName("IdentityColumn")
+                    .Property(a => a.ConcurrencyToken_)
+                    .HasColumnName("ConcurrencyToken")
+                    .IsConcurrencyToken();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Identity_)
+                    .HasColumnName("Identity")
                     .IsIdentity();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.NotMappedColumn)
+                    .Property(a => a.Key1_)
+                    .HasColumnName("Key1")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Key2_)
+                    .HasColumnName("Key2")
+                    .IsKey();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.Name_)
+                    .HasColumnName("Name");
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.NotMapped)
                     .IsIgnored();
+
+                config.Entity<MappingTestEntityFluentApi>()
+                    .Property(a => a.RowVersion_)
+                    .HasColumnName("RowVersion")
+                    .IsRowVersion();
             }
         );
 }

@@ -210,12 +210,12 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE `MappingTestEntity`
         (
-            `KeyColumn1` BIGINT NOT NULL,
-            `KeyColumn2` BIGINT NOT NULL,
-            `ValueColumn` INT NOT NULL,
-            `ComputedColumn` INT AS (`ValueColumn`+999),
-            `IdentityColumn` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-            `NotMappedColumn` TEXT NULL
+            `Key1` BIGINT NOT NULL,
+            `Key2` BIGINT NOT NULL,
+            `Name` TEXT NOT NULL,
+            `Computed` INT AS (`Name`+999),
+            `Identity` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+            `NotMapped` TEXT NULL
         );
         GO
 

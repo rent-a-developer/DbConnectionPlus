@@ -152,88 +152,112 @@ public class EntityHelperTests : UnitTestsBase
     }
 
     [Fact]
-    public void GetEntityTypeMetadata_FluentApiMapping_ShouldGetMetadataBasedOnFluentApiMapping()
+    public void GetEntityTypeMetadata_Mapping_FluentApi_ShouldGetMetadataBasedOnFluentApiMapping()
     {
-        var tableName = Generate.Single<String>();
-        var columnName = Generate.Single<String>();
+        MappingTestEntityFluentApi.Configure();
 
-        Configure(config =>
-            {
-                config.Entity<Entity>()
-                    .ToTable(tableName);
-
-                config.Entity<Entity>()
-                    .Property(a => a.Id).IsKey();
-
-                config.Entity<Entity>()
-                    .Property(a => a.BooleanValue).HasColumnName(columnName);
-
-                config.Entity<Entity>()
-                    .Property(a => a.Int16Value).IsComputed();
-
-                config.Entity<Entity>()
-                    .Property(a => a.Int32Value).IsIdentity();
-
-                config.Entity<Entity>()
-                    .Property(a => a.Int64Value).IsIgnored();
-            }
-        );
-
-        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(Entity));
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(MappingTestEntityFluentApi));
 
         metadata
             .Should().NotBeNull();
 
         metadata.EntityType
-            .Should().Be(typeof(Entity));
+            .Should().Be(typeof(MappingTestEntityFluentApi));
 
         metadata.TableName
-            .Should().Be(tableName);
+            .Should().Be("MappingTestEntity");
 
-        var idProperty = metadata.AllPropertiesByPropertyName["Id"];
+        metadata.AllProperties
+            .Should().HaveCount(8);
 
-        idProperty.IsKey
+        metadata.AllPropertiesByPropertyName
+            .Should().BeEquivalentTo(metadata.AllProperties.ToDictionary(a => a.PropertyName));
+
+        var computedProperty = metadata.AllPropertiesByPropertyName["Computed_"];
+
+        computedProperty.ColumnName
+            .Should().Be("Computed");
+
+        computedProperty.IsComputed
             .Should().BeTrue();
 
-        var booleanValueProperty = metadata.AllPropertiesByPropertyName["BooleanValue"];
+        var concurrencyTokenProperty = metadata.AllPropertiesByPropertyName["ConcurrencyToken_"];
 
-        booleanValueProperty.ColumnName
-            .Should().Be(columnName);
+        concurrencyTokenProperty.ColumnName
+            .Should().Be("ConcurrencyToken");
 
-        var int16ValueProperty = metadata.AllPropertiesByPropertyName["Int16Value"];
-
-        int16ValueProperty.IsComputed
+        concurrencyTokenProperty.IsConcurrencyToken
             .Should().BeTrue();
 
-        var int32ValueProperty = metadata.AllPropertiesByPropertyName["Int32Value"];
+        var identityProperty = metadata.AllPropertiesByPropertyName["Identity_"];
+        
+        identityProperty.ColumnName
+            .Should().Be("Identity");
 
-        int32ValueProperty.IsIdentity
+        identityProperty.IsIdentity
             .Should().BeTrue();
 
-        var int64ValueProperty = metadata.AllPropertiesByPropertyName["Int64Value"];
+        var key1Property = metadata.AllPropertiesByPropertyName["Key1_"];
+        
+        key1Property.ColumnName
+            .Should().Be("Key1");
 
-        int64ValueProperty.IsIgnored
+        key1Property.IsKey
             .Should().BeTrue();
 
-        metadata.MappedProperties
-            .Should()
-            .NotContain(int64ValueProperty);
+        var key2Property = metadata.AllPropertiesByPropertyName["Key2_"];
+        
+        key2Property.ColumnName
+            .Should().Be("Key2");
 
-        metadata.KeyProperties
-            .Should()
-            .Contain(idProperty);
+        key2Property.IsKey
+            .Should().BeTrue();
+
+        var nameProperty = metadata.AllPropertiesByPropertyName["Name_"];
+
+        nameProperty.ColumnName
+            .Should().Be("Name");
+
+        var notMappedProperty = metadata.AllPropertiesByPropertyName["NotMapped"];
+
+        notMappedProperty.IsIgnored
+            .Should().BeTrue();
+
+        var rowVersionProperty = metadata.AllPropertiesByPropertyName["RowVersion_"];
+
+        rowVersionProperty.IsRowVersion
+            .Should().BeTrue();
 
         metadata.ComputedProperties
-            .Should().Contain(int16ValueProperty);
+            .Should().BeEquivalentTo([computedProperty]);
+
+        metadata.ConcurrencyTokenProperties
+            .Should().BeEquivalentTo([concurrencyTokenProperty]);
+
+        metadata.DatabaseGeneratedProperties
+            .Should().BeEquivalentTo([computedProperty, identityProperty, rowVersionProperty]);
 
         metadata.IdentityProperty
-            .Should().Be(int32ValueProperty);
+            .Should().Be(identityProperty);
 
         metadata.InsertProperties
-            .Should().Contain([idProperty, booleanValueProperty]);
+            .Should().BeEquivalentTo([concurrencyTokenProperty, key1Property, key2Property, nameProperty]);
+
+        metadata.KeyProperties
+            .Should().BeEquivalentTo([key1Property, key2Property]);
+
+        metadata.MappedProperties
+            .Should().BeEquivalentTo(
+                [computedProperty, concurrencyTokenProperty, identityProperty, key1Property, key2Property, nameProperty, rowVersionProperty]
+            );
+
+        metadata.RowVersionProperties
+            .Should().BeEquivalentTo(
+                [rowVersionProperty]
+            );
 
         metadata.UpdateProperties
-            .Should().Contain([booleanValueProperty]);
+            .Should().BeEquivalentTo([nameProperty]);
     }
 
     [Fact]
@@ -246,18 +270,16 @@ public class EntityHelperTests : UnitTestsBase
                 "property per entity type."
             );
 
-    [Theory]
-    [InlineData(typeof(MappingTestEntity))]
-    [InlineData(typeof(MappingTestEntityAttributes))]
-    public void GetEntityTypeMetadata_NoFluentApiMapping_ShouldGetMetadataBasedOnDataAnnotationAttributes(
-        Type entityType
-    )
+    [Fact]
+    public void GetEntityTypeMetadata_Mapping_Attributes_ShouldGetMetadataBasedOnAttributes()
     {
         var faker = new Faker();
 
         var fixture = new Fixture();
         fixture.Register(() => faker.Date.PastDateOnly());
         fixture.Register(() => faker.Date.RecentTimeOnly());
+
+        var entityType = typeof(MappingTestEntityAttributes);
 
         var entity = specimenFactoryCreateMethod
             .MakeGenericMethod(entityType)
@@ -280,46 +302,55 @@ public class EntityHelperTests : UnitTestsBase
 
         allPropertiesMetadata
             .Should().HaveSameCount(entityProperties);
-
-
+        
         metadata.AllPropertiesByPropertyName
             .Should().BeEquivalentTo(allPropertiesMetadata.ToDictionary(a => a.PropertyName));
-
-        metadata.MappedProperties
-            .Should()
-            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false }));
-
-        metadata.KeyProperties
-            .Should()
-            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsKey: true }));
 
         metadata.ComputedProperties
             .Should()
             .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsComputed: true }));
 
+        metadata.ConcurrencyTokenProperties
+            .Should()
+            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsConcurrencyToken: true }));
+
+        metadata.DatabaseGeneratedProperties
+            .Should()
+            .BeEquivalentTo(allPropertiesMetadata.Where(a => !a.IsIgnored && (a.IsComputed || a.IsIdentity || a.IsRowVersion)));
+
         metadata.IdentityProperty
             .Should()
             .Be(allPropertiesMetadata.FirstOrDefault(a => a is { IsIgnored: false, IsIdentity: true }));
 
-        metadata.DatabaseGeneratedProperties
-            .Should()
-            .BeEquivalentTo(allPropertiesMetadata.Where(a => !a.IsIgnored && (a.IsComputed || a.IsIdentity)));
-
         metadata.InsertProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
-                    { IsIgnored: false, IsComputed: false, IsIdentity: false }
+                { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion:false }
                 )
             );
+
+        metadata.KeyProperties
+            .Should()
+            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false, IsKey: true }));
+
+        metadata.MappedProperties
+            .Should()
+            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsIgnored: false }));
+
+        metadata.RowVersionProperties
+            .Should()
+            .BeEquivalentTo(allPropertiesMetadata.Where(a => a is { IsRowVersion: true }));
 
         metadata.UpdateProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
                     {
-                        IsIgnored: false,
-                        IsKey: false,
                         IsComputed: false,
-                        IsIdentity: false
+                        IsConcurrencyToken: false,
+                        IsIgnored: false,
+                        IsIdentity: false,
+                        IsKey: false,
+                        IsRowVersion: false
                     }
                 )
             );
@@ -331,23 +362,14 @@ public class EntityHelperTests : UnitTestsBase
             propertyMetadata
                 .Should().NotBeNull();
 
+            propertyMetadata.CanRead
+                .Should().Be(property.CanRead);
+
+            propertyMetadata.CanWrite
+                .Should().Be(property.CanWrite);
+
             propertyMetadata.ColumnName
                 .Should().Be(property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name);
-
-            propertyMetadata.PropertyName
-                .Should().Be(property.Name);
-
-            propertyMetadata.PropertyType
-                .Should().Be(property.PropertyType);
-
-            propertyMetadata.PropertyInfo
-                .Should().BeSameAs(property);
-
-            propertyMetadata.IsIgnored
-                .Should().Be(property.GetCustomAttribute<NotMappedAttribute>() is not null);
-
-            propertyMetadata.IsKey
-                .Should().Be(property.GetCustomAttribute<KeyAttribute>() is not null);
 
             propertyMetadata.IsComputed
                 .Should().Be(
@@ -355,17 +377,23 @@ public class EntityHelperTests : UnitTestsBase
                         DatabaseGeneratedOption.Computed
                 );
 
+            propertyMetadata.IsConcurrencyToken
+                .Should().Be(property.GetCustomAttribute<ConcurrencyCheckAttribute>() is not null);
+
             propertyMetadata.IsIdentity
                 .Should().Be(
                     property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
                         DatabaseGeneratedOption.Identity
                 );
 
-            propertyMetadata.CanRead
-                .Should().Be(property.CanRead);
+            propertyMetadata.IsIgnored
+                .Should().Be(property.GetCustomAttribute<NotMappedAttribute>() is not null);
 
-            propertyMetadata.CanWrite
-                .Should().Be(property.CanWrite);
+            propertyMetadata.IsKey
+                .Should().Be(property.GetCustomAttribute<KeyAttribute>() is not null);
+
+            propertyMetadata.IsRowVersion
+                .Should().Be(property.GetCustomAttribute<TimestampAttribute>() is not null);
 
             if (propertyMetadata.CanRead)
             {
@@ -380,6 +408,12 @@ public class EntityHelperTests : UnitTestsBase
                 propertyMetadata.PropertyGetter
                     .Should().BeNull();
             }
+
+            propertyMetadata.PropertyInfo
+                .Should().BeSameAs(property);
+
+            propertyMetadata.PropertyName
+                .Should().Be(property.Name);
 
             if (propertyMetadata.CanWrite)
             {
@@ -400,6 +434,9 @@ public class EntityHelperTests : UnitTestsBase
                 propertyMetadata.PropertySetter
                     .Should().BeNull();
             }
+
+            propertyMetadata.PropertyType
+                .Should().Be(property.PropertyType);
         }
     }
 

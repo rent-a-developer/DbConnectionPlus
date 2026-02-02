@@ -97,9 +97,9 @@ public abstract class EntityManipulator_InsertEntityTests
     public async Task InsertEntity_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
     {
         var entity = Generate.Single<MappingTestEntityAttributes>();
-        entity.ComputedColumn_ = 0;
-        entity.IdentityColumn_ = 0;
-        entity.NotMappedColumn = "ShouldNotBePersisted";
+        entity.Computed_ = 0;
+        entity.Identity_ = 0;
+        entity.NotMapped = "ShouldNotBePersisted";
 
         await this.CallApi(
             useAsyncApi,
@@ -113,7 +113,7 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -125,9 +125,9 @@ public abstract class EntityManipulator_InsertEntityTests
         MappingTestEntityFluentApi.Configure();
 
         var entity = Generate.Single<MappingTestEntityFluentApi>();
-        entity.ComputedColumn_ = 0;
-        entity.IdentityColumn_ = 0;
-        entity.NotMappedColumn = "ShouldNotBePersisted";
+        entity.Computed_ = 0;
+        entity.Identity_ = 0;
+        entity.NotMapped = "ShouldNotBePersisted";
 
         await this.CallApi(
             useAsyncApi,
@@ -141,7 +141,7 @@ public abstract class EntityManipulator_InsertEntityTests
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 

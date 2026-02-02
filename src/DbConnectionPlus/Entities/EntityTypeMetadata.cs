@@ -14,24 +14,30 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// The keys of the dictionary are the property names.
 /// The values of the dictionary are the corresponding property metadata.
 /// </param>
-/// <param name="MappedProperties">
-/// The metadata of the mapped properties of the entity type.
-/// </param>
-/// <param name="KeyProperties">
-/// The metadata of the key properties of the entity type.
-/// </param>
 /// <param name="ComputedProperties">
 /// The metadata of the computed properties of the entity type.
+/// </param>
+/// <param name="ConcurrencyTokenProperties">
+/// The metadata of the concurrency token properties of the entity type.
+/// </param>
+/// <param name="DatabaseGeneratedProperties">
+/// The metadata of the database-generated properties of the entity type.
 /// </param>
 /// <param name="IdentityProperty">
 /// The metadata of the identity property of the entity type.
 /// This is <see langword="null" /> if the entity type does not have an identity property.
 /// </param>
-/// <param name="DatabaseGeneratedProperties">
-/// The metadata of the database-generated properties of the entity type.
-/// </param>
 /// <param name="InsertProperties">
 /// The metadata of the properties needed to insert an entity of the entity type into the database.
+/// </param>
+/// <param name="KeyProperties">
+/// The metadata of the key properties of the entity type.
+/// </param>
+/// <param name="MappedProperties">
+/// The metadata of the mapped properties of the entity type.
+/// </param>
+/// <param name="RowVersionProperties">
+/// The metadata of the row version properties of the entity type.
 /// </param>
 /// <param name="UpdateProperties">
 /// The metadata of the properties needed to update an entity of the entity type in the database.
@@ -41,11 +47,13 @@ public sealed record EntityTypeMetadata(
     String TableName,
     IReadOnlyList<EntityPropertyMetadata> AllProperties,
     IReadOnlyDictionary<String, EntityPropertyMetadata> AllPropertiesByPropertyName,
-    IReadOnlyList<EntityPropertyMetadata> MappedProperties,
-    IReadOnlyList<EntityPropertyMetadata> KeyProperties,
     IReadOnlyList<EntityPropertyMetadata> ComputedProperties,
-    EntityPropertyMetadata? IdentityProperty,
+    IReadOnlyList<EntityPropertyMetadata> ConcurrencyTokenProperties,
     IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties,
+    EntityPropertyMetadata? IdentityProperty,
     IReadOnlyList<EntityPropertyMetadata> InsertProperties,
+    IReadOnlyList<EntityPropertyMetadata> KeyProperties,
+    IReadOnlyList<EntityPropertyMetadata> MappedProperties,
+    IReadOnlyList<EntityPropertyMetadata> RowVersionProperties,
     IReadOnlyList<EntityPropertyMetadata> UpdateProperties
 );

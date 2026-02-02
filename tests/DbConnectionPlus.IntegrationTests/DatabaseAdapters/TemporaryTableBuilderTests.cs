@@ -187,7 +187,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     )
     {
         var entities = Generate.Multiple<MappingTestEntityAttributes>();
-        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+        entities.ForEach(a => a.NotMapped = "ShouldNotBePersisted");
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -205,7 +205,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMappedColumn));
+            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMapped));
 
         await reader.DisposeAsync();
 
@@ -213,7 +213,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -227,7 +227,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         MappingTestEntityFluentApi.Configure();
 
         var entities = Generate.Multiple<MappingTestEntityFluentApi>();
-        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+        entities.ForEach(a => a.NotMapped = "ShouldNotBePersisted");
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -245,7 +245,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMappedColumn));
+            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMapped));
 
         await reader.DisposeAsync();
 
@@ -253,7 +253,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 

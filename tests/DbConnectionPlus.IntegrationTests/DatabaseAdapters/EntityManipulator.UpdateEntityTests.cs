@@ -139,9 +139,9 @@ public abstract class EntityManipulator_UpdateEntityTests
         var entity = this.CreateEntityInDb<MappingTestEntityAttributes>();
 
         var updatedEntity = Generate.UpdateFor(entity);
-        updatedEntity.ComputedColumn_ = 0;
-        updatedEntity.IdentityColumn_ = 0;
-        updatedEntity.NotMappedColumn = "ShouldNotBePersisted";
+        updatedEntity.Computed_ = 0;
+        updatedEntity.Identity_ = 0;
+        updatedEntity.NotMapped = "ShouldNotBePersisted";
 
         await this.CallApi(
             useAsyncApi,
@@ -155,7 +155,7 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(
                 updatedEntity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -169,9 +169,9 @@ public abstract class EntityManipulator_UpdateEntityTests
         var entity = this.CreateEntityInDb<MappingTestEntityFluentApi>();
 
         var updatedEntity = Generate.UpdateFor(entity);
-        updatedEntity.ComputedColumn_ = 0;
-        updatedEntity.IdentityColumn_ = 0;
-        updatedEntity.NotMappedColumn = "ShouldNotBePersisted";
+        updatedEntity.Computed_ = 0;
+        updatedEntity.Identity_ = 0;
+        updatedEntity.NotMapped = "ShouldNotBePersisted";
 
         await this.CallApi(
             useAsyncApi,
@@ -185,7 +185,7 @@ public abstract class EntityManipulator_UpdateEntityTests
             .Should().BeEquivalentTo(
                 updatedEntity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 

@@ -222,13 +222,13 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE MappingTestEntity
         (
-            KeyColumn1 BIGINT NOT NULL,
-            KeyColumn2 BIGINT NOT NULL,
-            ValueColumn INT NOT NULL,
-            ComputedColumn AS ([ValueColumn]+(999)),
-            IdentityColumn INT IDENTITY(1,1) NOT NULL,
-            NotMappedColumn VARCHAR(200) NULL,
-            PRIMARY KEY (KeyColumn1, KeyColumn2)
+            Key1 BIGINT NOT NULL,
+            Key2 BIGINT NOT NULL,
+            Name NVARCHAR(MAX) NOT NULL,
+            Computed AS ([Name]+(999)),
+            Identity INT IDENTITY(1,1) NOT NULL,
+            NotMapped VARCHAR(200) NULL,
+            PRIMARY KEY (Key1, Key2)
         );
         GO
 

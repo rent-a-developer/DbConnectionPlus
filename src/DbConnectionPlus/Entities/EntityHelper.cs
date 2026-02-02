@@ -174,39 +174,43 @@ public static class EntityHelper
             )
             {
                 propertiesMetadata[i] = new(
+                    property.CanRead,
+                    property.CanWrite,
                     !String.IsNullOrWhiteSpace(propertyBuilder.ColumnName)
                         ? propertyBuilder.ColumnName
                         : property.Name,
-                    property.Name,
-                    property.PropertyType,
-                    property,
+                    propertyBuilder.IsComputed,
+                    propertyBuilder.IsConcurrencyToken,
+                    propertyBuilder.IsIdentity,
                     propertyBuilder.IsIgnored,
                     propertyBuilder.IsKey,
-                    propertyBuilder.IsComputed,
-                    propertyBuilder.IsIdentity,
-                    property.CanRead,
-                    property.CanWrite,
+                    propertyBuilder.IsRowVersion,
                     property.CanRead ? Reflect.PropertyGetter(property) : null,
-                    property.CanWrite ? Reflect.PropertySetter(property) : null
+                    property,
+                    property.Name,
+                    property.CanWrite ? Reflect.PropertySetter(property) : null,
+                    property.PropertyType
                 );
             }
             else
             {
                 propertiesMetadata[i] = new(
-                    property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name,
-                    property.Name,
-                    property.PropertyType,
-                    property,
-                    property.GetCustomAttribute<NotMappedAttribute>() is not null,
-                    property.GetCustomAttribute<KeyAttribute>() is not null,
-                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
-                        DatabaseGeneratedOption.Computed,
-                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
-                        DatabaseGeneratedOption.Identity,
                     property.CanRead,
                     property.CanWrite,
+                    property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name,
+                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
+                        DatabaseGeneratedOption.Computed,
+                    property.GetCustomAttribute<ConcurrencyCheckAttribute>() is not null,
+                    property.GetCustomAttribute<DatabaseGeneratedAttribute>()?.DatabaseGeneratedOption is
+                        DatabaseGeneratedOption.Identity,
+                    property.GetCustomAttribute<NotMappedAttribute>() is not null,
+                    property.GetCustomAttribute<KeyAttribute>() is not null,
+                    property.GetCustomAttribute<TimestampAttribute>() is not null,
                     property.CanRead ? Reflect.PropertyGetter(property) : null,
-                    property.CanWrite ? Reflect.PropertySetter(property) : null
+                    property,
+                    property.Name,
+                    property.CanWrite ? Reflect.PropertySetter(property) : null,
+                    property.PropertyType
                 );
             }
         }
@@ -221,22 +225,59 @@ public static class EntityHelper
             );
         }
 
+        IReadOnlyList<EntityPropertyMetadata> computedProperties =
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsComputed: true })];
+
+        IReadOnlyList<EntityPropertyMetadata> concurrencyTokenProperties =
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsConcurrencyToken: true })];
+
+        IReadOnlyList<EntityPropertyMetadata> databaseGeneratedProperties =
+            [.. propertiesMetadata.Where(p => !p.IsIgnored && (p.IsComputed || p.IsIdentity || p.IsRowVersion))];
+
+        IReadOnlyList<EntityPropertyMetadata> insertProperties =
+        [
+            .. propertiesMetadata.Where(p => p is
+                { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion: false }
+            )
+        ];
+
+        IReadOnlyList<EntityPropertyMetadata> keyProperties =
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsKey: true })];
+
+        IReadOnlyList<EntityPropertyMetadata> mappedProperties =
+            [.. propertiesMetadata.Where(p => !p.IsIgnored)];
+
+        IReadOnlyList<EntityPropertyMetadata> rowVersionProperties =
+            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsRowVersion: true })];
+
+        IReadOnlyList<EntityPropertyMetadata> updateProperties =
+        [
+            .. propertiesMetadata.Where(p => p is
+                {
+                    IsComputed: false,
+                    IsConcurrencyToken: false,
+                    IsIgnored: false,
+                    IsIdentity: false,
+                    IsKey: false,
+                    IsRowVersion: false
+                }
+            )
+        ];
+
         return new(
             entityType,
             tableName,
             propertiesMetadata,
             propertiesMetadata.ToDictionary(p => p.PropertyName),
-            [.. propertiesMetadata.Where(p => !p.IsIgnored)],
-            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsKey: true })],
-            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsComputed: true })],
+            computedProperties,
+            concurrencyTokenProperties,
+            databaseGeneratedProperties,
             identityProperties.FirstOrDefault(),
-            [.. propertiesMetadata.Where(p => !p.IsIgnored && (p.IsComputed || p.IsIdentity))],
-            [.. propertiesMetadata.Where(p => p is { IsIgnored: false, IsComputed: false, IsIdentity: false })],
-            [
-                .. propertiesMetadata.Where(p => p is
-                    { IsIgnored: false, IsKey: false, IsComputed: false, IsIdentity: false }
-                )
-            ]
+            insertProperties,
+            keyProperties,
+            mappedProperties,
+            rowVersionProperties,
+            updateProperties
         );
     }
 

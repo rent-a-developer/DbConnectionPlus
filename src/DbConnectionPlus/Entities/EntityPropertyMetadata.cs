@@ -9,35 +9,39 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <summary>
 /// Metadata of an entity property.
 /// </summary>
-/// <param name="ColumnName">The name of the column to which the property is mapped.</param>
-/// <param name="PropertyName">The name of the property.</param>
-/// <param name="PropertyType">The property type of the property.</param>
-/// <param name="PropertyInfo">The property info of the property.</param>
-/// <param name="IsIgnored">Determines whether the property is ignored and not mapped to a database column.</param>
-/// <param name="IsKey">Determines whether the property is a key property.</param>
-/// <param name="IsComputed">Determines whether the property is a computed property.</param>
-/// <param name="IsIdentity">Determines whether the property is an identity property.</param>
 /// <param name="CanRead">Determines whether the property can be read.</param>
 /// <param name="CanWrite">Determines whether the property can be written to.</param>
+/// <param name="ColumnName">The name of the column to which the property is mapped.</param>
+/// <param name="IsComputed">Determines whether the property is a computed property.</param>
+/// <param name="IsConcurrencyToken">Determines whether the property participates in optimistic concurrency checks.</param>
+/// <param name="IsIdentity">Determines whether the property is an identity property.</param>
+/// <param name="IsIgnored">Determines whether the property is ignored and not mapped to a database column.</param>
+/// <param name="IsKey">Determines whether the property is a key property.</param>
+/// <param name="IsRowVersion">Determines whether the property is a row version used for concurrency control.</param>
 /// <param name="PropertyGetter">
 /// The getter function for the property.
 /// This is <see langword="null" /> if the property has no getter.
 /// </param>
+/// <param name="PropertyInfo">The property info of the property.</param>
+/// <param name="PropertyName">The name of the property.</param>
 /// <param name="PropertySetter">
 /// The setter function for the property.
 /// This is <see langword="null" /> if the property has no setter.
 /// </param>
+/// <param name="PropertyType">The property type of the property.</param>
 public sealed record EntityPropertyMetadata(
-    String ColumnName,
-    String PropertyName,
-    Type PropertyType,
-    PropertyInfo PropertyInfo,
-    Boolean IsIgnored,
-    Boolean IsKey,
-    Boolean IsComputed,
-    Boolean IsIdentity,
     Boolean CanRead,
     Boolean CanWrite,
+    String ColumnName,
+    Boolean IsComputed,
+    Boolean IsConcurrencyToken,
+    Boolean IsIdentity,
+    Boolean IsIgnored,
+    Boolean IsKey,
+    Boolean IsRowVersion,
     MemberGetter? PropertyGetter,
-    MemberSetter? PropertySetter
+    PropertyInfo PropertyInfo,
+    String PropertyName,
+    MemberSetter? PropertySetter,
+    Type PropertyType
 );

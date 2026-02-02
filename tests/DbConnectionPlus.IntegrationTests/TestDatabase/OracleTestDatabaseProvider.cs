@@ -198,13 +198,13 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE "MappingTestEntity"
         (
-            "KeyColumn1" NUMBER(19) NOT NULL,
-            "KeyColumn2" NUMBER(19) NOT NULL,
-            "ValueColumn" NUMBER(10) NOT NULL,
-            "ComputedColumn" GENERATED ALWAYS AS (("ValueColumn"+999)),
-            "IdentityColumn" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
-            "NotMappedColumn" CLOB NULL,
-            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+            "Key1" NUMBER(19) NOT NULL,
+            "Key2" NUMBER(19) NOT NULL,
+            "Name" NVARCHAR2(2000) NOT NULL,
+            "Computed" GENERATED ALWAYS AS (("Name"+999)),
+            "Identity" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
+            "NotMapped" CLOB NULL,
+            PRIMARY KEY ("Key1", "Key2")
         );
         GO
 

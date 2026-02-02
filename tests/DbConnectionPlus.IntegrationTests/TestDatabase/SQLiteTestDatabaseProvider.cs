@@ -178,12 +178,12 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE MappingTestEntity
         (
-            KeyColumn1 INTEGER NOT NULL,
-            KeyColumn2 INTEGER NOT NULL,
-            ValueColumn INTEGER NOT NULL,
-            ComputedColumn INTEGER GENERATED ALWAYS AS (ValueColumn+999) VIRTUAL,
-            IdentityColumn INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            NotMappedColumn TEXT NULL
+            Key1 INTEGER NOT NULL,
+            Key2 INTEGER NOT NULL,
+            Name TEXT NOT NULL,
+            Computed INTEGER GENERATED ALWAYS AS (Name+999) VIRTUAL,
+            Identity INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            NotMapped TEXT NULL
         );
         """;
 }

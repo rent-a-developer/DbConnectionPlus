@@ -16,6 +16,11 @@ internal interface IEntityPropertyBuilder : IFreezable
     internal Boolean IsComputed { get; }
 
     /// <summary>
+    /// Determines whether the property participates in optimistic concurrency checks.
+    /// </summary>
+    internal Boolean IsConcurrencyToken { get; }
+
+    /// <summary>
     /// Determines whether the property is mapped to an identity database column.
     /// </summary>
     internal Boolean IsIdentity { get; }
@@ -29,6 +34,11 @@ internal interface IEntityPropertyBuilder : IFreezable
     /// Determines whether the property is mapped to a key database column.
     /// </summary>
     internal Boolean IsKey { get; }
+
+    /// <summary>
+    /// Determines whether the property is a row version used for concurrency control.
+    /// </summary>
+    internal Boolean IsRowVersion { get; }
 
     /// <summary>
     /// The name of the property being configured.
