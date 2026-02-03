@@ -178,12 +178,21 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE MappingTestEntity
         (
+            Computed INTEGER GENERATED ALWAYS AS (Value+999) VIRTUAL,
+            ConcurrencyToken BLOB,
+            Identity INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             Key1 INTEGER NOT NULL,
             Key2 INTEGER NOT NULL,
-            Name TEXT NOT NULL,
-            Computed INTEGER GENERATED ALWAYS AS (Name+999) VIRTUAL,
-            Identity INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            Value INTEGER NOT NULL,
+            RowVersion BLOB DEFAULT (randomblob(8)),
             NotMapped TEXT NULL
         );
+
+        CREATE TRIGGER TriggerMappingTestEntity
+        BEFORE UPDATE ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+        	UPDATE MappingTestEntity SET RowVersion = randomblob(8) WHERE Key1 = OLD.Key1 AND Key2 = OLD.Key2;
+        END;
         """;
 }

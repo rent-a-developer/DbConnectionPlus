@@ -69,22 +69,26 @@ public abstract class EntityManipulator_DeleteEntityTests
         var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
         entityToDelete.ConcurrencyToken_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        entityToDelete,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityToDelete,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(entityToDelete);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(entityToDelete);
 
         this.ExistsEntityInDb(entityToDelete)
             .Should().BeTrue();
@@ -194,22 +198,26 @@ public abstract class EntityManipulator_DeleteEntityTests
         var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
         entityToDelete.RowVersion_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        entityToDelete,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityToDelete,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(entityToDelete);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(entityToDelete);
 
         this.ExistsEntityInDb(entityToDelete)
             .Should().BeTrue();

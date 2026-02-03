@@ -73,22 +73,26 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var failingEntity = updatedEntities[^1];
         failingEntity.ConcurrencyToken_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        updatedEntities,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    updatedEntities,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(failingEntity);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(failingEntity);
 
         foreach (var entity in updatedEntities.Except([failingEntity]))
         {
@@ -96,7 +100,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                     $"""
                      SELECT *
                      FROM   {Q("MappingTestEntity")}
-                     WHERE  Key1 = {Parameter(entity.Key1_)} AND Key2 = {Parameter(entity.Key2_)}
+                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND {Q("Key2")} = {Parameter(entity.Key2_)}
                      """,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
@@ -107,7 +111,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  Key1 = {Parameter(failingEntity.Key1_)} AND Key2 = {Parameter(failingEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND {Q("Key2")} = {Parameter(failingEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -318,22 +322,26 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var failingEntity = updatedEntities[^1];
         failingEntity.RowVersion_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        updatedEntities,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    updatedEntities,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(failingEntity);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(failingEntity);
 
         foreach (var entity in updatedEntities.Except([failingEntity]))
         {
@@ -341,7 +349,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                     $"""
                      SELECT *
                      FROM   {Q("MappingTestEntity")}
-                     WHERE  Key1 = {Parameter(entity.Key1_)} AND Key2 = {Parameter(entity.Key2_)}
+                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND {Q("Key2")} = {Parameter(entity.Key2_)}
                      """,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
@@ -352,7 +360,7 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  Key1 = {Parameter(failingEntity.Key1_)} AND Key2 = {Parameter(failingEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND {Q("Key2")} = {Parameter(failingEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))

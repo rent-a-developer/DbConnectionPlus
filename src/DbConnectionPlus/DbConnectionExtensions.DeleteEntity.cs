@@ -3,6 +3,8 @@
 
 namespace RentADeveloper.DbConnectionPlus;
 
+// TODO: Update documentation regarding concurrency handling.
+
 /// <summary>
 /// Provides extension members for the type <see cref="DbConnection" />.
 /// </summary>
@@ -40,12 +42,12 @@ public static partial class DbConnectionExtensions
     /// <remarks>
     /// <para>
     /// The table from which the entity will be deleted can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>
@@ -121,12 +123,12 @@ public static partial class DbConnectionExtensions
     /// <remarks>
     /// <para>
     /// The table from which the entity will be deleted can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>

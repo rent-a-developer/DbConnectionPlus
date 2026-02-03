@@ -138,6 +138,8 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
     private const String CreateDatabaseObjectsSql =
         """
+        CREATE EXTENSION IF NOT EXISTS pgcrypto; -- Needed for gen_random_bytes()
+
         CREATE TABLE "Entity"
         (
             "Id" bigint NOT NULL PRIMARY KEY,
@@ -185,14 +187,29 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE "MappingTestEntity"
         (
+            "Computed" integer GENERATED ALWAYS AS ("Value"+(999)),
+            "ConcurrencyToken" bytea,
+            "Identity" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
             "Key1" bigint NOT NULL,
             "Key2" bigint NOT NULL,
-            "Name" text NOT NULL,
-            "Computed" integer GENERATED ALWAYS AS ("Name"+(999)),
-            "Identity" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+            "Value" integer NOT NULL,
             "NotMapped" text NULL,
+            "RowVersion" bytea DEFAULT gen_random_bytes(8),
             PRIMARY KEY ("Key1", "Key2")
         );
+
+        CREATE OR REPLACE FUNCTION "UpdateMappingTestEntityRowVersion"()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW."RowVersion" = gen_random_bytes(8);
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER "TriggerMappingTestEntityRowVersion"
+        BEFORE UPDATE ON "MappingTestEntity"
+        FOR EACH ROW
+        EXECUTE FUNCTION "UpdateMappingTestEntityRowVersion"();
 
         CREATE PROCEDURE "GetEntities" ()
         LANGUAGE SQL

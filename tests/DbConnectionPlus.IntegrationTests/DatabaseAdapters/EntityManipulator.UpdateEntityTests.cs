@@ -70,28 +70,32 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         updatedEntity.ConcurrencyToken_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        updatedEntity,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    updatedEntity,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(updatedEntity);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(updatedEntity);
 
         (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  Key1 = {Parameter(updatedEntity.Key1_)} AND Key2 = {Parameter(updatedEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -280,28 +284,32 @@ public abstract class EntityManipulator_UpdateEntityTests
 
         updatedEntity.RowVersion_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        updatedEntity,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    updatedEntity,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(updatedEntity);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(updatedEntity);
 
         (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  Key1 = {Parameter(updatedEntity.Key1_)} AND Key2 = {Parameter(updatedEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))

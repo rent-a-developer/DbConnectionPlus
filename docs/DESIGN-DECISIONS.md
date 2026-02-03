@@ -1,5 +1,7 @@
 # DbConnectionPlus - Design Decisions Document
 
+TODO: Update version before next release.
+
 **Version:** 1.1.0  
 **Last Updated:** February 2026  
 **Author:** David Liebeherr

@@ -198,14 +198,24 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE "MappingTestEntity"
         (
+            "Computed" GENERATED ALWAYS AS (("Value"+999)),
+            "ConcurrencyToken" RAW(2000),
+            "Identity" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
             "Key1" NUMBER(19) NOT NULL,
             "Key2" NUMBER(19) NOT NULL,
-            "Name" NVARCHAR2(2000) NOT NULL,
-            "Computed" GENERATED ALWAYS AS (("Name"+999)),
-            "Identity" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
+            "Value" NUMBER(10) NOT NULL,
             "NotMapped" CLOB NULL,
+            "RowVersion" RAW(16),
             PRIMARY KEY ("Key1", "Key2")
         );
+        GO
+
+        CREATE OR REPLACE TRIGGER "TriggerMappingTestEntity"
+        BEFORE INSERT OR UPDATE ON "MappingTestEntity"
+        FOR EACH ROW
+        BEGIN
+          :NEW."RowVersion" := SYS_GUID();
+        END;
         GO
 
         CREATE OR REPLACE NONEDITIONABLE PROCEDURE "DeleteAllEntities" AS

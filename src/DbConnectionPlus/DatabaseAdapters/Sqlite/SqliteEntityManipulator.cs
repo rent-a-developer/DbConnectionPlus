@@ -98,7 +98,18 @@ internal class SqliteEntityManipulator : IEntityManipulator
             {
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                return command.ExecuteNonQuery();
+                var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
+                return numberOfAffectedRows;
             }
             catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
                     exception,
@@ -136,7 +147,18 @@ internal class SqliteEntityManipulator : IEntityManipulator
             {
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                var numberOfAffectedRows = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
+                return numberOfAffectedRows;
             }
             catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
                     exception,
@@ -403,6 +425,20 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
+                    // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                    // returns -1 when we select database generated properties via the SELECT statement after the
+                    // UPDATE statement.
+                    reader.Close();
+
+                    if (reader.RecordsAffected != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            reader.RecordsAffected,
+                            entity
+                        );
+                    }
+
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
@@ -467,6 +503,20 @@ internal class SqliteEntityManipulator : IEntityManipulator
                         cancellationToken
                     ).ConfigureAwait(false);
 
+                    // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                    // returns -1 when we select database generated properties via the SELECT statement after the
+                    // UPDATE statement.
+                    await reader.CloseAsync().ConfigureAwait(false);
+
+                    if (reader.RecordsAffected != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            reader.RecordsAffected,
+                            entity
+                        );
+                    }
+
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
@@ -513,6 +563,20 @@ internal class SqliteEntityManipulator : IEntityManipulator
                 using var reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
 
                 UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
+
+                // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                // returns -1 when we select database generated properties via the SELECT statement after the
+                // UPDATE statement.
+                reader.Close();
+
+                if (reader.RecordsAffected != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        reader.RecordsAffected,
+                        entity
+                    );
+                }
 
                 return reader.RecordsAffected;
             }
@@ -563,6 +627,20 @@ internal class SqliteEntityManipulator : IEntityManipulator
                 await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
 
+                // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                // returns -1 when we select database generated properties via the SELECT statement after the
+                // UPDATE statement.
+                await reader.CloseAsync().ConfigureAwait(false);
+
+                if (reader.RecordsAffected != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        reader.RecordsAffected,
+                        entity
+                    );
+                }
+
                 return reader.RecordsAffected;
             }
             catch (Exception exception) when (
@@ -600,7 +678,11 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
         var parameters = new List<DbParameter>();
 
-        foreach (var property in entityTypeMetadata.KeyProperties)
+        var whereProperties = entityTypeMetadata.KeyProperties
+            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+            .Concat(entityTypeMetadata.RowVersionProperties);
+
+        foreach (var property in whereProperties)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = property.PropertyName;
@@ -715,7 +797,11 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 var prependSeparator = false;
 
-                foreach (var keyProperty in entityTypeMetadata.KeyProperties)
+                var whereProperties = entityTypeMetadata.KeyProperties
+                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                    .Concat(entityTypeMetadata.RowVersionProperties);
+
+                foreach (var keyProperty in whereProperties)
                 {
                     if (prependSeparator)
                     {
@@ -921,7 +1007,12 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                 prependSeparator = false;
 
-                foreach (var property in entityTypeMetadata.KeyProperties)
+                var whereProperties = entityTypeMetadata.KeyProperties
+                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                    .Concat(entityTypeMetadata.RowVersionProperties)
+                    .ToList();
+
+                foreach (var property in whereProperties)
                 {
                     if (prependSeparator)
                     {
@@ -978,7 +1069,11 @@ internal class SqliteEntityManipulator : IEntityManipulator
 
                     prependSeparator = false;
 
-                    foreach (var keyProperty in entityTypeMetadata.KeyProperties)
+                    whereProperties = entityTypeMetadata.KeyProperties
+                        .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                        .ToList();
+
+                    foreach (var keyProperty in whereProperties)
                     {
                         if (prependSeparator)
                         {

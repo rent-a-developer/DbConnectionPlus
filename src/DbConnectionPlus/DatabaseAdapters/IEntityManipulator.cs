@@ -5,6 +5,8 @@ using RentADeveloper.DbConnectionPlus.Converters;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
+// TODO: Update documentation regarding concurrency handling.
+
 /// <summary>
 /// Provides CRUD database operations for entities.
 /// </summary>

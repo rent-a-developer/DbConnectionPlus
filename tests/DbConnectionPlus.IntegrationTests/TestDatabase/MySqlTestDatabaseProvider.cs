@@ -210,13 +210,31 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE `MappingTestEntity`
         (
+            `Computed` INT AS (`Value`+999),
+            `ConcurrencyToken` BLOB,
+            `Identity` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
             `Key1` BIGINT NOT NULL,
             `Key2` BIGINT NOT NULL,
-            `Name` TEXT NOT NULL,
-            `Computed` INT AS (`Name`+999),
-            `Identity` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-            `NotMapped` TEXT NULL
+            `Value` INT NOT NULL,
+            `NotMapped` TEXT NULL,
+            `RowVersion` BLOB
         );
+        GO
+
+        CREATE TRIGGER Trigger_BeforeInsert_MappingTestEntity
+        BEFORE INSERT ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+          SET NEW.RowVersion = UNHEX(REPLACE(UUID(), '-', ''));
+        END;
+        GO
+
+        CREATE TRIGGER Trigger_BeforeUpdate_MappingTestEntity
+        BEFORE UPDATE ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+          SET NEW.RowVersion = UNHEX(REPLACE(UUID(), '-', ''));
+        END;
         GO
 
         CREATE PROCEDURE `GetEntities` ()

@@ -5,6 +5,8 @@ using RentADeveloper.DbConnectionPlus.Converters;
 
 namespace RentADeveloper.DbConnectionPlus;
 
+// TODO: Update documentation regarding concurrency handling.
+
 /// <summary>
 /// Provides extension members for the type <see cref="DbConnection" />.
 /// </summary>
@@ -42,17 +44,17 @@ public static partial class DbConnectionExtensions
     /// <remarks>
     /// <para>
     /// The table in which the entity will be updated can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// <para>
     /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
     /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
-    /// <see cref="Configure"/>.
+    /// <see cref="Configure" />.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
@@ -64,7 +66,7 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// <para>
     /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
-    /// <see cref="Configure"/>) are also not updated.
+    /// <see cref="Configure" />) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>
@@ -146,17 +148,17 @@ public static partial class DbConnectionExtensions
     /// <remarks>
     /// <para>
     /// The table in which the entity will be updated can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// <para>
     /// Per default, each instance property of the type <typeparamref name="TEntity" /> is mapped to a column with the
     /// same name (case-sensitive) in the table. This can be configured via <see cref="ColumnAttribute" /> or
-    /// <see cref="Configure"/>.
+    /// <see cref="Configure" />.
     /// </para>
     /// <para>
     /// The columns must have data types that are compatible with the property types of the corresponding properties.
@@ -168,7 +170,7 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// <para>
     /// Properties configured as identity or computed properties (via <see cref="DatabaseGeneratedAttribute" /> or
-    /// <see cref="Configure"/>) are also not updated.
+    /// <see cref="Configure" />) are also not updated.
     /// Once an entity is updated, the values for these properties are retrieved from the database and the entity
     /// properties are updated accordingly.
     /// </para>

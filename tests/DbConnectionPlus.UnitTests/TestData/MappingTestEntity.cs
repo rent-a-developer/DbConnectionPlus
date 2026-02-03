@@ -2,6 +2,8 @@
 
 public record MappingTestEntity
 {
+    public Byte[]? ConcurrencyToken { get; set; }
+
     [Key]
     public Int64 Key1 { get; set; }
 
@@ -9,6 +11,4 @@ public record MappingTestEntity
     public Int64 Key2 { get; set; }
 
     public Int32 Value { get; set; }
-
-    public Byte[]? ConcurrencyToken { get; set; }
 }

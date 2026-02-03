@@ -152,125 +152,6 @@ public class EntityHelperTests : UnitTestsBase
     }
 
     [Fact]
-    public void GetEntityTypeMetadata_Mapping_FluentApi_ShouldGetMetadataBasedOnFluentApiMapping()
-    {
-        MappingTestEntityFluentApi.Configure();
-
-        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(MappingTestEntityFluentApi));
-
-        metadata
-            .Should().NotBeNull();
-
-        metadata.EntityType
-            .Should().Be(typeof(MappingTestEntityFluentApi));
-
-        metadata.TableName
-            .Should().Be("MappingTestEntity");
-
-        metadata.AllProperties
-            .Should().HaveCount(8);
-
-        metadata.AllPropertiesByPropertyName
-            .Should().BeEquivalentTo(metadata.AllProperties.ToDictionary(a => a.PropertyName));
-
-        var computedProperty = metadata.AllPropertiesByPropertyName["Computed_"];
-
-        computedProperty.ColumnName
-            .Should().Be("Computed");
-
-        computedProperty.IsComputed
-            .Should().BeTrue();
-
-        var concurrencyTokenProperty = metadata.AllPropertiesByPropertyName["ConcurrencyToken_"];
-
-        concurrencyTokenProperty.ColumnName
-            .Should().Be("ConcurrencyToken");
-
-        concurrencyTokenProperty.IsConcurrencyToken
-            .Should().BeTrue();
-
-        var identityProperty = metadata.AllPropertiesByPropertyName["Identity_"];
-        
-        identityProperty.ColumnName
-            .Should().Be("Identity");
-
-        identityProperty.IsIdentity
-            .Should().BeTrue();
-
-        var key1Property = metadata.AllPropertiesByPropertyName["Key1_"];
-        
-        key1Property.ColumnName
-            .Should().Be("Key1");
-
-        key1Property.IsKey
-            .Should().BeTrue();
-
-        var key2Property = metadata.AllPropertiesByPropertyName["Key2_"];
-        
-        key2Property.ColumnName
-            .Should().Be("Key2");
-
-        key2Property.IsKey
-            .Should().BeTrue();
-
-        var nameProperty = metadata.AllPropertiesByPropertyName["Name_"];
-
-        nameProperty.ColumnName
-            .Should().Be("Value");
-
-        var notMappedProperty = metadata.AllPropertiesByPropertyName["NotMapped"];
-
-        notMappedProperty.IsIgnored
-            .Should().BeTrue();
-
-        var rowVersionProperty = metadata.AllPropertiesByPropertyName["RowVersion_"];
-
-        rowVersionProperty.IsRowVersion
-            .Should().BeTrue();
-
-        metadata.ComputedProperties
-            .Should().BeEquivalentTo([computedProperty]);
-
-        metadata.ConcurrencyTokenProperties
-            .Should().BeEquivalentTo([concurrencyTokenProperty]);
-
-        metadata.DatabaseGeneratedProperties
-            .Should().BeEquivalentTo([computedProperty, identityProperty, rowVersionProperty]);
-
-        metadata.IdentityProperty
-            .Should().Be(identityProperty);
-
-        metadata.InsertProperties
-            .Should().BeEquivalentTo([concurrencyTokenProperty, key1Property, key2Property, nameProperty]);
-
-        metadata.KeyProperties
-            .Should().BeEquivalentTo([key1Property, key2Property]);
-
-        metadata.MappedProperties
-            .Should().BeEquivalentTo(
-                [computedProperty, concurrencyTokenProperty, identityProperty, key1Property, key2Property, nameProperty, rowVersionProperty]
-            );
-
-        metadata.RowVersionProperties
-            .Should().BeEquivalentTo(
-                [rowVersionProperty]
-            );
-
-        metadata.UpdateProperties
-            .Should().BeEquivalentTo([nameProperty]);
-    }
-
-    [Fact]
-    public void GetEntityTypeMetadata_MoreThanOneIdentityProperty_ShouldThrow() =>
-        Invoking(() => EntityHelper.GetEntityTypeMetadata(typeof(EntityWithMultipleIdentityProperties)))
-            .Should().Throw<InvalidOperationException>()
-            .WithMessage(
-                "There are multiple identity properties defined for the entity type " +
-                $"{typeof(EntityWithMultipleIdentityProperties)}. Only one property can be marked as an identity " +
-                "property per entity type."
-            );
-
-    [Fact]
     public void GetEntityTypeMetadata_Mapping_Attributes_ShouldGetMetadataBasedOnAttributes()
     {
         var faker = new Faker();
@@ -302,7 +183,7 @@ public class EntityHelperTests : UnitTestsBase
 
         allPropertiesMetadata
             .Should().HaveSameCount(entityProperties);
-        
+
         metadata.AllPropertiesByPropertyName
             .Should().BeEquivalentTo(allPropertiesMetadata.ToDictionary(a => a.PropertyName));
 
@@ -316,7 +197,9 @@ public class EntityHelperTests : UnitTestsBase
 
         metadata.DatabaseGeneratedProperties
             .Should()
-            .BeEquivalentTo(allPropertiesMetadata.Where(a => !a.IsIgnored && (a.IsComputed || a.IsIdentity || a.IsRowVersion)));
+            .BeEquivalentTo(
+                allPropertiesMetadata.Where(a => !a.IsIgnored && (a.IsComputed || a.IsIdentity || a.IsRowVersion))
+            );
 
         metadata.IdentityProperty
             .Should()
@@ -325,7 +208,7 @@ public class EntityHelperTests : UnitTestsBase
         metadata.InsertProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
-                { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion:false }
+                    { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion: false }
                 )
             );
 
@@ -439,6 +322,128 @@ public class EntityHelperTests : UnitTestsBase
                 .Should().Be(property.PropertyType);
         }
     }
+
+    [Fact]
+    public void GetEntityTypeMetadata_Mapping_FluentApi_ShouldGetMetadataBasedOnFluentApiMapping()
+    {
+        MappingTestEntityFluentApi.Configure();
+
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(MappingTestEntityFluentApi));
+
+        metadata
+            .Should().NotBeNull();
+
+        metadata.EntityType
+            .Should().Be(typeof(MappingTestEntityFluentApi));
+
+        metadata.TableName
+            .Should().Be("MappingTestEntity");
+
+        metadata.AllProperties
+            .Should().HaveCount(8);
+
+        metadata.AllPropertiesByPropertyName
+            .Should().BeEquivalentTo(metadata.AllProperties.ToDictionary(a => a.PropertyName));
+
+        var computedProperty = metadata.AllPropertiesByPropertyName["Computed_"];
+
+        computedProperty.ColumnName
+            .Should().Be("Computed");
+
+        computedProperty.IsComputed
+            .Should().BeTrue();
+
+        var concurrencyTokenProperty = metadata.AllPropertiesByPropertyName["ConcurrencyToken_"];
+
+        concurrencyTokenProperty.ColumnName
+            .Should().Be("ConcurrencyToken");
+
+        concurrencyTokenProperty.IsConcurrencyToken
+            .Should().BeTrue();
+
+        var identityProperty = metadata.AllPropertiesByPropertyName["Identity_"];
+
+        identityProperty.ColumnName
+            .Should().Be("Identity");
+
+        identityProperty.IsIdentity
+            .Should().BeTrue();
+
+        var key1Property = metadata.AllPropertiesByPropertyName["Key1_"];
+
+        key1Property.ColumnName
+            .Should().Be("Key1");
+
+        key1Property.IsKey
+            .Should().BeTrue();
+
+        var key2Property = metadata.AllPropertiesByPropertyName["Key2_"];
+
+        key2Property.ColumnName
+            .Should().Be("Key2");
+
+        key2Property.IsKey
+            .Should().BeTrue();
+
+        var nameProperty = metadata.AllPropertiesByPropertyName["Name_"];
+
+        nameProperty.ColumnName
+            .Should().Be("Value");
+
+        var notMappedProperty = metadata.AllPropertiesByPropertyName["NotMapped"];
+
+        notMappedProperty.IsIgnored
+            .Should().BeTrue();
+
+        var rowVersionProperty = metadata.AllPropertiesByPropertyName["RowVersion_"];
+
+        rowVersionProperty.IsRowVersion
+            .Should().BeTrue();
+
+        metadata.ComputedProperties
+            .Should().BeEquivalentTo([computedProperty]);
+
+        metadata.ConcurrencyTokenProperties
+            .Should().BeEquivalentTo([concurrencyTokenProperty]);
+
+        metadata.DatabaseGeneratedProperties
+            .Should().BeEquivalentTo([computedProperty, identityProperty, rowVersionProperty]);
+
+        metadata.IdentityProperty
+            .Should().Be(identityProperty);
+
+        metadata.InsertProperties
+            .Should().BeEquivalentTo([concurrencyTokenProperty, key1Property, key2Property, nameProperty]);
+
+        metadata.KeyProperties
+            .Should().BeEquivalentTo([key1Property, key2Property]);
+
+        metadata.MappedProperties
+            .Should().BeEquivalentTo(
+                [
+                    computedProperty, concurrencyTokenProperty, identityProperty, key1Property, key2Property,
+                    nameProperty, rowVersionProperty
+                ]
+            );
+
+        metadata.RowVersionProperties
+            .Should().BeEquivalentTo(
+                [rowVersionProperty]
+            );
+
+        metadata.UpdateProperties
+            .Should().BeEquivalentTo([nameProperty]);
+    }
+
+    [Fact]
+    public void GetEntityTypeMetadata_MoreThanOneIdentityProperty_ShouldThrow() =>
+        Invoking(() => EntityHelper.GetEntityTypeMetadata(typeof(EntityWithMultipleIdentityProperties)))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(
+                "There are multiple identity properties defined for the entity type " +
+                $"{typeof(EntityWithMultipleIdentityProperties)}. Only one property can be marked as an identity " +
+                "property per entity type."
+            );
 
     [Fact]
     public void ShouldGuardAgainstNullArguments()

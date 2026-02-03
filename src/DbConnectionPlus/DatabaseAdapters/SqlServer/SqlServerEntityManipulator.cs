@@ -42,6 +42,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                 continue;
             }
 
+            // TODO: Reuse DELETE command instead of calling DeleteEntity for each entity.
+            // TODO: Do this for all entity manipulators.
             totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
         }
 
@@ -429,8 +431,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
 
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
-                    // We must close the reader before we can access RecordsAffected, because otherwise it returns -1
-                    // when we selected database generated properties via the OUTPUT clause.
+                    // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                    // returns -1 when we select database generated properties via the OUTPUT clause.
                     reader.Close();
 
                     if (reader.RecordsAffected != 1)
@@ -506,8 +508,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                         cancellationToken
                     ).ConfigureAwait(false);
 
-                    // We must close the reader before we can access RecordsAffected, because otherwise it returns -1
-                    // when we selected database generated properties via the OUTPUT clause.
+                    // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                    // returns -1 when we select database generated properties via the OUTPUT clause.
                     await reader.CloseAsync().ConfigureAwait(false);
 
                     if (reader.RecordsAffected != 1)
@@ -566,8 +568,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
 
                 UpdateDatabaseGeneratedProperties(entityTypeMetadata, reader, entity, cancellationToken);
 
-                // We must close the reader before we can access RecordsAffected, because otherwise it returns -1
-                // when we selected database generated properties via the OUTPUT clause.
+                // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                // returns -1 when we select database generated properties via the OUTPUT clause.
                 reader.Close();
 
                 if (reader.RecordsAffected != 1)
@@ -628,8 +630,8 @@ internal class SqlServerEntityManipulator : IEntityManipulator
                 await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
                     .ConfigureAwait(false);
 
-                // We must close the reader before we can access RecordsAffected, because otherwise it returns -1
-                // when we selected database generated properties via the OUTPUT clause.
+                // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
+                // returns -1 when we select database generated properties via the OUTPUT clause.
                 await reader.CloseAsync().ConfigureAwait(false);
 
                 if (reader.RecordsAffected != 1)

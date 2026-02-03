@@ -77,7 +77,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
         var failingEntity = entitiesToDelete[^1];
         failingEntity.ConcurrencyToken_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
+        var exception = (await Invoking(() => this.CallApi(
                         useAsyncApi,
                         this.Connection,
                         entitiesToDelete,
@@ -85,14 +85,19 @@ public abstract class EntityManipulator_DeleteEntitiesTests
                         TestContext.Current.CancellationToken
                     )
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(failingEntity);
+                .Should().ThrowAsync<DbUpdateConcurrencyException>())
+            .Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(failingEntity);
 
         foreach (var entity in entitiesToDelete.Except([failingEntity]))
         {
@@ -228,22 +233,26 @@ public abstract class EntityManipulator_DeleteEntitiesTests
         var failingEntity = entitiesToDelete[^1];
         failingEntity.RowVersion_ = Generate.Single<Byte[]>();
 
-        (await Invoking(() => this.CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        entitiesToDelete,
-                        null,
-                        TestContext.Current.CancellationToken
-                    )
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entitiesToDelete,
+                    null,
+                    TestContext.Current.CancellationToken
                 )
-                .Should().ThrowAsync<DbUpdateConcurrencyException>()
-                .WithMessage(
-                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                    "Data in the database may have been modified or deleted since entities were loaded. See " +
-                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                    "the entity that was involved in the operation."
-                ))
-            .And.Entity.Should().Be(failingEntity);
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(failingEntity);
 
         foreach (var entity in entitiesToDelete.Except([failingEntity]))
         {
