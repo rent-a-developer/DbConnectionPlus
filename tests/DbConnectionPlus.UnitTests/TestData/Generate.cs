@@ -3,7 +3,9 @@
 
 #pragma warning disable IDE0053
 
+using System.Reflection;
 using AutoFixture;
+using AutoFixture.Kernel;
 using Bogus;
 using Mapster;
 using RentADeveloper.DbConnectionPlus.Entities;
@@ -22,6 +24,8 @@ public static class Generate
     {
         faker = new();
         fixture = new();
+
+        fixture.Customize(new OmitIgnoredPropertiesCustomization());
 
         fixture.Register<Boolean>(() => faker.Random.Bool());
         fixture.Register<Byte>(() => faker.Random.Byte());
@@ -245,56 +249,63 @@ public static class Generate
         faker.Random.Int(5, 15);
 
     /// <summary>
-    /// Creates a copy of <paramref name="entity" /> where all properties except the key property / properties have new
-    /// values.
+    /// Creates a copy of <paramref name="entity" /> where all properties except the key and concurrency token
+    /// properties have new values.
     /// </summary>
     /// <typeparam name="T">The type of entity to create an updated copy of.</typeparam>
     /// <param name="entity">The entity for which to create an updated copy.</param>
     /// <returns>
-    /// A copy of <paramref name="entity" /> where all properties except the key property / properties have new values.
+    /// A copy of <paramref name="entity" /> where all properties except key and concurrency token properties have new
+    /// values.
     /// </returns>
     public static T UpdateFor<T>(T entity)
     {
         var updatedEntity = Single<T>();
-        CopyKeys(entity, updatedEntity);
+        CopyKeysAndConcurrencyTokens(entity, updatedEntity);
 
         // For the rare case that all generated values are the same as in the original entity,
         // regenerate until at least one value is different.
         while (entity!.Equals(updatedEntity))
         {
             updatedEntity = Single<T>();
-            CopyKeys(entity, updatedEntity);
+            CopyKeysAndConcurrencyTokens(entity, updatedEntity);
         }
 
         return updatedEntity;
     }
 
     /// <summary>
-    /// Creates a list with copies of <paramref name="entities" /> where all properties except the key property /
-    /// properties have new values.
+    /// Creates a list with copies of <paramref name="entities" /> where all properties except key and concurrency
+    /// token properties have new values.
     /// </summary>
     /// <typeparam name="T">The type of entities to create updated copies of.</typeparam>
     /// <param name="entities">The entities for which to create updated copies.</param>
     /// <returns>
-    /// A list with copies of <paramref name="entities" /> where all properties except the key property / properties
-    /// have new values.
+    /// A list with copies of <paramref name="entities" /> where all properties except key and concurrency token
+    /// properties have new values.
     /// </returns>
     public static List<T> UpdateFor<T>(List<T> entities) =>
         [.. entities.Select(UpdateFor)];
 
     /// <summary>
-    /// Copies the values of all key properties (properties denoted with a <see cref="KeyAttribute" />) from
+    /// Copies the values of all key and concurrency token properties from
     /// <paramref name="sourceEntity" /> to <paramref name="targetEntity" />.
     /// </summary>
-    /// <typeparam name="T">The type of the entities to copy keys from and to.</typeparam>
-    /// <param name="sourceEntity">The source entity to copy keys from.</param>
-    /// <param name="targetEntity">The target entity to copy keys to.</param>
-    private static void CopyKeys<T>(T sourceEntity, T targetEntity)
+    /// <typeparam name="T">The type of the entities to copy keys and concurrency tokens from and to.</typeparam>
+    /// <param name="sourceEntity">The source entity to copy keys and concurrency tokens from.</param>
+    /// <param name="targetEntity">The target entity to copy keys and concurrency tokens to.</param>
+    private static void CopyKeysAndConcurrencyTokens<T>(T sourceEntity, T targetEntity)
     {
-        foreach (var keyProperty in EntityHelper.GetEntityTypeMetadata(typeof(T)).KeyProperties)
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(T));
+
+        var propertiesToCopy =
+            metadata.KeyProperties
+                .Concat(metadata.ConcurrencyTokenProperties)
+                .Concat(metadata.RowVersionProperties);
+
+        foreach (var property in propertiesToCopy)
         {
-            var keyPropertyValue = keyProperty.PropertyGetter!(sourceEntity);
-            keyProperty.PropertySetter!(targetEntity, keyPropertyValue);
+            property.PropertySetter!(targetEntity, property.PropertyGetter!(sourceEntity));
         }
     }
 
@@ -308,4 +319,35 @@ public static class Generate
     private static readonly Faker faker;
     private static readonly Fixture fixture;
     private static Int64 entityId = 1;
+
+    /// <summary>
+    /// An AutoFixture customization that excludes properties that are ignored in the entity model from being populated
+    /// with test data.
+    /// </summary>
+    public class OmitIgnoredPropertiesCustomization : ICustomization
+    {
+        public void Customize(IFixture fixture) =>
+            fixture.Customizations.Add(new OmitNotMappedPropertySpecimenBuilder());
+
+        private class OmitNotMappedPropertySpecimenBuilder : ISpecimenBuilder
+        {
+            public Object Create(Object request, ISpecimenContext context)
+            {
+                if (request is PropertyInfo propertyInfo)
+                {
+                    var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(propertyInfo.DeclaringType!);
+
+                    var propertyMetadata =
+                        entityTypeMetadata.AllPropertiesByPropertyName[propertyInfo.Name];
+
+                    if (propertyMetadata.IsIgnored)
+                    {
+                        return new OmitSpecimen();
+                    }
+                }
+
+                return new NoSpecimen();
+            }
+        }
+    }
 }

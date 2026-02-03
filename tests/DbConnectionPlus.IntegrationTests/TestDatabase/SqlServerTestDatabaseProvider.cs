@@ -222,12 +222,14 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 
         CREATE TABLE MappingTestEntity
         (
+            Computed AS ([Value]+(999)),
+            ConcurrencyToken VARBINARY(max),
+            [Identity] INT IDENTITY(1,1) NOT NULL,
             Key1 BIGINT NOT NULL,
             Key2 BIGINT NOT NULL,
-            Name NVARCHAR(MAX) NOT NULL,
-            Computed AS ([Name]+(999)),
-            Identity INT IDENTITY(1,1) NOT NULL,
+            Value INT NOT NULL,
             NotMapped VARCHAR(200) NULL,
+            RowVersion ROWVERSION,
             PRIMARY KEY (Key1, Key2)
         );
         GO

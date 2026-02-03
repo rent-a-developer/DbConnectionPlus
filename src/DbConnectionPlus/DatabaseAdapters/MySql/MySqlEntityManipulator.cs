@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
-using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
@@ -24,21 +23,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
 #pragma warning restore IDE0290 // Use primary constructor
 
     /// <inheritdoc />
-    /// <exception cref="ArgumentOutOfRangeException">
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="connection" /> is not a <see cref="MySqlConnection" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="transaction" /> is not <see langword="null" /> and not a
-    /// <see cref="MySqlTransaction" />.
-    ///             </description>
-    ///         </item>
-    ///     </list>
-    /// </exception>
     public Int32 DeleteEntities<TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
@@ -49,106 +33,22 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entitiesList = entities.ToList();
+        var totalNumberOfAffectedRows = 0;
 
-        // For a small number of entities deleting them one by one is more efficient than creating a temp table.
-        if (entitiesList.Count < BulkDeleteThreshold)
+        foreach (var entity in entities)
         {
-            var totalNumberOfAffectedRows = 0;
-
-            foreach (var entity in entitiesList)
+            if (entity is null)
             {
-                if (entity is null)
-                {
-                    continue;
-                }
-
-                totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
+                continue;
             }
 
-            return totalNumberOfAffectedRows;
+            totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
         }
 
-        if (connection is not MySqlConnection mySqlConnection)
-        {
-            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, Int32>();
-        }
-
-        var mySqlTransaction = transaction as MySqlTransaction;
-
-        if (transaction is not null && mySqlTransaction is null)
-        {
-            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, Int32>();
-        }
-
-        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
-
-        var onClause = String.Join(
-            " AND ",
-            entityTypeMetadata.KeyProperties
-                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.ColumnName}`")
-        );
-
-        try
-        {
-            var keysTableName = "Keys_" + Guid.NewGuid().ToString("N");
-
-            this.BuildEntityKeysTemporaryTable(
-                mySqlConnection,
-                keysTableName,
-                entitiesList,
-                entityTypeMetadata,
-                mySqlTransaction,
-                cancellationToken
-            );
-
-            var numberOfAffectedRows = connection.ExecuteNonQuery(
-                $"""
-                 DELETE
-                 {Constants.Indent}`{entityTypeMetadata.TableName}`
-                 FROM
-                 {Constants.Indent}`{entityTypeMetadata.TableName}`
-                 INNER JOIN
-                 {Constants.Indent}`{keysTableName}` AS TKeys
-                 ON
-                 {Constants.Indent}{onClause}
-                 """,
-                transaction,
-                cancellationToken: cancellationToken
-            );
-
-#pragma warning disable CA2016
-            connection.ExecuteNonQuery($"DROP TEMPORARY TABLE `{keysTableName}`", transaction);
-#pragma warning restore CA2016
-
-            return numberOfAffectedRows;
-        }
-        catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                exception,
-                cancellationToken
-            )
-        )
-        {
-            throw new OperationCanceledException(cancellationToken);
-        }
+        return totalNumberOfAffectedRows;
     }
 
     /// <inheritdoc />
-    /// <exception cref="ArgumentOutOfRangeException">
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="connection" /> is not a <see cref="MySqlConnection" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="transaction" /> is not <see langword="null" /> and not a
-    /// <see cref="MySqlTransaction" />.
-    ///             </description>
-    ///         </item>
-    ///     </list>
-    /// </exception>
     public async Task<Int32> DeleteEntitiesAsync<TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
@@ -161,89 +61,20 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entitiesList = entities.ToList();
 
-        // For a small number of entities deleting them one by one is more efficient than creating a temp table.
-        if (entitiesList.Count < BulkDeleteThreshold)
+        var totalNumberOfAffectedRows = 0;
+
+        foreach (var entity in entitiesList)
         {
-            var totalNumberOfAffectedRows = 0;
-
-            foreach (var entity in entitiesList)
+            if (entity is null)
             {
-                if (entity is null)
-                {
-                    continue;
-                }
-
-                totalNumberOfAffectedRows += await this
-                    .DeleteEntityAsync(connection, entity, transaction, cancellationToken).ConfigureAwait(false);
+                continue;
             }
 
-            return totalNumberOfAffectedRows;
+            totalNumberOfAffectedRows += await this
+                .DeleteEntityAsync(connection, entity, transaction, cancellationToken).ConfigureAwait(false);
         }
 
-        if (connection is not MySqlConnection mySqlConnection)
-        {
-            return ThrowHelper.ThrowWrongConnectionTypeException<MySqlConnection, Int32>();
-        }
-
-        var mySqlTransaction = transaction as MySqlTransaction;
-
-        if (transaction is not null && mySqlTransaction is null)
-        {
-            return ThrowHelper.ThrowWrongTransactionTypeException<MySqlTransaction, Int32>();
-        }
-
-        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
-
-        var onClause = String.Join(
-            " AND ",
-            entityTypeMetadata.KeyProperties
-                .Select(p => $"TKeys.`{p.PropertyName}` = `{entityTypeMetadata.TableName}`.`{p.ColumnName}`")
-        );
-
-        try
-        {
-            var keysTableName = "Keys_" + Guid.NewGuid().ToString("N");
-
-            await this.BuildEntityKeysTemporaryTableAsync(
-                mySqlConnection,
-                keysTableName,
-                entitiesList,
-                entityTypeMetadata,
-                mySqlTransaction,
-                cancellationToken
-            ).ConfigureAwait(false);
-
-            var numberOfAffectedRows = await connection.ExecuteNonQueryAsync(
-                $"""
-                 DELETE
-                 {Constants.Indent}`{entityTypeMetadata.TableName}`
-                 FROM
-                 {Constants.Indent}`{entityTypeMetadata.TableName}`
-                 INNER JOIN
-                 {Constants.Indent}`{keysTableName}` AS TKeys
-                 ON
-                 {Constants.Indent}{onClause}
-                 """,
-                transaction,
-                cancellationToken: cancellationToken
-            ).ConfigureAwait(false);
-
-#pragma warning disable CA2016
-            // ReSharper disable once MethodSupportsCancellation
-            await connection.ExecuteNonQueryAsync($"DROP TEMPORARY TABLE `{keysTableName}`", transaction)
-                .ConfigureAwait(false);
-#pragma warning restore CA2016
-
-            return numberOfAffectedRows;
-        }
-        catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                exception,
-                cancellationToken
-            )
-        )
-        {
-            throw new OperationCanceledException(cancellationToken);
-        }
+        return totalNumberOfAffectedRows;
     }
 
     /// <inheritdoc />
@@ -745,125 +576,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <summary>
-    /// Builds a temporary table containing the keys of the provided entities.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entities for which the table is built.</typeparam>
-    /// <param name="connection">The database connection to use to build the table.</param>
-    /// <param name="keysTableName">The name of the table to build.</param>
-    /// <param name="entities">The entities whose keys should be stored in the table.</param>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="transaction">The database transaction within to perform the operation.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    private void BuildEntityKeysTemporaryTable<TEntity>(
-        MySqlConnection connection,
-        String keysTableName,
-        List<TEntity> entities,
-        EntityTypeMetadata entityTypeMetadata,
-        MySqlTransaction? transaction,
-        CancellationToken cancellationToken
-    )
-    {
-        connection.ExecuteNonQuery(
-            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
-            transaction,
-            cancellationToken: cancellationToken
-        );
-
-        using var keysTable = new DataTable();
-
-        foreach (var property in entityTypeMetadata.KeyProperties)
-        {
-            var columnType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-            keysTable.Columns.Add(property.PropertyName, columnType);
-        }
-
-        foreach (var entity in entities)
-        {
-            if (entity is null)
-            {
-                continue;
-            }
-
-            var keysRow = keysTable.NewRow();
-
-            foreach (var keyProperty in entityTypeMetadata.KeyProperties)
-            {
-                keysRow[keyProperty.PropertyName] = keyProperty.PropertyGetter!(entity);
-            }
-
-            keysTable.Rows.Add(keysRow);
-        }
-
-        var mySqlBulkCopy = new MySqlBulkCopy(connection, transaction)
-        {
-            BulkCopyTimeout = 0,
-            DestinationTableName = $"`{keysTableName}`"
-        };
-
-        mySqlBulkCopy.WriteToServer(keysTable);
-    }
-
-    /// <summary>
-    /// Asynchronously builds a temporary table containing the keys of the provided entities.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entities for which the table is built.</typeparam>
-    /// <param name="connection">The database connection to use to build the table.</param>
-    /// <param name="keysTableName">The name of the table to build.</param>
-    /// <param name="entities">The entities whose keys should be stored in the table.</param>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="transaction">The database transaction within to perform the operation.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    private async Task BuildEntityKeysTemporaryTableAsync<TEntity>(
-        MySqlConnection connection,
-        String keysTableName,
-        List<TEntity> entities,
-        EntityTypeMetadata entityTypeMetadata,
-        MySqlTransaction? transaction,
-        CancellationToken cancellationToken
-    )
-    {
-        await connection.ExecuteNonQueryAsync(
-            this.CreateEntityKeysTemporaryTableSqlCode(keysTableName, entityTypeMetadata),
-            transaction,
-            cancellationToken: cancellationToken
-        ).ConfigureAwait(false);
-
-        using var keysTable = new DataTable();
-
-        foreach (var property in entityTypeMetadata.KeyProperties)
-        {
-            var columnType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-            keysTable.Columns.Add(property.PropertyName, columnType);
-        }
-
-        foreach (var entity in entities)
-        {
-            if (entity is null)
-            {
-                continue;
-            }
-
-            var keysRow = keysTable.NewRow();
-
-            foreach (var keyProperty in entityTypeMetadata.KeyProperties)
-            {
-                keysRow[keyProperty.PropertyName] = keyProperty.PropertyGetter!(entity);
-            }
-
-            keysTable.Rows.Add(keysRow);
-        }
-
-        var mySqlBulkCopy = new MySqlBulkCopy(connection, transaction)
-        {
-            BulkCopyTimeout = 0,
-            DestinationTableName = $"`{keysTableName}`"
-        };
-
-        await mySqlBulkCopy.WriteToServerAsync(keysTable, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <summary>
     /// Creates a command to delete an entity.
     /// </summary>
     /// <param name="connection">The connection to use to create the command.</param>
@@ -898,58 +610,6 @@ internal class MySqlEntityManipulator : IEntityManipulator
         }
 
         return (command, parameters);
-    }
-
-    /// <summary>
-    /// Creates the SQL code to create a temporary table for the keys of the provided entity type.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="entityTypeMetadata">The metadata for the entity type to create the table for.</param>
-    /// <returns>The SQL code to create the temporary table.</returns>
-    private String CreateEntityKeysTemporaryTableSqlCode(
-        String tableName,
-        EntityTypeMetadata entityTypeMetadata
-    )
-    {
-        if (entityTypeMetadata.KeyProperties.Count == 0)
-        {
-            ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
-        }
-
-        using var createKeysTableSqlBuilder = new ValueStringBuilder(stackalloc Char[200]);
-
-        createKeysTableSqlBuilder.Append("CREATE TEMPORARY TABLE `");
-        createKeysTableSqlBuilder.Append(tableName);
-        createKeysTableSqlBuilder.AppendLine("`");
-
-        createKeysTableSqlBuilder.Append(Constants.Indent);
-        createKeysTableSqlBuilder.Append("(");
-
-        var prependSeparator = false;
-
-        foreach (var property in entityTypeMetadata.KeyProperties)
-        {
-            if (prependSeparator)
-            {
-                createKeysTableSqlBuilder.Append(", ");
-            }
-
-            createKeysTableSqlBuilder.Append('`');
-            createKeysTableSqlBuilder.Append(property.PropertyName);
-            createKeysTableSqlBuilder.Append("` ");
-            createKeysTableSqlBuilder.Append(
-                this.databaseAdapter.GetDataType(
-                    property.PropertyType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                )
-            );
-
-            prependSeparator = true;
-        }
-
-        createKeysTableSqlBuilder.AppendLine(")");
-
-        return createKeysTableSqlBuilder.ToString();
     }
 
     /// <summary>
@@ -1440,5 +1100,4 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
-    private const Int32 BulkDeleteThreshold = 10;
 }

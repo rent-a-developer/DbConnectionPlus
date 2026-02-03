@@ -343,10 +343,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetName(ordinal).Returns("Value");
         dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetString(ordinal).Returns(entity.Name_);
+        dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
@@ -381,8 +381,8 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         materializedEntity.Key2_
             .Should().Be(entity.Key2_);
 
-        materializedEntity.Name_
-            .Should().Be(entity.Name_);
+        materializedEntity.Value_
+            .Should().Be(entity.Value_);
 
         materializedEntity.NotMapped
             .Should().BeNull();
@@ -433,10 +433,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetName(ordinal).Returns("Value");
         dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetString(ordinal).Returns(entity.Name_);
+        dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
@@ -471,8 +471,8 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         materializedEntity.Key2_
             .Should().Be(entity.Key2_);
 
-        materializedEntity.Name_
-            .Should().Be(entity.Name_);
+        materializedEntity.Value_
+            .Should().Be(entity.Value_);
 
         materializedEntity.NotMapped
             .Should().BeNull();
@@ -503,10 +503,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.GetInt64(ordinal).Returns(entity.Key2);
 
         ordinal++;
-        dataReader.GetName(ordinal).Returns("Name");
+        dataReader.GetName(ordinal).Returns("Value");
         dataReader.GetFieldType(ordinal).Returns(typeof(String));
         dataReader.IsDBNull(ordinal).Returns(false);
-        dataReader.GetString(ordinal).Returns(entity.Name);
+        dataReader.GetInt32(ordinal).Returns(entity.Value);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<MappingTestEntity>(dataReader);
 
@@ -518,8 +518,8 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         materializedEntity.Key2
             .Should().Be(entity.Key2);
 
-        materializedEntity.Name
-            .Should().Be(entity.Name);
+        materializedEntity.Value
+            .Should().Be(entity.Value);
     }
 
     [Fact]

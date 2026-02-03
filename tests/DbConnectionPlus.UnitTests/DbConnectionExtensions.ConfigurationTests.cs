@@ -41,8 +41,8 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
                     .IsKey();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.Name_)
-                    .HasColumnName("Name");
+                    .Property(a => a.Value_)
+                    .HasColumnName("Value");
 
                 config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.NotMapped)
@@ -104,8 +104,8 @@ public class DbConnectionExtensions_ConfigurationTests : UnitTestsBase
         entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Key2_"].IsKey
             .Should().BeTrue();
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Name_"].ColumnName
-            .Should().Be("Name");
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["Value_"].ColumnName
+            .Should().Be("Value");
 
         entityTypeBuilders[typeof(MappingTestEntityFluentApi)].PropertyBuilders["NotMapped"].IsIgnored
             .Should().BeTrue();

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus;
@@ -39,6 +40,31 @@ public static class ThrowHelper
             "temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
             "this database."
 #pragma warning restore CA1062
+        );
+
+    /// <summary>
+    /// Throws an <see cref="DbUpdateConcurrencyException" /> indicating that a concurrency violation was encountered
+    /// while deleting or updating an entity in a database. A concurrency violation occurs when an unexpected number of
+    /// rows are affected by a delete or update operation. This is usually because the data in the database has been
+    /// modified since the entity has been loaded.
+    /// </summary>
+    /// <param name="expectedNumberOfAffectedRows">The expected number of affected rows.</param>
+    /// <param name="actualNumberOfAffectedRows">The actual number of affected rows.</param>
+    /// <param name="entity">The entity that was involved in the operation.</param>
+    /// <exception cref="DbUpdateConcurrencyException">Always thrown.</exception>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    public static void ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+        Int32 expectedNumberOfAffectedRows,
+        Int32 actualNumberOfAffectedRows,
+        Object entity
+    ) =>
+        throw new DbUpdateConcurrencyException(
+            $"The database operation was expected to affect {expectedNumberOfAffectedRows} row(s), but actually " +
+            $"affected {actualNumberOfAffectedRows} row(s). Data in the database may have been modified or deleted " +
+            $"since entities were loaded. See {nameof(DbUpdateConcurrencyException)}." +
+            $"{nameof(DbUpdateConcurrencyException.Entity)} for the entity that was involved in the operation.",
+            entity
         );
 
     /// <summary>

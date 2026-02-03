@@ -1,5 +1,6 @@
 using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -59,6 +60,58 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(entities);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task UpdateEntities_ConcurrencyTokenMismatch_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
+        var updatedEntities = Generate.UpdateFor(entities);
+
+        var failingEntity = updatedEntities[^1];
+        failingEntity.ConcurrencyToken_ = Generate.Single<Byte[]>();
+
+        (await Invoking(() => this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        updatedEntities,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
+                )
+                .Should().ThrowAsync<DbUpdateConcurrencyException>()
+                .WithMessage(
+                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                    "Data in the database may have been modified or deleted since entities were loaded. See " +
+                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                    "the entity that was involved in the operation."
+                ))
+            .And.Entity.Should().Be(failingEntity);
+
+        foreach (var entity in updatedEntities.Except([failingEntity]))
+        {
+            (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+                    $"""
+                     SELECT *
+                     FROM   {Q("MappingTestEntity")}
+                     WHERE  Key1 = {Parameter(entity.Key1_)} AND Key2 = {Parameter(entity.Key2_)}
+                     """,
+                    cancellationToken: TestContext.Current.CancellationToken
+                ))
+                .Should().BeEquivalentTo(entity);
+        }
+
+        (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+                $"""
+                 SELECT *
+                 FROM   {Q("MappingTestEntity")}
+                 WHERE  Key1 = {Parameter(failingEntity.Key1_)} AND Key2 = {Parameter(failingEntity.Key2_)}
+                 """,
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entities[^1]);
     }
 
     [Theory]
@@ -172,8 +225,9 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}")
             .Should().BeEquivalentTo(
                 updatedEntities,
-                options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMapped"))
+                options =>
+                    options.Using<String>(context => context.Subject.Should().BeNull())
+                        .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -256,6 +310,58 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task UpdateEntities_RowVersionMismatch_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>();
+        var updatedEntities = Generate.UpdateFor(entities);
+
+        var failingEntity = updatedEntities[^1];
+        failingEntity.RowVersion_ = Generate.Single<Byte[]>();
+
+        (await Invoking(() => this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        updatedEntities,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
+                )
+                .Should().ThrowAsync<DbUpdateConcurrencyException>()
+                .WithMessage(
+                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                    "Data in the database may have been modified or deleted since entities were loaded. See " +
+                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                    "the entity that was involved in the operation."
+                ))
+            .And.Entity.Should().Be(failingEntity);
+
+        foreach (var entity in updatedEntities.Except([failingEntity]))
+        {
+            (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+                    $"""
+                     SELECT *
+                     FROM   {Q("MappingTestEntity")}
+                     WHERE  Key1 = {Parameter(entity.Key1_)} AND Key2 = {Parameter(entity.Key2_)}
+                     """,
+                    cancellationToken: TestContext.Current.CancellationToken
+                ))
+                .Should().BeEquivalentTo(entity);
+        }
+
+        (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+                $"""
+                 SELECT *
+                 FROM   {Q("MappingTestEntity")}
+                 WHERE  Key1 = {Parameter(failingEntity.Key1_)} AND Key2 = {Parameter(failingEntity.Key2_)}
+                 """,
+                cancellationToken: TestContext.Current.CancellationToken
+            ))
+            .Should().BeEquivalentTo(entities[^1]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task UpdateEntities_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
@@ -270,12 +376,10 @@ public abstract class EntityManipulator_UpdateEntitiesTests
             ))
             .Should().Be(entities.Count);
 
-        var nonExistentEntities = Generate.Multiple<Entity>();
-
         (await this.CallApi(
                 useAsyncApi,
                 this.Connection,
-                nonExistentEntities,
+                Array.Empty<Entity>(),
                 null,
                 TestContext.Current.CancellationToken
             ))

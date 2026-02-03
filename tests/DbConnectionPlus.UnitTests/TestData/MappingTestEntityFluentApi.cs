@@ -9,7 +9,7 @@ public record MappingTestEntityFluentApi
     public Int32 Identity_ { get; set; }
     public Int64 Key1_ { get; set; }
     public Int64 Key2_ { get; set; }
-    public String Name_ { get; set; }
+    public Int32 Value_ { get; set; }
     public String? NotMapped { get; set; }
     public Byte[]? RowVersion_ { get; set; }
 
@@ -48,8 +48,8 @@ public record MappingTestEntityFluentApi
                     .IsKey();
 
                 config.Entity<MappingTestEntityFluentApi>()
-                    .Property(a => a.Name_)
-                    .HasColumnName("Name");
+                    .Property(a => a.Value_)
+                    .HasColumnName("Value");
 
                 config.Entity<MappingTestEntityFluentApi>()
                     .Property(a => a.NotMapped)

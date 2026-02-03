@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -67,20 +68,50 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     }
 
     [Theory]
-    [InlineData(false, 10)]
-    [InlineData(true, 10)]
-    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
-    // to test that as well.
-    [InlineData(false, 30)]
-    [InlineData(true, 30)]
-    public async Task DeleteEntities_Mapping_Attributes_ShouldUseAttributesMapping(
-        Boolean useAsyncApi,
-        Int32 numberOfEntities
-    )
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntities_ConcurrencyTokenMismatch_ShouldThrow(Boolean useAsyncApi)
     {
-        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(numberOfEntities);
-        var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();
-        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
+        var entitiesToDelete = this.CreateEntitiesInDb<MappingTestEntityAttributes>(5);
+
+        var failingEntity = entitiesToDelete[^1];
+        failingEntity.ConcurrencyToken_ = Generate.Single<Byte[]>();
+
+        (await Invoking(() => this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        entitiesToDelete,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
+                )
+                .Should().ThrowAsync<DbUpdateConcurrencyException>()
+                .WithMessage(
+                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                    "Data in the database may have been modified or deleted since entities were loaded. See " +
+                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                    "the entity that was involved in the operation."
+                ))
+            .And.Entity.Should().Be(failingEntity);
+
+        foreach (var entity in entitiesToDelete.Except([failingEntity]))
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
+
+        this.ExistsEntityInDb(failingEntity)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntities_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    {
+        var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(10);
+        var entitiesToDelete = entities.Take(5).ToList();
+        var entitiesToKeep = entities.Skip(5).ToList();
 
         await this.CallApi(
             useAsyncApi,
@@ -104,22 +135,15 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     }
 
     [Theory]
-    [InlineData(false, 10)]
-    [InlineData(true, 10)]
-    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
-    // to test that as well.
-    [InlineData(false, 30)]
-    [InlineData(true, 30)]
-    public async Task DeleteEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(
-        Boolean useAsyncApi,
-        Int32 numberOfEntities
-    )
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
     {
         MappingTestEntityFluentApi.Configure();
 
-        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>(numberOfEntities);
-        var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();
-        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
+        var entities = this.CreateEntitiesInDb<MappingTestEntityFluentApi>(10);
+        var entitiesToDelete = entities.Take(5).ToList();
+        var entitiesToKeep = entities.Skip(5).ToList();
 
         await this.CallApi(
             useAsyncApi,
@@ -165,20 +189,13 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     }
 
     [Theory]
-    [InlineData(false, 10)]
-    [InlineData(true, 10)]
-    // Some database adapters (like the SQL Server one) use batch deletion for more than 10 entities, so we need
-    // to test that as well.
-    [InlineData(false, 30)]
-    [InlineData(true, 30)]
-    public async Task DeleteEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(
-        Boolean useAsyncApi,
-        Int32 numberOfEntities
-    )
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
     {
-        var entities = this.CreateEntitiesInDb<MappingTestEntity>(numberOfEntities);
-        var entitiesToDelete = entities.Take(numberOfEntities / 2).ToList();
-        var entitiesToKeep = entities.Skip(numberOfEntities / 2).ToList();
+        var entities = this.CreateEntitiesInDb<MappingTestEntity>(10);
+        var entitiesToDelete = entities.Take(5).ToList();
+        var entitiesToKeep = entities.Skip(5).ToList();
 
         await this.CallApi(
             useAsyncApi,
@@ -204,6 +221,43 @@ public abstract class EntityManipulator_DeleteEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DeleteEntities_RowVersionMismatch_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entitiesToDelete = this.CreateEntitiesInDb<MappingTestEntityAttributes>(5);
+
+        var failingEntity = entitiesToDelete[^1];
+        failingEntity.RowVersion_ = Generate.Single<Byte[]>();
+
+        (await Invoking(() => this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        entitiesToDelete,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
+                )
+                .Should().ThrowAsync<DbUpdateConcurrencyException>()
+                .WithMessage(
+                    "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                    "Data in the database may have been modified or deleted since entities were loaded. See " +
+                    $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                    "the entity that was involved in the operation."
+                ))
+            .And.Entity.Should().Be(failingEntity);
+
+        foreach (var entity in entitiesToDelete.Except([failingEntity]))
+        {
+            this.ExistsEntityInDb(entity)
+                .Should().BeFalse();
+        }
+
+        this.ExistsEntityInDb(failingEntity)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DeleteEntities_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entitiesToDelete = this.CreateEntitiesInDb<Entity>();
@@ -220,7 +274,7 @@ public abstract class EntityManipulator_DeleteEntitiesTests
         (await this.CallApi(
                 useAsyncApi,
                 this.Connection,
-                entitiesToDelete,
+                Array.Empty<Entity>(),
                 null,
                 TestContext.Current.CancellationToken
             ))

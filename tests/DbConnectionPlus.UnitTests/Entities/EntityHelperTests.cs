@@ -216,7 +216,7 @@ public class EntityHelperTests : UnitTestsBase
         var nameProperty = metadata.AllPropertiesByPropertyName["Name_"];
 
         nameProperty.ColumnName
-            .Should().Be("Name");
+            .Should().Be("Value");
 
         var notMappedProperty = metadata.AllPropertiesByPropertyName["NotMapped"];
 

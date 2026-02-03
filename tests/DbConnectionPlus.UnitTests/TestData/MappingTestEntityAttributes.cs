@@ -25,8 +25,8 @@ public record MappingTestEntityAttributes
     [Column("Key2")]
     public Int64 Key2_ { get; set; }
 
-    [Column("Name")]
-    public String Name_ { get; set; }
+    [Column("Value")]
+    public Int32 Value_ { get; set; }
 
     [NotMapped]
     public String? NotMapped { get; set; }
