@@ -95,7 +95,8 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND
+                        {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -309,7 +310,8 @@ public abstract class EntityManipulator_UpdateEntityTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(updatedEntity.Key1_)} AND
+                        {Q("Key2")} = {Parameter(updatedEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))

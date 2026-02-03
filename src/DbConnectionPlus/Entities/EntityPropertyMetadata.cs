@@ -13,7 +13,9 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <param name="CanWrite">Determines whether the property can be written to.</param>
 /// <param name="ColumnName">The name of the column to which the property is mapped.</param>
 /// <param name="IsComputed">Determines whether the property is a computed property.</param>
-/// <param name="IsConcurrencyToken">Determines whether the property participates in optimistic concurrency checks.</param>
+/// <param name="IsConcurrencyToken">
+/// Determines whether the property participates in optimistic concurrency checks.
+/// </param>
 /// <param name="IsIdentity">Determines whether the property is an identity property.</param>
 /// <param name="IsIgnored">Determines whether the property is ignored and not mapped to a database column.</param>
 /// <param name="IsKey">Determines whether the property is a key property.</param>

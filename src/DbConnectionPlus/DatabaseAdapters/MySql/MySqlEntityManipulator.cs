@@ -33,16 +33,51 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+
         var totalNumberOfAffectedRows = 0;
 
-        foreach (var entity in entities)
+        using (command)
+        using (cancellationTokenRegistration)
         {
-            if (entity is null)
+            try
             {
-                continue;
-            }
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
 
-            totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
+                }
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
         }
 
         return totalNumberOfAffectedRows;
@@ -59,19 +94,52 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entitiesList = entities.ToList();
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         var totalNumberOfAffectedRows = 0;
 
-        foreach (var entity in entitiesList)
+        using (command)
+        using (cancellationTokenRegistration)
         {
-            if (entity is null)
+            try
             {
-                continue;
-            }
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
 
-            totalNumberOfAffectedRows += await this
-                .DeleteEntityAsync(connection, entity, transaction, cancellationToken).ConfigureAwait(false);
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    var numberOfAffectedRows =
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
+                }
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
         }
 
         return totalNumberOfAffectedRows;

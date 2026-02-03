@@ -100,7 +100,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                     $"""
                      SELECT *
                      FROM   {Q("MappingTestEntity")}
-                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND {Q("Key2")} = {Parameter(entity.Key2_)}
+                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
+                            {Q("Key2")} = {Parameter(entity.Key2_)}
                      """,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
@@ -111,7 +112,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND {Q("Key2")} = {Parameter(failingEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
+                        {Q("Key2")} = {Parameter(failingEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
@@ -349,7 +351,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                     $"""
                      SELECT *
                      FROM   {Q("MappingTestEntity")}
-                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND {Q("Key2")} = {Parameter(entity.Key2_)}
+                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
+                            {Q("Key2")} = {Parameter(entity.Key2_)}
                      """,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
@@ -360,7 +363,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                 $"""
                  SELECT *
                  FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND {Q("Key2")} = {Parameter(failingEntity.Key2_)}
+                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
+                        {Q("Key2")} = {Parameter(failingEntity.Key2_)}
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
