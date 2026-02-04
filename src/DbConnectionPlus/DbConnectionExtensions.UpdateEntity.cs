@@ -2,10 +2,9 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus;
-
-// TODO: Update documentation regarding concurrency handling.
 
 /// <summary>
 /// Provides extension members for the type <see cref="DbConnection" />.
@@ -37,6 +36,11 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
@@ -141,6 +145,11 @@ public static partial class DbConnectionExtensions
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.

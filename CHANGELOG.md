@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
 
-TODO: Update for concurrency token handling.
+TODO: Update date
+## [1.2.0] - 2026-02-XX
+
+### Added
+- Support for Optimistic Concurrency Support via Concurrency Tokens (Fixes [issue #5](https://github.com/rent-a-developer/DbConnectionPlus/issues/5))
 
 ## [1.1.0] - 2026-02-01
 

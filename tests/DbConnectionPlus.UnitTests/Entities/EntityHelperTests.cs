@@ -385,7 +385,7 @@ public class EntityHelperTests : UnitTestsBase
         key2Property.IsKey
             .Should().BeTrue();
 
-        var nameProperty = metadata.AllPropertiesByPropertyName["Name_"];
+        var nameProperty = metadata.AllPropertiesByPropertyName["Value_"];
 
         nameProperty.ColumnName
             .Should().Be("Value");

@@ -157,6 +157,8 @@ namespace RentADeveloper.DbConnectionPlus
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static void ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(RentADeveloper.DbConnectionPlus.DatabaseAdapters.IDatabaseAdapter databaseAdapter) { }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
+        public static void ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(int expectedNumberOfAffectedRows, int actualNumberOfAffectedRows, object entity) { }
+        [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static void ThrowEntityTypeHasNoKeyPropertyException(System.Type entityType) { }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn]
         public static T ThrowInvalidEnumSerializationModeException<T>(RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) { }
@@ -241,6 +243,17 @@ namespace RentADeveloper.DbConnectionPlus.Entities
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> RowVersionProperties { get; init; }
         public string TableName { get; init; }
         public System.Collections.Generic.IReadOnlyList<RentADeveloper.DbConnectionPlus.Entities.EntityPropertyMetadata> UpdateProperties { get; init; }
+    }
+}
+namespace RentADeveloper.DbConnectionPlus.Exceptions
+{
+    public class DbUpdateConcurrencyException : System.Exception
+    {
+        public DbUpdateConcurrencyException() { }
+        public DbUpdateConcurrencyException(string message) { }
+        public DbUpdateConcurrencyException(string message, System.Exception innerException) { }
+        public DbUpdateConcurrencyException(string message, object entity) { }
+        public object? Entity { get; set; }
     }
 }
 namespace RentADeveloper.DbConnectionPlus.SqlStatements

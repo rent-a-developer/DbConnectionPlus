@@ -344,7 +344,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
@@ -434,7 +434,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
@@ -504,7 +504,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value);
 

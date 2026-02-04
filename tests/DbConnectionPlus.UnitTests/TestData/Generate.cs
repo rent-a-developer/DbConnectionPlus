@@ -337,10 +337,10 @@ public static class Generate
                 {
                     var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(propertyInfo.DeclaringType!);
 
-                    var propertyMetadata =
-                        entityTypeMetadata.AllPropertiesByPropertyName[propertyInfo.Name];
-
-                    if (propertyMetadata.IsIgnored)
+                    if (
+                        entityTypeMetadata.AllPropertiesByPropertyName.TryGetValue(propertyInfo.Name, out var propertyMetadata) &&
+                        propertyMetadata.IsIgnored
+                    )
                     {
                         return new OmitSpecimen();
                     }

@@ -2,10 +2,9 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
-
-// TODO: Update documentation regarding concurrency handling.
 
 /// <summary>
 /// Provides CRUD database operations for entities.
@@ -37,6 +36,11 @@ public interface IEntityManipulator
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
@@ -89,6 +93,11 @@ public interface IEntityManipulator
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
@@ -135,6 +144,11 @@ public interface IEntityManipulator
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
@@ -186,6 +200,11 @@ public interface IEntityManipulator
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
@@ -479,6 +498,11 @@ public interface IEntityManipulator
     ///         </item>
     ///     </list>
     /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
@@ -550,6 +574,11 @@ public interface IEntityManipulator
     ///         </item>
     ///     </list>
     /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
@@ -615,6 +644,11 @@ public interface IEntityManipulator
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
@@ -685,6 +719,11 @@ public interface IEntityManipulator
     /// </exception>
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
+    /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while updating an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by an update operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
