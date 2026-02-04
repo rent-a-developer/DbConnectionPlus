@@ -64,15 +64,15 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetName(0).Returns("Id");
+        dataReader.GetName(0).Returns("Value");
         dataReader.GetFieldType(0).Returns(typeof(BigInteger));
 
         Invoking(() =>
-                EntityMaterializerFactory.GetMaterializer<EntityWithUnsupportedPropertyType>(dataReader)
+                EntityMaterializerFactory.GetMaterializer<EntityWithObjectProperty>(dataReader)
             )
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the column 'Id' returned by the SQL statement is not " +
+                $"The data type {typeof(BigInteger)} of the column 'Value' returned by the SQL statement is not " +
                 "supported.*"
             );
     }
@@ -215,7 +215,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns((Int32)enumValue);
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
 
         var entity = materializer(dataReader);
 
@@ -236,14 +236,14 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns(999);
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding property of the type " +
-                $"{typeof(EntityWithEnumProperty)}. See inner exception for details.*"
+                $"{typeof(EntityWithEnumStoredAsInteger)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
@@ -266,7 +266,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(enumValue.ToString());
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsString>(dataReader);
 
         var entity = materializer(dataReader);
 
@@ -286,14 +286,14 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns("NonExistent");
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsString>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
                 $"the type {typeof(TestEnum)} of the corresponding property of the type " +
-                $"{typeof(EntityWithEnumProperty)}. See inner exception for details.*"
+                $"{typeof(EntityWithEnumStoredAsString)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
@@ -675,18 +675,18 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetName(0).Returns("Value");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetName(0).Returns("NullableBooleanValue");
+        dataReader.GetFieldType(0).Returns(typeof(Boolean));
         dataReader.IsDBNull(0).Returns(true);
-        dataReader.GetInt32(0).Throws(new SqlNullValueException());
+        dataReader.GetBoolean(0).Throws(new SqlNullValueException());
 
         var materializer = EntityMaterializerFactory
-            .GetMaterializer<EntityWithNullableProperty>(dataReader);
+            .GetMaterializer<Entity>(dataReader);
 
         var entity = Invoking(() => materializer(dataReader))
             .Should().NotThrow().Subject;
 
-        entity.Value
+        entity.NullableBooleanValue
             .Should().BeNull();
     }
 

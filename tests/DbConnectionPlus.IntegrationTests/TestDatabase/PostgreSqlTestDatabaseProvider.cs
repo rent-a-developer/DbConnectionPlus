@@ -156,6 +156,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Int16Value" smallint,
             "Int32Value" integer,
             "Int64Value" bigint,
+            "NullableBooleanValue" boolean NULL,
             "SingleValue" real,
             "StringValue" text,
             "TimeOnlyValue" time,
@@ -172,12 +173,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         (
             "Id" bigint NOT NULL PRIMARY KEY,
             "Enum" integer NULL
-        );
-
-        CREATE TABLE "EntityWithNullableProperty"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "Value" bigint NULL
         );
 
         CREATE TABLE "MappingTestEntity"
@@ -250,7 +245,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "Entity";
         TRUNCATE TABLE "EntityWithEnumStoredAsString";
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        TRUNCATE TABLE "EntityWithNullableProperty";
         TRUNCATE TABLE "MappingTestEntity";
         """;
 

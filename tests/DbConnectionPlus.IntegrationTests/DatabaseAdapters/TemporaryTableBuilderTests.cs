@@ -71,7 +71,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
+        var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -79,7 +79,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Objects",
             entities,
-            typeof(EntityWithEnumProperty),
+            typeof(EntityWithEnumStoredAsInteger),
             TestContext.Current.CancellationToken
         );
 
@@ -116,7 +116,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
+        var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -124,7 +124,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Objects",
             entities,
-            typeof(EntityWithEnumProperty),
+            typeof(EntityWithEnumStoredAsString),
             TestContext.Current.CancellationToken
         );
 
@@ -168,8 +168,8 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            Generate.Multiple<EntityWithEnumProperty>(),
-            typeof(EntityWithEnumProperty),
+            Generate.Multiple<EntityWithEnumStoredAsString>(),
+            typeof(EntityWithEnumStoredAsString),
             TestContext.Current.CancellationToken
         );
 

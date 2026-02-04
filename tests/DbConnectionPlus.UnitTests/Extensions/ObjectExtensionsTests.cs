@@ -109,9 +109,9 @@ public class ObjectExtensionsTests : UnitTestsBase
         new Object().ToDebugString()
             .Should().Be("'{}' (System.Object)");
 
-        new EntityWithEnumProperty { Enum = TestEnum.Value3 }.ToDebugString()
+        new EntityWithEnumStoredAsString { Enum = TestEnum.Value3, Id = 1}.ToDebugString()
             .Should().Be(
-                """'{"Enum":3}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.EntityWithEnumProperty)"""
+                """'{"Enum":3,"Id":1}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.EntityWithEnumStoredAsString)"""
             );
     }
 

@@ -755,16 +755,16 @@ public abstract class
     public async Task Query_EntityType_NullableEntityProperty_ColumnContainsNull_ShouldReturnNull(Boolean useAsyncApi)
     {
         await this.Connection.ExecuteNonQueryAsync(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("NullableBooleanValue")}) VALUES(1, NULL)"
         );
 
-        (await CallApi<EntityWithNullableProperty>(
+        (await CallApi<Entity>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT * FROM {Q("EntityWithNullableProperty")}",
+                $"SELECT {Q("Id")}, {Q("NullableBooleanValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo([new EntityWithNullableProperty { Id = 1, Value = null }]);
+            .Should().BeEquivalentTo([new Entity { Id = 1, NullableBooleanValue = null }]);
     }
 
     [Theory]
@@ -1149,16 +1149,16 @@ public abstract class
     )
     {
         await this.Connection.ExecuteNonQueryAsync(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("NullableBooleanValue")}) VALUES(1, NULL)"
         );
 
-        (await CallApi<ValueTuple<Int32?>>(
+        (await CallApi<ValueTuple<Boolean?>>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT {Q("Value")} FROM {Q("EntityWithNullableProperty")}",
+                $"SELECT {Q("NullableBooleanValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo([new ValueTuple<Int32?>(null)]);
+            .Should().BeEquivalentTo([new ValueTuple<Boolean?>(null)]);
     }
 
     [Theory]

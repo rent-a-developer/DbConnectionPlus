@@ -141,6 +141,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Int16Value INTEGER,
             Int32Value INTEGER,
             Int64Value INTEGER,
+            NullableBooleanValue INTEGER NULL,
             SingleValue REAL,
             StringValue TEXT,
             TimeOnlyValue TEXT,
@@ -163,12 +164,6 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         (
             Id INTEGER,
             Enum INTEGER
-        );
-
-        CREATE TABLE EntityWithNullableProperty
-        (
-            Id INTEGER NOT NULL,
-            Value INTEGER NULL
         );
 
         CREATE TABLE MappingTestEntity

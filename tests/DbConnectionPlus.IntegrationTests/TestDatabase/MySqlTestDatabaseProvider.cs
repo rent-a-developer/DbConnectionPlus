@@ -174,6 +174,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `Int16Value` SMALLINT,
             `Int32Value` INT,
             `Int64Value` BIGINT,
+            `NullableBooleanValue` TINYINT(1) NULL,
             `SingleValue` FLOAT,
             `StringValue` TEXT,
             `TimeOnlyValue` TIME,
@@ -192,13 +193,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         (
             `Id` BIGINT,
             `Enum` INT NULL
-        );
-        GO
-
-        CREATE TABLE `EntityWithNullableProperty`
-        (
-            `Id` BIGINT NOT NULL PRIMARY KEY,
-            `Value` BIGINT NULL
         );
         GO
 
@@ -279,9 +273,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithEnumStoredAsInteger`;
-        GO
-
-        TRUNCATE TABLE `EntityWithNullableProperty`;
         GO
 
         TRUNCATE TABLE `MappingTestEntity`;

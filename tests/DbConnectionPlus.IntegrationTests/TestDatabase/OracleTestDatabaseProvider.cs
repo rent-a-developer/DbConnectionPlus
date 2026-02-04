@@ -155,6 +155,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             "Int16Value" NUMBER(5),
             "Int32Value" NUMBER(10),
             "Int64Value" NUMBER(19),
+            "NullableBooleanValue" NUMBER(1) NULL,
             "SingleValue" BINARY_FLOAT,
             "StringValue" NVARCHAR2(2000),
             "TimeOnlyValue" INTERVAL DAY TO SECOND,
@@ -180,13 +181,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
             "Enum" INT NULL
-        );
-        GO
-
-        CREATE TABLE "EntityWithNullableProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "Value" NUMBER(19) NULL
         );
         GO
 
@@ -234,9 +228,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithEnumStoredAsInteger" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
-        GO
-
         DROP TABLE IF EXISTS "MappingTestEntity" PURGE;
         GO
 
@@ -256,9 +247,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        GO
-
-        TRUNCATE TABLE "EntityWithNullableProperty";
         GO
 
         TRUNCATE TABLE "MappingTestEntity";

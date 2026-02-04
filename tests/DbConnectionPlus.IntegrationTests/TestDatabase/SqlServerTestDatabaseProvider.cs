@@ -179,6 +179,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
             Int16Value SMALLINT,
             Int32Value INT,
             Int64Value BIGINT,
+            NullableBooleanValue BIT NULL,
             SingleValue REAL,
             StringValue NVARCHAR(MAX),
             TimeOnlyValue TIME,
@@ -204,13 +205,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         (
             Id BIGINT NOT NULL PRIMARY KEY,
             Enum INT NULL
-        );
-        GO
-
-        CREATE TABLE EntityWithNullableProperty
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            Value BIGINT NULL
         );
         GO
 
@@ -285,9 +279,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithEnumStoredAsInteger;
-        GO
-
-        TRUNCATE TABLE EntityWithNullableProperty;
         GO
 
         TRUNCATE TABLE MappingTestEntity;

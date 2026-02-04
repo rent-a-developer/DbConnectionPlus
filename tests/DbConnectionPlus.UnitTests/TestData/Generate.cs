@@ -338,7 +338,11 @@ public static class Generate
                     var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(propertyInfo.DeclaringType!);
 
                     if (
-                        entityTypeMetadata.AllPropertiesByPropertyName.TryGetValue(propertyInfo.Name, out var propertyMetadata) &&
+                        entityTypeMetadata.AllPropertiesByPropertyName.TryGetValue(
+                            propertyInfo.Name,
+                            out var propertyMetadata
+                        )
+                        &&
                         propertyMetadata.IsIgnored
                     )
                     {
