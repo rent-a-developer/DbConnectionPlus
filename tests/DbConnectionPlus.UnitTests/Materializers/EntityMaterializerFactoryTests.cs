@@ -33,15 +33,15 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetName(0).Returns("Char");
+        dataReader.GetName(0).Returns("CharValue");
         dataReader.GetFieldType(0).Returns(typeof(Guid));
 
-        Invoking(() => EntityMaterializerFactory.GetMaterializer<EntityWithCharProperty>(dataReader))
+        Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(Guid)} of the column 'Char' returned by the SQL statement is not compatible " +
-                $"with the property type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(EntityWithCharProperty)}.*"
+                $"The data type {typeof(Guid)} of the column 'CharValue' returned by the SQL statement is not " +
+                $"compatible with the property type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}.*"
             );
     }
 
@@ -76,7 +76,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
                 "supported.*"
             );
     }
-
 
     [Fact]
     public void Materializer_CompatiblePrivateConstructor_ShouldUsePrivateConstructor()
@@ -169,7 +168,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         var dataReader = Substitute.For<DbDataReader>();
 
         var id = Generate.Id();
-        var value = Generate.Id();
+        var value = Generate.Single<Int32>();
 
         dataReader.FieldCount.Returns(3);
 
@@ -178,10 +177,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(id);
 
-        dataReader.GetFieldType(1).Returns(typeof(Int64));
-        dataReader.GetName(1).Returns("Value");
+        dataReader.GetFieldType(1).Returns(typeof(Int32));
+        dataReader.GetName(1).Returns("Int32Value");
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetInt64(1).Returns(value);
+        dataReader.GetInt32(1).Returns(value);
 
         dataReader.GetFieldType(2).Returns(typeof(Int32));
         dataReader.GetName(2).Returns("NonExistent");
@@ -189,7 +188,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.GetInt64(2).Returns(Generate.SmallNumber());
 
         var materializer = Invoking(() =>
-                EntityMaterializerFactory.GetMaterializer<EntityWithNonNullableProperty>(dataReader)
+                EntityMaterializerFactory.GetMaterializer<Entity>(dataReader)
             )
             .Should().NotThrow().Subject;
 
@@ -198,7 +197,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         entity.Id
             .Should().Be(id);
 
-        entity.Value
+        entity.Int32Value
             .Should().Be(value);
     }
 
@@ -582,25 +581,25 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
     [Fact]
     public void
-        Materializer_NonNullableCharEntityProperty_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
+        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetName(0).Returns("Char");
+        dataReader.GetName(0).Returns("CharValue");
         dataReader.GetFieldType(0).Returns(typeof(String));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(String.Empty);
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithCharProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
+                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
@@ -613,9 +612,9 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
+                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
@@ -626,7 +625,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
     [Fact]
     public void
-        Materializer_NonNullableCharEntityProperty_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
+        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -634,16 +633,16 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var character = Generate.Single<Char>();
 
-        dataReader.GetName(0).Returns("Char");
+        dataReader.GetName(0).Returns("CharValue");
         dataReader.GetFieldType(0).Returns(typeof(String));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(character.ToString());
 
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithCharProperty>(dataReader);
+        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
 
         var entity = materializer(dataReader);
 
-        entity.Char
+        entity.CharValue
             .Should().Be(character);
     }
 
@@ -667,74 +666,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
                 "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding " +
                 $"property of the type {typeof(Entity)} is non-nullable.*"
             );
-    }
-
-    [Fact]
-    public void
-        Materializer_NullableCharEntityProperty_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(1);
-
-        dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(String.Empty);
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithNullableCharProperty>(dataReader);
-
-        Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char?)} of the corresponding property of the type " +
-                $"{typeof(EntityWithNullableCharProperty)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char?)}. " +
-                "The string must be exactly one character long."
-            );
-
-        dataReader.GetString(0).Returns("ab");
-
-        Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char?)} of the corresponding property of the type " +
-                $"{typeof(EntityWithNullableCharProperty)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char?)}. " +
-                "The string must be exactly one character long."
-            );
-    }
-
-    [Fact]
-    public void
-        Materializer_NullableCharEntityProperty_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(1);
-
-        var character = Generate.Single<Char>();
-
-        dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(character.ToString());
-
-        var materializer = EntityMaterializerFactory
-            .GetMaterializer<EntityWithNullableCharProperty>(dataReader);
-
-        var entity = materializer(dataReader);
-
-        entity.Char
-            .Should().Be(character);
     }
 
     [Fact]
@@ -775,28 +706,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         materializedEntityWithDifferentCasingProperties
             .Should().BeEquivalentTo(entityWithDifferentCasingProperties);
-    }
-
-    [Fact]
-    public void Materializer_ShouldMaterializeBinaryData()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(1);
-
-        var bytes = Generate.Single<Byte[]>();
-
-        dataReader.GetName(0).Returns("BinaryData");
-        dataReader.GetFieldType(0).Returns(typeof(Byte[]));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetValue(0).Returns(bytes);
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithBinaryProperty>(dataReader);
-
-        var entity = materializer(dataReader);
-
-        entity.BinaryData
-            .Should().BeEquivalentTo(bytes);
     }
 
     [Fact]

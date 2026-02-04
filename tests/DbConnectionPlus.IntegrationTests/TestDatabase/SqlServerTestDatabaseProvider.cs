@@ -166,6 +166,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE Entity
         (
             Id BIGINT NOT NULL PRIMARY KEY,
+            BytesValue VARBINARY(MAX),
             BooleanValue BIT,
             ByteValue TINYINT,
             CharValue CHAR(1),
@@ -203,13 +204,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         (
             Id BIGINT NOT NULL PRIMARY KEY,
             Enum INT NULL
-        );
-        GO
-
-        CREATE TABLE EntityWithNonNullableProperty
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            Value BIGINT NULL
         );
         GO
 
@@ -291,9 +285,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithEnumStoredAsInteger;
-        GO
-
-        TRUNCATE TABLE EntityWithNonNullableProperty;
         GO
 
         TRUNCATE TABLE EntityWithNullableProperty;

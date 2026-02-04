@@ -4,6 +4,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record EntityWithDifferentCasingProperties
 {
+    public Byte[] BytesVALUE { get; set; } = null!;
     public Boolean BooleanVALUE { get; set; }
     public Byte ByteVALUE { get; set; }
     public Char CharVALUE { get; set; }

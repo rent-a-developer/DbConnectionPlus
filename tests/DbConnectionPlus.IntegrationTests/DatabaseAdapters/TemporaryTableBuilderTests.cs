@@ -316,12 +316,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            Generate.Multiple<EntityWithStringProperty>(),
-            typeof(EntityWithStringProperty),
+            Generate.Multiple<Entity>(),
+            typeof(Entity),
             TestContext.Current.CancellationToken
         );
 
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "String");
+        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "StringValue");
 
         columnCollation
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);

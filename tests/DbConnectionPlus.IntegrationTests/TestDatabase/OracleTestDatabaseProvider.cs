@@ -142,6 +142,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE "Entity"
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
+            "BytesValue" RAW(2000),
             "BooleanValue" NUMBER(1),
             "ByteValue" NUMBER(3),
             "CharValue" CHAR(1),
@@ -179,13 +180,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
             "Enum" INT NULL
-        );
-        GO
-
-        CREATE TABLE "EntityWithNonNullableProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "Value" NUMBER(19) NULL
         );
         GO
 
@@ -240,9 +234,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithEnumStoredAsInteger" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithNonNullableProperty" PURGE;
-        GO
-
         DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
         GO
 
@@ -265,9 +256,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        GO
-
-        TRUNCATE TABLE "EntityWithNonNullableProperty";
         GO
 
         TRUNCATE TABLE "EntityWithNullableProperty";

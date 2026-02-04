@@ -128,6 +128,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE Entity
         (
             Id INTEGER,
+            BytesValue BLOB,
             BooleanValue INTEGER,
             ByteValue INTEGER,
             CharValue TEXT,
@@ -162,12 +163,6 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         (
             Id INTEGER,
             Enum INTEGER
-        );
-
-        CREATE TABLE EntityWithNonNullableProperty
-        (
-            Id INTEGER NOT NULL,
-            Value INTEGER NULL
         );
 
         CREATE TABLE EntityWithNullableProperty

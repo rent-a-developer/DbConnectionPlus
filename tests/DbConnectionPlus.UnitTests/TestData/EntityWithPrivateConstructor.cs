@@ -3,6 +3,7 @@
 public record EntityWithPrivateConstructor
 {
     private EntityWithPrivateConstructor(
+        Byte[] bytesValue,
         Boolean booleanValue,
         Byte byteValue,
         Char charValue,
@@ -22,6 +23,7 @@ public record EntityWithPrivateConstructor
         TimeSpan timeSpanValue
     )
     {
+        this.BytesValue = bytesValue;
         this.BooleanValue = booleanValue;
         this.ByteValue = byteValue;
         this.CharValue = charValue;
@@ -41,6 +43,7 @@ public record EntityWithPrivateConstructor
         this.TimeSpanValue = timeSpanValue;
     }
 
+    public Byte[] BytesValue { get; set; } = null!;
     public Boolean BooleanValue { get; }
     public Byte ByteValue { get; }
     public Char CharValue { get; }

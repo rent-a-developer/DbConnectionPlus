@@ -161,6 +161,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE `Entity`
         (
             `Id` BIGINT,
+            `BytesValue` BLOB,
             `BooleanValue` TINYINT(1),
             `ByteValue` TINYINT UNSIGNED,
             `CharValue` CHAR(1),
@@ -191,13 +192,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         (
             `Id` BIGINT,
             `Enum` INT NULL
-        );
-        GO
-
-        CREATE TABLE `EntityWithNonNullableProperty`
-        (
-            `Id` BIGINT NOT NULL PRIMARY KEY,
-            `Value` BIGINT NULL
         );
         GO
 
@@ -285,9 +279,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithEnumStoredAsInteger`;
-        GO
-
-        TRUNCATE TABLE `EntityWithNonNullableProperty`;
         GO
 
         TRUNCATE TABLE `EntityWithNullableProperty`;

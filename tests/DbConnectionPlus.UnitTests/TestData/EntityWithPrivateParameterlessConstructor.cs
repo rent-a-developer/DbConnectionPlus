@@ -6,6 +6,7 @@ public record EntityWithPrivateParameterlessConstructor
     {
     }
 
+    public Byte[] BytesValue { get; set; } = null!;
     public Boolean BooleanValue { get; set; }
     public Byte ByteValue { get; set; }
     public Char CharValue { get; set; }

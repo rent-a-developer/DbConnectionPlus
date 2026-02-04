@@ -143,6 +143,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE "Entity"
         (
             "Id" bigint NOT NULL PRIMARY KEY,
+            "BytesValue" bytea,
             "BooleanValue" boolean,
             "ByteValue" smallint,
             "CharValue" char(1),
@@ -171,12 +172,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         (
             "Id" bigint NOT NULL PRIMARY KEY,
             "Enum" integer NULL
-        );
-
-        CREATE TABLE "EntityWithNonNullableProperty"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "Value" bigint NULL
         );
 
         CREATE TABLE "EntityWithNullableProperty"
@@ -255,7 +250,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "Entity";
         TRUNCATE TABLE "EntityWithEnumStoredAsString";
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        TRUNCATE TABLE "EntityWithNonNullableProperty";
         TRUNCATE TABLE "EntityWithNullableProperty";
         TRUNCATE TABLE "MappingTestEntity";
         """;

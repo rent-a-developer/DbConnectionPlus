@@ -10,8 +10,26 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// </summary>
     /// <param name="entityTypeBuilder">The entity type builder this property builder belongs to.</param>
     /// <param name="propertyName">The name of the property being configured.</param>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="entityTypeBuilder"/> is <see langword="null"/>.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="propertyName"/> is <see langword="null"/>.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentException"><paramref name="propertyName"/> is whitespace.</exception>
     internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, String propertyName)
     {
+        ArgumentNullException.ThrowIfNull(entityTypeBuilder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+
         this.entityTypeBuilder = entityTypeBuilder;
         this.propertyName = propertyName;
     }
