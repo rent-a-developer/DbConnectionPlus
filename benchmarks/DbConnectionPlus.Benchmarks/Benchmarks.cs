@@ -235,6 +235,7 @@ public class Benchmarks
                                     TOP ({ExecuteReader_EntitiesPerOperation})
                                     [Id],
                                     [BooleanValue],
+                                    [BytesValue],
                                     [ByteValue],
                                     [CharValue],
                                     [DateOnlyValue],
@@ -265,6 +266,7 @@ public class Benchmarks
                 {
                     Id = dataReader.GetInt64(ordinal++),
                     BooleanValue = dataReader.GetBoolean(ordinal++),
+                    BytesValue = (Byte[])dataReader.GetValue(ordinal++),
                     ByteValue = dataReader.GetByte(ordinal++),
                     CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new(),
                     DateOnlyValue = DateOnly.FromDateTime((DateTime) dataReader.GetValue(ordinal++)),
@@ -305,6 +307,7 @@ public class Benchmarks
                      TOP ({ExecuteReader_EntitiesPerOperation})
                      [Id],
                      [BooleanValue],
+                     [BytesValue],
                      [ByteValue],
                      [CharValue],
                      [DateOnlyValue],
@@ -334,6 +337,7 @@ public class Benchmarks
                 {
                     Id = dataReader.GetInt64(ordinal++),
                     BooleanValue = dataReader.GetBoolean(ordinal++),
+                    BytesValue = (Byte[])dataReader.GetValue(ordinal++),
                     ByteValue = dataReader.GetByte(ordinal++),
                     CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new(),
                     DateOnlyValue = DateOnly.FromDateTime((DateTime) dataReader.GetValue(ordinal++)),
@@ -494,6 +498,7 @@ public class Benchmarks
                                   (
                                     [Id],
                                     [BooleanValue],
+                                    [BytesValue],
                                     [ByteValue],
                                     [CharValue],
                                     [DateOnlyValue],
@@ -514,6 +519,7 @@ public class Benchmarks
                                   (
                                     @Id,
                                     @BooleanValue,
+                                    @BytesValue,
                                     @ByteValue,
                                     @CharValue,
                                     @DateOnlyValue,
@@ -537,6 +543,9 @@ public class Benchmarks
 
             var booleanValueParameter = new SqlParameter();
             booleanValueParameter.ParameterName = "@BooleanValue";
+
+            var bytesValueParameter = new SqlParameter();
+            bytesValueParameter.ParameterName = "@BytesValue";
 
             var byteValueParameter = new SqlParameter();
             byteValueParameter.ParameterName = "@ByteValue";
@@ -585,6 +594,7 @@ public class Benchmarks
 
             command.Parameters.Add(idParameter);
             command.Parameters.Add(booleanValueParameter);
+            command.Parameters.Add(bytesValueParameter);
             command.Parameters.Add(byteValueParameter);
             command.Parameters.Add(charValueParameter);
             command.Parameters.Add(dateOnlyParameter);
@@ -605,6 +615,7 @@ public class Benchmarks
             {
                 idParameter.Value = entity.Id;
                 booleanValueParameter.Value = entity.BooleanValue;
+                bytesValueParameter.Value = entity.BytesValue;
                 byteValueParameter.Value = entity.ByteValue;
                 charValueParameter.Value = entity.CharValue;
                 dateOnlyParameter.Value = entity.DateOnlyValue;
@@ -668,6 +679,7 @@ public class Benchmarks
                                   (
                                     [Id],
                                     [BooleanValue],
+                                    [BytesValue],
                                     [ByteValue],
                                     [CharValue],
                                     [DateOnlyValue],
@@ -688,6 +700,7 @@ public class Benchmarks
                                   (
                                     @Id,
                                     @BooleanValue,
+                                    @BytesValue,
                                     @ByteValue,
                                     @CharValue,
                                     @DateOnlyValue,
@@ -707,6 +720,7 @@ public class Benchmarks
                                   """;
             command.Parameters.Add(new("@Id", entity.Id));
             command.Parameters.Add(new("@BooleanValue", entity.BooleanValue));
+            command.Parameters.Add(new("@BytesValue", entity.BytesValue));
             command.Parameters.Add(new("@ByteValue", entity.ByteValue));
             command.Parameters.Add(new("@CharValue", entity.CharValue));
             command.Parameters.Add(new("@DateOnlyValue", entity.DateOnlyValue));
@@ -849,6 +863,7 @@ public class Benchmarks
                      TOP ({Query_Dynamic_EntitiesPerOperation})
                      [Id],
                      [BooleanValue],
+                     [BytesValue],
                      [ByteValue],
                      [CharValue],
                      [DateOnlyValue],
@@ -878,6 +893,7 @@ public class Benchmarks
 
                 entity.Id = dataReader.GetInt64(ordinal++);
                 entity.BooleanValue = dataReader.GetBoolean(ordinal++);
+                entity.BytesValue = (Byte[])dataReader.GetValue(ordinal++);
                 entity.ByteValue = dataReader.GetByte(ordinal++);
                 entity.CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 
                     ? charBuffer[0] 
@@ -1011,6 +1027,7 @@ public class Benchmarks
                      TOP ({Query_Entities_EntitiesPerOperation})
                      [Id],
                      [BooleanValue],
+                     [BytesValue],
                      [ByteValue],
                      [CharValue],
                      [DateOnlyValue],
@@ -1040,6 +1057,7 @@ public class Benchmarks
                 {
                     Id = dataReader.GetInt64(ordinal++),
                     BooleanValue = dataReader.GetBoolean(ordinal++),
+                    BytesValue = (Byte[])dataReader.GetValue(ordinal++),
                     ByteValue = dataReader.GetByte(ordinal++),
                     CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new(),
                     DateOnlyValue = DateOnly.FromDateTime((DateTime) dataReader.GetValue(ordinal++)),
@@ -1202,6 +1220,7 @@ public class Benchmarks
                 $"""
                  CREATE TABLE [#Entities] (
                     [BooleanValue] BIT,
+                    [BytesValue] VARBINARY(MAX),
                     [ByteValue] TINYINT,
                     [CharValue] CHAR(1),
                     [DateOnlyValue] DATE,
@@ -1234,6 +1253,7 @@ public class Benchmarks
                 SELECT
                     [Id],
                     [BooleanValue],
+                    [BytesValue],
                     [ByteValue],
                     [CharValue],
                     [DateOnlyValue],
@@ -1264,6 +1284,7 @@ public class Benchmarks
                 {
                     Id = dataReader.GetInt64(ordinal++),
                     BooleanValue = dataReader.GetBoolean(ordinal++),
+                    BytesValue = (Byte[])dataReader.GetValue(ordinal++),
                     ByteValue = dataReader.GetByte(ordinal++),
                     CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new(),
                     DateOnlyValue = DateOnly.FromDateTime((DateTime)dataReader.GetValue(ordinal++)),
@@ -1427,6 +1448,7 @@ public class Benchmarks
             command.CommandText = """
                                   UPDATE    [Entity]
                                   SET       [BooleanValue] = @BooleanValue,
+                                            [BytesValue] = @BytesValue,
                                             [ByteValue] = @ByteValue,
                                             [CharValue] = @CharValue,
                                             [DateOnlyValue] = @DateOnlyValue,
@@ -1450,6 +1472,9 @@ public class Benchmarks
 
             var booleanValueParameter = new SqlParameter();
             booleanValueParameter.ParameterName = "@BooleanValue";
+
+            var bytesValueParameter = new SqlParameter();
+            bytesValueParameter.ParameterName = "@BytesValue";
 
             var byteValueParameter = new SqlParameter();
             byteValueParameter.ParameterName = "@ByteValue";
@@ -1498,6 +1523,7 @@ public class Benchmarks
 
             command.Parameters.Add(idParameter);
             command.Parameters.Add(booleanValueParameter);
+            command.Parameters.Add(bytesValueParameter);
             command.Parameters.Add(byteValueParameter);
             command.Parameters.Add(charValueParameter);
             command.Parameters.Add(dateOnlyValueParameter);
@@ -1518,6 +1544,7 @@ public class Benchmarks
             {
                 idParameter.Value = updatedEntity.Id;
                 booleanValueParameter.Value = updatedEntity.BooleanValue;
+                bytesValueParameter.Value = updatedEntity.BytesValue;
                 byteValueParameter.Value = updatedEntity.ByteValue;
                 charValueParameter.Value = updatedEntity.CharValue;
                 dateOnlyValueParameter.Value = updatedEntity.DateOnlyValue;
@@ -1584,6 +1611,7 @@ public class Benchmarks
             command.CommandText = """
                                   UPDATE    [Entity]
                                   SET       [BooleanValue] = @BooleanValue,
+                                            [BytesValue] = @BytesValue,
                                             [ByteValue] = @ByteValue,
                                             [CharValue] = @CharValue,
                                             [DateOnlyValue] = @DateOnlyValue,
@@ -1603,6 +1631,7 @@ public class Benchmarks
                                   """;
             command.Parameters.Add(new("@Id", updatedEntity.Id));
             command.Parameters.Add(new("@BooleanValue", updatedEntity.BooleanValue));
+            command.Parameters.Add(new("@BytesValue", updatedEntity.BytesValue));
             command.Parameters.Add(new("@ByteValue", updatedEntity.ByteValue));
             command.Parameters.Add(new("@CharValue", updatedEntity.CharValue));
             command.Parameters.Add(new("@DateOnlyValue", updatedEntity.DateOnlyValue));

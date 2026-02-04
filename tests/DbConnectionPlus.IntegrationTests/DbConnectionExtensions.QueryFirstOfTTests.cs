@@ -517,7 +517,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entitiesWithDifferentCasingProperties[0]);
+            .Should().BeEquivalentTo(entitiesWithDifferentCasingProperties[0]);
     }
 
     [Theory]
@@ -737,8 +737,8 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the corresponding " +
-                $"property of the type {typeof(Entity)} is non-nullable.*"
+                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the " +
+                $"corresponding property of the type {typeof(Entity)} is non-nullable.*"
             );
     }
 
@@ -1137,8 +1137,8 @@ public abstract class
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the corresponding " +
-                $"field of the value tuple type {typeof(ValueTuple<Boolean>)} is non-nullable.*"
+                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the " +
+                $"corresponding field of the value tuple type {typeof(ValueTuple<Boolean>)} is non-nullable.*"
             );
     }
 

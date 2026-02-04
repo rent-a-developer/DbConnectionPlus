@@ -14,17 +14,17 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 <paramref name="entityTypeBuilder"/> is <see langword="null"/>.
+    ///                 <paramref name="entityTypeBuilder" /> is <see langword="null" />.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <paramref name="propertyName"/> is <see langword="null"/>.
+    ///                 <paramref name="propertyName" /> is <see langword="null" />.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
-    /// <exception cref="ArgumentException"><paramref name="propertyName"/> is whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="propertyName" /> is whitespace.</exception>
     internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, String propertyName)
     {
         ArgumentNullException.ThrowIfNull(entityTypeBuilder);

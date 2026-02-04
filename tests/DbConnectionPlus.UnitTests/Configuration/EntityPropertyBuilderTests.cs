@@ -6,7 +6,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void ColumnName_Configured_ShouldReturnColumnName()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         builder.HasColumnName("Identifier");
 
         ((IEntityPropertyBuilder)builder).ColumnName
@@ -26,7 +26,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void Freeze_ShouldFreezeBuilder()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         ((IFreezable)builder).Freeze();
 
         Invoking(() => builder.HasColumnName("Identifier"))
@@ -62,7 +62,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void HasColumnName_ShouldSetColumnName()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         builder.HasColumnName("Identifier");
 
         ((IEntityPropertyBuilder)builder).ColumnName
@@ -155,7 +155,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void IsIdentity_OtherPropertyIsAlreadyMarked_ShouldThrow()
     {
         var entityTypeBuilder = new EntityTypeBuilder<Entity>();
-        
+
         entityTypeBuilder.Property(a => a.Id).IsIdentity();
 
         var propertyBuilder = new EntityPropertyBuilder(entityTypeBuilder, "NotId");
@@ -203,7 +203,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void IsIgnored_ShouldMarkPropertyAsIgnored()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         builder.IsIgnored();
 
         ((IEntityPropertyBuilder)builder).IsIgnored
@@ -234,7 +234,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void IsKey_ShouldMarkPropertyAsKey()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         builder.IsKey();
 
         ((IEntityPropertyBuilder)builder).IsKey
@@ -265,7 +265,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     public void IsRowVersion_ShouldMarkPropertyAsRowVersion()
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
-        
+
         builder.IsRowVersion();
 
         ((IEntityPropertyBuilder)builder).IsRowVersion

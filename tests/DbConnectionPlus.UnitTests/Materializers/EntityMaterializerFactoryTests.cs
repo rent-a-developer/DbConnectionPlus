@@ -78,6 +78,73 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     }
 
     [Fact]
+    public void
+        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("CharValue");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns(String.Empty);
+
+        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
+
+        Invoking(() => materializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
+                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}. See inner exception for details.*"
+            )
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
+                "character long."
+            );
+
+        dataReader.GetString(0).Returns("ab");
+
+        Invoking(() => materializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
+                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}. See inner exception for details.*"
+            )
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
+                "one character long."
+            );
+    }
+
+    [Fact]
+    public void
+        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        var character = Generate.Single<Char>();
+
+        dataReader.GetName(0).Returns("CharValue");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns(character.ToString());
+
+        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
+
+        var entity = materializer(dataReader);
+
+        entity.CharValue
+            .Should().Be(character);
+    }
+
+    [Fact]
     public void Materializer_CompatiblePrivateConstructor_ShouldUsePrivateConstructor()
     {
         var entities = Generate.Multiple<Entity>(1);
@@ -577,73 +644,6 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         materializedEntity
             .Should().BeEquivalentTo(entities[0]);
-    }
-
-    [Fact]
-    public void
-        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(1);
-
-        dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(String.Empty);
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
-
-        Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(Entity)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
-                "character long."
-            );
-
-        dataReader.GetString(0).Returns("ab");
-
-        Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
-            .WithMessage(
-                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(Entity)}. See inner exception for details.*"
-            )
-            .WithInnerException<InvalidCastException>()
-            .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
-                "one character long."
-            );
-    }
-
-    [Fact]
-    public void
-        Materializer_CharEntityProperty_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
-    {
-        var dataReader = Substitute.For<DbDataReader>();
-
-        dataReader.FieldCount.Returns(1);
-
-        var character = Generate.Single<Char>();
-
-        dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
-        dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(character.ToString());
-
-        var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
-
-        var entity = materializer(dataReader);
-
-        entity.CharValue
-            .Should().Be(character);
     }
 
     [Fact]
