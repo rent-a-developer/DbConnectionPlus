@@ -10,6 +10,9 @@ TODO: Update date
 ### Added
 - Support for Optimistic Concurrency Support via Concurrency Tokens (Fixes [issue #5](https://github.com/rent-a-developer/DbConnectionPlus/issues/5))
 
+### Changed
+- Switched benchmarks to SQLite for more stable results.
+
 ## [1.1.0] - 2026-02-01
 
 ### Added

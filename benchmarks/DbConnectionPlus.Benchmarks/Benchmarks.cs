@@ -61,7 +61,13 @@ public class Benchmarks
     private const Int32 DeleteEntities_EntitiesPerOperation = 250;
     private const Int32 DeleteEntities_OperationsPerInvoke = 20;
 
-    [IterationSetup(Targets = [nameof(DeleteEntities_DbCommand), nameof(DeleteEntities_DbConnectionPlus)])]
+    [IterationSetup(
+            Targets = [
+                nameof(DeleteEntities_DbCommand),
+                nameof(DeleteEntities_Dapper),
+                nameof(DeleteEntities_DbConnectionPlus)
+            ]
+    )]
     public void DeleteEntities_Setup() =>
         this.PrepareEntitiesInDb(DeleteEntities_OperationsPerInvoke * DeleteEntities_EntitiesPerOperation);
 
@@ -134,7 +140,13 @@ public class Benchmarks
     private const String DeleteEntity_Category = "DeleteEntity";
     private const Int32 DeleteEntity_OperationsPerInvoke = 8000;
 
-    [IterationSetup(Targets = [nameof(DeleteEntity_DbCommand), nameof(DeleteEntity_DbConnectionPlus)])]
+    [IterationSetup(
+            Targets = [
+                nameof(DeleteEntity_DbCommand),
+                nameof(DeleteEntity_Dapper),
+                nameof(DeleteEntity_DbConnectionPlus)
+            ]
+    )]
     public void DeleteEntity_Setup() =>
         this.PrepareEntitiesInDb(DeleteEntity_OperationsPerInvoke);
 
@@ -196,7 +208,13 @@ public class Benchmarks
     private const String ExecuteNonQuery_Category = "ExecuteNonQuery";
     private const Int32 ExecuteNonQuery_OperationsPerInvoke = 7700;
 
-    [IterationSetup(Targets = [nameof(ExecuteNonQuery_DbCommand), nameof(ExecuteNonQuery_DbConnectionPlus)])]
+    [IterationSetup(
+        Targets = [
+            nameof(ExecuteNonQuery_DbCommand),
+            nameof(ExecuteNonQuery_Dapper),
+            nameof(ExecuteNonQuery_DbConnectionPlus)
+        ]
+    )]
     public void ExecuteNonQuery_Setup() =>
         this.PrepareEntitiesInDb(ExecuteNonQuery_OperationsPerInvoke);
 
@@ -259,7 +277,13 @@ public class Benchmarks
     private const Int32 ExecuteReader_OperationsPerInvoke = 700;
     private const Int32 ExecuteReader_EntitiesPerOperation = 100;
 
-    [GlobalSetup(Targets = [nameof(ExecuteReader_DbCommand), nameof(ExecuteReader_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(ExecuteReader_DbCommand),
+            nameof(ExecuteReader_Dapper),
+            nameof(ExecuteReader_DbConnectionPlus)
+        ]
+    )]
     public void ExecuteReader_Setup()
     {
         this.Setup_Global();
@@ -279,28 +303,7 @@ public class Benchmarks
             entities.Clear();
 
             using var command = connection.CreateCommand();
-            command.CommandText = $"""
-                                  SELECT
-                                    Id,
-                                    BooleanValue,
-                                    BytesValue,
-                                    ByteValue,
-                                    CharValue,
-                                    DateTimeValue,
-                                    DecimalValue,
-                                    DoubleValue,
-                                    EnumValue,
-                                    GuidValue,
-                                    Int16Value,
-                                    Int32Value,
-                                    Int64Value,
-                                    SingleValue,
-                                    StringValue,
-                                    TimeSpanValue
-                                  FROM
-                                    Entity
-                                  LIMIT {ExecuteReader_EntitiesPerOperation}
-                                  """;
+            command.CommandText = ExecuteReaderSql;
 
             using var dataReader = command.ExecuteReader();
 
@@ -325,31 +328,7 @@ public class Benchmarks
         {
             entities.Clear();
 
-            using var dataReader = SqlMapper.ExecuteReader(
-                connection,
-                $"""
-                 SELECT
-                     Id,
-                     BooleanValue,
-                     BytesValue,
-                     ByteValue,
-                     CharValue,
-                     DateTimeValue,
-                     DecimalValue,
-                     DoubleValue,
-                     EnumValue,
-                     GuidValue,
-                     Int16Value,
-                     Int32Value,
-                     Int64Value,
-                     SingleValue,
-                     StringValue,
-                     TimeSpanValue
-                 FROM
-                     Entity
-                 LIMIT {ExecuteReader_EntitiesPerOperation}
-                 """
-            );
+            using var dataReader = SqlMapper.ExecuteReader(connection, ExecuteReaderSql);
 
             while (dataReader.Read())
             {
@@ -372,30 +351,7 @@ public class Benchmarks
         {
             entities.Clear();
 
-            using var dataReader = connection.ExecuteReader(
-                $"""
-                 SELECT
-                     Id,
-                     BooleanValue,
-                     BytesValue,
-                     ByteValue,
-                     CharValue,
-                     DateTimeValue,
-                     DecimalValue,
-                     DoubleValue,
-                     EnumValue,
-                     GuidValue,
-                     Int16Value,
-                     Int32Value,
-                     Int64Value,
-                     SingleValue,
-                     StringValue,
-                     TimeSpanValue
-                 FROM
-                     Entity
-                 LIMIT {ExecuteReader_EntitiesPerOperation}
-                 """
-            );
+            using var dataReader = connection.ExecuteReader(ExecuteReaderSql);
 
             while (dataReader.Read())
             {
@@ -411,7 +367,13 @@ public class Benchmarks
     private const String ExecuteScalar_Category = "ExecuteScalar";
     private const Int32 ExecuteScalar_OperationsPerInvoke = 5000;
 
-    [GlobalSetup(Targets = [nameof(ExecuteScalar_DbCommand), nameof(ExecuteScalar_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(ExecuteScalar_DbCommand),
+            nameof(ExecuteScalar_Dapper),
+            nameof(ExecuteScalar_DbConnectionPlus)
+        ]
+    )]
     public void ExecuteScalar_Setup()
     {
         this.Setup_Global();
@@ -488,7 +450,12 @@ public class Benchmarks
     private const String Exists_Category = "Exists";
     private const Int32 Exists_OperationsPerInvoke = 5000;
 
-    [GlobalSetup(Targets = [nameof(Exists_DbCommand), nameof(Exists_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Exists_DbCommand),
+            nameof(Exists_DbConnectionPlus)
+        ]
+    )]
     public void Exists_Setup()
     {
         this.Setup_Global();
@@ -543,7 +510,13 @@ public class Benchmarks
     private const Int32 InsertEntities_OperationsPerInvoke = 20;
     private const Int32 InsertEntities_EntitiesPerOperation = 140;
 
-    [GlobalSetup(Targets = [nameof(InsertEntities_DbCommand), nameof(InsertEntities_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(InsertEntities_DbCommand),
+            nameof(InsertEntities_Dapper),
+            nameof(InsertEntities_DbConnectionPlus)
+        ]
+    )]
     public void InsertEntities_Setup()
     {
         this.Setup_Global();
@@ -561,46 +534,7 @@ public class Benchmarks
             var entities = Generate.Multiple<BenchmarkEntity>(InsertEntities_EntitiesPerOperation);
 
             using var command = connection.CreateCommand();
-            command.CommandText = """
-                                  INSERT INTO Entity
-                                  (
-                                    Id,
-                                    BooleanValue,
-                                    BytesValue,
-                                    ByteValue,
-                                    CharValue,
-                                    DateTimeValue,
-                                    DecimalValue,
-                                    DoubleValue,
-                                    EnumValue,
-                                    GuidValue,
-                                    Int16Value,
-                                    Int32Value,
-                                    Int64Value,
-                                    SingleValue,
-                                    StringValue,
-                                    TimeSpanValue
-                                  )
-                                  VALUES
-                                  (
-                                    @Id,
-                                    @BooleanValue,
-                                    @BytesValue,
-                                    @ByteValue,
-                                    @CharValue,
-                                    @DateTimeValue,
-                                    @DecimalValue,
-                                    @DoubleValue,
-                                    @EnumValue,
-                                    @GuidValue,
-                                    @Int16Value,
-                                    @Int32Value,
-                                    @Int64Value,
-                                    @SingleValue,
-                                    @StringValue,
-                                    @TimeSpanValue
-                                  )
-                                  """;
+            command.CommandText = InsertEntitySql;
 
             var idParameter = new SqliteParameter();
             idParameter.ParameterName = "@Id";
@@ -724,7 +658,13 @@ public class Benchmarks
     private const String InsertEntity_Category = "InsertEntity";
     private const Int32 InsertEntity_OperationsPerInvoke = 2500;
 
-    [GlobalSetup(Targets = [nameof(InsertEntity_DbCommand), nameof(InsertEntity_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(InsertEntity_DbCommand),
+            nameof(InsertEntity_Dapper),
+            nameof(InsertEntity_DbConnectionPlus)
+        ]
+    )]
     public void InsertEntity_Setup()
     {
         this.Setup_Global();
@@ -742,46 +682,7 @@ public class Benchmarks
             var entity = Generate.Single<BenchmarkEntity>();
 
             using var command = connection.CreateCommand();
-            command.CommandText = """
-                                  INSERT INTO Entity
-                                  (
-                                    Id,
-                                    BooleanValue,
-                                    BytesValue,
-                                    ByteValue,
-                                    CharValue,
-                                    DateTimeValue,
-                                    DecimalValue,
-                                    DoubleValue,
-                                    EnumValue,
-                                    GuidValue,
-                                    Int16Value,
-                                    Int32Value,
-                                    Int64Value,
-                                    SingleValue,
-                                    StringValue,
-                                    TimeSpanValue
-                                  )
-                                  VALUES
-                                  (
-                                    @Id,
-                                    @BooleanValue,
-                                    @BytesValue,
-                                    @ByteValue,
-                                    @CharValue,
-                                    @DateTimeValue,
-                                    @DecimalValue,
-                                    @DoubleValue,
-                                    @EnumValue,
-                                    @GuidValue,
-                                    @Int16Value,
-                                    @Int32Value,
-                                    @Int64Value,
-                                    @SingleValue,
-                                    @StringValue,
-                                    @TimeSpanValue
-                                  )
-                                  """;
+            command.CommandText = InsertEntitySql;
             command.Parameters.Add(new("@Id", entity.Id));
             command.Parameters.Add(new("@BooleanValue", entity.BooleanValue ? 1 : 0));
             command.Parameters.Add(new("@BytesValue", entity.BytesValue));
@@ -836,7 +737,13 @@ public class Benchmarks
     private const String Parameter_Category = "Parameter";
     private const Int32 Parameter_OperationsPerInvoke = 35_000;
 
-    [GlobalSetup(Targets = [nameof(Parameter_DbCommand), nameof(Parameter_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Parameter_DbCommand),
+            nameof(Parameter_Dapper),
+            nameof(Parameter_DbConnectionPlus)
+        ]
+    )]
     public void Parameter_Setup()
     {
         this.Setup_Global();
@@ -953,7 +860,13 @@ public class Benchmarks
     private const Int32 Query_Dynamic_OperationsPerInvoke = 600;
     private const Int32 Query_Dynamic_EntitiesPerOperation = 100;
 
-    [GlobalSetup(Targets = [nameof(Query_Dynamic_DbCommand), nameof(Query_Dynamic_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_Dynamic_DbCommand),
+            nameof(Query_Dynamic_Dapper),
+            nameof(Query_Dynamic_DbConnectionPlus)
+        ]
+    )]
     public void Query_Dynamic_Setup()
     {
         this.Setup_Global();
@@ -1071,7 +984,13 @@ public class Benchmarks
     private const Int32 Query_Scalars_OperationsPerInvoke = 1500;
     private const Int32 Query_Scalars_EntitiesPerOperation = 500;
 
-    [GlobalSetup(Targets = [nameof(Query_Scalars_DbCommand), nameof(Query_Scalars_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_Scalars_DbCommand),
+            nameof(Query_Scalars_Dapper),
+            nameof(Query_Scalars_DbConnectionPlus)
+        ]
+    )]
     public void Query_Scalars_Setup()
     {
         this.Setup_Global();
@@ -1150,7 +1069,13 @@ public class Benchmarks
     private const Int32 Query_Entities_OperationsPerInvoke = 600;
     private const Int32 Query_Entities_EntitiesPerOperation = 100;
 
-    [GlobalSetup(Targets = [nameof(Query_Entities_DbCommand), nameof(Query_Entities_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_Entities_DbCommand),
+            nameof(Query_Entities_Dapper),
+            nameof(Query_Entities_DbConnectionPlus)
+        ]
+    )]
     public void Query_Entities_Setup()
     {
         this.Setup_Global();
@@ -1248,7 +1173,13 @@ public class Benchmarks
     private const Int32 Query_ValueTuples_OperationsPerInvoke = 1_000;
     private const Int32 Query_ValueTuples_EntitiesPerOperation = 150;
 
-    [GlobalSetup(Targets = [nameof(Query_ValueTuples_DbCommand), nameof(Query_ValueTuples_DbConnectionPlus)])]
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_ValueTuples_DbCommand),
+            nameof(Query_ValueTuples_Dapper),
+            nameof(Query_ValueTuples_DbConnectionPlus)
+        ]
+    )]
     public void Query_ValueTuples_Setup()
     {
         this.Setup_Global();
@@ -1349,10 +1280,12 @@ public class Benchmarks
     private const Int32 TemporaryTable_ComplexObjects_OperationsPerInvoke = 50;
     private const Int32 TemporaryTable_ComplexObjects_EntitiesPerOperation = 200;
 
-    [GlobalSetup(Targets = [
-        nameof(TemporaryTable_ComplexObjects_DbCommand),
-        nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
-    ])]
+    [GlobalSetup(
+        Targets = [
+            nameof(TemporaryTable_ComplexObjects_DbCommand),
+            nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
+        ]
+    )]
     public void TemporaryTable_ComplexObjects_Setup()
     {
         this.Setup_Global();
@@ -1588,10 +1521,12 @@ public class Benchmarks
     private const Int32 TemporaryTable_ScalarValues_OperationsPerInvoke = 30;
     private const Int32 TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
 
-    [GlobalSetup(Targets = [
-        nameof(TemporaryTable_ScalarValues_DbCommand),
-        nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
-    ])]
+    [GlobalSetup(
+        Targets = [
+            nameof(TemporaryTable_ScalarValues_DbCommand),
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
+        ]
+    )]
     public void TemporaryTable_ScalarValues_Setup()
     {
         this.Setup_Global();
@@ -1679,10 +1614,13 @@ public class Benchmarks
     private const Int32 UpdateEntities_OperationsPerInvoke = 25;
     private const Int32 UpdateEntities_EntitiesPerOperation = 100;
 
-    [GlobalSetup(Targets = [
-        nameof(UpdateEntities_DbCommand),
-        nameof(UpdateEntities_DbConnectionPlus)
-    ])]
+    [GlobalSetup(
+        Targets = [
+            nameof(UpdateEntities_DbCommand),
+            nameof(UpdateEntities_Dapper),
+            nameof(UpdateEntities_DbConnectionPlus)
+        ]
+    )]
     public void UpdateEntities_Setup()
     {
         this.Setup_Global();
@@ -1842,10 +1780,13 @@ public class Benchmarks
     private const String UpdateEntity_Category = "UpdateEntity";
     private const Int32 UpdateEntity_OperationsPerInvoke = 1_600;
 
-    [GlobalSetup(Targets = [
-        nameof(UpdateEntity_DbCommand),
-        nameof(UpdateEntity_DbConnectionPlus)
-    ])]
+    [GlobalSetup(
+        Targets = [
+            nameof(UpdateEntity_DbCommand),
+            nameof(UpdateEntity_Dapper),
+            nameof(UpdateEntity_DbConnectionPlus)
+        ]
+    )]
     public void UpdateEntity_Setup()
     {
         this.Setup_Global();
@@ -1965,4 +1906,68 @@ public class Benchmarks
     }
 
     private SqliteTestDatabaseProvider? testDatabaseProvider;
+
+    private const String InsertEntitySql = """
+                                           INSERT INTO Entity
+                                           (
+                                             Id,
+                                             BooleanValue,
+                                             BytesValue,
+                                             ByteValue,
+                                             CharValue,
+                                             DateTimeValue,
+                                             DecimalValue,
+                                             DoubleValue,
+                                             EnumValue,
+                                             GuidValue,
+                                             Int16Value,
+                                             Int32Value,
+                                             Int64Value,
+                                             SingleValue,
+                                             StringValue,
+                                             TimeSpanValue
+                                           )
+                                           VALUES
+                                           (
+                                             @Id,
+                                             @BooleanValue,
+                                             @BytesValue,
+                                             @ByteValue,
+                                             @CharValue,
+                                             @DateTimeValue,
+                                             @DecimalValue,
+                                             @DoubleValue,
+                                             @EnumValue,
+                                             @GuidValue,
+                                             @Int16Value,
+                                             @Int32Value,
+                                             @Int64Value,
+                                             @SingleValue,
+                                             @StringValue,
+                                             @TimeSpanValue
+                                           )
+                                           """;
+
+    private static readonly String ExecuteReaderSql = $"""
+                                                        SELECT
+                                                            Id,
+                                                            BooleanValue,
+                                                            BytesValue,
+                                                            ByteValue,
+                                                            CharValue,
+                                                            DateTimeValue,
+                                                            DecimalValue,
+                                                            DoubleValue,
+                                                            EnumValue,
+                                                            GuidValue,
+                                                            Int16Value,
+                                                            Int32Value,
+                                                            Int64Value,
+                                                            SingleValue,
+                                                            StringValue,
+                                                            TimeSpanValue
+                                                        FROM
+                                                            Entity
+                                                        LIMIT {ExecuteReader_EntitiesPerOperation}
+                                                        """;
 }

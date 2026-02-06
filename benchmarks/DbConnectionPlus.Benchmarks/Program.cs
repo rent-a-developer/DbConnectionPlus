@@ -8,10 +8,11 @@ public static class Program
 {
     public static void Main(String[] args)
     {
-        /*BenchmarkSwitcher
+        BenchmarkSwitcher
             .FromAssembly(typeof(Program).Assembly)
-            .Run(args);*/
+            .Run(args);
 
+        /*
         var benchmarks = new Benchmarks();
 
         benchmarks.Setup_Global();
@@ -166,5 +167,6 @@ public static class Program
 
         benchmarks.UpdateEntity_Setup();
         benchmarks.UpdateEntity_DbConnectionPlus();
+        */
     }
 }
