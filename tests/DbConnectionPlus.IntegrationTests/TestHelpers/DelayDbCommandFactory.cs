@@ -5,6 +5,7 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestHelpers;
 /// <summary>
 /// An implementation of <see cref="IDbCommandFactory" /> that supports delaying created commands.
 /// </summary>
+/// <param name="testDatabaseProvider">The provider for the current test database.</param>
 public class DelayDbCommandFactory(ITestDatabaseProvider testDatabaseProvider) : IDbCommandFactory
 {
     /// <summary>
