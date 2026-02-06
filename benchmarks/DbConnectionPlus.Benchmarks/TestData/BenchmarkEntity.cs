@@ -1,6 +1,6 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+﻿namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
-[Table("Entity")]
+[System.ComponentModel.DataAnnotations.Schema.Table("Entity")]
 public record BenchmarkEntity
 {
     public Boolean BooleanValue { get; set; }
@@ -13,7 +13,7 @@ public record BenchmarkEntity
     public TestEnum EnumValue { get; set; }
     public Guid GuidValue { get; set; }
 
-    [Key]
+    [System.ComponentModel.DataAnnotations.Key]
     public Int64 Id { get; set; }
 
     public Int16 Int16Value { get; set; }
