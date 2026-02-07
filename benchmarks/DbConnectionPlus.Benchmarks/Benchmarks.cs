@@ -64,11 +64,10 @@ public partial class Benchmarks
         CREATE TABLE Entity
         (
             Id INTEGER,
-            BytesValue BLOB,
             BooleanValue INTEGER,
+            BytesValue BLOB,
             ByteValue INTEGER,
             CharValue TEXT,
-            DateOnlyValue TEXT,
             DateTimeValue TEXT,
             DecimalValue TEXT,
             DoubleValue REAL,
@@ -77,10 +76,8 @@ public partial class Benchmarks
             Int16Value INTEGER,
             Int32Value INTEGER,
             Int64Value INTEGER,
-            NullableBooleanValue INTEGER NULL,
             SingleValue REAL,
             StringValue TEXT,
-            TimeOnlyValue TEXT,
             TimeSpanValue TEXT
         );
         """;

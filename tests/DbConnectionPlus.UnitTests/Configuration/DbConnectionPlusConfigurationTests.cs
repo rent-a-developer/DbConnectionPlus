@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
 using NSubstitute.DbConnection;
@@ -20,8 +20,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
-
         DbParameter? interceptedDbParameter = null;
 
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand =
@@ -42,8 +40,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
     public void EnumSerializationMode_Strings_ShouldSerializeEnumAsString()
     {
         var enumValue = Generate.Single<TestEnum>();
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
 
         DbParameter? interceptedDbParameter = null;
 
@@ -192,8 +188,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             );
 
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand = interceptor;
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
 
         var entities = Generate.Multiple<Entity>();
         var entityIds = Generate.Ids();

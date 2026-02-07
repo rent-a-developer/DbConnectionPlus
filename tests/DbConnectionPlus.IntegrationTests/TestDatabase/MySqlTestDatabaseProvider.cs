@@ -161,8 +161,8 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE `Entity`
         (
             `Id` BIGINT,
-            `BytesValue` BLOB,
             `BooleanValue` TINYINT(1),
+            `BytesValue` BLOB,
             `ByteValue` TINYINT UNSIGNED,
             `CharValue` CHAR(1),
             `DateOnlyValue` DATE,

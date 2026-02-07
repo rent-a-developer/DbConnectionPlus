@@ -240,7 +240,7 @@ public abstract class
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() =>
                 CallApi<Entity>(

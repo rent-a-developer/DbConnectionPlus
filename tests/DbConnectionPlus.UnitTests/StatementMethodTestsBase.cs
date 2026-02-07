@@ -22,8 +22,6 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
     {
         this.asyncTestMethod = asyncTestMethod;
         this.syncTestMethod = syncTestMethod;
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
     }
 
     [Fact]
@@ -40,11 +38,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            Arg.Any<DbTransaction?>(),
-            timeout
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32) timeout.TotalSeconds),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 
@@ -60,12 +56,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            Arg.Any<DbTransaction?>(),
-            Arg.Any<TimeSpan?>(),
-            CommandType.StoredProcedure
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 
@@ -83,10 +76,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            transaction
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 
@@ -104,11 +96,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            Arg.Any<DbTransaction?>(),
-            timeout
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32) timeout.TotalSeconds),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 
@@ -124,12 +114,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            Arg.Any<DbTransaction?>(),
-            Arg.Any<TimeSpan?>(),
-            CommandType.StoredProcedure
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 
@@ -147,10 +134,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
             TestContext.Current.CancellationToken
         );
 
-        this.MockCommandFactory.Received().CreateDbCommand(
-            this.MockDbConnection,
-            Arg.Any<String>(),
-            transaction
+        this.MockInterceptDbCommand.Received().Invoke(
+            Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
+            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
 

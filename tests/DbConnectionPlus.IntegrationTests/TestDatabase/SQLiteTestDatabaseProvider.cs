@@ -128,8 +128,8 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE Entity
         (
             Id INTEGER,
-            BytesValue BLOB,
             BooleanValue INTEGER,
+            BytesValue BLOB,
             ByteValue INTEGER,
             CharValue TEXT,
             DateOnlyValue TEXT,

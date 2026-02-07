@@ -35,7 +35,7 @@ public abstract class
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() => CallApi(useAsyncApi, this.Connection, "SELECT 1", cancellationToken: cancellationToken))
             .Should().ThrowAsync<OperationCanceledException>()

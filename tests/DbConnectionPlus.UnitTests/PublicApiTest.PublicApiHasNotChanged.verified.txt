@@ -78,13 +78,6 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters
         public System.Threading.Tasks.ValueTask DisposeAsync() { }
     }
 }
-namespace RentADeveloper.DbConnectionPlus.DbCommands
-{
-    public interface IDbCommandFactory
-    {
-        System.Data.Common.DbCommand CreateDbCommand(System.Data.Common.DbConnection connection, string commandText, System.Data.Common.DbTransaction? transaction = null, System.TimeSpan? commandTimeout = default, System.Data.CommandType commandType = 1);
-    }
-}
 namespace RentADeveloper.DbConnectionPlus
 {
     public static class DbConnectionExtensions

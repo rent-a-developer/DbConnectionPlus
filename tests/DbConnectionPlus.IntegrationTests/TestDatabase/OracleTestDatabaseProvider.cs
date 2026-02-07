@@ -142,8 +142,8 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE "Entity"
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "BytesValue" RAW(2000),
             "BooleanValue" NUMBER(1),
+            "BytesValue" RAW(2000),
             "ByteValue" NUMBER(3),
             "CharValue" CHAR(1),
             "DateOnlyValue" DATE,

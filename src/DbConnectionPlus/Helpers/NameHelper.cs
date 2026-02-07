@@ -21,42 +21,64 @@ internal static class NameHelper
     /// to the specified maximum length.
     /// The first character of the resulting name is converted to uppercase if it is a lowercase letter.
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static String CreateNameFromCallerArgumentExpression(ReadOnlySpan<Char> expression, Int32 maximumLength)
     {
-        if (expression.StartsWith("this.", StringComparison.OrdinalIgnoreCase))
+        // Remove "this.":
+        if (
+            expression.Length >= 5 &&
+            expression[0] == 't' && expression[1] == 'h' &&
+            expression[2] == 'i' && expression[3] == 's' &&
+            expression[4] == '.'
+        )
         {
             expression = expression[5..];
         }
 
-        if (expression.StartsWith("new", StringComparison.OrdinalIgnoreCase))
+        // Remove "new":
+        if (
+            expression.Length >= 3 &&
+            expression[0] == 'n' && expression[1] == 'e' && expression[2] == 'w'
+        )
         {
             expression = expression[3..];
         }
 
-        if (expression.StartsWith("Get", StringComparison.OrdinalIgnoreCase))
+        // Remove "Get":
+        if (
+            expression.Length >= 3 &&
+            expression[0] == 'G' && expression[1] == 'e' && expression[2] == 't'
+        )
         {
             expression = expression[3..];
         }
 
-        var buffer = expression.Length <= 512 ? stackalloc Char[expression.Length] : new Char[expression.Length];
+        var length = Math.Min(expression.Length, maximumLength);
+        
+        var buffer = length <= 512 ? stackalloc Char[length] : new Char[length];
+        
         var count = 0;
 
-        foreach (var character in expression)
+        for (var i = 0; i < expression.Length && count < maximumLength; i++)
         {
-            if (count >= maximumLength)
-            {
-                break;
-            }
+            var c = expression[i];
 
-            if (character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_')
+            // Only allow letters, digits, and underscores in the name.
+            if (
+                (UInt32)(c - 'A') <= 'Z' - 'A' || // Uppercase letters
+                (UInt32)(c - 'a') <= 'z' - 'a' || // Lowercase letters
+                (UInt32)(c - '0') <= '9' - '0' || // Digits
+                c == '_' // Underscores
+            )
             {
-                buffer[count++] = character;
+                buffer[count++] = c;
             }
         }
 
-        if (count > 0 && Char.IsLower(buffer[0]))
+        // Convert the first character to uppercase if it is a lowercase letter.
+        if (count > 0 && (UInt32)(buffer[0] - 'a') <= 'z' - 'a')
         {
-            buffer[0] = Char.ToUpper(buffer[0], CultureInfo.InvariantCulture);
+            buffer[0] = (Char)(buffer[0] - 32);
         }
 
         return new(buffer[..count]);

@@ -166,8 +166,8 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE Entity
         (
             Id BIGINT NOT NULL PRIMARY KEY,
-            BytesValue VARBINARY(MAX),
             BooleanValue BIT,
+            BytesValue VARBINARY(MAX),
             ByteValue TINYINT,
             CharValue CHAR(1),
             DateOnlyValue DATE,

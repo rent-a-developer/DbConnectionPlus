@@ -5,9 +5,11 @@
 
 using System.Data.Common;
 using System.Globalization;
+using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 using RentADeveloper.DbConnectionPlus.Entities;
+using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
@@ -26,7 +28,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
                 Thread.CurrentThread.CurrentCulture =
                     Thread.CurrentThread.CurrentUICulture = new("en-US");
 
-        DbCommandLogger.LogCommands = false;
+        this.logDbCommands = false;
 
         this.TestDatabaseProvider = new();
         this.TestDatabaseProvider.ResetDatabase();
@@ -37,10 +39,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
 
         currentTestDatabaseConnection.Value = this.Connection;
 
-        this.DbCommandFactory = new(this.TestDatabaseProvider);
-        DbConnectionExtensions.DbCommandFactory = this.DbCommandFactory;
-
-        DbCommandLogger.LogCommands = true;
+        this.logDbCommands = true;
 
         OracleDatabaseAdapter.AllowTemporaryTables = true;
 
@@ -48,10 +47,18 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         DbConnectionPlusConfiguration.Instance = new()
         {
             EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = DbCommandLogger.LogDbCommand
+            InterceptDbCommand = this.InterceptDbCommand
         };
         EntityHelper.ResetEntityTypeMetadataCache();
     }
+
+    /// <summary>
+    /// Determines whether the next database command created by DbConnectionPlus will be delayed by 2 seconds.
+    /// If set to <see langword="true" />, a 2 second delay will be injected into the next database command created by
+    /// DbConnectionPlus. Subsequent commands will not be delayed unless this property is set to <see langword="true" />
+    /// again.
+    /// </summary>
+    public Boolean DelayNextDbCommand { get; set; }
 
     /// <inheritdoc />
     public void Dispose()
@@ -134,7 +141,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <returns>The entities that were created and inserted.</returns>
     protected List<T> CreateEntitiesInDb<T>(Int32? numberOfEntities = null, DbTransaction? transaction = null)
         where T : class =>
-        ExecuteWithoutDbCommandLogging(() =>
+        this.ExecuteWithoutDbCommandLogging(() =>
             {
                 var entities = Generate.Multiple<T>(numberOfEntities);
 
@@ -164,7 +171,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     protected T CreateEntityInDb<T>(DbTransaction? transaction = null)
         where T : class
         =>
-            ExecuteWithoutDbCommandLogging(() =>
+            this.ExecuteWithoutDbCommandLogging(() =>
                 {
                     var entity = Generate.Single<T>();
 
@@ -218,7 +225,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
             keyProperties.Select(p => (p.PropertyName, p.PropertyGetter!(entity))).ToArray()!
         );
 
-        return ExecuteWithoutDbCommandLogging(() => this.Connection.Exists(
+        return this.ExecuteWithoutDbCommandLogging(() => this.Connection.Exists(
                 statement,
                 transaction,
                 cancellationToken: TestContext.Current.CancellationToken
@@ -236,7 +243,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// otherwise, <see langword="false" />.
     /// </returns>
     protected Boolean ExistsTemporaryTableInDb(String tableName, DbTransaction? transaction = null) =>
-        ExecuteWithoutDbCommandLogging(() =>
+        this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.ExistsTemporaryTable(
                 tableName,
                 this.Connection,
@@ -251,7 +258,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <param name="columnName">The name of the column of which to get the collation.</param>
     /// <returns>The collation of the specified column of the specified temporary table.</returns>
     protected String GetCollationOfTemporaryTableColumn(String temporaryTableName, String columnName) =>
-        ExecuteWithoutDbCommandLogging(() =>
+        this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.GetCollationOfTemporaryTableColumn(
                 temporaryTableName,
                 columnName,
@@ -269,13 +276,91 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         String temporaryTableName,
         String columnName
     ) =>
-        ExecuteWithoutDbCommandLogging(() =>
+        this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(
                 temporaryTableName,
                 columnName,
                 this.Connection
             )
         );
+
+    /// <summary>
+    /// Executes <paramref name="func" /> while disabling database command logging during the execution.
+    /// </summary>
+    /// <typeparam name="T">The type of the return value of <paramref name="func" />.</typeparam>
+    /// <param name="func">The function to execute.</param>
+    /// <returns>The return value of <paramref name="func" />.</returns>
+    private T ExecuteWithoutDbCommandLogging<T>(Func<T> func)
+    {
+        this.logDbCommands = false;
+        var result = func();
+        this.logDbCommands = true;
+        return result;
+    }
+
+    private void InterceptDbCommand(DbCommand command, IReadOnlyList<InterpolatedTemporaryTable> temporaryTables)
+    {
+        if (this.DelayNextDbCommand)
+        {
+            command.CommandText = this.TestDatabaseProvider.DelayTwoSecondsStatement + command.CommandText;
+            this.DelayNextDbCommand = false;
+        }
+
+        if (this.logDbCommands)
+        {
+            using var logMessageBuilder = new ValueStringBuilder(stackalloc Char[500]);
+
+            logMessageBuilder.AppendLine();
+            logMessageBuilder.AppendLine("-----------------");
+            logMessageBuilder.AppendLine("Executing Command");
+            logMessageBuilder.AppendLine("-----------------");
+            logMessageBuilder.AppendLine(command.CommandText.Trim());
+
+            if (command.Parameters.Count > 0)
+            {
+                logMessageBuilder.AppendLine();
+                logMessageBuilder.AppendLine("----------");
+                logMessageBuilder.AppendLine("Parameters");
+                logMessageBuilder.AppendLine("----------");
+
+                foreach (DbParameter parameter in command.Parameters)
+                {
+                    logMessageBuilder.Append(" - ");
+                    logMessageBuilder.Append(parameter.ParameterName);
+
+                    logMessageBuilder.Append(" (");
+                    logMessageBuilder.Append(parameter.Direction.ToString());
+                    logMessageBuilder.Append(")");
+
+                    logMessageBuilder.Append(" = ");
+                    logMessageBuilder.Append(parameter.Value.ToDebugString());
+                    logMessageBuilder.AppendLine();
+                }
+            }
+
+            if (temporaryTables.Count > 0)
+            {
+                logMessageBuilder.AppendLine();
+                logMessageBuilder.AppendLine("----------------");
+                logMessageBuilder.AppendLine("Temporary Tables");
+                logMessageBuilder.AppendLine("----------------");
+
+                foreach (var temporaryTable in temporaryTables)
+                {
+                    logMessageBuilder.AppendLine();
+                    logMessageBuilder.AppendLine(temporaryTable.Name);
+                    logMessageBuilder.AppendLine(new String('-', temporaryTable.Name.Length));
+
+                    foreach (var value in temporaryTable.Values)
+                    {
+                        logMessageBuilder.AppendLine(value.ToDebugString());
+                    }
+                }
+            }
+
+            Console.WriteLine(logMessageBuilder.ToString());
+        }
+    }
 
     /// <summary>
     /// Creates a <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.
@@ -288,19 +373,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         return cancellationTokenSource.Token;
     }
 
-    /// <summary>
-    /// Executes <paramref name="func" /> while disabling database command logging during the execution.
-    /// </summary>
-    /// <typeparam name="T">The type of the return value of <paramref name="func" />.</typeparam>
-    /// <param name="func">The function to execute.</param>
-    /// <returns>The return value of <paramref name="func" />.</returns>
-    private static T ExecuteWithoutDbCommandLogging<T>(Func<T> func)
-    {
-        DbCommandLogger.LogCommands = false;
-        var result = func();
-        DbCommandLogger.LogCommands = true;
-        return result;
-    }
+    private Boolean logDbCommands;
 
     /// <summary>
     /// The connection to the test database for the currently running integration test.
@@ -311,9 +384,4 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// The test database provider for the currently running integration test.
     /// </summary>
     private static readonly AsyncLocal<ITestDatabaseProvider> currentTestDatabaseProvider = new();
-
-    /// <summary>
-    /// The database command factory used for testing cancellation of SQL statements.
-    /// </summary>
-    protected readonly DelayDbCommandFactory DbCommandFactory;
 }

@@ -11,6 +11,7 @@ public partial class Benchmarks
         Targets =
         [
             nameof(TemporaryTable_ComplexObjects_DbCommand),
+            nameof(TemporaryTable_ComplexObjects_Dapper),
             nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
         ]
     )]
@@ -21,6 +22,7 @@ public partial class Benchmarks
         Targets =
         [
             nameof(TemporaryTable_ComplexObjects_DbCommand),
+            nameof(TemporaryTable_ComplexObjects_Dapper),
             nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
         ]
     )]

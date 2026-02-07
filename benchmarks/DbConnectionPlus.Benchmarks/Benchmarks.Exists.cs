@@ -11,6 +11,7 @@ public partial class Benchmarks
         Targets =
         [
             nameof(Exists_DbCommand),
+            nameof(Exists_Dapper),
             nameof(Exists_DbConnectionPlus)
         ]
     )]
@@ -21,6 +22,7 @@ public partial class Benchmarks
         Targets =
         [
             nameof(Exists_DbCommand),
+            nameof(Exists_Dapper),
             nameof(Exists_DbConnectionPlus)
         ]
     )]

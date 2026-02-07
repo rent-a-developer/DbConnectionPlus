@@ -42,7 +42,7 @@ public abstract class EntityManipulator_InsertEntityTests
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() =>
                 this.CallApi(useAsyncApi, this.Connection, entity, null, cancellationToken)

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
@@ -28,14 +27,6 @@ public static partial class DbConnectionExtensions
         // are mapped that were previously mapped via data annotation attributes or conventions.
         EntityHelper.ResetEntityTypeMetadataCache();
     }
-
-    /// <summary>
-    /// The factory to use to create instances of <see cref="DbCommand" />.
-    /// </summary>
-    /// <remarks>
-    /// This property is mainly used to test the cancellation of SQL statements in integration tests.
-    /// </remarks>
-    internal static IDbCommandFactory DbCommandFactory { get; set; } = new DefaultDbCommandFactory();
 
     /// <summary>
     /// A function to be called before executing a database command via DbConnectionPlus.

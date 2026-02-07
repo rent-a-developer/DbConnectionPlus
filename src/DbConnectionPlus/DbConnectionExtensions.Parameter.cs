@@ -80,7 +80,7 @@ public static partial class DbConnectionExtensions
                 MaximumParameterNameLength
             );
 
-            if (!String.IsNullOrWhiteSpace(nameFromCallerArgumentExpression))
+            if (nameFromCallerArgumentExpression.Length > 0)
             {
                 inferredParameterName = nameFromCallerArgumentExpression;
             }

@@ -143,8 +143,8 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         CREATE TABLE "Entity"
         (
             "Id" bigint NOT NULL PRIMARY KEY,
-            "BytesValue" bytea,
             "BooleanValue" boolean,
+            "BytesValue" bytea,
             "ByteValue" smallint,
             "CharValue" char(1),
             "DateOnlyValue" date,

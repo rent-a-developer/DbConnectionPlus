@@ -17,7 +17,10 @@ public class BenchmarksOrderer : IOrderer
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
     ) =>
         benchmarksCase
-            .OrderBy(a =>
+            .OrderByDescending(a =>
+                a.Descriptor.Baseline
+            )
+            .ThenBy(a =>
                 a.Descriptor.WorkloadMethod.DeclaringType!
                     .GetMethods()
                     .ToList()
@@ -47,10 +50,14 @@ public class BenchmarksOrderer : IOrderer
         ImmutableArray<BenchmarkCase> benchmarksCases,
         Summary summary
     ) =>
-        benchmarksCases.OrderBy(a =>
-            a.Descriptor.WorkloadMethod.DeclaringType!
-                .GetMethods()
-                .ToList()
-                .IndexOf(a.Descriptor.WorkloadMethod)
-        );
+        benchmarksCases
+            .OrderByDescending(a =>
+                a.Descriptor.Baseline
+            )
+            .ThenBy(a =>
+                a.Descriptor.WorkloadMethod.DeclaringType!
+                    .GetMethods()
+                    .ToList()
+                    .IndexOf(a.Descriptor.WorkloadMethod)
+            );
 }

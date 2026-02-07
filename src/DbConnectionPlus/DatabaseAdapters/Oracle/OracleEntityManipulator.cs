@@ -709,11 +709,10 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetDeleteEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetDeleteEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 
@@ -750,11 +749,10 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetInsertEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetInsertEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 
@@ -810,11 +808,10 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetUpdateEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetUpdateEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 

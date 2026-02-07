@@ -43,7 +43,7 @@ public abstract class EntityManipulator_DeleteEntityTests
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() => this.CallApi(
                     useAsyncApi,

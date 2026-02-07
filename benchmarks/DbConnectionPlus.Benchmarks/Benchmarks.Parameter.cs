@@ -33,7 +33,7 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_Dapper()
     {
-        var result = new List<Object>();
+        var result = new Int32[5];
 
         using var dataReader = SqlMapper.ExecuteReader(
             this.connection,
@@ -41,20 +41,20 @@ public partial class Benchmarks
             new
             {
                 P1 = 1,
-                P2 = "Test",
-                P3 = DateTime.UtcNow,
-                P4 = Guid.NewGuid(),
-                P5 = true
+                P2 = 2,
+                P3 = 3,
+                P4 = 4,
+                P5 = 5
             }
         );
 
         dataReader.Read();
 
-        result.Add((Int32)dataReader.GetInt64(0));
-        result.Add(dataReader.GetString(1));
-        result.Add(dataReader.GetDateTime(2));
-        result.Add(dataReader.GetGuid(3));
-        result.Add(dataReader.GetBoolean(4));
+        result[0] = dataReader.GetInt32(0);
+        result[1] = dataReader.GetInt32(1);
+        result[2] = dataReader.GetInt32(2);
+        result[3] = dataReader.GetInt32(3);
+        result[4] = dataReader.GetInt32(4);
 
         return result;
     }
@@ -63,25 +63,25 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_DbCommand()
     {
-        var result = new List<Object>();
+        var result = new Int32[5];
 
         using var command = this.connection.CreateCommand();
         command.CommandText = "SELECT @P1, @P2, @P3, @P4, @P5";
         command.Parameters.Add(new("@P1", 1));
-        command.Parameters.Add(new("@P2", "Test"));
-        command.Parameters.Add(new("@P3", DateTime.UtcNow));
-        command.Parameters.Add(new("@P4", Guid.NewGuid()));
-        command.Parameters.Add(new("@P5", true));
+        command.Parameters.Add(new("@P2", 2));
+        command.Parameters.Add(new("@P3", 3));
+        command.Parameters.Add(new("@P4", 4));
+        command.Parameters.Add(new("@P5", 5));
 
         using var dataReader = command.ExecuteReader();
 
         dataReader.Read();
 
-        result.Add((Int32)dataReader.GetInt64(0));
-        result.Add(dataReader.GetString(1));
-        result.Add(dataReader.GetDateTime(2));
-        result.Add(dataReader.GetGuid(3));
-        result.Add(dataReader.GetBoolean(4));
+        result[0] = dataReader.GetInt32(0);
+        result[1] = dataReader.GetInt32(1);
+        result[2] = dataReader.GetInt32(2);
+        result[3] = dataReader.GetInt32(3);
+        result[4] = dataReader.GetInt32(4);
 
         return result;
     }
@@ -90,25 +90,19 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_DbConnectionPlus()
     {
-        var result = new List<Object>();
+        var result = new Int32[5];
 
         using var dataReader = this.connection.ExecuteReader(
-            $"""
-             SELECT {Parameter(1)},
-                 {Parameter("Test")},
-                 {Parameter(DateTime.UtcNow)},
-                 {Parameter(Guid.NewGuid())},
-                 {Parameter(true)}
-             """
+            $"SELECT {Parameter(1)}, {Parameter(2)}, {Parameter(3)}, {Parameter(4)}, {Parameter(5)}"
         );
 
         dataReader.Read();
 
-        result.Add((Int32)dataReader.GetInt64(0));
-        result.Add(dataReader.GetString(1));
-        result.Add(dataReader.GetDateTime(2));
-        result.Add(dataReader.GetGuid(3));
-        result.Add(dataReader.GetBoolean(4));
+        result[0] = dataReader.GetInt32(0);
+        result[1] = dataReader.GetInt32(1);
+        result[2] = dataReader.GetInt32(2);
+        result[3] = dataReader.GetInt32(3);
+        result[4] = dataReader.GetInt32(4);
 
         return result;
     }
