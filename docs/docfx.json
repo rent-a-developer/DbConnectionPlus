@@ -4,9 +4,9 @@
     {
       "src": [
         {
-          "src": "../src/DbConnectionPlus/",
+          "src": "../src/DbConnectionPlus",
           "files": [
-            "**/*.csproj"
+            "**/bin/Release/net8.0/RentADeveloper.DbConnectionPlus.dll"
           ]
         }
       ],

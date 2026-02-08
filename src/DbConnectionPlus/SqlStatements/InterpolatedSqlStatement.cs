@@ -220,8 +220,8 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
         {
             switch (fragment)
             {
-                case Parameter parameter:
-                    parameters.Add(parameter.Name, parameter.Value);
+                case Literal literal:
+                    stringBuilder.Append(literal.Value);
                     break;
 
                 case InterpolatedParameter interpolatedParameter:
@@ -258,8 +258,8 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                     interpolatedTemporaryTables.Add(interpolatedTemporaryTable);
                     break;
 
-                case Literal literal:
-                    stringBuilder.Append(literal.Value);
+                case Parameter parameter:
+                    parameters.Add(parameter.Name, parameter.Value);
                     break;
             }
         }

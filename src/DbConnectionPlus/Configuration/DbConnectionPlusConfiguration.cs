@@ -66,13 +66,13 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public EnumSerializationMode EnumSerializationMode
     {
-        get => this.enumSerializationMode;
+        get;
         set
         {
             this.EnsureNotFrozen();
-            this.enumSerializationMode = value;
+            field = value;
         }
-    }
+    } = EnumSerializationMode.Strings;
 
     /// <summary>
     /// A function that can be used to intercept database commands executed via DbConnectionPlus.
@@ -84,11 +84,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public InterceptDbCommand? InterceptDbCommand
     {
-        get => this.interceptDbCommand;
+        get;
         set
         {
             this.EnsureNotFrozen();
-            this.interceptDbCommand = value;
+            field = value;
         }
     }
 
@@ -195,7 +195,5 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
 
     private readonly ConcurrentDictionary<Type, IDatabaseAdapter> databaseAdapters = [];
     private readonly ConcurrentDictionary<Type, IEntityTypeBuilder> entityTypeBuilders = new();
-    private EnumSerializationMode enumSerializationMode = EnumSerializationMode.Strings;
-    private InterceptDbCommand? interceptDbCommand;
     private Boolean isFrozen;
 }

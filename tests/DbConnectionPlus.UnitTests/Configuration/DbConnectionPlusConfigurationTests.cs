@@ -1,7 +1,6 @@
 using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
-using NSubstitute.DbConnection;
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;

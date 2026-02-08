@@ -14,10 +14,13 @@ public class BenchmarksConfig : ManualConfig
         this.Orderer = new BenchmarksOrderer();
         this.SummaryStyle = SummaryStyle.Default.WithRatioStyle(RatioStyle.Trend);
 
+        this.HideColumns("Job", "InvocationCount", "UnrollFactor");
+
         this.AddExporter(MarkdownExporter.Default);
 
         this.AddJob(
             Job.Default
+                .WithMaxIterationCount(20)
                 // Since DbConnectionPlus will mostly be used in server applications, we test with server GC.
                 .WithGcServer(true)
         );

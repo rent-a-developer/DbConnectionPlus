@@ -32,12 +32,7 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Entities_Category)]
     public List<BenchmarkEntity> Query_Entities_Dapper() =>
-        SqlMapper
-            .Query<BenchmarkEntity>(
-                this.connection,
-                $"SELECT * FROM Entity LIMIT {Query_Entities_EntitiesPerOperation}"
-            )
-            .ToList();
+        SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity").ToList();
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Entities_Category)]
@@ -45,30 +40,7 @@ public partial class Benchmarks
     {
         var entities = new List<BenchmarkEntity>();
 
-        using var dataReader = this.connection.ExecuteReader(
-            $"""
-             SELECT
-                 Id,
-                 BooleanValue,
-                 BytesValue,
-                 ByteValue,
-                 CharValue,
-                 DateTimeValue,
-                 DecimalValue,
-                 DoubleValue,
-                 EnumValue,
-                 GuidValue,
-                 Int16Value,
-                 Int32Value,
-                 Int64Value,
-                 SingleValue,
-                 StringValue,
-                 TimeSpanValue
-             FROM
-                 Entity
-             LIMIT {Query_Entities_EntitiesPerOperation}
-             """
-        );
+        using var dataReader = this.connection.ExecuteReader("SELECT * FROM Entity");
 
         while (dataReader.Read())
         {
@@ -81,9 +53,7 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Entities_Category)]
     public List<BenchmarkEntity> Query_Entities_DbConnectionPlus() =>
-        this.connection
-            .Query<BenchmarkEntity>($"SELECT * FROM Entity LIMIT {Query_Entities_EntitiesPerOperation}")
-            .ToList();
+        this.connection.Query<BenchmarkEntity>("SELECT * FROM Entity").ToList();
 
     private const String Query_Entities_Category = "Query_Entities";
     private const Int32 Query_Entities_EntitiesPerOperation = 100;

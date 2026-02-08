@@ -1216,65 +1216,81 @@ BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.7623/24H2/2024Update/HudsonValle
 12th Gen Intel Core i9-12900K 3.19GHz, 1 CPU, 24 logical and 16 physical cores
 .NET SDK 10.0.102
   [Host]     : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v3
-  Job-ADQEJE : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v3
+  Job-HTGOBL : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v3
+  Job-CYDVOR : .NET 8.0.23 (8.0.23, 8.0.2325.60607), X64 RyuJIT x86-64-v3
 
-MinIterationTime=100ms  OutlierMode=DontRemove  Server=True  
-InvocationCount=1  MaxIterationCount=20  UnrollFactor=1  
-WarmupCount=10  
+Server=True  MaxIterationCount=20  
 
 ```
-| Method                                         | Mean         | Error         | StdDev        | Median       | P90          | P95          | Ratio        | RatioSD | Allocated  | Alloc Ratio |
-|----------------------------------------------- |-------------:|--------------:|--------------:|-------------:|-------------:|-------------:|-------------:|--------:|-----------:|------------:|
-| **DeleteEntities_Manually**                        | **15,812.58 μs** |  **3,269.782 μs** |  **3,765.486 μs** | **15,096.66 μs** | **20,554.52 μs** | **23,427.08 μs** |     **baseline** |        **** |   **19.32 KB** |            **** |
-| DeleteEntities_DbConnectionPlus                | 26,344.72 μs |  7,115.300 μs |  8,193.990 μs | 24,756.73 μs | 30,942.44 μs | 44,994.48 μs | 1.75x slower |   0.65x |   19.69 KB |  1.02x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **DeleteEntity_Manually**                          |    **187.61 μs** |     **37.759 μs** |     **43.483 μs** |    **171.45 μs** |    **271.18 μs** |    **283.79 μs** |     **baseline** |        **** |    **1.29 KB** |            **** |
-| DeleteEntity_DbConnectionPlus                  |    231.79 μs |     77.386 μs |     89.118 μs |    207.50 μs |    360.04 μs |    411.14 μs | 1.29x slower |   0.54x |    1.62 KB |  1.25x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **ExecuteNonQuery_Manually**                       |    **227.38 μs** |     **44.374 μs** |     **51.101 μs** |    **216.12 μs** |    **283.89 μs** |    **298.40 μs** |     **baseline** |        **** |    **1.29 KB** |            **** |
-| ExecuteNonQuery_DbConnectionPlus               |    215.31 μs |     52.704 μs |     60.694 μs |    188.86 μs |    291.85 μs |    297.67 μs | 1.13x faster |   0.39x |       2 KB |  1.55x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **ExecuteReader_Manually**                         |    **249.64 μs** |     **45.099 μs** |     **51.936 μs** |    **239.96 μs** |    **319.38 μs** |    **352.49 μs** |     **baseline** |        **** |   **60.46 KB** |            **** |
-| ExecuteReader_DbConnectionPlus                 |    299.73 μs |     80.094 μs |     92.236 μs |    293.57 μs |    408.75 μs |    440.39 μs | 1.24x slower |   0.44x |   61.46 KB |  1.02x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **ExecuteScalar_Manually**                         |     **77.82 μs** |     **17.007 μs** |     **19.586 μs** |     **71.95 μs** |    **101.45 μs** |    **124.05 μs** |     **baseline** |        **** |    **2.12 KB** |            **** |
-| ExecuteScalar_DbConnectionPlus                 |     97.83 μs |      7.468 μs |      8.600 μs |     97.02 μs |    108.74 μs |    111.83 μs | 1.32x slower |   0.28x |    2.85 KB |  1.35x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Exists_Manually**                                |     **61.17 μs** |      **7.029 μs** |      **8.095 μs** |     **59.87 μs** |     **70.26 μs** |     **72.24 μs** |     **baseline** |        **** |    **1.96 KB** |            **** |
-| Exists_DbConnectionPlus                        |     80.57 μs |     17.980 μs |     20.706 μs |     74.52 μs |     93.71 μs |     97.91 μs | 1.34x slower |   0.38x |    2.67 KB |  1.36x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **InsertEntities_Manually**                        | **37,252.98 μs** | **16,064.582 μs** | **18,499.997 μs** | **31,081.23 μs** | **45,555.75 μs** | **88,905.67 μs** |     **baseline** |        **** |  **5726.4 KB** |            **** |
-| InsertEntities_DbConnectionPlus                | 28,925.35 μs |  5,155.758 μs |  5,937.379 μs | 28,238.99 μs | 34,674.36 μs | 40,572.46 μs | 1.34x faster |   0.70x | 5760.81 KB |  1.01x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **InsertEntity_Manually**                          |    **509.25 μs** |    **137.899 μs** |    **158.805 μs** |    **480.71 μs** |    **691.81 μs** |    **716.65 μs** |     **baseline** |        **** |   **61.42 KB** |            **** |
-| InsertEntity_DbConnectionPlus                  |    407.38 μs |     47.504 μs |     54.705 μs |    388.55 μs |    468.85 μs |    528.37 μs | 1.27x faster |   0.42x |   62.49 KB |  1.02x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Parameter_Manually**                             |    **104.04 μs** |     **38.319 μs** |     **44.128 μs** |     **79.73 μs** |    **177.14 μs** |    **190.65 μs** |     **baseline** |        **** |    **4.38 KB** |            **** |
-| Parameter_DbConnectionPlus                     |    110.40 μs |     43.333 μs |     49.902 μs |    106.35 μs |    155.04 μs |    163.53 μs | 1.21x slower |   0.66x |    6.31 KB |  1.44x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Query_Dynamic_Manually**                         |    **683.58 μs** |    **172.616 μs** |    **198.785 μs** |    **656.92 μs** |    **817.59 μs** |    **846.18 μs** |     **baseline** |        **** |  **215.27 KB** |            **** |
-| Query_Dynamic_DbConnectionPlus                 |    278.25 μs |     79.237 μs |     91.250 μs |    240.19 μs |    359.03 μs |    530.59 μs | 2.62x faster |   0.92x |  162.94 KB |  1.32x less |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Query_Scalars_Manually**                         |    **117.42 μs** |     **12.106 μs** |     **13.941 μs** |    **119.76 μs** |    **128.44 μs** |    **135.42 μs** |     **baseline** |        **** |    **1.07 KB** |            **** |
-| Query_Scalars_DbConnectionPlus                 |    116.26 μs |     23.145 μs |     26.653 μs |    118.95 μs |    146.82 μs |    155.42 μs | 1.00x slower |   0.26x |    6.24 KB |  5.85x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Query_Entities_Manually**                        |    **391.99 μs** |     **32.586 μs** |     **37.526 μs** |    **383.52 μs** |    **442.81 μs** |    **459.92 μs** |     **baseline** |        **** |   **61.92 KB** |            **** |
-| Query_Entities_DbConnectionPlus                |    497.88 μs |    169.969 μs |    195.737 μs |    495.08 μs |    768.03 μs |    773.60 μs | 1.28x slower |   0.51x |   72.26 KB |  1.17x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **Query_ValueTuples_Manually**                     |    **182.67 μs** |     **40.380 μs** |     **46.502 μs** |    **169.54 μs** |    **247.10 μs** |    **263.69 μs** |     **baseline** |        **** |   **16.73 KB** |            **** |
-| Query_ValueTuples_DbConnectionPlus             |    183.50 μs |     34.047 μs |     39.209 μs |    182.46 μs |    228.38 μs |    246.76 μs | 1.06x slower |   0.33x |   28.67 KB |  1.71x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **TemporaryTable_ComplexObjects_Manually**         |  **9,132.97 μs** |  **1,686.089 μs** |  **1,941.703 μs** |  **8,385.77 μs** | **11,329.97 μs** | **13,415.61 μs** |     **baseline** |        **** |     **360 KB** |            **** |
-| TemporaryTable_ComplexObjects_DbConnectionPlus |  9,045.06 μs |  1,076.753 μs |  1,239.991 μs |  8,996.34 μs | 10,270.86 μs | 10,485.35 μs | 1.03x slower |   0.23x |  373.24 KB |  1.04x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **TemporaryTable_ScalarValues_Manually**           |  **7,537.41 μs** |    **936.994 μs** |  **1,079.044 μs** |  **7,167.69 μs** |  **8,462.54 μs** |  **9,957.15 μs** |     **baseline** |        **** |  **176.13 KB** |            **** |
-| TemporaryTable_ScalarValues_DbConnectionPlus   |  5,852.64 μs |    836.596 μs |    963.425 μs |  5,843.33 μs |  7,027.70 μs |  7,382.98 μs | 1.32x faster |   0.29x |  303.31 KB |  1.72x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **UpdateEntities_Manually**                        | **40,746.85 μs** | **12,388.517 μs** | **14,266.635 μs** | **34,575.09 μs** | **59,380.97 μs** | **61,547.65 μs** |     **baseline** |        **** | **5708.12 KB** |            **** |
-| UpdateEntities_DbConnectionPlus                | 33,742.35 μs | 10,522.508 μs | 12,117.736 μs | 29,627.05 μs | 38,988.11 μs | 43,043.74 μs | 1.29x faster |   0.51x | 5743.07 KB |  1.01x more |
-|                                                |              |               |               |              |              |              |              |         |            |             |
-| **UpdateEntity_Manually**                          |    **368.24 μs** |     **53.938 μs** |     **62.115 μs** |    **346.09 μs** |    **470.61 μs** |    **487.82 μs** |     **baseline** |        **** |   **61.61 KB** |            **** |
-| UpdateEntity_DbConnectionPlus                  |    397.23 μs |     36.233 μs |     41.726 μs |    394.08 μs |    435.77 μs |    452.75 μs | 1.10x slower |   0.20x |   62.65 KB |  1.02x more |
+| Method                                         | Mean           | Error         | StdDev        | Ratio        | RatioSD | Gen0    | Allocated  | Alloc Ratio |
+|----------------------------------------------- |---------------:|--------------:|--------------:|-------------:|--------:|--------:|-----------:|------------:|
+| **DeleteEntities_DbCommand**                       | **223,628.340 μs** | **3,095.0138 μs** | **2,895.0778 μs** |     **baseline** |        **** |       **-** |  **1412000 B** |            **** |
+| DeleteEntities_Dapper                          | 218,830.227 μs | 3,503.0632 μs | 3,276.7675 μs | 1.02x faster |   0.02x |       - |  2710584 B |  1.92x more |
+| DeleteEntities_DbConnectionPlus                | 225,066.323 μs | 3,714.7493 μs | 3,474.7788 μs | 1.01x slower |   0.02x |       - |  2560160 B |  1.81x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **DeleteEntity_DbCommand**                         |      **73.778 μs** |     **0.6793 μs** |     **0.6022 μs** |     **baseline** |        **** |       **-** |      **768 B** |            **** |
+| DeleteEntity_Dapper                            |      75.820 μs |     1.1366 μs |     1.0632 μs | 1.03x slower |   0.02x |       - |     1704 B |  2.22x more |
+| DeleteEntity_DbConnectionPlus                  |      75.308 μs |     0.9598 μs |     0.8014 μs | 1.02x slower |   0.01x |       - |     1312 B |  1.71x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **ExecuteNonQuery_DbCommand**                      |      **88.582 μs** |    **19.6701 μs** |    **22.6521 μs** |     **baseline** |        **** |       **-** |      **768 B** |            **** |
+| ExecuteNonQuery_Dapper                         |      72.316 μs |     0.9734 μs |     0.9106 μs | 1.23x faster |   0.31x |       - |     1072 B |  1.40x more |
+| ExecuteNonQuery_DbConnectionPlus               |      71.852 μs |     0.9360 μs |     0.8755 μs | 1.23x faster |   0.31x |       - |     1704 B |  2.22x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **ExecuteReader_DbCommand**                        |     **650.394 μs** |     **5.8340 μs** |     **5.4571 μs** |     **baseline** |        **** |  **0.9766** |   **857945 B** |            **** |
+| ExecuteReader_Dapper                           |     649.543 μs |     6.7084 μs |     6.2750 μs | 1.00x faster |   0.01x |  0.9766 |   857417 B |  1.00x less |
+| ExecuteReader_DbConnectionPlus                 |     657.459 μs |     6.0157 μs |     5.6271 μs | 1.01x slower |   0.01x |       - |   859169 B |  1.00x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **ExecuteScalar_DbCommand**                        |       **2.090 μs** |     **0.0199 μs** |     **0.0186 μs** |     **baseline** |        **** |       **-** |     **1072 B** |            **** |
+| ExecuteScalar_Dapper                           |       2.410 μs |     0.0239 μs |     0.0199 μs | 1.15x slower |   0.01x |       - |     1464 B |  1.37x more |
+| ExecuteScalar_DbConnectionPlus                 |       2.779 μs |     0.0356 μs |     0.0333 μs | 1.33x slower |   0.02x |  0.0038 |     2128 B |  1.99x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **Exists_DbCommand**                               |       **1.824 μs** |     **0.0183 μs** |     **0.0172 μs** |     **baseline** |        **** |       **-** |     **1000 B** |            **** |
+| Exists_Dapper                                  |       2.102 μs |     0.0165 μs |     0.0138 μs | 1.15x slower |   0.01x |       - |     1336 B |  1.34x more |
+| Exists_DbConnectionPlus                        |       2.457 μs |     0.0416 μs |     0.0389 μs | 1.35x slower |   0.02x |  0.0038 |     1944 B |  1.94x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **InsertEntities_DbCommand**                       |   **5,739.618 μs** |    **29.8202 μs** |    **26.4348 μs** |     **baseline** |        **** | **15.6250** |  **8586537 B** |            **** |
+| InsertEntities_Dapper                          |   6,495.939 μs |    58.2679 μs |    54.5038 μs | 1.13x slower |   0.01x | 15.6250 |  9602018 B |  1.12x more |
+| InsertEntities_DbConnectionPlus                |   6,518.117 μs |    56.0311 μs |    52.4115 μs | 1.14x slower |   0.01x | 15.6250 |  9468391 B |  1.10x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **InsertEntity_DbCommand**                         |      **32.660 μs** |     **0.4831 μs** |     **0.4282 μs** |     **baseline** |        **** |       **-** |    **45267 B** |            **** |
+| InsertEntity_Dapper                            |      43.533 μs |     0.6281 μs |     0.5875 μs | 1.33x slower |   0.02x |       - |    60446 B |  1.34x more |
+| InsertEntity_DbConnectionPlus                  |      37.122 μs |     0.4297 μs |     0.3809 μs | 1.14x slower |   0.02x |       - |    50039 B |  1.11x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **Parameter_DbCommand**                            |       **2.672 μs** |     **0.0394 μs** |     **0.0350 μs** |     **baseline** |        **** |  **0.0038** |     **1864 B** |            **** |
+| Parameter_Dapper                               |       3.395 μs |     0.0375 μs |     0.0333 μs | 1.27x slower |   0.02x |       - |     2984 B |  1.60x more |
+| Parameter_DbConnectionPlus                     |       4.102 μs |     0.0802 μs |     0.0711 μs | 1.54x slower |   0.03x |  0.0076 |     4464 B |  2.39x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **Query_Dynamic_DbCommand**                        |     **793.944 μs** |     **6.6057 μs** |     **6.1790 μs** |     **baseline** |        **** |  **1.9531** |   **975378 B** |            **** |
+| Query_Dynamic_Dapper                           |     246.576 μs |     3.5537 μs |     3.3241 μs | 3.22x faster |   0.05x |       - |    91560 B | 10.65x less |
+| Query_Dynamic_DbConnectionPlus                 |     323.036 μs |     3.4959 μs |     3.2701 μs | 2.46x faster |   0.03x |       - |   149368 B |  6.53x less |
+|                                                |                |               |               |              |         |         |            |             |
+| **Query_Entities_DbCommand**                       |     **652.021 μs** |     **5.8298 μs** |     **5.1680 μs** |     **baseline** |        **** |  **0.9766** |   **858825 B** |            **** |
+| Query_Entities_Dapper                          |     287.951 μs |     4.6809 μs |     4.3785 μs | 2.26x faster |   0.04x |       - |    98056 B |  8.76x less |
+| Query_Entities_DbConnectionPlus                |     307.558 μs |     3.6913 μs |     3.4528 μs | 2.12x faster |   0.03x |       - |    99560 B |  8.63x less |
+|                                                |                |               |               |              |         |         |            |             |
+| **Query_Scalars_DbCommand**                        |      **80.531 μs** |     **0.6016 μs** |     **0.5333 μs** |     **baseline** |        **** |       **-** |    **17384 B** |            **** |
+| Query_Scalars_Dapper                           |     113.098 μs |     1.2660 μs |     1.1842 μs | 1.40x slower |   0.02x |       - |    37072 B |  2.13x more |
+| Query_Scalars_DbConnectionPlus                 |     111.844 μs |     1.3095 μs |     1.2249 μs | 1.39x slower |   0.02x |       - |    32464 B |  1.87x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **Query_ValueTuples_DbCommand**                    |     **120.574 μs** |     **1.3583 μs** |     **1.2041 μs** |     **baseline** |        **** |       **-** |    **49200 B** |            **** |
+| Query_ValueTuples_Dapper                       |     142.430 μs |     1.7777 μs |     1.6628 μs | 1.18x slower |   0.02x |       - |    73584 B |  1.50x more |
+| Query_ValueTuples_DbConnectionPlus             |     145.854 μs |     2.0993 μs |     1.9637 μs | 1.21x slower |   0.02x |       - |    58752 B |  1.19x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **TemporaryTable_ComplexObjects_DbCommand**        |   **9,029.496 μs** |   **109.0053 μs** |   **101.9636 μs** |     **baseline** |        **** |       **-** | **12899278 B** |            **** |
+| TemporaryTable_ComplexObjects_Dapper           |   8,120.420 μs |   106.3880 μs |    99.5154 μs | 1.11x faster |   0.02x | 15.6250 | 10968565 B |  1.18x less |
+| TemporaryTable_ComplexObjects_DbConnectionPlus |   9,348.308 μs |   104.4113 μs |    97.6664 μs | 1.04x slower |   0.02x | 15.6250 | 12074972 B |  1.07x less |
+|                                                |                |               |               |              |         |         |            |             |
+| **TemporaryTable_ScalarValues_DbCommand**          |   **5,080.907 μs** |   **101.4218 μs** |    **99.6098 μs** |     **baseline** |        **** |       **-** |  **1723968 B** |            **** |
+| TemporaryTable_ScalarValues_Dapper             |   5,165.566 μs |    48.4921 μs |    45.3595 μs | 1.02x slower |   0.02x |       - |  1764568 B |  1.02x more |
+| TemporaryTable_ScalarValues_DbConnectionPlus   |   6,644.777 μs |   125.8456 μs |   123.5973 μs | 1.31x slower |   0.03x |       - |  2806416 B |  1.63x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **UpdateEntities_DbCommand**                       |   **3,113.671 μs** |    **29.0143 μs** |    **27.1400 μs** |     **baseline** |        **** |       **-** |  **4325925 B** |            **** |
+| UpdateEntities_Dapper                          |   3,467.305 μs |    39.2788 μs |    36.7414 μs | 1.11x slower |   0.01x |  7.8125 |  4872590 B |  1.13x more |
+| UpdateEntities_DbConnectionPlus                |   3,602.616 μs |    46.1440 μs |    43.1631 μs | 1.16x slower |   0.02x |       - |  4766990 B |  1.10x more |
+|                                                |                |               |               |              |         |         |            |             |
+| **UpdateEntity_DbCommand**                         |      **35.296 μs** |     **0.2973 μs** |     **0.2636 μs** |     **baseline** |        **** |       **-** |    **45469 B** |            **** |
+| UpdateEntity_Dapper                            |      40.460 μs |     0.8024 μs |     0.7113 μs | 1.15x slower |   0.02x |       - |    54299 B |  1.19x more |
+| UpdateEntity_DbConnectionPlus                  |      38.464 μs |     0.3082 μs |     0.2883 μs | 1.09x slower |   0.01x |       - |    50254 B |  1.11x more |
 
 ### Running the benchmarks
 To run the benchmarks, run the following command:

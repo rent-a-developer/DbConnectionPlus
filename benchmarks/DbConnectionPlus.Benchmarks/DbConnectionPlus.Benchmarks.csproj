@@ -37,7 +37,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
-		<ProjectReference Include="..\..\tests\DbConnectionPlus.IntegrationTests\DbConnectionPlus.IntegrationTests.csproj" />
+		<ProjectReference Include="..\..\tests\DbConnectionPlus.UnitTests\DbConnectionPlus.UnitTests.csproj" />
 	</ItemGroup>
 
 </Project>

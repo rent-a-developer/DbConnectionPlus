@@ -1,4 +1,4 @@
-﻿#pragma warning disable NS1004
+﻿#pragma warning disable NS1004, NS1000
 
 using System.Globalization;
 using NSubstitute.ClearExtensions;

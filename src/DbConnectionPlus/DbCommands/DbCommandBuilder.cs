@@ -186,8 +186,9 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc Char[500]);
-        var parameterNames = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        using var codeBuilder = new ValueStringBuilder(stackalloc char[2048]);
+        var parameterNameOccurrences = new Dictionary<String, Int32>(StringComparer.OrdinalIgnoreCase);
+        var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
 
         var command = connection.CreateCommand();
 
@@ -199,68 +200,63 @@ internal static class DbCommandBuilder
             command.CommandTimeout = (Int32)commandTimeout.Value.TotalSeconds;
         }
 
+        var dbParameters = command.Parameters;
+
         foreach (var fragment in statement.Fragments)
         {
             switch (fragment)
             {
-                case Parameter parameter:
-                {
-                    var parameterValue = parameter.Value;
-
-                    if (parameterValue is Enum enumValue)
-                    {
-                        parameterValue = EnumSerializer.SerializeEnum(
-                            enumValue,
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        );
-                    }
-
-                    var dbParameter = command.CreateParameter();
-                    dbParameter.ParameterName = parameter.Name;
-                    databaseAdapter.BindParameterValue(dbParameter, parameterValue);
-                    command.Parameters.Add(dbParameter);
-
-                    parameterNames.Add(parameter.Name);
+                case Literal literal:
+                    codeBuilder.Append(literal.Value);
                     break;
-                }
 
                 case InterpolatedParameter interpolatedParameter:
                 {
                     var parameterName = interpolatedParameter.InferredName ??
-                                        "Parameter_" + (parameterNames.Count + 1);
+                                        "Parameter_" + (parameterNameOccurrences.Count + 1);
 
-                    if (parameterNames.Contains(parameterName))
+                    if (parameterNameOccurrences.TryGetValue(parameterName, out var count))
                     {
-                        var suffix = 2;
-                        String candidate;
-
-                        do
-                        {
-                            candidate = parameterName + suffix;
-                            suffix++;
-                        } while (parameterNames.Contains(candidate));
-
-                        parameterName = candidate;
+                        count++;
+                        parameterNameOccurrences[parameterName] = count;
+                        parameterName += count;
+                    }
+                    else
+                    {
+                        parameterNameOccurrences[parameterName] = 1;
                     }
 
                     var parameterValue = interpolatedParameter.Value;
 
                     if (parameterValue is Enum enumValue)
                     {
-                        parameterValue = EnumSerializer.SerializeEnum(
-                            enumValue,
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        );
+                        parameterValue = EnumSerializer.SerializeEnum(enumValue, enumSerializationMode);
                     }
 
                     var dbParameter = command.CreateParameter();
                     dbParameter.ParameterName = parameterName;
                     databaseAdapter.BindParameterValue(dbParameter, parameterValue);
-                    command.Parameters.Add(dbParameter);
-
-                    parameterNames.Add(parameterName);
+                    dbParameters.Add(dbParameter);
 
                     codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
+                    break;
+                }
+
+                case Parameter parameter:
+                {
+                    var parameterValue = parameter.Value;
+
+                    if (parameterValue is Enum enumValue)
+                    {
+                        parameterValue = EnumSerializer.SerializeEnum(enumValue, enumSerializationMode);
+                    }
+
+                    var dbParameter = command.CreateParameter();
+                    dbParameter.ParameterName = parameter.Name;
+                    databaseAdapter.BindParameterValue(dbParameter, parameterValue);
+                    dbParameters.Add(dbParameter);
+
+                    parameterNameOccurrences[parameter.Name] = 1;
                     break;
                 }
 
@@ -269,19 +265,12 @@ internal static class DbCommandBuilder
                         databaseAdapter.QuoteTemporaryTableName(interpolatedTemporaryTable.Name, connection)
                     );
                     break;
-
-                case Literal literal:
-                    codeBuilder.Append(literal.Value);
-                    break;
             }
         }
 
         command.CommandText = codeBuilder.ToString();
 
-        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
-            command,
-            cancellationToken
-        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         return (command, cancellationTokenRegistration);
     }

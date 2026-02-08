@@ -8,3 +8,4 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// </summary>
 /// <param name="Value">The literal string.</param>
 internal readonly record struct Literal(String Value) : IInterpolatedSqlStatementFragment;
+

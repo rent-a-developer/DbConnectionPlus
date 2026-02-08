@@ -49,26 +49,27 @@ public partial class Benchmarks
             var charBuffer = new Char[1];
 
             var ordinal = 0;
-            dynamic entity = new ExpandoObject();
+            var entity = new ExpandoObject();
+            IDictionary<String, Object?> dictionary = entity;
 
-            entity.Id = dataReader.GetInt64(ordinal++);
-            entity.BooleanValue = dataReader.GetInt64(ordinal++) == 1;
-            entity.BytesValue = (Byte[])dataReader.GetValue(ordinal++);
-            entity.ByteValue = dataReader.GetByte(ordinal++);
-            entity.CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
+            dictionary["Id"] = dataReader.GetInt64(ordinal++);
+            dictionary["BooleanValue"] = dataReader.GetInt64(ordinal++) == 1;
+            dictionary["BytesValue"] = (Byte[])dataReader.GetValue(ordinal++);
+            dictionary["ByteValue"] = dataReader.GetByte(ordinal++);
+            dictionary["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
                 ? charBuffer[0]
                 : throw new();
-            entity.DateTimeValue = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
-            entity.DecimalValue = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
-            entity.DoubleValue = dataReader.GetDouble(ordinal++);
-            entity.EnumValue = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++));
-            entity.GuidValue = Guid.Parse(dataReader.GetString(ordinal++));
-            entity.Int16Value = (Int16)dataReader.GetInt64(ordinal++);
-            entity.Int32Value = (Int32)dataReader.GetInt64(ordinal++);
-            entity.Int64Value = dataReader.GetInt64(ordinal++);
-            entity.SingleValue = dataReader.GetFloat(ordinal++);
-            entity.StringValue = dataReader.GetString(ordinal++);
-            entity.TimeSpanValue = TimeSpan.Parse(dataReader.GetString(ordinal), CultureInfo.InvariantCulture);
+            dictionary["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
+            dictionary["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
+            dictionary["DoubleValue"] = dataReader.GetDouble(ordinal++);
+            dictionary["EnumValue"] = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++));
+            dictionary["GuidValue"] = Guid.Parse(dataReader.GetString(ordinal++));
+            dictionary["Int16Value"] = (Int16)dataReader.GetInt64(ordinal++);
+            dictionary["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++);
+            dictionary["Int64Value"] = dataReader.GetInt64(ordinal++);
+            dictionary["SingleValue"] = dataReader.GetFloat(ordinal++);
+            dictionary["StringValue"] = dataReader.GetString(ordinal++);
+            dictionary["TimeSpanValue"] = TimeSpan.Parse(dataReader.GetString(ordinal), CultureInfo.InvariantCulture);
 
             entities.Add(entity);
         }

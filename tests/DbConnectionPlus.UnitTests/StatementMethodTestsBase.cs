@@ -1,4 +1,5 @@
-using NSubstitute.DbConnection;
+// ReSharper disable AccessToDisposedClosure
+
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
