@@ -1,39 +1,47 @@
+#pragma warning disable NS1001
+
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Readers;
 using RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
-public class DisposeSignalingDataReaderDecoratorTests : UnitTestsBase
+public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
 {
     /// <inheritdoc />
-    public DisposeSignalingDataReaderDecoratorTests()
+    public CommandDisposingDataReaderDecoratorTests()
     {
         this.decoratedReader = Substitute.For<DbDataReader>();
-        this.decorator = new(this.decoratedReader, this.MockDatabaseAdapter, CancellationToken.None);
+        this.commandDisposer = Substitute.For<DbCommandDisposer>(
+            Substitute.For<DbCommand>(),
+            Array.Empty<TemporaryTableDisposer>(),
+            default(CancellationTokenRegistration)
+        );
+        this.decorator = new(
+            this.decoratedReader,
+            this.MockDatabaseAdapter,
+            this.commandDisposer,
+            CancellationToken.None
+        );
     }
 
     [Fact]
-    public void Dispose_ShouldInvokeOnDisposingFunction()
+    public void Dispose_ShouldDisposeCommandDisposer()
     {
-        var onDisposingFunction = Substitute.For<Action>();
-        this.decorator.OnDisposing = onDisposingFunction;
-
         this.decorator.Dispose();
 
-        onDisposingFunction.Received()();
+        this.commandDisposer.Received().Dispose();
     }
 
     [Fact]
-    public async Task DisposeAsync_ShouldInvokeOnDisposingAsyncFunction()
+    public async Task DisposeAsync_ShouldDisposeCommandDisposer()
     {
-        var onDisposingAsyncFunction = Substitute.For<Func<ValueTask>>();
-        this.decorator.OnDisposingAsync = onDisposingAsyncFunction;
-
         await this.decorator.DisposeAsync();
 
-        await onDisposingAsyncFunction.Received()();
+        await this.commandDisposer.Received().DisposeAsync();
     }
 
     [Fact]
@@ -70,11 +78,11 @@ public class DisposeSignalingDataReaderDecoratorTests : UnitTestsBase
     {
         var exceptions = new HashSet<String>
         {
-            nameof(DisposeSignalingDataReaderDecorator.Dispose),
-            nameof(DisposeSignalingDataReaderDecorator.DisposeAsync),
-            nameof(DisposeSignalingDataReaderDecorator.GetData),
-            nameof(DisposeSignalingDataReaderDecorator.GetFieldValue),
-            nameof(DisposeSignalingDataReaderDecorator.GetFieldValueAsync)
+            nameof(CommandDisposingDataReaderDecorator.Dispose),
+            nameof(CommandDisposingDataReaderDecorator.DisposeAsync),
+            nameof(CommandDisposingDataReaderDecorator.GetData),
+            nameof(CommandDisposingDataReaderDecorator.GetFieldValue),
+            nameof(CommandDisposingDataReaderDecorator.GetFieldValueAsync)
         };
 
         var fixture = new Fixture();
@@ -92,13 +100,16 @@ public class DisposeSignalingDataReaderDecoratorTests : UnitTestsBase
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>
         ArgumentNullGuardVerifier.Verify(() =>
-            new DisposeSignalingDataReaderDecorator(
+            new CommandDisposingDataReaderDecorator(
                 this.decoratedReader,
                 this.MockDatabaseAdapter,
+                this.commandDisposer,
                 CancellationToken.None
             )
         );
 
+    private readonly DbCommandDisposer commandDisposer;
+
     private readonly DbDataReader decoratedReader;
-    private readonly DisposeSignalingDataReaderDecorator decorator;
+    private readonly CommandDisposingDataReaderDecorator decorator;
 }

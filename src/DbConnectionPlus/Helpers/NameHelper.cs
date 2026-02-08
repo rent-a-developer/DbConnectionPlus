@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 namespace RentADeveloper.DbConnectionPlus.Helpers;
 
 /// <summary>
@@ -24,63 +26,53 @@ internal static class NameHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static String CreateNameFromCallerArgumentExpression(ReadOnlySpan<Char> expression, Int32 maximumLength)
     {
-        // Remove "this.":
-        if (
-            expression.Length >= 5 &&
-            expression[0] == 't' && expression[1] == 'h' &&
-            expression[2] == 'i' && expression[3] == 's' &&
-            expression[4] == '.'
-        )
+        // Remove common prefixes that are not relevant for the name.
+
+        if (expression.StartsWith("this.", StringComparison.Ordinal))
         {
             expression = expression[5..];
         }
 
-        // Remove "new":
-        if (
-            expression.Length >= 3 &&
-            expression[0] == 'n' && expression[1] == 'e' && expression[2] == 'w'
-        )
+        if (expression.StartsWith("new", StringComparison.Ordinal))
         {
             expression = expression[3..];
         }
 
-        // Remove "Get":
-        if (
-            expression.Length >= 3 &&
-            expression[0] == 'G' && expression[1] == 'e' && expression[2] == 't'
-        )
+        if (expression.StartsWith("Get", StringComparison.Ordinal))
         {
             expression = expression[3..];
         }
 
-        var length = Math.Min(expression.Length, maximumLength);
+        var scanLength = Math.Min(expression.Length, maximumLength);
         
-        var buffer = length <= 512 ? stackalloc Char[length] : new Char[length];
-        
+        var buffer = scanLength <= 512 ? stackalloc Char[scanLength] : new Char[scanLength];
+
+        ref var src = ref MemoryMarshal.GetReference(expression);
+        ref var dst = ref MemoryMarshal.GetReference(buffer);
+
         var count = 0;
-
-        for (var i = 0; i < expression.Length && count < maximumLength; i++)
+        
+        for (var i = 0; i < scanLength; i++)
         {
-            var c = expression[i];
-
-            // Only allow letters, digits, and underscores in the name.
+            var character = Unsafe.Add(ref src, i);
+            
             if (
-                (UInt32)(c - 'A') <= 'Z' - 'A' || // Uppercase letters
-                (UInt32)(c - 'a') <= 'z' - 'a' || // Lowercase letters
-                (UInt32)(c - '0') <= '9' - '0' || // Digits
-                c == '_' // Underscores
+                (UInt32)(character - '0') <= 9 || // Digits
+                (UInt32)(character - 'A') <= 25 || // Uppercase letters
+                (UInt32)(character - 'a') <= 25 || // Lowercase letters
+                character == '_'
             )
             {
-                buffer[count++] = c;
+                Unsafe.Add(ref dst, count++) = character;
             }
         }
 
         // Convert the first character to uppercase if it is a lowercase letter.
-        if (count > 0 && (UInt32)(buffer[0] - 'a') <= 'z' - 'a')
+        if (count != 0 && (UInt32)(buffer[0] - 'a') <= 25)
         {
             buffer[0] = (Char)(buffer[0] - 32);
         }
 
-        return new(buffer[..count]);
+        return new(buffer.Slice(0, count));
     }
 }

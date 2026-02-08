@@ -51,7 +51,12 @@ public partial class Benchmarks
         using var command = this.connection.CreateCommand();
 
         command.CommandText = "SELECT StringValue FROM Entity WHERE Id = @Id";
-        command.Parameters.Add(new("@Id", entity.Id));
+
+        var idParameter = command.CreateParameter();
+        idParameter.ParameterName = "@Id";
+        idParameter.Value = entity.Id;
+
+        command.Parameters.Add(idParameter);
 
         return (String)command.ExecuteScalar()!;
     }

@@ -7,7 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [IterationCleanup(
+    [GlobalCleanup(
         Targets =
         [
             nameof(ExecuteNonQuery_DbCommand),
@@ -18,7 +18,7 @@ public partial class Benchmarks
     public void ExecuteNonQuery__Cleanup() =>
         this.connection.Dispose();
 
-    [IterationSetup(
+    [GlobalSetup(
         Targets =
         [
             nameof(ExecuteNonQuery_DbCommand),
@@ -27,55 +27,29 @@ public partial class Benchmarks
         ]
     )]
     public void ExecuteNonQuery__Setup() =>
-        this.SetupDatabase(ExecuteNonQuery_OperationsPerInvoke);
+        this.SetupDatabase(0);
 
-    [Benchmark(Baseline = false, OperationsPerInvoke = ExecuteNonQuery_OperationsPerInvoke)]
+    [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]
-    public void ExecuteNonQuery_Dapper()
-    {
-        for (var i = 0; i < ExecuteNonQuery_OperationsPerInvoke; i++)
-        {
-            var entity = this.entitiesInDb[0];
+    public void ExecuteNonQuery_Dapper() =>
+        SqlMapper.Execute(this.connection, "DELETE FROM Entity WHERE Id = @Id", new { Id = -1 });
 
-            SqlMapper.Execute(this.connection, "DELETE FROM Entity WHERE Id = @Id", new { entity.Id });
-
-            this.entitiesInDb.Remove(entity);
-        }
-    }
-
-    [Benchmark(Baseline = true, OperationsPerInvoke = ExecuteNonQuery_OperationsPerInvoke)]
+    [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]
     public void ExecuteNonQuery_DbCommand()
     {
-        for (var i = 0; i < ExecuteNonQuery_OperationsPerInvoke; i++)
-        {
-            var entity = this.entitiesInDb[0];
+        using var command = this.connection.CreateCommand();
 
-            using var command = this.connection.CreateCommand();
+        command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
+        command.Parameters.Add(new("@Id", -1));
 
-            command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
-            command.Parameters.Add(new("@Id", entity.Id));
-
-            command.ExecuteNonQuery();
-
-            this.entitiesInDb.Remove(entity);
-        }
+        command.ExecuteNonQuery();
     }
 
-    [Benchmark(Baseline = false, OperationsPerInvoke = ExecuteNonQuery_OperationsPerInvoke)]
+    [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]
-    public void ExecuteNonQuery_DbConnectionPlus()
-    {
-        for (var i = 0; i < ExecuteNonQuery_OperationsPerInvoke; i++)
-        {
-            var entity = this.entitiesInDb[0];
-
-            this.connection.ExecuteNonQuery($"DELETE FROM Entity WHERE Id = {Parameter(entity.Id)}");
-
-            this.entitiesInDb.Remove(entity);
-        }
-    }
+    public void ExecuteNonQuery_DbConnectionPlus() =>
+        this.connection.ExecuteNonQuery($"DELETE FROM Entity WHERE Id = {Parameter(-1)}");
 
     private const String ExecuteNonQuery_Category = "ExecuteNonQuery";
-    private const Int32 ExecuteNonQuery_OperationsPerInvoke = 7700;
 }

@@ -34,6 +34,11 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
 
         switch (value)
         {
+            case DateTime:
+                parameter.DbType = DbType.DateTime2;
+                parameter.Value = value;
+                break;
+
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
@@ -53,11 +58,6 @@ internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                     enumValue,
                     DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 );
-                break;
-
-            case DateTime:
-                parameter.DbType = DbType.DateTime2;
-                parameter.Value = value;
                 break;
 
             case Byte[]:

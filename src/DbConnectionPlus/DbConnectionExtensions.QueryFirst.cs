@@ -74,7 +74,7 @@ public static partial class DbConnectionExtensions
             try
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
-                var reader = command.ExecuteReader(CommandBehavior.SingleRow | CommandBehavior.SingleResult);
+                var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
 
                 using (reader)
                 {
@@ -160,7 +160,7 @@ public static partial class DbConnectionExtensions
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
                 var reader = await command.ExecuteReaderAsync(
-                        CommandBehavior.SingleRow | CommandBehavior.SingleResult,
+                        CommandBehavior.SingleResult | CommandBehavior.SingleRow,
                         cancellationToken
                     )
                     .ConfigureAwait(false);

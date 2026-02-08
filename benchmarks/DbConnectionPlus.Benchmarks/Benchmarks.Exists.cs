@@ -52,11 +52,16 @@ public partial class Benchmarks
 
         using var command = this.connection.CreateCommand();
         command.CommandText = "SELECT 1 FROM Entity WHERE Id = @Id";
-        command.Parameters.Add(new("@Id", entityId));
 
-        using var dataReader = command.ExecuteReader();
+        var idParameter = command.CreateParameter();
+        idParameter.ParameterName = "@Id";
+        idParameter.Value = entityId;
 
-        return dataReader.HasRows;
+        command.Parameters.Add(idParameter);
+
+        using var dataReader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+
+        return dataReader.Read();
     }
 
     [Benchmark(Baseline = false)]

@@ -33,6 +33,11 @@ internal class MySqlDatabaseAdapter : IDatabaseAdapter
 
         switch (value)
         {
+            case DateTime:
+                parameter.DbType = DbType.DateTime;
+                parameter.Value = value;
+                break;
+
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
@@ -52,11 +57,6 @@ internal class MySqlDatabaseAdapter : IDatabaseAdapter
                     enumValue,
                     DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 );
-                break;
-
-            case DateTime:
-                parameter.DbType = DbType.DateTime;
-                parameter.Value = value;
                 break;
 
             case Byte[]:

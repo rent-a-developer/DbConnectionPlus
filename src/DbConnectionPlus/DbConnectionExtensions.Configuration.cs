@@ -19,13 +19,16 @@ public static partial class DbConnectionExtensions
     {
         ArgumentNullException.ThrowIfNull(configureAction);
 
-        configureAction(DbConnectionPlusConfiguration.Instance);
+        lock (configurationLockObject)
+        {
+            configureAction(DbConnectionPlusConfiguration.Instance);
 
-        ((IFreezable)DbConnectionPlusConfiguration.Instance).Freeze();
+            ((IFreezable)DbConnectionPlusConfiguration.Instance).Freeze();
 
-        // We need to reset the entity type metadata cache, because the configuration may have changed how entities
-        // are mapped that were previously mapped via data annotation attributes or conventions.
-        EntityHelper.ResetEntityTypeMetadataCache();
+            // We need to reset the entity type metadata cache, because the configuration may have changed how entities
+            // are mapped that were previously mapped via data annotation attributes or conventions.
+            EntityHelper.ResetEntityTypeMetadataCache();
+        }
     }
 
     /// <summary>
@@ -38,4 +41,6 @@ public static partial class DbConnectionExtensions
         IReadOnlyList<InterpolatedTemporaryTable> temporaryTables
     ) =>
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
+
+    private static readonly Object configurationLockObject = new();
 }

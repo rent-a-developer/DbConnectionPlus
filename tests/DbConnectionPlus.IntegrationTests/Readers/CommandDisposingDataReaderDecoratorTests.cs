@@ -3,27 +3,27 @@ using RentADeveloper.DbConnectionPlus.Readers;
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.Readers;
 
 public sealed class
-    DisposeSignalingDataReaderDecoratorTests_MySql :
-    DisposeSignalingDataReaderDecoratorTests<MySqlTestDatabaseProvider>;
+    CommandDisposingDataReaderDecoratorTests_MySql :
+    CommandDisposingDataReaderDecoratorTests<MySqlTestDatabaseProvider>;
 
 public sealed class
-    DisposeSignalingDataReaderDecoratorTests_Oracle :
-    DisposeSignalingDataReaderDecoratorTests<OracleTestDatabaseProvider>;
+    CommandDisposingDataReaderDecoratorTests_Oracle :
+    CommandDisposingDataReaderDecoratorTests<OracleTestDatabaseProvider>;
 
 public sealed class
-    DisposeSignalingDataReaderDecoratorTests_PostgreSql :
-    DisposeSignalingDataReaderDecoratorTests<PostgreSqlTestDatabaseProvider>;
+    CommandDisposingDataReaderDecoratorTests_PostgreSql :
+    CommandDisposingDataReaderDecoratorTests<PostgreSqlTestDatabaseProvider>;
 
 public sealed class
-    DisposeSignalingDataReaderDecoratorTests_Sqlite :
-    DisposeSignalingDataReaderDecoratorTests<SqliteTestDatabaseProvider>;
+    CommandDisposingDataReaderDecoratorTests_Sqlite :
+    CommandDisposingDataReaderDecoratorTests<SqliteTestDatabaseProvider>;
 
 public sealed class
-    DisposeSignalingDataReaderDecoratorTests_SqlServer :
-    DisposeSignalingDataReaderDecoratorTests<SqlServerTestDatabaseProvider>;
+    CommandDisposingDataReaderDecoratorTests_SqlServer :
+    CommandDisposingDataReaderDecoratorTests<SqlServerTestDatabaseProvider>;
 
 public abstract class
-    DisposeSignalingDataReaderDecoratorTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+    CommandDisposingDataReaderDecoratorTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Fact]
@@ -51,11 +51,14 @@ public abstract class
             }
         );
 
+        var commandDisposer = new DbCommandDisposer(command, [], default);
+
         using var decoratedReader = command.ExecuteReader();
 
-        using var decorator = new DisposeSignalingDataReaderDecorator(
+        using var decorator = new CommandDisposingDataReaderDecorator(
             decoratedReader,
             this.DatabaseAdapter,
+            commandDisposer, 
             cancellationToken
         );
 
@@ -95,11 +98,14 @@ public abstract class
             }
         );
 
+        var commandDisposer = new DbCommandDisposer(command, [], default);
+
         await using var decoratedReader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);
 
-        await using var decorator = new DisposeSignalingDataReaderDecorator(
+        await using var decorator = new CommandDisposingDataReaderDecorator(
             decoratedReader,
             this.DatabaseAdapter,
+            commandDisposer, 
             cancellationToken
         );
 

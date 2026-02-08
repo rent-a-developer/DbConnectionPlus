@@ -188,7 +188,6 @@ internal static class DbCommandBuilder
     {
         using var codeBuilder = new ValueStringBuilder(stackalloc char[2048]);
         var parameterNameOccurrences = new Dictionary<String, Int32>(StringComparer.OrdinalIgnoreCase);
-        var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
 
         var command = connection.CreateCommand();
 
@@ -217,6 +216,7 @@ internal static class DbCommandBuilder
 
                     if (parameterNameOccurrences.TryGetValue(parameterName, out var count))
                     {
+                        // Parameter name is already used, so we append a suffix to make it unique.
                         count++;
                         parameterNameOccurrences[parameterName] = count;
                         parameterName += count;
@@ -226,16 +226,9 @@ internal static class DbCommandBuilder
                         parameterNameOccurrences[parameterName] = 1;
                     }
 
-                    var parameterValue = interpolatedParameter.Value;
-
-                    if (parameterValue is Enum enumValue)
-                    {
-                        parameterValue = EnumSerializer.SerializeEnum(enumValue, enumSerializationMode);
-                    }
-
                     var dbParameter = command.CreateParameter();
                     dbParameter.ParameterName = parameterName;
-                    databaseAdapter.BindParameterValue(dbParameter, parameterValue);
+                    databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
                     dbParameters.Add(dbParameter);
 
                     codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
@@ -244,16 +237,9 @@ internal static class DbCommandBuilder
 
                 case Parameter parameter:
                 {
-                    var parameterValue = parameter.Value;
-
-                    if (parameterValue is Enum enumValue)
-                    {
-                        parameterValue = EnumSerializer.SerializeEnum(enumValue, enumSerializationMode);
-                    }
-
                     var dbParameter = command.CreateParameter();
                     dbParameter.ParameterName = parameter.Name;
-                    databaseAdapter.BindParameterValue(dbParameter, parameterValue);
+                    databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
                     dbParameters.Add(dbParameter);
 
                     parameterNameOccurrences[parameter.Name] = 1;

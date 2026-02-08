@@ -44,6 +44,16 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
 
         switch (value)
         {
+            case DateTime:
+                parameter.DbType = DbType.DateTime;
+                parameter.Value = value;
+                break;
+
+            case Guid guid:
+                parameter.DbType = DbType.Binary;
+                parameter.Value = guid;
+                break;
+
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
@@ -63,16 +73,6 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
                     enumValue,
                     DbConnectionPlusConfiguration.Instance.EnumSerializationMode
                 );
-                break;
-
-            case Guid guid:
-                parameter.DbType = DbType.Binary;
-                parameter.Value = guid;
-                break;
-
-            case DateTime:
-                parameter.DbType = DbType.DateTime;
-                parameter.Value = value;
                 break;
 
             case Byte[]:

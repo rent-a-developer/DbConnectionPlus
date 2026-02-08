@@ -2,21 +2,25 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.Collections.ObjectModel;
+using RentADeveloper.DbConnectionPlus.DbCommands;
 
 namespace RentADeveloper.DbConnectionPlus.Readers;
 
 /// <summary>
-/// A decorator for a <see cref="DbDataReader" /> that signals when it is being disposed and handles the case when a
-/// read operation is cancelled by a <see cref="CancellationToken" />.
+/// A decorator for a <see cref="DbDataReader" /> that disposes the associated <see cref="DbCommand" /> when disposed
+/// and handles the case when a read operation is cancelled by a <see cref="CancellationToken" />.
 /// </summary>
-internal sealed class DisposeSignalingDataReaderDecorator : DbDataReader
+internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DisposeSignalingDataReaderDecorator" /> class.
+    /// Initializes a new instance of the <see cref="CommandDisposingDataReaderDecorator" /> class.
     /// </summary>
     /// <param name="dataReader">The <see cref="DbDataReader" /> to decorate.</param>
     /// <param name="databaseAdapter">
     /// The database adapter for the database for which <see cref="DbDataReader" /> was obtained.
+    /// </param>
+    /// <param name="commandDisposer">
+    /// The <see cref="DbCommandDisposer" /> that is responsible for disposing the associated <see cref="DbCommand" />.
     /// </param>
     /// <param name="commandCancellationToken">
     /// The <see cref="CancellationToken" /> that is associated with the <see cref="DbCommand" /> from which the
@@ -36,17 +40,20 @@ internal sealed class DisposeSignalingDataReaderDecorator : DbDataReader
     ///         </item>
     ///     </list>
     /// </exception>
-    public DisposeSignalingDataReaderDecorator(
+    public CommandDisposingDataReaderDecorator(
         DbDataReader dataReader,
         IDatabaseAdapter databaseAdapter,
+        DbCommandDisposer commandDisposer,
         CancellationToken commandCancellationToken
     )
     {
         ArgumentNullException.ThrowIfNull(dataReader);
         ArgumentNullException.ThrowIfNull(databaseAdapter);
+        ArgumentNullException.ThrowIfNull(commandDisposer);
 
         this.dataReader = dataReader;
         this.databaseAdapter = databaseAdapter;
+        this.commandDisposer = commandDisposer;
         this.commandCancellationToken = commandCancellationToken;
     }
 
@@ -94,11 +101,7 @@ internal sealed class DisposeSignalingDataReaderDecorator : DbDataReader
 
         await base.DisposeAsync().ConfigureAwait(false);
         await this.dataReader.DisposeAsync().ConfigureAwait(false);
-
-        if (this.OnDisposingAsync is not null)
-        {
-            await this.OnDisposingAsync().ConfigureAwait(false);
-        }
+        await this.commandDisposer.DisposeAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -314,16 +317,6 @@ internal sealed class DisposeSignalingDataReaderDecorator : DbDataReader
     public override String? ToString() =>
         this.dataReader.ToString();
 
-    /// <summary>
-    /// A function that is invoked when this instance is being disposed synchronously.
-    /// </summary>
-    internal Action? OnDisposing { get; set; }
-
-    /// <summary>
-    /// A function that is invoked when this instance is being disposed asynchronously.
-    /// </summary>
-    internal Func<ValueTask>? OnDisposingAsync { get; set; }
-
     /// <inheritdoc />
     protected override void Dispose(Boolean disposing)
     {
@@ -339,13 +332,13 @@ internal sealed class DisposeSignalingDataReaderDecorator : DbDataReader
         if (disposing)
         {
             this.dataReader.Dispose();
-
-            this.OnDisposing?.Invoke();
+            this.commandDisposer.Dispose();
         }
     }
 
     private readonly CancellationToken commandCancellationToken;
     private readonly IDatabaseAdapter databaseAdapter;
+    private readonly DbCommandDisposer commandDisposer;
     private readonly DbDataReader dataReader;
     private Boolean isDisposed;
 }

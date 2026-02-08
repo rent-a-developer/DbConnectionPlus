@@ -40,7 +40,10 @@ public partial class Benchmarks
     {
         var entities = new List<BenchmarkEntity>();
 
-        using var dataReader = this.connection.ExecuteReader("SELECT * FROM Entity");
+        using var command = this.connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Entity";
+
+        using var dataReader = command.ExecuteReader();
 
         while (dataReader.Read())
         {
