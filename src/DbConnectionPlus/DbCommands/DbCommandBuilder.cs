@@ -185,8 +185,11 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc char[2048]);
-        var parameterNameOccurrences = new Dictionary<String, Int32>(StringComparer.OrdinalIgnoreCase);
+        using var codeBuilder = new ValueStringBuilder(stackalloc char[512]);
+        var parameterNameOccurrences = new Dictionary<String, Int16>(
+            statement.Fragments.Count,
+            StringComparer.OrdinalIgnoreCase
+        );
         var parameterCount = 0;
 
         var command = connection.CreateCommand();
@@ -214,16 +217,11 @@ internal static class DbCommandBuilder
                     var parameterName = interpolatedParameter.InferredName ??
                                         "Parameter_" + (parameterCount + 1);
 
-                    if (parameterNameOccurrences.TryGetValue(parameterName, out var count))
+                    if (!parameterNameOccurrences.TryAdd(parameterName, 1))
                     {
                         // Parameter name is already used, so we append a suffix to make it unique.
-                        count++;
-                        parameterNameOccurrences[parameterName] = count;
+                        var count = ++parameterNameOccurrences[parameterName];
                         parameterName += count;
-                    }
-                    else
-                    {
-                        parameterNameOccurrences[parameterName] = 1;
                     }
 
                     var dbParameter = command.CreateParameter();

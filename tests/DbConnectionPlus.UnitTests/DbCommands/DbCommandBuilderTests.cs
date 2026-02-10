@@ -113,6 +113,27 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task BuildDbCommand_InterpolatedParameter_DuplicateName_ShouldAppendSuffix(Boolean useAsyncApi)
+    {
+        var value = Generate.ScalarValue();
+
+        var (command, _) = await CallApi(
+            useAsyncApi,
+            $"SELECT {Parameter(value)}, {Parameter(value)}, {Parameter(value)}, {Parameter(value)}, {Parameter(value)}",
+            this.MockDatabaseAdapter,
+            this.MockDbConnection
+        );
+
+        command.CommandText
+            .Should().Be("SELECT @Value, @Value2, @Value3, @Value4, @Value5");
+
+        command.Parameters.OfType<DbParameter>().Select(a => a.ParameterName)
+            .Should().BeEquivalentTo("Value", "Value2", "Value3", "Value4", "Value5");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger(
             Boolean useAsyncApi

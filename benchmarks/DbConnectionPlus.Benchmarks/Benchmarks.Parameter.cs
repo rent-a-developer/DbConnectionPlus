@@ -33,7 +33,7 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_Command()
     {
-        var result = new Int32[5];
+        var result = new Int64[5];
 
         using var command = this.connection.CreateCommand();
 
@@ -49,11 +49,11 @@ public partial class Benchmarks
 
         dataReader.Read();
 
-        result[0] = dataReader.GetInt32(0);
-        result[1] = dataReader.GetInt32(1);
-        result[2] = dataReader.GetInt32(2);
-        result[3] = dataReader.GetInt32(3);
-        result[4] = dataReader.GetInt32(4);
+        result[0] = dataReader.GetInt64(0);
+        result[1] = dataReader.GetInt64(1);
+        result[2] = dataReader.GetInt64(2);
+        result[3] = dataReader.GetInt64(3);
+        result[4] = dataReader.GetInt64(4);
 
         return result;
     }
@@ -62,7 +62,7 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_Dapper()
     {
-        var result = new Int32[5];
+        var result = new Int64[5];
 
         using var dataReader = SqlMapper.ExecuteReader(
             this.connection,
@@ -72,11 +72,11 @@ public partial class Benchmarks
 
         dataReader.Read();
 
-        result[0] = dataReader.GetInt32(0);
-        result[1] = dataReader.GetInt32(1);
-        result[2] = dataReader.GetInt32(2);
-        result[3] = dataReader.GetInt32(3);
-        result[4] = dataReader.GetInt32(4);
+        result[0] = dataReader.GetInt64(0);
+        result[1] = dataReader.GetInt64(1);
+        result[2] = dataReader.GetInt64(2);
+        result[3] = dataReader.GetInt64(3);
+        result[4] = dataReader.GetInt64(4);
 
         return result;
     }
@@ -85,7 +85,7 @@ public partial class Benchmarks
     [BenchmarkCategory(Parameter_Category)]
     public Object Parameter_DbConnectionPlus()
     {
-        var result = new Int32[5];
+        var result = new Int64[5];
 
         using var dataReader = this.connection.ExecuteReader(
             $"SELECT {Parameter(1)}, {Parameter(2)}, {Parameter(3)}, {Parameter(4)}, {Parameter(5)}"
@@ -93,11 +93,11 @@ public partial class Benchmarks
 
         dataReader.Read();
 
-        result[0] = dataReader.GetInt32(0);
-        result[1] = dataReader.GetInt32(1);
-        result[2] = dataReader.GetInt32(2);
-        result[3] = dataReader.GetInt32(3);
-        result[4] = dataReader.GetInt32(4);
+        result[0] = dataReader.GetInt64(0);
+        result[1] = dataReader.GetInt64(1);
+        result[2] = dataReader.GetInt64(2);
+        result[3] = dataReader.GetInt64(3);
+        result[4] = dataReader.GetInt64(4);
 
         return result;
     }
