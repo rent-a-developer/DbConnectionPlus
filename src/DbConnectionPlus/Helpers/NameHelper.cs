@@ -73,6 +73,6 @@ internal static class NameHelper
             buffer[0] = (Char)(buffer[0] - 32);
         }
 
-        return new(buffer.Slice(0, count));
+        return new(buffer[..count]);
     }
 }

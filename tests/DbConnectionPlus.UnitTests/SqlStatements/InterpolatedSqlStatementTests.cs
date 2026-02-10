@@ -30,7 +30,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
         InterpolatedSqlStatement statement =
             $"""
              SELECT  {Parameter(baseDiscount * 5 / 3)},
-                     {Parameter(entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0])}
+                     {Parameter(entityIds.Where(a => a > 5).ToArray()[0])}
              """;
 
         statement.Fragments
@@ -46,10 +46,10 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             .Should().Be(new Literal($",{Environment.NewLine}        "));
 
         statement.Fragments[3]
-            .Should().Be(
+            .Should().BeEquivalentTo(
                 new InterpolatedParameter(
-                    "EntityIdsWhereaa5SelectaaToStringToArray0",
-                    entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0]
+                    "EntityIdsWhereaa5ToArray0",
+                    entityIds.Where(a => a > 5).ToArray()[0]
                 )
             );
     }

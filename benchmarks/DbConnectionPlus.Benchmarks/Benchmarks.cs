@@ -13,6 +13,9 @@ public partial class Benchmarks
         SqlMapper.AddTypeHandler(new TimeSpanTypeHandler());
     }
 
+    public Benchmarks() =>
+        SqlMapperExtensions.TableNameMapper = null;
+
     private void SetupDatabase(Int32 numberOfEntities)
     {
         this.connection = new("Data Source=:memory:");
@@ -30,11 +33,32 @@ public partial class Benchmarks
         transaction.Commit();
     }
 
+    private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<String, SqliteParameter> parameters)
+    {
+        parameters["Id"].Value = entity.Id;
+        parameters["BooleanValue"].Value = entity.BooleanValue ? 1 : 0;
+        parameters["BytesValue"].Value = entity.BytesValue;
+        parameters["ByteValue"].Value = entity.ByteValue;
+        parameters["CharValue"].Value = entity.CharValue;
+        parameters["DateTimeValue"].Value = entity.DateTimeValue.ToString(CultureInfo.InvariantCulture);
+        parameters["DecimalValue"].Value = entity.DecimalValue.ToString(CultureInfo.InvariantCulture);
+        parameters["DoubleValue"].Value = entity.DoubleValue;
+        parameters["EnumValue"].Value = entity.EnumValue.ToString();
+        parameters["GuidValue"].Value = entity.GuidValue.ToString();
+        parameters["Int16Value"].Value = entity.Int16Value;
+        parameters["Int32Value"].Value = entity.Int32Value;
+        parameters["Int64Value"].Value = entity.Int64Value;
+        parameters["SingleValue"].Value = entity.SingleValue;
+        parameters["StringValue"].Value = entity.StringValue;
+        parameters["TimeSpanValue"].Value = entity.TimeSpanValue.ToString();
+    }
+
     private static BenchmarkEntity ReadEntity(IDataReader dataReader)
     {
         var charBuffer = new Char[1];
 
         var ordinal = 0;
+
         return new()
         {
             Id = dataReader.GetInt64(ordinal++),

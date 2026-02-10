@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(ExecuteNonQuery_DbCommand),
+            nameof(ExecuteNonQuery_Command),
             nameof(ExecuteNonQuery_Dapper),
             nameof(ExecuteNonQuery_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(ExecuteNonQuery_DbCommand),
+            nameof(ExecuteNonQuery_Command),
             nameof(ExecuteNonQuery_Dapper),
             nameof(ExecuteNonQuery_DbConnectionPlus)
         ]
@@ -29,22 +29,28 @@ public partial class Benchmarks
     public void ExecuteNonQuery__Setup() =>
         this.SetupDatabase(0);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(ExecuteNonQuery_Category)]
-    public void ExecuteNonQuery_Dapper() =>
-        SqlMapper.Execute(this.connection, "DELETE FROM Entity WHERE Id = @Id", new { Id = -1 });
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]
-    public void ExecuteNonQuery_DbCommand()
+    public void ExecuteNonQuery_Command()
     {
         using var command = this.connection.CreateCommand();
 
         command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
-        command.Parameters.Add(new("@Id", -1));
+
+        var idParameter = command.CreateParameter();
+
+        idParameter.ParameterName = "@Id";
+        idParameter.Value = -1;
+
+        command.Parameters.Add(idParameter);
 
         command.ExecuteNonQuery();
     }
+
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(ExecuteNonQuery_Category)]
+    public void ExecuteNonQuery_Dapper() =>
+        SqlMapper.Execute(this.connection, "DELETE FROM Entity WHERE Id = @Id", new { Id = -1 });
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]

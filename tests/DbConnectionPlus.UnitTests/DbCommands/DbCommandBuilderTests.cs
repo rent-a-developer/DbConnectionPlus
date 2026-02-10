@@ -319,7 +319,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             useAsyncApi,
             $"""
              SELECT  {Parameter(baseDiscount * 5 / 3)},
-                     {Parameter(entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0])}
+                     {Parameter(entityIds.Where(a => a > 5).ToArray()[0])}
              """,
             this.MockDatabaseAdapter,
             this.MockDbConnection
@@ -329,7 +329,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be(
                 """
                 SELECT  @BaseDiscount53,
-                        @EntityIdsWhereaa5SelectaaToStringToArray0
+                        @EntityIdsWhereaa5ToArray0
                 """
             );
 
@@ -343,10 +343,10 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be(baseDiscount * 5 / 3);
 
         command.Parameters[1].ParameterName
-            .Should().Be("EntityIdsWhereaa5SelectaaToStringToArray0");
+            .Should().Be("EntityIdsWhereaa5ToArray0");
 
         command.Parameters[1].Value
-            .Should().Be(entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0]);
+            .Should().Be(entityIds.Where(a => a > 5).ToArray()[0]);
     }
 
     [Theory]

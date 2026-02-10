@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(TemporaryTable_ComplexObjects_DbCommand),
+            nameof(TemporaryTable_ComplexObjects_Command),
             nameof(TemporaryTable_ComplexObjects_Dapper),
             nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(TemporaryTable_ComplexObjects_DbCommand),
+            nameof(TemporaryTable_ComplexObjects_Command),
             nameof(TemporaryTable_ComplexObjects_Dapper),
             nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
         ]
@@ -29,149 +29,10 @@ public partial class Benchmarks
     public void TemporaryTable_ComplexObjects__Setup() =>
         this.SetupDatabase(TemporaryTable_ComplexObjects_EntitiesPerOperation);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
-    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_Dapper()
-    {
-        var entities = Generate.Multiple<BenchmarkEntity>(TemporaryTable_ComplexObjects_EntitiesPerOperation);
-
-        SqlMapper.Execute(this.connection, CreateTempEntitiesTableSql);
-
-        using var insertCommand = this.connection.CreateCommand();
-        insertCommand.CommandText = InsertIntoTempEntities;
-
-        var idParameter = new SqliteParameter
-        {
-            ParameterName = "@Id"
-        };
-
-        var booleanValueParameter = new SqliteParameter
-        {
-            ParameterName = "@BooleanValue"
-        };
-
-        var bytesValueParameter = new SqliteParameter
-        {
-            ParameterName = "@BytesValue"
-        };
-
-        var byteValueParameter = new SqliteParameter
-        {
-            ParameterName = "@ByteValue"
-        };
-
-        var charValueParameter = new SqliteParameter
-        {
-            ParameterName = "@CharValue"
-        };
-
-        var dateTimeValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DateTimeValue"
-        };
-
-        var decimalValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DecimalValue"
-        };
-
-        var doubleValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DoubleValue"
-        };
-
-        var enumValueParameter = new SqliteParameter
-        {
-            ParameterName = "@EnumValue"
-        };
-
-        var guidValueParameter = new SqliteParameter
-        {
-            ParameterName = "@GuidValue"
-        };
-
-        var int16ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int16Value"
-        };
-
-        var int32ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int32Value"
-        };
-
-        var int64ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int64Value"
-        };
-
-        var singleValueParameter = new SqliteParameter
-        {
-            ParameterName = "@SingleValue"
-        };
-
-        var stringValueParameter = new SqliteParameter
-        {
-            ParameterName = "@StringValue"
-        };
-
-        var timeSpanValueParameter = new SqliteParameter
-        {
-            ParameterName = "@TimeSpanValue"
-        };
-
-        insertCommand.Parameters.Add(idParameter);
-        insertCommand.Parameters.Add(booleanValueParameter);
-        insertCommand.Parameters.Add(bytesValueParameter);
-        insertCommand.Parameters.Add(byteValueParameter);
-        insertCommand.Parameters.Add(charValueParameter);
-        insertCommand.Parameters.Add(dateTimeValueParameter);
-        insertCommand.Parameters.Add(decimalValueParameter);
-        insertCommand.Parameters.Add(doubleValueParameter);
-        insertCommand.Parameters.Add(enumValueParameter);
-        insertCommand.Parameters.Add(guidValueParameter);
-        insertCommand.Parameters.Add(int16ValueParameter);
-        insertCommand.Parameters.Add(int32ValueParameter);
-        insertCommand.Parameters.Add(int64ValueParameter);
-        insertCommand.Parameters.Add(singleValueParameter);
-        insertCommand.Parameters.Add(stringValueParameter);
-        insertCommand.Parameters.Add(timeSpanValueParameter);
-
-        foreach (var entity in entities)
-        {
-            idParameter.Value = entity.Id;
-            booleanValueParameter.Value = entity.BooleanValue ? 1 : 0;
-            bytesValueParameter.Value = entity.BytesValue;
-            byteValueParameter.Value = entity.ByteValue;
-            charValueParameter.Value = entity.CharValue;
-            dateTimeValueParameter.Value = entity.DateTimeValue.ToString(CultureInfo.InvariantCulture);
-            decimalValueParameter.Value = entity.DecimalValue.ToString(CultureInfo.InvariantCulture);
-            doubleValueParameter.Value = entity.DoubleValue;
-            enumValueParameter.Value = entity.EnumValue.ToString();
-            guidValueParameter.Value = entity.GuidValue.ToString();
-            int16ValueParameter.Value = entity.Int16Value;
-            int32ValueParameter.Value = entity.Int32Value;
-            int64ValueParameter.Value = entity.Int64Value;
-            singleValueParameter.Value = entity.SingleValue;
-            stringValueParameter.Value = entity.StringValue;
-            timeSpanValueParameter.Value = entity.TimeSpanValue.ToString();
-
-            insertCommand.ExecuteNonQuery();
-        }
-
-        var result = SqlMapper.Query<BenchmarkEntity>(this.connection, SelectTempEntitiesSql).ToList();
-
-        SqlMapper.Execute(this.connection, "DROP TABLE temp.Entities");
-
-        return result;
-    }
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
-    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbCommand()
+    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_Command()
     {
-        var entities = Generate.Multiple<BenchmarkEntity>(TemporaryTable_ComplexObjects_EntitiesPerOperation);
-
         var result = new List<BenchmarkEntity>();
 
         using var createTableCommand = this.connection.CreateCommand();
@@ -179,129 +40,41 @@ public partial class Benchmarks
         createTableCommand.ExecuteNonQuery();
 
         using var insertCommand = this.connection.CreateCommand();
+
         insertCommand.CommandText = InsertIntoTempEntities;
 
-        var idParameter = new SqliteParameter
+        var parameters = new Dictionary<String, SqliteParameter>
         {
-            ParameterName = "@Id"
+            { "Id", new("Id", null) },
+            { "BooleanValue", new("BooleanValue", null) },
+            { "BytesValue", new("BytesValue", null) },
+            { "ByteValue", new("ByteValue", null) },
+            { "CharValue", new("CharValue", null) },
+            { "DateTimeValue", new("DateTimeValue", null) },
+            { "DecimalValue", new("DecimalValue", null) },
+            { "DoubleValue", new("DoubleValue", null) },
+            { "EnumValue", new("EnumValue", null) },
+            { "GuidValue", new("GuidValue", null) },
+            { "Int16Value", new("Int16Value", null) },
+            { "Int32Value", new("Int32Value", null) },
+            { "Int64Value", new("Int64Value", null) },
+            { "SingleValue", new("SingleValue", null) },
+            { "StringValue", new("StringValue", null) },
+            { "TimeSpanValue", new("TimeSpanValue", null) }
         };
 
-        var booleanValueParameter = new SqliteParameter
-        {
-            ParameterName = "@BooleanValue"
-        };
+        insertCommand.Parameters.AddRange(parameters.Values);
 
-        var bytesValueParameter = new SqliteParameter
+        foreach (var entity in this.temporaryTable_ComplexObjects_Entities)
         {
-            ParameterName = "@BytesValue"
-        };
-
-        var byteValueParameter = new SqliteParameter
-        {
-            ParameterName = "@ByteValue"
-        };
-
-        var charValueParameter = new SqliteParameter
-        {
-            ParameterName = "@CharValue"
-        };
-
-        var dateTimeValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DateTimeValue"
-        };
-
-        var decimalValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DecimalValue"
-        };
-
-        var doubleValueParameter = new SqliteParameter
-        {
-            ParameterName = "@DoubleValue"
-        };
-
-        var enumValueParameter = new SqliteParameter
-        {
-            ParameterName = "@EnumValue"
-        };
-
-        var guidValueParameter = new SqliteParameter
-        {
-            ParameterName = "@GuidValue"
-        };
-
-        var int16ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int16Value"
-        };
-
-        var int32ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int32Value"
-        };
-
-        var int64ValueParameter = new SqliteParameter
-        {
-            ParameterName = "@Int64Value"
-        };
-
-        var singleValueParameter = new SqliteParameter
-        {
-            ParameterName = "@SingleValue"
-        };
-
-        var stringValueParameter = new SqliteParameter
-        {
-            ParameterName = "@StringValue"
-        };
-
-        var timeSpanValueParameter = new SqliteParameter
-        {
-            ParameterName = "@TimeSpanValue"
-        };
-
-        insertCommand.Parameters.Add(idParameter);
-        insertCommand.Parameters.Add(booleanValueParameter);
-        insertCommand.Parameters.Add(bytesValueParameter);
-        insertCommand.Parameters.Add(byteValueParameter);
-        insertCommand.Parameters.Add(charValueParameter);
-        insertCommand.Parameters.Add(dateTimeValueParameter);
-        insertCommand.Parameters.Add(decimalValueParameter);
-        insertCommand.Parameters.Add(doubleValueParameter);
-        insertCommand.Parameters.Add(enumValueParameter);
-        insertCommand.Parameters.Add(guidValueParameter);
-        insertCommand.Parameters.Add(int16ValueParameter);
-        insertCommand.Parameters.Add(int32ValueParameter);
-        insertCommand.Parameters.Add(int64ValueParameter);
-        insertCommand.Parameters.Add(singleValueParameter);
-        insertCommand.Parameters.Add(stringValueParameter);
-        insertCommand.Parameters.Add(timeSpanValueParameter);
-
-        foreach (var entity in entities)
-        {
-            idParameter.Value = entity.Id;
-            booleanValueParameter.Value = entity.BooleanValue ? 1 : 0;
-            bytesValueParameter.Value = entity.BytesValue;
-            byteValueParameter.Value = entity.ByteValue;
-            charValueParameter.Value = entity.CharValue;
-            dateTimeValueParameter.Value = entity.DateTimeValue.ToString(CultureInfo.InvariantCulture);
-            decimalValueParameter.Value = entity.DecimalValue.ToString(CultureInfo.InvariantCulture);
-            doubleValueParameter.Value = entity.DoubleValue;
-            enumValueParameter.Value = entity.EnumValue.ToString();
-            guidValueParameter.Value = entity.GuidValue.ToString();
-            int16ValueParameter.Value = entity.Int16Value;
-            int32ValueParameter.Value = entity.Int32Value;
-            int64ValueParameter.Value = entity.Int64Value;
-            singleValueParameter.Value = entity.SingleValue;
-            stringValueParameter.Value = entity.StringValue;
-            timeSpanValueParameter.Value = entity.TimeSpanValue.ToString();
+            PopulateEntityParameters(entity, parameters);
 
             insertCommand.ExecuteNonQuery();
         }
 
         using var selectCommand = this.connection.CreateCommand();
-        selectCommand.CommandText = SelectTempEntitiesSql;
+
+        selectCommand.CommandText = "SELECT * FROM temp.Entities";
 
         using var dataReader = selectCommand.ExecuteReader();
 
@@ -319,18 +92,36 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
-    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbConnectionPlus()
+    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_Dapper()
     {
-        var entities = Generate.Multiple<BenchmarkEntity>(TemporaryTable_ComplexObjects_EntitiesPerOperation);
+        SqlMapper.Execute(this.connection, CreateTempEntitiesTableSql);
 
-        return this.connection.Query<BenchmarkEntity>($"SELECT * FROM {TemporaryTable(entities)}").ToList();
+        SqlMapperExtensions.TableNameMapper = _ => "temp.Entities";
+
+        SqlMapperExtensions.Insert(this.connection, this.temporaryTable_ComplexObjects_Entities);
+
+        var result = SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM temp.Entities").ToList();
+
+        SqlMapper.Execute(this.connection, "DROP TABLE temp.Entities");
+
+        return result;
     }
+
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
+    public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbConnectionPlus() =>
+        this.connection
+            .Query<BenchmarkEntity>($"SELECT * FROM {TemporaryTable(this.temporaryTable_ComplexObjects_Entities)}")
+            .ToList();
+
+    private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities =
+        Generate.Multiple<BenchmarkEntity>(TemporaryTable_ComplexObjects_EntitiesPerOperation);
 
     private const String CreateTempEntitiesTableSql = """
                                                       CREATE TEMP TABLE Entities (
                                                           Id INTEGER,
-                                                          BytesValue BLOB,
                                                           BooleanValue INTEGER,
+                                                          BytesValue BLOB,
                                                           ByteValue INTEGER,
                                                           CharValue TEXT,
                                                           DateTimeValue TEXT,
@@ -385,28 +176,6 @@ public partial class Benchmarks
                                                       @TimeSpanValue
                                                   )
                                                   """;
-
-    private const String SelectTempEntitiesSql = """
-                                                 SELECT
-                                                     Id,
-                                                     BooleanValue,
-                                                     BytesValue,
-                                                     ByteValue,
-                                                     CharValue,
-                                                     DateTimeValue,
-                                                     DecimalValue,
-                                                     DoubleValue,
-                                                     EnumValue,
-                                                     GuidValue,
-                                                     Int16Value,
-                                                     Int32Value,
-                                                     Int64Value,
-                                                     SingleValue,
-                                                     StringValue,
-                                                     TimeSpanValue
-                                                 FROM
-                                                     temp.Entities
-                                                 """;
 
     private const String TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
     private const Int32 TemporaryTable_ComplexObjects_EntitiesPerOperation = 250;

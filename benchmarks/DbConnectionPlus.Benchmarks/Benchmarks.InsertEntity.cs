@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(InsertEntity_DbCommand),
+            nameof(InsertEntity_Command),
             nameof(InsertEntity_Dapper),
             nameof(InsertEntity_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(InsertEntity_DbCommand),
+            nameof(InsertEntity_Command),
             nameof(InsertEntity_Dapper),
             nameof(InsertEntity_DbConnectionPlus)
         ]
@@ -29,53 +29,51 @@ public partial class Benchmarks
     public void InsertEntity__Setup() =>
         this.SetupDatabase(0);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(InsertEntity_Category)]
-    public void InsertEntity_Dapper()
-    {
-        var entity = Generate.Single<BenchmarkEntity>();
-
-        SqlMapperExtensions.Insert(this.connection, entity);
-    }
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(InsertEntity_Category)]
-    public void InsertEntity_DbCommand()
+    public void InsertEntity_Command()
     {
-        var entity = Generate.Single<BenchmarkEntity>();
-
         using var command = this.connection.CreateCommand();
 
         command.CommandText = InsertEntitySql;
 
-        command.Parameters.Add(new("@Id", entity.Id));
-        command.Parameters.Add(new("@BooleanValue", entity.BooleanValue ? 1 : 0));
-        command.Parameters.Add(new("@BytesValue", entity.BytesValue));
-        command.Parameters.Add(new("@ByteValue", entity.ByteValue));
-        command.Parameters.Add(new("@CharValue", entity.CharValue));
-        command.Parameters.Add(new("@DateTimeValue", entity.DateTimeValue.ToString(CultureInfo.InvariantCulture)));
-        command.Parameters.Add(new("@DecimalValue", entity.DecimalValue));
-        command.Parameters.Add(new("@DoubleValue", entity.DoubleValue));
-        command.Parameters.Add(new("@EnumValue", entity.EnumValue.ToString()));
-        command.Parameters.Add(new("@GuidValue", entity.GuidValue.ToString()));
-        command.Parameters.Add(new("@Int16Value", entity.Int16Value));
-        command.Parameters.Add(new("@Int32Value", entity.Int32Value));
-        command.Parameters.Add(new("@Int64Value", entity.Int64Value));
-        command.Parameters.Add(new("@SingleValue", entity.SingleValue));
-        command.Parameters.Add(new("@StringValue", entity.StringValue));
-        command.Parameters.Add(new("@TimeSpanValue", entity.TimeSpanValue.ToString()));
+        var parameters = new Dictionary<String, SqliteParameter>
+        {
+            { "Id", new("Id", null) },
+            { "BooleanValue", new("BooleanValue", null) },
+            { "BytesValue", new("BytesValue", null) },
+            { "ByteValue", new("ByteValue", null) },
+            { "CharValue", new("CharValue", null) },
+            { "DateTimeValue", new("DateTimeValue", null) },
+            { "DecimalValue", new("DecimalValue", null) },
+            { "DoubleValue", new("DoubleValue", null) },
+            { "EnumValue", new("EnumValue", null) },
+            { "GuidValue", new("GuidValue", null) },
+            { "Int16Value", new("Int16Value", null) },
+            { "Int32Value", new("Int32Value", null) },
+            { "Int64Value", new("Int64Value", null) },
+            { "SingleValue", new("SingleValue", null) },
+            { "StringValue", new("StringValue", null) },
+            { "TimeSpanValue", new("TimeSpanValue", null) }
+        };
+
+        command.Parameters.AddRange(parameters.Values);
+
+        PopulateEntityParameters(this.insertEntity_entityToInsert, parameters);
 
         command.ExecuteNonQuery();
     }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(InsertEntity_Category)]
-    public void InsertEntity_DbConnectionPlus()
-    {
-        var entity = Generate.Single<BenchmarkEntity>();
+    public void InsertEntity_Dapper() =>
+        SqlMapperExtensions.Insert(this.connection, this.insertEntity_entityToInsert);
 
-        this.connection.InsertEntity(entity);
-    }
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(InsertEntity_Category)]
+    public void InsertEntity_DbConnectionPlus() =>
+        this.connection.InsertEntity(this.insertEntity_entityToInsert);
 
+    private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single<BenchmarkEntity>();
     private const String InsertEntity_Category = "InsertEntity";
 }

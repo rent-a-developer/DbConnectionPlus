@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
-using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
 namespace RentADeveloper.DbConnectionPlus.DbCommands;
@@ -188,6 +187,7 @@ internal static class DbCommandBuilder
     {
         using var codeBuilder = new ValueStringBuilder(stackalloc char[2048]);
         var parameterNameOccurrences = new Dictionary<String, Int32>(StringComparer.OrdinalIgnoreCase);
+        var parameterCount = 0;
 
         var command = connection.CreateCommand();
 
@@ -212,7 +212,7 @@ internal static class DbCommandBuilder
                 case InterpolatedParameter interpolatedParameter:
                 {
                     var parameterName = interpolatedParameter.InferredName ??
-                                        "Parameter_" + (parameterNameOccurrences.Count + 1);
+                                        "Parameter_" + (parameterCount + 1);
 
                     if (parameterNameOccurrences.TryGetValue(parameterName, out var count))
                     {
@@ -232,6 +232,8 @@ internal static class DbCommandBuilder
                     dbParameters.Add(dbParameter);
 
                     codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
+
+                    parameterCount++;
                     break;
                 }
 
@@ -243,6 +245,7 @@ internal static class DbCommandBuilder
                     dbParameters.Add(dbParameter);
 
                     parameterNameOccurrences[parameter.Name] = 1;
+                    parameterCount++;
                     break;
                 }
 

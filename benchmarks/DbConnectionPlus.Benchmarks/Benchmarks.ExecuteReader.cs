@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(ExecuteReader_DbCommand),
+            nameof(ExecuteReader_Command),
             nameof(ExecuteReader_Dapper),
             nameof(ExecuteReader_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(ExecuteReader_DbCommand),
+            nameof(ExecuteReader_Command),
             nameof(ExecuteReader_Dapper),
             nameof(ExecuteReader_DbConnectionPlus)
         ]
@@ -29,13 +29,17 @@ public partial class Benchmarks
     public void ExecuteReader__Setup() =>
         this.SetupDatabase(100);
 
-    [Benchmark(Baseline = false)]
+    [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteReader_Category)]
-    public List<BenchmarkEntity> ExecuteReader_Dapper()
+    public List<BenchmarkEntity> ExecuteReader_Command()
     {
         var result = new List<BenchmarkEntity>();
 
-        using var dataReader = SqlMapper.ExecuteReader(this.connection, ExecuteReaderSql);
+        using var command = this.connection.CreateCommand();
+
+        command.CommandText = "SELECT * FROM Entity";
+
+        using var dataReader = command.ExecuteReader();
 
         while (dataReader.Read())
         {
@@ -45,16 +49,13 @@ public partial class Benchmarks
         return result;
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteReader_Category)]
-    public List<BenchmarkEntity> ExecuteReader_DbCommand()
+    public List<BenchmarkEntity> ExecuteReader_Dapper()
     {
         var result = new List<BenchmarkEntity>();
 
-        using var command = this.connection.CreateCommand();
-        command.CommandText = ExecuteReaderSql;
-
-        using var dataReader = command.ExecuteReader();
+        using var dataReader = SqlMapper.ExecuteReader(this.connection, "SELECT * FROM Entity");
 
         while (dataReader.Read())
         {
@@ -70,7 +71,7 @@ public partial class Benchmarks
     {
         var result = new List<BenchmarkEntity>();
 
-        using var dataReader = this.connection.ExecuteReader(ExecuteReaderSql);
+        using var dataReader = this.connection.ExecuteReader("SELECT * FROM Entity");
 
         while (dataReader.Read())
         {
@@ -81,26 +82,4 @@ public partial class Benchmarks
     }
 
     private const String ExecuteReader_Category = "ExecuteReader";
-
-    private const String ExecuteReaderSql = """
-                                            SELECT
-                                                Id,
-                                                BooleanValue,
-                                                BytesValue,
-                                                ByteValue,
-                                                CharValue,
-                                                DateTimeValue,
-                                                DecimalValue,
-                                                DoubleValue,
-                                                EnumValue,
-                                                GuidValue,
-                                                Int16Value,
-                                                Int32Value,
-                                                Int64Value,
-                                                SingleValue,
-                                                StringValue,
-                                                TimeSpanValue
-                                            FROM
-                                                Entity
-                                            """;
 }

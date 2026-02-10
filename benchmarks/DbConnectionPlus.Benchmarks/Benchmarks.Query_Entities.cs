@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(Query_Entities_DbCommand),
+            nameof(Query_Entities_Command),
             nameof(Query_Entities_Dapper),
             nameof(Query_Entities_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(Query_Entities_DbCommand),
+            nameof(Query_Entities_Command),
             nameof(Query_Entities_Dapper),
             nameof(Query_Entities_DbConnectionPlus)
         ]
@@ -29,29 +29,30 @@ public partial class Benchmarks
     public void Query_Entities__Setup() =>
         this.SetupDatabase(Query_Entities_EntitiesPerOperation);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(Query_Entities_Category)]
-    public List<BenchmarkEntity> Query_Entities_Dapper() =>
-        SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity").ToList();
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Entities_Category)]
-    public List<BenchmarkEntity> Query_Entities_DbCommand()
+    public List<BenchmarkEntity> Query_Entities_Command()
     {
-        var entities = new List<BenchmarkEntity>();
+        var result = new List<BenchmarkEntity>();
 
         using var command = this.connection.CreateCommand();
+
         command.CommandText = "SELECT * FROM Entity";
 
         using var dataReader = command.ExecuteReader();
 
         while (dataReader.Read())
         {
-            entities.Add(ReadEntity(dataReader));
+            result.Add(ReadEntity(dataReader));
         }
 
-        return entities;
+        return result;
     }
+
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(Query_Entities_Category)]
+    public List<BenchmarkEntity> Query_Entities_Dapper() =>
+        SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity").ToList();
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Entities_Category)]

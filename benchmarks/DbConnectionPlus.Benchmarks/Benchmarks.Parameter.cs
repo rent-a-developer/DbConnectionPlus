@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(Parameter_DbCommand),
+            nameof(Parameter_Command),
             nameof(Parameter_Dapper),
             nameof(Parameter_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(Parameter_DbCommand),
+            nameof(Parameter_Command),
             nameof(Parameter_Dapper),
             nameof(Parameter_DbConnectionPlus)
         ]
@@ -29,24 +29,23 @@ public partial class Benchmarks
     public void Parameter__Setup() =>
         this.SetupDatabase(0);
 
-    [Benchmark(Baseline = false)]
+    [Benchmark(Baseline = true)]
     [BenchmarkCategory(Parameter_Category)]
-    public Object Parameter_Dapper()
+    public Object Parameter_Command()
     {
         var result = new Int32[5];
 
-        using var dataReader = SqlMapper.ExecuteReader(
-            this.connection,
-            "SELECT @P1, @P2, @P3, @P4, @P5",
-            new
-            {
-                P1 = 1,
-                P2 = 2,
-                P3 = 3,
-                P4 = 4,
-                P5 = 5
-            }
-        );
+        using var command = this.connection.CreateCommand();
+
+        command.CommandText = "SELECT @P1, @P2, @P3, @P4, @P5";
+
+        command.Parameters.Add(new("@P1", 1));
+        command.Parameters.Add(new("@P2", 2));
+        command.Parameters.Add(new("@P3", 3));
+        command.Parameters.Add(new("@P4", 4));
+        command.Parameters.Add(new("@P5", 5));
+
+        using var dataReader = command.ExecuteReader();
 
         dataReader.Read();
 
@@ -59,21 +58,17 @@ public partial class Benchmarks
         return result;
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark(Baseline = false)]
     [BenchmarkCategory(Parameter_Category)]
-    public Object Parameter_DbCommand()
+    public Object Parameter_Dapper()
     {
         var result = new Int32[5];
 
-        using var command = this.connection.CreateCommand();
-        command.CommandText = "SELECT @P1, @P2, @P3, @P4, @P5";
-        command.Parameters.Add(new("@P1", 1));
-        command.Parameters.Add(new("@P2", 2));
-        command.Parameters.Add(new("@P3", 3));
-        command.Parameters.Add(new("@P4", 4));
-        command.Parameters.Add(new("@P5", 5));
-
-        using var dataReader = command.ExecuteReader();
+        using var dataReader = SqlMapper.ExecuteReader(
+            this.connection,
+            "SELECT @P1, @P2, @P3, @P4, @P5",
+            new { P1 = 1, P2 = 2, P3 = 3, P4 = 4, P5 = 5 }
+        );
 
         dataReader.Read();
 

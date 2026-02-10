@@ -3,7 +3,7 @@
 
 #pragma warning disable RCS1196
 
-using System.Dynamic;
+using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
 
 namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
@@ -12,7 +12,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(Query_Dynamic_DbCommand),
+            nameof(Query_Dynamic_Command),
             nameof(Query_Dynamic_Dapper),
             nameof(Query_Dynamic_DbConnectionPlus)
         ]
@@ -23,7 +23,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(Query_Dynamic_DbCommand),
+            nameof(Query_Dynamic_Command),
             nameof(Query_Dynamic_Dapper),
             nameof(Query_Dynamic_DbConnectionPlus)
         ]
@@ -31,14 +31,9 @@ public partial class Benchmarks
     public void Query_Dynamic__Setup() =>
         this.SetupDatabase(Query_Dynamic_EntitiesPerOperation);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(Query_Dynamic_Category)]
-    public List<dynamic> Query_Dynamic_Dapper() =>
-        SqlMapper.Query(this.connection, "SELECT * FROM Entity").ToList();
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Dynamic_Category)]
-    public List<dynamic> Query_Dynamic_DbCommand()
+    public List<dynamic> Query_Dynamic_Command()
     {
         var entities = new List<dynamic>();
 
@@ -49,33 +44,39 @@ public partial class Benchmarks
             var charBuffer = new Char[1];
 
             var ordinal = 0;
-            var entity = new ExpandoObject();
-            IDictionary<String, Object?> dictionary = entity;
 
-            dictionary["Id"] = dataReader.GetInt64(ordinal++);
-            dictionary["BooleanValue"] = dataReader.GetInt64(ordinal++) == 1;
-            dictionary["BytesValue"] = (Byte[])dataReader.GetValue(ordinal++);
-            dictionary["ByteValue"] = dataReader.GetByte(ordinal++);
-            dictionary["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
-                ? charBuffer[0]
-                : throw new();
-            dictionary["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
-            dictionary["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture);
-            dictionary["DoubleValue"] = dataReader.GetDouble(ordinal++);
-            dictionary["EnumValue"] = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++));
-            dictionary["GuidValue"] = Guid.Parse(dataReader.GetString(ordinal++));
-            dictionary["Int16Value"] = (Int16)dataReader.GetInt64(ordinal++);
-            dictionary["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++);
-            dictionary["Int64Value"] = dataReader.GetInt64(ordinal++);
-            dictionary["SingleValue"] = dataReader.GetFloat(ordinal++);
-            dictionary["StringValue"] = dataReader.GetString(ordinal++);
-            dictionary["TimeSpanValue"] = TimeSpan.Parse(dataReader.GetString(ordinal), CultureInfo.InvariantCulture);
+            var dictionary = new Dictionary<String, Object?>
+            {
+                ["Id"] = dataReader.GetInt64(ordinal++),
+                ["BooleanValue"] = dataReader.GetInt64(ordinal++) == 1,
+                ["BytesValue"] = (Byte[])dataReader.GetValue(ordinal++),
+                ["ByteValue"] = dataReader.GetByte(ordinal++),
+                ["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
+                    ? charBuffer[0]
+                    : throw new(),
+                ["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
+                ["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
+                ["DoubleValue"] = dataReader.GetDouble(ordinal++),
+                ["EnumValue"] = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++)),
+                ["GuidValue"] = Guid.Parse(dataReader.GetString(ordinal++)),
+                ["Int16Value"] = (Int16)dataReader.GetInt64(ordinal++),
+                ["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++),
+                ["Int64Value"] = dataReader.GetInt64(ordinal++),
+                ["SingleValue"] = dataReader.GetFloat(ordinal++),
+                ["StringValue"] = dataReader.GetString(ordinal++),
+                ["TimeSpanValue"] = TimeSpan.Parse(dataReader.GetString(ordinal), CultureInfo.InvariantCulture)
+            };
 
-            entities.Add(entity);
+            entities.Add(new DataRow(dictionary));
         }
 
         return entities;
     }
+
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(Query_Dynamic_Category)]
+    public List<dynamic> Query_Dynamic_Dapper() =>
+        SqlMapper.Query(this.connection, "SELECT * FROM Entity").ToList();
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]

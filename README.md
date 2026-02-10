@@ -182,7 +182,7 @@ This prevents SQL injection and keeps the SQL readable.
 > `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables` to `true`.
 
 > [!NOTE]
-> **Note for MySQL users**
+> **Note for MySQL users**  
 > The temporary tables feature of DbConnectionPlus uses `MySqlBulkCopy` to populate temporary tables.
 > Therefore, the option `AllowLoadLocalInfile=true` must be set in the connection string and the server side
 > option `local_infile` must be enabled (e.g. via the statement `SET GLOBAL local_infile=1`).
@@ -378,7 +378,7 @@ DbConnectionExtensions.Configure(config =>
 ```
 
 > [!NOTE]
-> `DbConnectionExtensions.Configure` can only be called once.
+> To prevent multi-threading issues `DbConnectionExtensions.Configure` can only be called once during the application lifetime.
 > After it has been called the configuration of DbConnectionPlus is frozen and cannot be changed anymore.
 
 #### EnumSerializationMode

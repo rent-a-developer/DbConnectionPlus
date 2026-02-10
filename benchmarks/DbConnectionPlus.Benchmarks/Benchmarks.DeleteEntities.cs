@@ -10,7 +10,7 @@ public partial class Benchmarks
     [IterationCleanup(
         Targets =
         [
-            nameof(DeleteEntities_DbCommand),
+            nameof(DeleteEntities_Command),
             nameof(DeleteEntities_Dapper),
             nameof(DeleteEntities_DbConnectionPlus)
         ]
@@ -21,13 +21,39 @@ public partial class Benchmarks
     [IterationSetup(
         Targets =
         [
-            nameof(DeleteEntities_DbCommand),
+            nameof(DeleteEntities_Command),
             nameof(DeleteEntities_Dapper),
             nameof(DeleteEntities_DbConnectionPlus)
         ]
     )]
     public void DeleteEntities__Setup() =>
         this.SetupDatabase(DeleteEntities_EntitiesPerOperation * DeleteEntities_OperationsPerInvoke);
+
+    [Benchmark(Baseline = true)]
+    [BenchmarkCategory(DeleteEntities_Category)]
+    public void DeleteEntities_Command()
+    {
+        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        {
+            using var command = this.connection.CreateCommand();
+            command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
+
+            var idParameter = command.CreateParameter();
+            idParameter.ParameterName = "@Id";
+            command.Parameters.Add(idParameter);
+
+            var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
+
+            foreach (var entity in entities)
+            {
+                idParameter.Value = entity.Id;
+
+                command.ExecuteNonQuery();
+            }
+
+            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
+        }
+    }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(DeleteEntities_Category)]
@@ -39,34 +65,7 @@ public partial class Benchmarks
 
             SqlMapperExtensions.Delete(this.connection, entities);
 
-            foreach (var entity in entities)
-            {
-                this.entitiesInDb.Remove(entity);
-            }
-        }
-    }
-
-    [Benchmark(Baseline = true)]
-    [BenchmarkCategory(DeleteEntities_Category)]
-    public void DeleteEntities_DbCommand()
-    {
-        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
-        {
-            using var command = this.connection.CreateCommand();
-            command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
-
-            var idParameter = command.CreateParameter();
-            idParameter.ParameterName = "@Id";
-            command.Parameters.Add(idParameter);
-
-            foreach (var entity in this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList())
-            {
-                idParameter.Value = entity.Id;
-
-                command.ExecuteNonQuery();
-
-                this.entitiesInDb.Remove(entity);
-            }
+            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
         }
     }
 
@@ -74,16 +73,13 @@ public partial class Benchmarks
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_DbConnectionPlus()
     {
-        for (int i = 0; i < DeleteEntities_EntitiesPerOperation; i++)
+        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
         {
             var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
 
             this.connection.DeleteEntities(entities);
 
-            foreach (var entity in entities)
-            {
-                this.entitiesInDb.Remove(entity);
-            }
+            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
         }
     }
 

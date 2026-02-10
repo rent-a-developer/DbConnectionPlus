@@ -10,7 +10,7 @@ public partial class Benchmarks
     [GlobalCleanup(
         Targets =
         [
-            nameof(Exists_DbCommand),
+            nameof(Exists_Command),
             nameof(Exists_Dapper),
             nameof(Exists_DbConnectionPlus)
         ]
@@ -21,7 +21,7 @@ public partial class Benchmarks
     [GlobalSetup(
         Targets =
         [
-            nameof(Exists_DbCommand),
+            nameof(Exists_Command),
             nameof(Exists_Dapper),
             nameof(Exists_DbConnectionPlus)
         ]
@@ -29,24 +29,9 @@ public partial class Benchmarks
     public void Exists__Setup() =>
         this.SetupDatabase(1);
 
-    [Benchmark(Baseline = false)]
-    [BenchmarkCategory(Exists_Category)]
-    public Boolean Exists_Dapper()
-    {
-        var entityId = this.entitiesInDb[0].Id;
-
-        using var dataReader = SqlMapper.ExecuteReader(
-            this.connection,
-            "SELECT 1 FROM Entity WHERE Id = @Id",
-            new { Id = entityId }
-        );
-
-        return dataReader.Read();
-    }
-
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Exists_Category)]
-    public Boolean Exists_DbCommand()
+    public Boolean Exists_Command()
     {
         var entityId = this.entitiesInDb[0].Id;
 
@@ -60,6 +45,21 @@ public partial class Benchmarks
         command.Parameters.Add(idParameter);
 
         using var dataReader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+
+        return dataReader.Read();
+    }
+
+    [Benchmark(Baseline = false)]
+    [BenchmarkCategory(Exists_Category)]
+    public Boolean Exists_Dapper()
+    {
+        var entityId = this.entitiesInDb[0].Id;
+
+        using var dataReader = SqlMapper.ExecuteReader(
+            this.connection,
+            "SELECT 1 FROM Entity WHERE Id = @Id",
+            new { Id = entityId }
+        );
 
         return dataReader.Read();
     }
