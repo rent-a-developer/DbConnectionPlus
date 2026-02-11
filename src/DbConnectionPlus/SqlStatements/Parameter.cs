@@ -8,5 +8,5 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// </summary>
 /// <param name="Name">The name of the parameter.</param>
 /// <param name="Value">The value of the parameter.</param>
-internal readonly record struct Parameter(String Name, Object? Value) : IInterpolatedSqlStatementFragment;
+internal record Parameter(String Name, Object? Value) : IInterpolatedSqlStatementFragment;
 

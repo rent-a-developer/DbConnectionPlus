@@ -31,76 +31,44 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Parameter_Category)]
-    public Object Parameter_Command()
+    public Object? Parameter_Command()
     {
-        var result = new Int64[5];
-
         using var command = this.connection.CreateCommand();
 
-        command.CommandText = "SELECT @P1, @P2, @P3, @P4, @P5";
+        command.CommandText = "SELECT @P1 + @P2 + @P3 + @P4 + @P5 + @P6 + @P7 + @P8 + @P9 + @P10";
 
         command.Parameters.Add(new("@P1", 1));
         command.Parameters.Add(new("@P2", 2));
         command.Parameters.Add(new("@P3", 3));
         command.Parameters.Add(new("@P4", 4));
         command.Parameters.Add(new("@P5", 5));
+        command.Parameters.Add(new("@P6", 6));
+        command.Parameters.Add(new("@P7", 7));
+        command.Parameters.Add(new("@P8", 8));
+        command.Parameters.Add(new("@P9", 9));
+        command.Parameters.Add(new("@P10", 10));
 
-        using var dataReader = command.ExecuteReader();
-
-        dataReader.Read();
-
-        result[0] = dataReader.GetInt64(0);
-        result[1] = dataReader.GetInt64(1);
-        result[2] = dataReader.GetInt64(2);
-        result[3] = dataReader.GetInt64(3);
-        result[4] = dataReader.GetInt64(4);
-
-        return result;
+        return command.ExecuteScalar();
     }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Parameter_Category)]
-    public Object Parameter_Dapper()
-    {
-        var result = new Int64[5];
-
-        using var dataReader = SqlMapper.ExecuteReader(
+    public Object? Parameter_Dapper() =>
+        SqlMapper.ExecuteScalar(
             this.connection,
-            "SELECT @P1, @P2, @P3, @P4, @P5",
-            new { P1 = 1, P2 = 2, P3 = 3, P4 = 4, P5 = 5 }
+            "SELECT @P1 + @P2 + @P3 + @P4 + @P5 + @P6 + @P7 + @P8 + @P9 + @P10",
+            new { P1 = 1, P2 = 2, P3 = 3, P4 = 4, P5 = 5, P6 = 6, P7 = 7, P8 = 8, P9 = 9, P10 = 10 }
         );
-
-        dataReader.Read();
-
-        result[0] = dataReader.GetInt64(0);
-        result[1] = dataReader.GetInt64(1);
-        result[2] = dataReader.GetInt64(2);
-        result[3] = dataReader.GetInt64(3);
-        result[4] = dataReader.GetInt64(4);
-
-        return result;
-    }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Parameter_Category)]
-    public Object Parameter_DbConnectionPlus()
-    {
-        var result = new Int64[5];
-
-        using var dataReader = this.connection.ExecuteReader(
-            $"SELECT {Parameter(1)}, {Parameter(2)}, {Parameter(3)}, {Parameter(4)}, {Parameter(5)}"
+    public Object Parameter_DbConnectionPlus() =>
+        this.connection.ExecuteScalar<Int64>(
+            $"""
+             SELECT {Parameter(1)} + {Parameter(2)} + {Parameter(3)} + {Parameter(4)} + {Parameter(5)} + 
+                    {Parameter(6)} + {Parameter(7)} + {Parameter(8)} + {Parameter(9)} + {Parameter(10)}
+             """
         );
-
-        dataReader.Read();
-
-        result[0] = dataReader.GetInt64(0);
-        result[1] = dataReader.GetInt64(1);
-        result[2] = dataReader.GetInt64(2);
-        result[3] = dataReader.GetInt64(3);
-        result[4] = dataReader.GetInt64(4);
-
-        return result;
-    }
 
     private const String Parameter_Category = "Parameter";
 }

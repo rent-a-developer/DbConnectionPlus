@@ -10,5 +10,5 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// <param name="Name">The name for the table.</param>
 /// <param name="Values">The values with which to populate the table.</param>
 /// <param name="ValuesType">The type of values in <paramref name="Values" />.</param>
-public readonly record struct InterpolatedTemporaryTable(String Name, IEnumerable Values, Type ValuesType)
+public record InterpolatedTemporaryTable(String Name, IEnumerable Values, Type ValuesType)
     : IInterpolatedSqlStatementFragment;

@@ -17,13 +17,12 @@ public static class Program
         else
         {
             var benchmarks = new Benchmarks();
-            benchmarks.Exists__Setup();
+            benchmarks.Parameter__Setup();
 
-            for (int i = 0; i < 50000; i++)
+            for (int i = 0; i < 5000; i++)
             {
-                benchmarks.Exists_Command();
-                benchmarks.Exists_Dapper();
-                benchmarks.Exists_DbConnectionPlus();
+                benchmarks.Parameter_Command();
+                benchmarks.Parameter_DbConnectionPlus();
             }
         }
     }

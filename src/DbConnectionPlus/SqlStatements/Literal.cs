@@ -7,5 +7,5 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// A fragment of an interpolated SQL statement that represents a literal string.
 /// </summary>
 /// <param name="Value">The literal string.</param>
-internal readonly record struct Literal(String Value) : IInterpolatedSqlStatementFragment;
+internal record Literal(String Value) : IInterpolatedSqlStatementFragment;
 
