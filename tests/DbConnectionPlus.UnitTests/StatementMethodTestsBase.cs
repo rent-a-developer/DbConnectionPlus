@@ -40,7 +40,7 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
         );
 
         this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32) timeout.TotalSeconds),
+            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32)timeout.TotalSeconds),
             Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }
@@ -98,7 +98,7 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
         );
 
         this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32) timeout.TotalSeconds),
+            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (Int32)timeout.TotalSeconds),
             Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
         );
     }

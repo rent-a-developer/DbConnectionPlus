@@ -9,4 +9,3 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// <param name="Name">The name of the parameter.</param>
 /// <param name="Value">The value of the parameter.</param>
 internal record Parameter(String Name, Object? Value) : IInterpolatedSqlStatementFragment;
-

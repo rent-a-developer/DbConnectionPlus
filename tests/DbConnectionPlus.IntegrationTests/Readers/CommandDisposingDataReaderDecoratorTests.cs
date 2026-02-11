@@ -58,7 +58,7 @@ public abstract class
         using var decorator = new CommandDisposingDataReaderDecorator(
             decoratedReader,
             this.DatabaseAdapter,
-            commandDisposer, 
+            commandDisposer,
             cancellationToken
         );
 
@@ -105,7 +105,7 @@ public abstract class
         await using var decorator = new CommandDisposingDataReaderDecorator(
             decoratedReader,
             this.DatabaseAdapter,
-            commandDisposer, 
+            commandDisposer,
             cancellationToken
         );
 

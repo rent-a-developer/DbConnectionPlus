@@ -386,7 +386,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     private static void DropTemporaryTable(String name, SqliteConnection connection, SqliteTransaction? transaction)
     {
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $"DROP TABLE IF EXISTS temp.\"{name}\"";
         command.Transaction = transaction;
 
@@ -411,7 +411,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 #pragma warning disable CA2007
         await using var command = connection.CreateCommand();
 #pragma warning restore CA2007
-        
+
         command.CommandText = $"DROP TABLE IF EXISTS temp.\"{name}\"";
         command.Transaction = transaction;
 

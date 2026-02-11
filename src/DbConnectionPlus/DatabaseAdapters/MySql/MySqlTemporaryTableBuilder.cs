@@ -81,10 +81,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             using var createCommand = connection.CreateCommand();
 
             createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                );
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
             createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
@@ -186,10 +186,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 #pragma warning restore CA2007
 
             createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                );
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
 
             createCommand.Transaction = transaction;
 
@@ -401,7 +401,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
         command.Transaction = transaction;
-        
+
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
         command.ExecuteNonQuery();

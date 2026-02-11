@@ -185,11 +185,13 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc char[512]);
+        using var codeBuilder = new ValueStringBuilder(stackalloc Char[512]);
+
         var parameterNameOccurrences = new Dictionary<String, Int16>(
             statement.Fragments.Count,
             StringComparer.OrdinalIgnoreCase
         );
+
         var parameterCount = 0;
 
         var command = connection.CreateCommand();

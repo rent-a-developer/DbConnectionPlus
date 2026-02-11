@@ -8,4 +8,3 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// </summary>
 /// <param name="Value">The literal string.</param>
 internal record Literal(String Value) : IInterpolatedSqlStatementFragment;
-

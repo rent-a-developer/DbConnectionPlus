@@ -9,11 +9,15 @@ A lightweight .NET ORM and extension library for the type
 that adds high-performance, type-safe helpers to reduce boilerplate code, boost productivity, and make working with 
 SQL databases in C# more enjoyable.
 
+If you frequently write SQL queries in your C# code and want to avoid boilerplate code, you have come to the right 
+place!
+
 Highlights:
-- Parameterized interpolated-string support
-- On-the-fly temporary tables from in-memory collections
+- [Parameterized interpolated-string support](#parameters-via-interpolated-strings)
+- [On-the-fly temporary tables](#on-the-fly-temporary-tables-via-interpolated-strings) from in-memory collections
 - Entity mapping helpers (insert, update, delete, query)
 - Designed to be used in synchronous and asynchronous code paths
+- Minimal performance and allocation overhead
 
 The following database systems are supported out of the box:
 - MySQL (via [MySqlConnector](https://www.nuget.org/packages/MySqlConnector/))

@@ -107,7 +107,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         if (!this.entityTypeBuilders.TryGetValue(typeof(TEntity), out var builder))
         {
             builder = new EntityTypeBuilder<TEntity>();
-            
+
             this.entityTypeBuilders.Add(typeof(TEntity), builder);
         }
 

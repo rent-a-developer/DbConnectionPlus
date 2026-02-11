@@ -82,7 +82,7 @@ public static partial class DbConnectionExtensions
             return new CommandDisposingDataReaderDecorator(
                 dataReader,
                 databaseAdapter,
-                commandDisposer, 
+                commandDisposer,
                 cancellationToken
             );
         }
@@ -171,7 +171,7 @@ public static partial class DbConnectionExtensions
             return new CommandDisposingDataReaderDecorator(
                 dataReader,
                 databaseAdapter,
-                commandDisposer, 
+                commandDisposer,
                 cancellationToken
             );
         }

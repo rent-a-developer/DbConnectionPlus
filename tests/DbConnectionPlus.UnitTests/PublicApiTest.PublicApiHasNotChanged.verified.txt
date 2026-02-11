@@ -251,7 +251,7 @@ namespace RentADeveloper.DbConnectionPlus.Exceptions
 }
 namespace RentADeveloper.DbConnectionPlus.SqlStatements
 {
-    public readonly struct InterpolatedParameter : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedParameter>
+    public record InterpolatedParameter : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedParameter>
     {
         public InterpolatedParameter(string? InferredName, object? Value) { }
         public string? InferredName { get; init; }
@@ -276,7 +276,7 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements
         public static bool operator !=(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement left, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement right) { }
         public static bool operator ==(RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement left, RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedSqlStatement right) { }
     }
-    public readonly struct InterpolatedTemporaryTable : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable>
+    public record InterpolatedTemporaryTable : System.IEquatable<RentADeveloper.DbConnectionPlus.SqlStatements.InterpolatedTemporaryTable>
     {
         public InterpolatedTemporaryTable(string Name, System.Collections.IEnumerable Values, System.Type ValuesType) { }
         public string Name { get; init; }

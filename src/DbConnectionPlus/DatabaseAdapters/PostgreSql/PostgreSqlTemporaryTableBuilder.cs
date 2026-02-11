@@ -416,7 +416,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     private static void DropTemporaryTable(String name, NpgsqlConnection connection, NpgsqlTransaction? transaction)
     {
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $"DROP TABLE IF EXISTS \"{name}\"";
         command.Transaction = transaction;
 

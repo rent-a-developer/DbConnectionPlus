@@ -37,7 +37,7 @@ public partial class Benchmarks
         var result = new List<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>();
 
         using var command = this.connection.CreateCommand();
-        
+
         command.CommandText = "SELECT Id, DateTimeValue, EnumValue, StringValue FROM Entity";
 
         using var dataReader = command.ExecuteReader();

@@ -90,7 +90,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         else
         {
             using var createCommand = connection.CreateCommand();
-            
+
             createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
                 quotedTableName,
                 valuesType,
@@ -553,7 +553,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     )
     {
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $"DROP TABLE {quotedTableName}";
         command.Transaction = transaction;
 

@@ -33,7 +33,7 @@ public partial class Benchmarks
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_Command()
     {
-        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
         {
             using var command = this.connection.CreateCommand();
             command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
@@ -59,7 +59,7 @@ public partial class Benchmarks
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_Dapper()
     {
-        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
         {
             var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
 
@@ -73,7 +73,7 @@ public partial class Benchmarks
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_DbConnectionPlus()
     {
-        for (int i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
         {
             var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
 

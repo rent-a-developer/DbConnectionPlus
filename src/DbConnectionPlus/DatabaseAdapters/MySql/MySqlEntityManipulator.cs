@@ -742,7 +742,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
         var command = connection.CreateCommand();
-        
+
         command.CommandText = this.GetDeleteEntitySqlCode(entityTypeMetadata);
         command.Transaction = transaction;
 
@@ -782,7 +782,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
         var command = connection.CreateCommand();
-        
+
         command.CommandText = this.GetInsertEntitySqlCode(entityTypeMetadata);
         command.Transaction = transaction;
 
@@ -818,7 +818,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
         var command = connection.CreateCommand();
-        
+
         command.CommandText = this.GetUpdateEntitySqlCode(entityTypeMetadata);
         command.Transaction = transaction;
 

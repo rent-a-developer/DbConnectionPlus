@@ -25,10 +25,10 @@ public class MockDbParameterCollection : DbParameterCollection
     public override void Clear() => this.parameters.Clear();
 
     /// <inheritdoc />
-    public override bool Contains(Object value) => this.parameters.Contains(value);
+    public override Boolean Contains(Object value) => this.parameters.Contains(value);
 
     /// <inheritdoc />
-    public override bool Contains(String value) => this.IndexOf(value) != -1;
+    public override Boolean Contains(String value) => this.IndexOf(value) != -1;
 
     /// <inheritdoc />
     public override void CopyTo(Array array, Int32 index) =>
@@ -43,7 +43,7 @@ public class MockDbParameterCollection : DbParameterCollection
     /// <inheritdoc />
     public override Int32 IndexOf(String parameterName)
     {
-        for (Int32 index = 0; index < this.parameters.Count; ++index)
+        for (var index = 0; index < this.parameters.Count; ++index)
         {
             if (this.parameters[index].ParameterName == parameterName)
                 return index;
@@ -83,8 +83,8 @@ public class MockDbParameterCollection : DbParameterCollection
 
     private Int32 IndexOfChecked(String parameterName)
     {
-        Int32 num = this.IndexOf(parameterName);
-        return num != -1 ? num : throw new IndexOutOfRangeException();
+        var index = this.IndexOf(parameterName);
+        return index != -1 ? index : throw new IndexOutOfRangeException();
     }
 
     private readonly List<DbParameter> parameters = [];

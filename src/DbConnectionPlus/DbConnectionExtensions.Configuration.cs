@@ -15,6 +15,11 @@ public static partial class DbConnectionExtensions
     /// Configures DbConnectionPlus.
     /// </summary>
     /// <param name="configureAction">The action that configures DbConnectionPlus.</param>
+    /// <remarks>
+    /// This method should only be called once during the application's lifetime.
+    /// This is because the configuration is frozen after it is set for the first time to ensure thread safety and to
+    /// prevent changes to the configuration after it has been used.
+    /// </remarks>
     public static void Configure(Action<DbConnectionPlusConfiguration> configureAction)
     {
         ArgumentNullException.ThrowIfNull(configureAction);

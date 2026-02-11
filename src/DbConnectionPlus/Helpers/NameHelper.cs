@@ -44,18 +44,18 @@ internal static class NameHelper
         }
 
         var scanLength = Math.Min(expression.Length, maximumLength);
-        
+
         var buffer = scanLength <= 512 ? stackalloc Char[scanLength] : new Char[scanLength];
 
         ref var src = ref MemoryMarshal.GetReference(expression);
         ref var dst = ref MemoryMarshal.GetReference(buffer);
 
         var count = 0;
-        
+
         for (var i = 0; i < scanLength; i++)
         {
             var character = Unsafe.Add(ref src, i);
-            
+
             if (
                 (UInt32)(character - '0') <= 9 || // Digits
                 (UInt32)(character - 'A') <= 25 || // Uppercase letters

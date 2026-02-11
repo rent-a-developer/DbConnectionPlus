@@ -439,7 +439,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     private static void DropTemporaryTable(String name, SqlConnection connection, SqlTransaction? transaction)
     {
         using var command = connection.CreateCommand();
-        
+
         command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
         command.Transaction = transaction;
 
@@ -488,7 +488,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             static (_, args) =>
             {
                 using var command = args.connection.CreateCommand();
-                
+
                 command.CommandText = GetCurrentDatabaseCollationQuery;
                 command.Transaction = args.transaction;
 

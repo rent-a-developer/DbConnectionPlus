@@ -337,8 +337,8 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     }
 
     private readonly CancellationToken commandCancellationToken;
-    private readonly IDatabaseAdapter databaseAdapter;
     private readonly DbCommandDisposer commandDisposer;
+    private readonly IDatabaseAdapter databaseAdapter;
     private readonly DbDataReader dataReader;
     private Boolean isDisposed;
 }
