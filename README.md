@@ -9,8 +9,7 @@ A lightweight .NET ORM and extension library for the type
 that adds high-performance, type-safe helpers to reduce boilerplate code, boost productivity, and make working with 
 SQL databases in C# more enjoyable.
 
-If you frequently write SQL queries in your C# code and want to avoid boilerplate code, you have come to the right 
-place!
+If you frequently write SQL queries in your C# code and want to avoid boilerplate code, you will love DbConnectionPlus!
 
 Highlights:
 - [Parameterized interpolated-string support](#parameters-via-interpolated-strings)
