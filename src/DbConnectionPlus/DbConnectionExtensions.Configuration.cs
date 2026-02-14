@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
@@ -16,26 +15,26 @@ public static partial class DbConnectionExtensions
     /// Configures DbConnectionPlus.
     /// </summary>
     /// <param name="configureAction">The action that configures DbConnectionPlus.</param>
+    /// <remarks>
+    /// This method should only be called once during the application's lifetime.
+    /// This is because the configuration is frozen after it is set for the first time to ensure thread safety and to
+    /// prevent changes to the configuration after it has been used.
+    /// </remarks>
     public static void Configure(Action<DbConnectionPlusConfiguration> configureAction)
     {
         ArgumentNullException.ThrowIfNull(configureAction);
 
-        configureAction(DbConnectionPlusConfiguration.Instance);
+        lock (configurationLockObject)
+        {
+            configureAction(DbConnectionPlusConfiguration.Instance);
 
-        ((IFreezable)DbConnectionPlusConfiguration.Instance).Freeze();
+            ((IFreezable)DbConnectionPlusConfiguration.Instance).Freeze();
 
-        // We need to reset the entity type metadata cache, because the configuration may have changed how entities
-        // are mapped that were previously mapped via data annotation attributes or conventions.
-        EntityHelper.ResetEntityTypeMetadataCache();
+            // We need to reset the entity type metadata cache, because the configuration may have changed how entities
+            // are mapped that were previously mapped via data annotation attributes or conventions.
+            EntityHelper.ResetEntityTypeMetadataCache();
+        }
     }
-
-    /// <summary>
-    /// The factory to use to create instances of <see cref="DbCommand" />.
-    /// </summary>
-    /// <remarks>
-    /// This property is mainly used to test the cancellation of SQL statements in integration tests.
-    /// </remarks>
-    internal static IDbCommandFactory DbCommandFactory { get; set; } = new DefaultDbCommandFactory();
 
     /// <summary>
     /// A function to be called before executing a database command via DbConnectionPlus.
@@ -47,4 +46,6 @@ public static partial class DbConnectionExtensions
         IReadOnlyList<InterpolatedTemporaryTable> temporaryTables
     ) =>
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
+
+    private static readonly Object configurationLockObject = new();
 }

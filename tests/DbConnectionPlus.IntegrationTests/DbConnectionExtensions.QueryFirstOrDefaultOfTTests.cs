@@ -254,7 +254,7 @@ public abstract class
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() =>
                 CallApi<Entity>(
@@ -284,7 +284,7 @@ public abstract class
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -331,7 +331,7 @@ public abstract class
                 $"SELECT * FROM {TemporaryTable(entities)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -347,18 +347,18 @@ public abstract class
             // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
 
             await Invoking(() =>
-                    CallApi<EntityWithCharProperty>(
+                    CallApi<Entity>(
                         useAsyncApi,
                         this.Connection,
-                        $"SELECT '' AS {Q("Char")}",
+                        $"SELECT '' AS {Q("CharValue")}",
                         cancellationToken: TestContext.Current.CancellationToken
                     )
                 )
                 .Should().ThrowAsync<InvalidCastException>()
                 .WithMessage(
-                    "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
-                    $"to the type {typeof(Char)} of the corresponding property of the type " +
-                    $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
+                    "The column 'CharValue' returned by the SQL statement contains a value that could not be " +
+                    $"converted to the type {typeof(Char)} of the corresponding property of the type " +
+                    $"{typeof(Entity)}. See inner exception for details.*"
                 )
                 .WithInnerException(typeof(InvalidCastException))
                 .WithMessage(
@@ -368,18 +368,18 @@ public abstract class
         }
 
         await Invoking(() =>
-                CallApi<EntityWithCharProperty>(
+                CallApi<Entity>(
                     useAsyncApi,
                     this.Connection,
-                    $"SELECT 'ab' AS {Q("Char")}",
+                    $"SELECT 'ab' AS {Q("CharValue")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted " +
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
                 $"to the type {typeof(Char)} of the corresponding property of the type " +
-                $"{typeof(EntityWithCharProperty)}. See inner exception for details.*"
+                $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException(typeof(InvalidCastException))
             .WithMessage(
@@ -398,13 +398,13 @@ public abstract class
     {
         var character = Generate.Single<Char>();
 
-        (await CallApi<EntityWithCharProperty>(
+        (await CallApi<Entity>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT '{character}' AS {Q("Char")}",
+                $"SELECT '{character}' AS {Q("CharValue")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().BeEquivalentTo(new EntityWithCharProperty { Char = character });
+            .Should().BeEquivalentTo(new Entity { CharValue = character });
     }
 
     [Theory]
@@ -505,17 +505,17 @@ public abstract class
         )
     {
         var entity = (await Invoking(() =>
-                CallApi<EntityWithNonNullableProperty>(
+                CallApi<Entity>(
                     useAsyncApi,
                     this.Connection,
-                    $"SELECT 1 AS {Q("Id")}, 2 AS {Q("Value")}, 3 AS {Q("NonExistent")}",
+                    $"SELECT 1 AS {Q("Id")}, 2 AS {Q("Int32Value")}, 3 AS {Q("NonExistent")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
             .Should().NotThrowAsync()).Subject;
 
         entity
-            .Should().BeEquivalentTo(new EntityWithNonNullableProperty { Id = 1, Value = 2 });
+            .Should().BeEquivalentTo(new Entity { Id = 1, Int32Value = 2 });
     }
 
     [Theory]
@@ -535,7 +535,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entitiesWithDifferentCasingProperties[0]);
+            .Should().BeEquivalentTo(entitiesWithDifferentCasingProperties[0]);
     }
 
     [Theory]
@@ -640,7 +640,7 @@ public abstract class
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -662,7 +662,7 @@ public abstract class
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -719,7 +719,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -748,21 +748,21 @@ public abstract class
     )
     {
         this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("BooleanValue")}) VALUES(1, NULL)"
         );
 
         return Invoking(() =>
-                CallApi<EntityWithNonNullableProperty>(
+                CallApi<Entity>(
                     useAsyncApi,
                     this.Connection,
-                    $"SELECT * FROM {Q("EntityWithNonNullableProperty")}",
+                    $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
-                $"property of the type {typeof(EntityWithNonNullableProperty)} is non-nullable.*"
+                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the " +
+                $"corresponding property of the type {typeof(Entity)} is non-nullable.*"
             );
     }
 
@@ -774,32 +774,16 @@ public abstract class
     )
     {
         await this.Connection.ExecuteNonQueryAsync(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("NullableBooleanValue")}) VALUES(1, NULL)"
         );
 
-        (await CallApi<EntityWithNullableProperty>(
+        (await CallApi<Entity>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT * FROM {Q("EntityWithNullableProperty")}",
+                $"SELECT {Q("Id")}, {Q("NullableBooleanValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().BeEquivalentTo(new EntityWithNullableProperty { Id = 1, Value = null });
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task QueryFirstOrDefault_EntityType_ShouldMaterializeBinaryData(Boolean useAsyncApi)
-    {
-        var bytes = Generate.Single<Byte[]>();
-
-        (await CallApi<EntityWithBinaryProperty>(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT {Parameter(bytes)} AS BinaryData",
-                cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(new EntityWithBinaryProperty { BinaryData = bytes });
+            .Should().BeEquivalentTo(new Entity { Id = 1, NullableBooleanValue = null });
     }
 
     [Theory]
@@ -817,7 +801,7 @@ public abstract class
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -856,7 +840,7 @@ public abstract class
                 $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entities[0].Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -877,7 +861,7 @@ public abstract class
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -960,7 +944,7 @@ public abstract class
                  """,
                 cancellationToken: TestContext.Current.CancellationToken
             ))
-            .Should().Be(entities[0]);
+            .Should().BeEquivalentTo(entities[0]);
     }
 
     [Theory]
@@ -979,7 +963,7 @@ public abstract class
                     transaction,
                     cancellationToken: TestContext.Current.CancellationToken
                 ))
-                .Should().Be(entities[0]);
+                .Should().BeEquivalentTo(entities[0]);
 
             await transaction.RollbackAsync();
         }
@@ -1185,21 +1169,21 @@ public abstract class
     )
     {
         this.Connection.ExecuteNonQuery(
-            $"INSERT INTO {Q("EntityWithNonNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("BooleanValue")}) VALUES(1, NULL)"
         );
 
         return Invoking(() =>
-                CallApi<ValueTuple<Int32>>(
+                CallApi<ValueTuple<Boolean>>(
                     useAsyncApi,
                     this.Connection,
-                    $"SELECT {Q("Value")} FROM {Q("EntityWithNonNullableProperty")}",
+                    $"SELECT {Q("BooleanValue")} FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
-                "The column 'Value' returned by the SQL statement contains a NULL value, but the corresponding " +
-                $"field of the value tuple type {typeof(ValueTuple<Int32>)} is non-nullable.*"
+                "The column 'BooleanValue' returned by the SQL statement contains a NULL value, but the " +
+                $"corresponding field of the value tuple type {typeof(ValueTuple<Boolean>)} is non-nullable.*"
             );
     }
 
@@ -1212,13 +1196,13 @@ public abstract class
         )
     {
         await this.Connection.ExecuteNonQueryAsync(
-            $"INSERT INTO {Q("EntityWithNullableProperty")} ({Q("Id")}, {Q("Value")}) VALUES(1, NULL)"
+            $"INSERT INTO {Q("Entity")} ({Q("Id")}, {Q("NullableBooleanValue")}) VALUES(1, NULL)"
         );
 
-        (await CallApi<ValueTuple<Int32?>>(
+        (await CallApi<ValueTuple<Boolean?>>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT {Q("Value")} FROM {Q("EntityWithNullableProperty")}",
+                $"SELECT {Q("NullableBooleanValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(new(null));

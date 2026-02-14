@@ -167,6 +167,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         (
             Id BIGINT NOT NULL PRIMARY KEY,
             BooleanValue BIT,
+            BytesValue VARBINARY(MAX),
             ByteValue TINYINT,
             CharValue CHAR(1),
             DateOnlyValue DATE,
@@ -178,6 +179,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
             Int16Value SMALLINT,
             Int32Value INT,
             Int64Value BIGINT,
+            NullableBooleanValue BIT NULL,
             SingleValue REAL,
             StringValue NVARCHAR(MAX),
             TimeOnlyValue TIME,
@@ -206,29 +208,17 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE EntityWithNonNullableProperty
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            Value BIGINT NULL
-        );
-        GO
-
-        CREATE TABLE EntityWithNullableProperty
-        (
-            Id BIGINT NOT NULL PRIMARY KEY,
-            Value BIGINT NULL
-        );
-        GO
-
         CREATE TABLE MappingTestEntity
         (
-            KeyColumn1 BIGINT NOT NULL,
-            KeyColumn2 BIGINT NOT NULL,
-            ValueColumn INT NOT NULL,
-            ComputedColumn AS ([ValueColumn]+(999)),
-            IdentityColumn INT IDENTITY(1,1) NOT NULL,
-            NotMappedColumn VARCHAR(200) NULL,
-            PRIMARY KEY (KeyColumn1, KeyColumn2)
+            Computed AS ([Value]+(999)),
+            ConcurrencyToken VARBINARY(max),
+            [Identity] INT IDENTITY(1,1) NOT NULL,
+            Key1 BIGINT NOT NULL,
+            Key2 BIGINT NOT NULL,
+            Value INT NOT NULL,
+            NotMapped VARCHAR(200) NULL,
+            RowVersion ROWVERSION,
+            PRIMARY KEY (Key1, Key2)
         );
         GO
 
@@ -289,12 +279,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE EntityWithEnumStoredAsInteger;
-        GO
-
-        TRUNCATE TABLE EntityWithNonNullableProperty;
-        GO
-
-        TRUNCATE TABLE EntityWithNullableProperty;
         GO
 
         TRUNCATE TABLE MappingTestEntity;

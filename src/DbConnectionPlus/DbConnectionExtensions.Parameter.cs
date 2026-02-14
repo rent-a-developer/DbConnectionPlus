@@ -73,14 +73,14 @@ public static partial class DbConnectionExtensions
     {
         String? inferredParameterName = null;
 
-        if (!String.IsNullOrWhiteSpace(parameterValueExpression))
+        if (parameterValueExpression?.Length > 0)
         {
             var nameFromCallerArgumentExpression = NameHelper.CreateNameFromCallerArgumentExpression(
                 parameterValueExpression,
                 MaximumParameterNameLength
             );
 
-            if (!String.IsNullOrWhiteSpace(nameFromCallerArgumentExpression))
+            if (nameFromCallerArgumentExpression.Length > 0)
             {
                 inferredParameterName = nameFromCallerArgumentExpression;
             }

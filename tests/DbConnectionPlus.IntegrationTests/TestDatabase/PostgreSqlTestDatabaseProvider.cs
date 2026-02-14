@@ -138,10 +138,13 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
     private const String CreateDatabaseObjectsSql =
         """
+        CREATE EXTENSION IF NOT EXISTS pgcrypto; -- Needed for gen_random_bytes()
+
         CREATE TABLE "Entity"
         (
             "Id" bigint NOT NULL PRIMARY KEY,
             "BooleanValue" boolean,
+            "BytesValue" bytea,
             "ByteValue" smallint,
             "CharValue" char(1),
             "DateOnlyValue" date,
@@ -153,6 +156,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Int16Value" smallint,
             "Int32Value" integer,
             "Int64Value" bigint,
+            "NullableBooleanValue" boolean NULL,
             "SingleValue" real,
             "StringValue" text,
             "TimeOnlyValue" time,
@@ -171,28 +175,31 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
             "Enum" integer NULL
         );
 
-        CREATE TABLE "EntityWithNonNullableProperty"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "Value" bigint NULL
-        );
-
-        CREATE TABLE "EntityWithNullableProperty"
-        (
-            "Id" bigint NOT NULL PRIMARY KEY,
-            "Value" bigint NULL
-        );
-
         CREATE TABLE "MappingTestEntity"
         (
-            "KeyColumn1" bigint NOT NULL,
-            "KeyColumn2" bigint NOT NULL,
-            "ValueColumn" integer NOT NULL,
-            "ComputedColumn" integer GENERATED ALWAYS AS ("ValueColumn"+(999)),
-            "IdentityColumn" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
-            "NotMappedColumn" text NULL,
-            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+            "Computed" integer GENERATED ALWAYS AS ("Value"+(999)),
+            "ConcurrencyToken" bytea,
+            "Identity" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
+            "Key1" bigint NOT NULL,
+            "Key2" bigint NOT NULL,
+            "Value" integer NOT NULL,
+            "NotMapped" text NULL,
+            "RowVersion" bytea DEFAULT gen_random_bytes(8),
+            PRIMARY KEY ("Key1", "Key2")
         );
+
+        CREATE OR REPLACE FUNCTION "UpdateMappingTestEntityRowVersion"()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW."RowVersion" = gen_random_bytes(8);
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER "TriggerMappingTestEntityRowVersion"
+        BEFORE UPDATE ON "MappingTestEntity"
+        FOR EACH ROW
+        EXECUTE FUNCTION "UpdateMappingTestEntityRowVersion"();
 
         CREATE PROCEDURE "GetEntities" ()
         LANGUAGE SQL
@@ -238,8 +245,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "Entity";
         TRUNCATE TABLE "EntityWithEnumStoredAsString";
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        TRUNCATE TABLE "EntityWithNonNullableProperty";
-        TRUNCATE TABLE "EntityWithNullableProperty";
         TRUNCATE TABLE "MappingTestEntity";
         """;
 

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 namespace RentADeveloper.DbConnectionPlus.Helpers;
 
 /// <summary>
@@ -21,42 +23,54 @@ internal static class NameHelper
     /// to the specified maximum length.
     /// The first character of the resulting name is converted to uppercase if it is a lowercase letter.
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static String CreateNameFromCallerArgumentExpression(ReadOnlySpan<Char> expression, Int32 maximumLength)
     {
-        if (expression.StartsWith("this.", StringComparison.OrdinalIgnoreCase))
+        // Remove common prefixes that are not relevant for the name.
+
+        if (expression.StartsWith("this.", StringComparison.Ordinal))
         {
             expression = expression[5..];
         }
 
-        if (expression.StartsWith("new", StringComparison.OrdinalIgnoreCase))
+        if (expression.StartsWith("new", StringComparison.Ordinal))
         {
             expression = expression[3..];
         }
 
-        if (expression.StartsWith("Get", StringComparison.OrdinalIgnoreCase))
+        if (expression.StartsWith("Get", StringComparison.Ordinal))
         {
             expression = expression[3..];
         }
 
-        var buffer = expression.Length <= 512 ? stackalloc Char[expression.Length] : new Char[expression.Length];
+        var scanLength = Math.Min(expression.Length, maximumLength);
+
+        var buffer = scanLength <= 512 ? stackalloc Char[scanLength] : new Char[scanLength];
+
+        ref var src = ref MemoryMarshal.GetReference(expression);
+        ref var dst = ref MemoryMarshal.GetReference(buffer);
+
         var count = 0;
 
-        foreach (var character in expression)
+        for (var i = 0; i < scanLength; i++)
         {
-            if (count >= maximumLength)
-            {
-                break;
-            }
+            var character = Unsafe.Add(ref src, i);
 
-            if (character is >= 'A' and <= 'Z' or >= 'a' and <= 'z' or >= '0' and <= '9' or '_')
+            if (
+                (UInt32)(character - '0') <= 9 || // Digits
+                (UInt32)(character - 'A') <= 25 || // Uppercase letters
+                (UInt32)(character - 'a') <= 25 || // Lowercase letters
+                character == '_'
+            )
             {
-                buffer[count++] = character;
+                Unsafe.Add(ref dst, count++) = character;
             }
         }
 
-        if (count > 0 && Char.IsLower(buffer[0]))
+        // Convert the first character to uppercase if it is a lowercase letter.
+        if (count != 0 && (UInt32)(buffer[0] - 'a') <= 25)
         {
-            buffer[0] = Char.ToUpper(buffer[0], CultureInfo.InvariantCulture);
+            buffer[0] = (Char)(buffer[0] - 32);
         }
 
         return new(buffer[..count]);

@@ -10,8 +10,26 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// </summary>
     /// <param name="entityTypeBuilder">The entity type builder this property builder belongs to.</param>
     /// <param name="propertyName">The name of the property being configured.</param>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="entityTypeBuilder" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="propertyName" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentException"><paramref name="propertyName" /> is whitespace.</exception>
     internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, String propertyName)
     {
+        ArgumentNullException.ThrowIfNull(entityTypeBuilder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+
         this.entityTypeBuilder = entityTypeBuilder;
         this.propertyName = propertyName;
     }
@@ -47,6 +65,23 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
         this.EnsureNotFrozen();
 
         this.isComputed = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Marks the property as participating in optimistic concurrency checks.
+    /// Such properties will be checked during delete and update operations.
+    /// When their values in the database do not match the original values, the delete or update will fail.
+    /// </summary>
+    /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
+    public EntityPropertyBuilder IsConcurrencyToken()
+    {
+        this.EnsureNotFrozen();
+
+        this.isConcurrencyToken = true;
         return this;
     }
 
@@ -114,6 +149,24 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
         return this;
     }
 
+    /// <summary>
+    /// Marks the property as mapped to a row version database column.
+    /// Such properties will be checked during delete and update operations.
+    /// When their values in the database do not match the original values, the delete or update will fail.
+    /// After an insert or update, their values will be read back from the database and populated on the entity.
+    /// </summary>
+    /// <returns>This builder instance for further configuration.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
+    /// </exception>
+    public EntityPropertyBuilder IsRowVersion()
+    {
+        this.EnsureNotFrozen();
+
+        this.isRowVersion = true;
+        return this;
+    }
+
     /// <inheritdoc />
     String? IEntityPropertyBuilder.ColumnName => this.columnName;
 
@@ -124,6 +177,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     Boolean IEntityPropertyBuilder.IsComputed => this.isComputed;
 
     /// <inheritdoc />
+    Boolean IEntityPropertyBuilder.IsConcurrencyToken => this.isConcurrencyToken;
+
+    /// <inheritdoc />
     Boolean IEntityPropertyBuilder.IsIdentity => this.isIdentity;
 
     /// <inheritdoc />
@@ -131,6 +187,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
 
     /// <inheritdoc />
     Boolean IEntityPropertyBuilder.IsKey => this.isKey;
+
+    /// <inheritdoc />
+    Boolean IEntityPropertyBuilder.IsRowVersion => this.isRowVersion;
 
     /// <inheritdoc />
     String IEntityPropertyBuilder.PropertyName => this.propertyName;
@@ -152,8 +211,10 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
 
     private String? columnName;
     private Boolean isComputed;
+    private Boolean isConcurrencyToken;
     private Boolean isFrozen;
     private Boolean isIdentity;
     private Boolean isIgnored;
     private Boolean isKey;
+    private Boolean isRowVersion;
 }

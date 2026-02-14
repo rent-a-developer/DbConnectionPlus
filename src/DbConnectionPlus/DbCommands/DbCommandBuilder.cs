@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
-using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
 namespace RentADeveloper.DbConnectionPlus.DbCommands;
@@ -60,7 +59,7 @@ internal static class DbCommandBuilder
         ArgumentNullException.ThrowIfNull(databaseAdapter);
         ArgumentNullException.ThrowIfNull(connection);
 
-        var (command, temporaryTables, cancellationTokenRegistration) = BuildDbCommandCore(
+        var (command, cancellationTokenRegistration) = BuildDbCommandCore(
             statement,
             databaseAdapter,
             connection,
@@ -72,10 +71,10 @@ internal static class DbCommandBuilder
 
         TemporaryTableDisposer[] temporaryTableDisposers = [];
 
-        if (temporaryTables.Length > 0)
+        if (statement.TemporaryTables.Count > 0)
         {
             temporaryTableDisposers = BuildTemporaryTables(
-                temporaryTables,
+                statement.TemporaryTables,
                 databaseAdapter,
                 connection,
                 transaction,
@@ -135,7 +134,7 @@ internal static class DbCommandBuilder
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(databaseAdapter);
 
-        var (command, temporaryTables, cancellationTokenRegistration) = BuildDbCommandCore(
+        var (command, cancellationTokenRegistration) = BuildDbCommandCore(
             statement,
             databaseAdapter,
             connection,
@@ -147,10 +146,10 @@ internal static class DbCommandBuilder
 
         TemporaryTableDisposer[] temporaryTableDisposers = [];
 
-        if (temporaryTables.Length > 0)
+        if (statement.TemporaryTables.Count > 0)
         {
             temporaryTableDisposers = await BuildTemporaryTablesAsync(
-                temporaryTables,
+                statement.TemporaryTables,
                 databaseAdapter,
                 connection,
                 transaction,
@@ -174,10 +173,9 @@ internal static class DbCommandBuilder
     /// <param name="commandType">The <see cref="CommandType" /> to assign to the command.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the command.</param>
     /// <returns>
-    /// A tuple containing the created <see cref="DbCommand" />, the temporary tables for the statement, and the
-    /// cancellation token registration for the command.
+    /// A tuple containing the created <see cref="DbCommand" /> and the cancellation token registration for the command.
     /// </returns>
-    private static (DbCommand, InterpolatedTemporaryTable[], CancellationTokenRegistration) BuildDbCommandCore(
+    private static (DbCommand, CancellationTokenRegistration) BuildDbCommandCore(
         InterpolatedSqlStatement statement,
         IDatabaseAdapter databaseAdapter,
         DbConnection connection,
@@ -187,107 +185,83 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc Char[500]);
-        var parameters = new Dictionary<String, Object?>(StringComparer.InvariantCultureIgnoreCase);
-        var temporaryTables = new List<InterpolatedTemporaryTable>();
+        using var codeBuilder = new ValueStringBuilder(stackalloc Char[512]);
+
+        var parameterNameOccurrences = new Dictionary<String, Int16>(
+            statement.Fragments.Count,
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        var parameterCount = 0;
+
+        var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandType = commandType;
+
+        if (commandTimeout is not null)
+        {
+            command.CommandTimeout = (Int32)commandTimeout.Value.TotalSeconds;
+        }
+
+        var dbParameters = command.Parameters;
 
         foreach (var fragment in statement.Fragments)
         {
             switch (fragment)
             {
-                case Parameter parameter:
-                {
-                    var parameterValue = parameter.Value;
-
-                    if (parameterValue is Enum enumValue)
-                    {
-                        parameterValue = EnumSerializer.SerializeEnum(
-                            enumValue,
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        );
-                    }
-
-                    parameters.Add(parameter.Name, parameterValue);
+                case Literal literal:
+                    codeBuilder.Append(literal.Value);
                     break;
-                }
 
                 case InterpolatedParameter interpolatedParameter:
                 {
-                    var parameterName = interpolatedParameter.InferredName;
+                    var parameterName = interpolatedParameter.InferredName ??
+                                        "Parameter_" + (parameterCount + 1);
 
-                    if (String.IsNullOrWhiteSpace(parameterName))
+                    if (!parameterNameOccurrences.TryAdd(parameterName, 1))
                     {
-                        parameterName = "Parameter_" + (parameters.Count + 1).ToString(CultureInfo.InvariantCulture);
+                        // Parameter name is already used, so we append a suffix to make it unique.
+                        var count = ++parameterNameOccurrences[parameterName];
+                        parameterName += count;
                     }
 
-                    if (parameters.ContainsKey(parameterName))
-                    {
-                        var suffix = 2;
+                    var dbParameter = command.CreateParameter();
+                    dbParameter.ParameterName = parameterName;
+                    databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
+                    dbParameters.Add(dbParameter);
 
-                        var newParameterName = parameterName + suffix.ToString(CultureInfo.InvariantCulture);
-
-                        while (parameters.ContainsKey(newParameterName))
-                        {
-                            suffix++;
-                            newParameterName = parameterName + suffix.ToString(CultureInfo.InvariantCulture);
-                        }
-
-                        parameterName = newParameterName;
-                    }
-
-                    var parameterValue = interpolatedParameter.Value;
-
-                    if (parameterValue is Enum enumValue)
-                    {
-                        parameterValue = EnumSerializer.SerializeEnum(
-                            enumValue,
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        );
-                    }
-
-                    parameters.Add(parameterName, parameterValue);
                     codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
+
+                    parameterCount++;
+                    break;
+                }
+
+                case Parameter parameter:
+                {
+                    var dbParameter = command.CreateParameter();
+                    dbParameter.ParameterName = parameter.Name;
+                    databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
+                    dbParameters.Add(dbParameter);
+
+                    parameterNameOccurrences[parameter.Name] = 1;
+                    parameterCount++;
                     break;
                 }
 
                 case InterpolatedTemporaryTable interpolatedTemporaryTable:
-                    temporaryTables.Add(interpolatedTemporaryTable);
                     codeBuilder.Append(
                         databaseAdapter.QuoteTemporaryTableName(interpolatedTemporaryTable.Name, connection)
                     );
                     break;
-
-                case Literal literal:
-                    codeBuilder.Append(literal.Value);
-                    break;
             }
         }
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            codeBuilder.ToString(),
-            transaction,
-            commandTimeout,
-            commandType
-        );
+        command.CommandText = codeBuilder.ToString();
 
-        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
-            command,
-            cancellationToken
-        );
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
-        foreach (var (name, value) in parameters)
-        {
-            var parameter = command.CreateParameter();
-
-            parameter.ParameterName = name;
-
-            databaseAdapter.BindParameterValue(parameter, value);
-
-            command.Parameters.Add(parameter);
-        }
-
-        return (command, temporaryTables.ToArray(), cancellationTokenRegistration);
+        return (command, cancellationTokenRegistration);
     }
 
     /// <summary>
@@ -309,7 +283,7 @@ internal static class DbCommandBuilder
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     private static TemporaryTableDisposer[] BuildTemporaryTables(
-        InterpolatedTemporaryTable[] temporaryTables,
+        IReadOnlyList<InterpolatedTemporaryTable> temporaryTables,
         IDatabaseAdapter databaseAdapter,
         DbConnection connection,
         DbTransaction? transaction,
@@ -321,11 +295,11 @@ internal static class DbCommandBuilder
             ThrowHelper.ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(databaseAdapter);
         }
 
-        var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Length];
+        var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Count];
 
         try
         {
-            for (var i = 0; i < temporaryTables.Length; i++)
+            for (var i = 0; i < temporaryTables.Count; i++)
             {
                 var interpolatedTemporaryTable = temporaryTables[i];
 
@@ -374,7 +348,7 @@ internal static class DbCommandBuilder
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     private static async Task<TemporaryTableDisposer[]> BuildTemporaryTablesAsync(
-        InterpolatedTemporaryTable[] temporaryTables,
+        IReadOnlyList<InterpolatedTemporaryTable> temporaryTables,
         IDatabaseAdapter databaseAdapter,
         DbConnection connection,
         DbTransaction? transaction,
@@ -386,11 +360,11 @@ internal static class DbCommandBuilder
             ThrowHelper.ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(databaseAdapter);
         }
 
-        var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Length];
+        var temporaryTableDisposers = new TemporaryTableDisposer?[temporaryTables.Count];
 
         try
         {
-            for (var i = 0; i < temporaryTables.Length; i++)
+            for (var i = 0; i < temporaryTables.Count; i++)
             {
                 var interpolatedTemporaryTable = temporaryTables[i];
 

@@ -1,13 +1,14 @@
-﻿#pragma warning disable NS1004
+﻿#pragma warning disable NS1004, NS1000
 
 using System.Globalization;
+using NSubstitute.ClearExtensions;
 using NSubstitute.DbConnection;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
-using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
+using RentADeveloper.DbConnectionPlus.UnitTests.Mocks;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
@@ -25,49 +26,26 @@ public class UnitTestsBase
                     Thread.CurrentThread.CurrentUICulture =
                         new("en-US");
 
-
-        // Reset all settings to defaults before each test.
-        DbConnectionPlusConfiguration.Instance = new()
-        {
-            EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = null
-        };
-        EntityHelper.ResetEntityTypeMetadataCache();
-        OracleDatabaseAdapter.AllowTemporaryTables = false;
-
-        this.MockDbConnection = Substitute.For<DbConnection>().SetupCommands();
-        this.MockCommandFactory = Substitute.For<IDbCommandFactory>();
-
         this.MockDatabaseAdapter = Substitute.For<IDatabaseAdapter>();
         this.MockEntityManipulator = Substitute.For<IEntityManipulator>();
 
-        typeof(DbConnectionPlusConfiguration).GetMethod(nameof(DbConnectionPlusConfiguration.RegisterDatabaseAdapter))!
-            .MakeGenericMethod(this.MockDbConnection.GetType())
-            .Invoke(DbConnectionPlusConfiguration.Instance, [this.MockDatabaseAdapter]);
+        this.MockDbConnection = Substitute.For<DbConnection>();
 
-        DbCommandFactory = this.MockCommandFactory;
+        this.MockDbCommand = Substitute.For<DbConnection>().SetupCommands().CreateCommand();
+        this.MockDbCommand.ClearSubstitute();
 
-        this.MockDbCommand = this.MockDbConnection.CreateCommand();
+        this.MockDbCommand.CreateParameter().Returns(_ => Substitute.For<DbParameter>());
 
-        this.MockCommandFactory
-            .CreateDbCommand(
-                this.MockDbConnection,
-                Arg.Any<String>(),
-                Arg.Any<DbTransaction?>(),
-                Arg.Any<TimeSpan?>(),
-                Arg.Any<CommandType>()
-            )
-            .Returns(info =>
-                {
-                    // ReSharper disable once InlineTemporaryVariable
-                    var command = this.MockDbCommand;
-                    command.CommandText = info.ArgAt<String>(1);
-                    command.Transaction = info.ArgAt<DbTransaction>(2);
-                    command.CommandTimeout = (Int32)(info.ArgAt<TimeSpan?>(3)?.TotalSeconds ?? 30);
-                    command.CommandType = info.ArgAt<CommandType>(4);
-                    return command;
-                }
-            );
+        var dbParameterCollection = new MockDbParameterCollection();
+        this.MockDbCommand.Parameters.Returns(dbParameterCollection);
+
+        this.MockDbDataReader = Substitute.For<DbDataReader>();
+
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(this.MockDbDataReader);
+        this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(this.MockDbDataReader));
+
+        this.MockDbConnection.CreateCommand().Returns(this.MockDbCommand);
 
         this.MockTemporaryTableBuilder = Substitute.For<ITemporaryTableBuilder>();
 
@@ -141,12 +119,22 @@ public class UnitTestsBase
             );
 
         this.MockDatabaseAdapter.EntityManipulator.Returns(this.MockEntityManipulator);
-    }
 
-    /// <summary>
-    /// The mocked <see cref="IDbCommandFactory" /> to use in tests.
-    /// </summary>
-    protected IDbCommandFactory MockCommandFactory { get; }
+        this.MockInterceptDbCommand = Substitute.For<InterceptDbCommand>();
+
+        // Reset all settings to defaults before each test.
+        DbConnectionPlusConfiguration.Instance = new()
+        {
+            EnumSerializationMode = EnumSerializationMode.Strings,
+            InterceptDbCommand = this.MockInterceptDbCommand
+        };
+        EntityHelper.ResetEntityTypeMetadataCache();
+        OracleDatabaseAdapter.AllowTemporaryTables = false;
+
+        typeof(DbConnectionPlusConfiguration).GetMethod(nameof(DbConnectionPlusConfiguration.RegisterDatabaseAdapter))!
+            .MakeGenericMethod(this.MockDbConnection.GetType())
+            .Invoke(DbConnectionPlusConfiguration.Instance, [this.MockDatabaseAdapter]);
+    }
 
     /// <summary>
     /// The mocked <see cref="IDatabaseAdapter" /> to use in tests.
@@ -164,9 +152,19 @@ public class UnitTestsBase
     protected DbConnection MockDbConnection { get; }
 
     /// <summary>
+    /// The mocked <see cref="DbDataReader" /> to use in tests.
+    /// </summary>
+    protected DbDataReader MockDbDataReader { get; }
+
+    /// <summary>
     /// The mocked <see cref="IEntityManipulator" /> to use in tests.
     /// </summary>
     protected IEntityManipulator MockEntityManipulator { get; }
+
+    /// <summary>
+    /// The mocked <see cref="InterceptDbCommand" /> delegate to use in tests.
+    /// </summary>
+    protected InterceptDbCommand MockInterceptDbCommand { get; }
 
     /// <summary>
     /// The mocked <see cref="ITemporaryTableBuilder" /> to use in tests.

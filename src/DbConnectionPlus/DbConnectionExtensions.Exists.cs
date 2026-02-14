@@ -75,7 +75,7 @@ public static partial class DbConnectionExtensions
             try
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
-                using var reader = command.ExecuteReader(CommandBehavior.SingleRow | CommandBehavior.SingleResult);
+                using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
                 return reader.Read();
             }
             catch (Exception exception) when (
@@ -155,7 +155,7 @@ public static partial class DbConnectionExtensions
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
 #pragma warning disable CA2007
                 await using var reader = await command.ExecuteReaderAsync(
-                    CommandBehavior.SingleRow | CommandBehavior.SingleResult,
+                    CommandBehavior.SingleResult | CommandBehavior.SingleRow,
                     cancellationToken
                 ).ConfigureAwait(false);
 #pragma warning restore CA2007

@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
@@ -42,7 +43,7 @@ public abstract class EntityManipulator_DeleteEntityTests
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() => this.CallApi(
                     useAsyncApi,
@@ -56,6 +57,39 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entity should still exist.
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DeleteEntity_ConcurrencyTokenMismatch_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
+        entityToDelete.ConcurrencyToken_ = Generate.Single<Byte[]>();
+
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityToDelete,
+                    null,
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(entityToDelete);
+
         this.ExistsEntityInDb(entityToDelete)
             .Should().BeTrue();
     }
@@ -159,6 +193,39 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task DeleteEntity_RowVersionMismatch_ShouldThrow(Boolean useAsyncApi)
+    {
+        var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
+        entityToDelete.RowVersion_ = Generate.Single<Byte[]>();
+
+        var exception = (await Invoking(() => this.CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    entityToDelete,
+                    null,
+                    TestContext.Current.CancellationToken
+                )
+            )
+            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+
+        exception.Message
+            .Should().Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
+                "Data in the database may have been modified or deleted since entities were loaded. See " +
+                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
+                "the entity that was involved in the operation."
+            );
+
+        exception.Entity
+            .Should().Be(entityToDelete);
+
+        this.ExistsEntityInDb(entityToDelete)
+            .Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task DeleteEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
@@ -171,15 +238,6 @@ public abstract class EntityManipulator_DeleteEntityTests
                 TestContext.Current.CancellationToken
             ))
             .Should().Be(1);
-
-        (await this.CallApi(
-                useAsyncApi,
-                this.Connection,
-                entityToDelete,
-                null,
-                TestContext.Current.CancellationToken
-            ))
-            .Should().Be(0);
     }
 
     [Theory]

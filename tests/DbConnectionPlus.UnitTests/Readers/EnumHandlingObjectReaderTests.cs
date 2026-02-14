@@ -7,11 +7,11 @@ public class EnumHandlingObjectReaderTests : UnitTestsBase
     [Fact]
     public void GetFieldType_CharProperty_ShouldReturnString()
     {
-        EntityWithCharProperty[] entities = [new()];
+        Entity[] entities = [new()];
 
-        var reader = new EnumHandlingObjectReader(typeof(EntityWithCharProperty), entities);
+        var reader = new EnumHandlingObjectReader(typeof(Entity), entities);
 
-        reader.GetFieldType(0)
+        reader.GetFieldType(reader.GetOrdinal("CharValue"))
             .Should().Be(typeof(String));
     }
 
@@ -61,14 +61,14 @@ public class EnumHandlingObjectReaderTests : UnitTestsBase
     [Fact]
     public void GetString_CharProperty_ShouldConvertToString()
     {
-        EntityWithCharProperty[] entities = [new() { Char = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
 
-        var reader = new EnumHandlingObjectReader(typeof(EntityWithCharProperty), entities);
+        var reader = new EnumHandlingObjectReader(typeof(Entity), entities);
 
         reader.Read();
 
-        reader.GetString(0)
-            .Should().Be(entities[0].Char.ToString());
+        reader.GetString(reader.GetOrdinal("CharValue"))
+            .Should().Be(entities[0].CharValue.ToString());
     }
 
     [Fact]
@@ -91,18 +91,18 @@ public class EnumHandlingObjectReaderTests : UnitTestsBase
     [Fact]
     public void GetValues_CharProperty_ShouldConvertToString()
     {
-        EntityWithCharProperty[] entities = [new() { Char = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
 
-        var reader = new EnumHandlingObjectReader(typeof(EntityWithCharProperty), entities);
+        var reader = new EnumHandlingObjectReader(typeof(Entity), entities);
 
         reader.Read();
 
-        var values = new Object[1];
+        var values = new Object[18];
 
         reader.GetValues(values);
 
-        values[0]
-            .Should().Be(entities[0].Char.ToString());
+        values[reader.GetOrdinal("CharValue")]
+            .Should().Be(entities[0].CharValue.ToString());
     }
 
     [Fact]

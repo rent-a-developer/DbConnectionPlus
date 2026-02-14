@@ -79,18 +79,12 @@ public static partial class DbConnectionExtensions
             OnBeforeExecutingCommand(command, statement.TemporaryTables);
             dataReader = command.ExecuteReader(commandBehavior);
 
-            var disposeSignalingDecorator = new DisposeSignalingDataReaderDecorator(
+            return new CommandDisposingDataReaderDecorator(
                 dataReader,
                 databaseAdapter,
+                commandDisposer,
                 cancellationToken
             );
-
-            // ReSharper disable AccessToDisposedClosure
-            disposeSignalingDecorator.OnDisposing = () => commandDisposer.Dispose();
-            disposeSignalingDecorator.OnDisposingAsync = () => commandDisposer.DisposeAsync();
-            // ReSharper restore AccessToDisposedClosure
-
-            return disposeSignalingDecorator;
         }
         catch (Exception exception) when (
             databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
@@ -174,16 +168,12 @@ public static partial class DbConnectionExtensions
             OnBeforeExecutingCommand(command, statement.TemporaryTables);
             dataReader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
 
-            var disposeSignalingDecorator = new DisposeSignalingDataReaderDecorator(
+            return new CommandDisposingDataReaderDecorator(
                 dataReader,
                 databaseAdapter,
+                commandDisposer,
                 cancellationToken
             );
-
-            disposeSignalingDecorator.OnDisposing = () => commandDisposer.Dispose();
-            disposeSignalingDecorator.OnDisposingAsync = () => commandDisposer.DisposeAsync();
-
-            return disposeSignalingDecorator;
         }
         catch (Exception exception) when (
             databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)

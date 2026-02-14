@@ -114,7 +114,9 @@ public interface ITestDatabaseProvider
     /// <summary>
     /// Gets a literal representing a data type in the test database system that is not supported by DbConnectionPlus.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// A literal representing a data type in the test database system that is not supported by DbConnectionPlus.
+    /// </returns>
     public String GetUnsupportedDataTypeLiteral();
 
     /// <summary>

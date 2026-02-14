@@ -5,7 +5,6 @@ global using Microsoft.Data.SqlClient;
 global using RentADeveloper.DbConnectionPlus.Configuration;
 global using RentADeveloper.DbConnectionPlus.DbCommands;
 global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
-global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestHelpers;
 global using RentADeveloper.DbConnectionPlus.SqlStatements;
 global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 global using static AwesomeAssertions.FluentActions;

@@ -143,6 +143,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
             "BooleanValue" NUMBER(1),
+            "BytesValue" RAW(2000),
             "ByteValue" NUMBER(3),
             "CharValue" CHAR(1),
             "DateOnlyValue" DATE,
@@ -154,6 +155,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             "Int16Value" NUMBER(5),
             "Int32Value" NUMBER(10),
             "Int64Value" NUMBER(19),
+            "NullableBooleanValue" NUMBER(1) NULL,
             "SingleValue" BINARY_FLOAT,
             "StringValue" NVARCHAR2(2000),
             "TimeOnlyValue" INTERVAL DAY TO SECOND,
@@ -182,30 +184,26 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE "EntityWithNonNullableProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "Value" NUMBER(19) NULL
-        );
-        GO
-
-        CREATE TABLE "EntityWithNullableProperty"
-        (
-            "Id" NUMBER(19) NOT NULL PRIMARY KEY,
-            "Value" NUMBER(19) NULL
-        );
-        GO
-
         CREATE TABLE "MappingTestEntity"
         (
-            "KeyColumn1" NUMBER(19) NOT NULL,
-            "KeyColumn2" NUMBER(19) NOT NULL,
-            "ValueColumn" NUMBER(10) NOT NULL,
-            "ComputedColumn" GENERATED ALWAYS AS (("ValueColumn"+999)),
-            "IdentityColumn" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
-            "NotMappedColumn" CLOB NULL,
-            PRIMARY KEY ("KeyColumn1", "KeyColumn2")
+            "Computed" GENERATED ALWAYS AS (("Value"+999)),
+            "ConcurrencyToken" RAW(2000),
+            "Identity" NUMBER(10) GENERATED ALWAYS AS IDENTITY(START with 1 INCREMENT by 1),
+            "Key1" NUMBER(19) NOT NULL,
+            "Key2" NUMBER(19) NOT NULL,
+            "Value" NUMBER(10) NOT NULL,
+            "NotMapped" CLOB NULL,
+            "RowVersion" RAW(16),
+            PRIMARY KEY ("Key1", "Key2")
         );
+        GO
+
+        CREATE OR REPLACE TRIGGER "TriggerMappingTestEntity"
+        BEFORE INSERT OR UPDATE ON "MappingTestEntity"
+        FOR EACH ROW
+        BEGIN
+          :NEW."RowVersion" := SYS_GUID();
+        END;
         GO
 
         CREATE OR REPLACE NONEDITIONABLE PROCEDURE "DeleteAllEntities" AS
@@ -230,12 +228,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         DROP TABLE IF EXISTS "EntityWithEnumStoredAsInteger" PURGE;
         GO
 
-        DROP TABLE IF EXISTS "EntityWithNonNullableProperty" PURGE;
-        GO
-
-        DROP TABLE IF EXISTS "EntityWithNullableProperty" PURGE;
-        GO
-
         DROP TABLE IF EXISTS "MappingTestEntity" PURGE;
         GO
 
@@ -255,12 +247,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
-        GO
-
-        TRUNCATE TABLE "EntityWithNonNullableProperty";
-        GO
-
-        TRUNCATE TABLE "EntityWithNullableProperty";
         GO
 
         TRUNCATE TABLE "MappingTestEntity";

@@ -1,7 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
-using NSubstitute.DbConnection;
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
@@ -19,8 +18,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
     public void EnumSerializationMode_Integers_ShouldSerializeEnumAsInteger()
     {
         var enumValue = Generate.Single<TestEnum>();
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
 
         DbParameter? interceptedDbParameter = null;
 
@@ -42,8 +39,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
     public void EnumSerializationMode_Strings_ShouldSerializeEnumAsString()
     {
         var enumValue = Generate.Single<TestEnum>();
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
 
         DbParameter? interceptedDbParameter = null;
 
@@ -192,8 +187,6 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             );
 
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand = interceptor;
-
-        this.MockDbConnection.SetupQuery(_ => true).Returns(new { Id = 1 });
 
         var entities = Generate.Multiple<Entity>();
         var entityIds = Generate.Ids();

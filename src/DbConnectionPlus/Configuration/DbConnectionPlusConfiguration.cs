@@ -20,11 +20,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </summary>
     internal DbConnectionPlusConfiguration()
     {
-        this.databaseAdapters.TryAdd(typeof(MySqlConnection), new MySqlDatabaseAdapter());
-        this.databaseAdapters.TryAdd(typeof(OracleConnection), new OracleDatabaseAdapter());
-        this.databaseAdapters.TryAdd(typeof(NpgsqlConnection), new PostgreSqlDatabaseAdapter());
-        this.databaseAdapters.TryAdd(typeof(SqliteConnection), new SqliteDatabaseAdapter());
-        this.databaseAdapters.TryAdd(typeof(SqlConnection), new SqlServerDatabaseAdapter());
+        this.databaseAdapters.Add(typeof(MySqlConnection), new MySqlDatabaseAdapter());
+        this.databaseAdapters.Add(typeof(OracleConnection), new OracleDatabaseAdapter());
+        this.databaseAdapters.Add(typeof(NpgsqlConnection), new PostgreSqlDatabaseAdapter());
+        this.databaseAdapters.Add(typeof(SqliteConnection), new SqliteDatabaseAdapter());
+        this.databaseAdapters.Add(typeof(SqlConnection), new SqlServerDatabaseAdapter());
     }
 
     /// <summary>
@@ -66,13 +66,13 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public EnumSerializationMode EnumSerializationMode
     {
-        get => this.enumSerializationMode;
+        get;
         set
         {
             this.EnsureNotFrozen();
-            this.enumSerializationMode = value;
+            field = value;
         }
-    }
+    } = EnumSerializationMode.Strings;
 
     /// <summary>
     /// A function that can be used to intercept database commands executed via DbConnectionPlus.
@@ -84,11 +84,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </exception>
     public InterceptDbCommand? InterceptDbCommand
     {
-        get => this.interceptDbCommand;
+        get;
         set
         {
             this.EnsureNotFrozen();
-            this.interceptDbCommand = value;
+            field = value;
         }
     }
 
@@ -104,10 +104,14 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     {
         this.EnsureNotFrozen();
 
-        return (EntityTypeBuilder<TEntity>)this.entityTypeBuilders.GetOrAdd(
-            typeof(TEntity),
-            _ => new EntityTypeBuilder<TEntity>()
-        );
+        if (!this.entityTypeBuilders.TryGetValue(typeof(TEntity), out var builder))
+        {
+            builder = new EntityTypeBuilder<TEntity>();
+
+            this.entityTypeBuilders.Add(typeof(TEntity), builder);
+        }
+
+        return (EntityTypeBuilder<TEntity>)builder;
     }
 
     /// <summary>
@@ -127,7 +131,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     {
         ArgumentNullException.ThrowIfNull(adapter);
 
-        this.databaseAdapters.AddOrUpdate(typeof(TConnection), adapter, (_, _) => adapter);
+        this.databaseAdapters[typeof(TConnection)] = adapter;
     }
 
     /// <inheritdoc />
@@ -193,9 +197,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         }
     }
 
-    private readonly ConcurrentDictionary<Type, IDatabaseAdapter> databaseAdapters = [];
-    private readonly ConcurrentDictionary<Type, IEntityTypeBuilder> entityTypeBuilders = new();
-    private EnumSerializationMode enumSerializationMode = EnumSerializationMode.Strings;
-    private InterceptDbCommand? interceptDbCommand;
+    private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
+    private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = new();
     private Boolean isFrozen;
 }

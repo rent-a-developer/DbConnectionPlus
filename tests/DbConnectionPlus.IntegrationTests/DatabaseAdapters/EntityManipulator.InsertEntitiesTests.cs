@@ -44,7 +44,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        this.DbCommandFactory.DelayNextDbCommand = true;
+        this.DelayNextDbCommand = true;
 
         await Invoking(() =>
                 this.CallApi(useAsyncApi, this.Connection, entities, null, cancellationToken)
@@ -118,9 +118,9 @@ public abstract class EntityManipulator_InsertEntitiesTests
         var entities = Generate.Multiple<MappingTestEntityAttributes>();
         entities.ForEach(a =>
             {
-                a.ComputedColumn_ = 0;
-                a.IdentityColumn_ = 0;
-                a.NotMappedColumn = "ShouldNotBePersisted";
+                a.Computed_ = 0;
+                a.Identity_ = 0;
+                a.NotMapped = "ShouldNotBePersisted";
             }
         );
 
@@ -136,7 +136,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -150,9 +150,9 @@ public abstract class EntityManipulator_InsertEntitiesTests
         var entities = Generate.Multiple<MappingTestEntityFluentApi>();
         entities.ForEach(a =>
             {
-                a.ComputedColumn_ = 0;
-                a.IdentityColumn_ = 0;
-                a.NotMappedColumn = "ShouldNotBePersisted";
+                a.Computed_ = 0;
+                a.Identity_ = 0;
+                a.NotMapped = "ShouldNotBePersisted";
             }
         );
 
@@ -168,7 +168,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 

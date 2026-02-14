@@ -1,8 +1,9 @@
 ﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
-public record EntityWithPrivateConstructor
+public record EntityWithPrivateConstructor : Entity
 {
     private EntityWithPrivateConstructor(
+        Byte[] bytesValue,
         Boolean booleanValue,
         Byte byteValue,
         Char charValue,
@@ -16,12 +17,14 @@ public record EntityWithPrivateConstructor
         Int16 int16Value,
         Int32 int32Value,
         Int64 int64Value,
+        Boolean? nullableBooleanValue,
         Single singleValue,
         String stringValue,
         TimeOnly timeOnlyValue,
         TimeSpan timeSpanValue
     )
     {
+        this.BytesValue = bytesValue;
         this.BooleanValue = booleanValue;
         this.ByteValue = byteValue;
         this.CharValue = charValue;
@@ -35,30 +38,10 @@ public record EntityWithPrivateConstructor
         this.Int16Value = int16Value;
         this.Int32Value = int32Value;
         this.Int64Value = int64Value;
+        this.NullableBooleanValue = nullableBooleanValue;
         this.SingleValue = singleValue;
         this.StringValue = stringValue;
         this.TimeOnlyValue = timeOnlyValue;
         this.TimeSpanValue = timeSpanValue;
     }
-
-    public Boolean BooleanValue { get; }
-    public Byte ByteValue { get; }
-    public Char CharValue { get; }
-    public DateOnly DateOnlyValue { get; }
-    public DateTime DateTimeValue { get; }
-    public Decimal DecimalValue { get; }
-    public Double DoubleValue { get; }
-    public TestEnum EnumValue { get; }
-    public Guid GuidValue { get; }
-
-    [Key]
-    public Int64 Id { get; }
-
-    public Int16 Int16Value { get; }
-    public Int32 Int32Value { get; }
-    public Int64 Int64Value { get; }
-    public Single SingleValue { get; }
-    public String StringValue { get; }
-    public TimeOnly TimeOnlyValue { get; }
-    public TimeSpan TimeSpanValue { get; }
 }

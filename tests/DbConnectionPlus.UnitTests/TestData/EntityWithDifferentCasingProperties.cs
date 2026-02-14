@@ -5,6 +5,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public record EntityWithDifferentCasingProperties
 {
     public Boolean BooleanVALUE { get; set; }
+    public Byte[] BytesVALUE { get; set; } = null!;
     public Byte ByteVALUE { get; set; }
     public Char CharVALUE { get; set; }
     public DateOnly DateOnlyVALUE { get; set; }
@@ -24,6 +25,7 @@ public record EntityWithDifferentCasingProperties
     [NotMapped]
     public String? NotMappedProperty { get; set; }
 
+    public Boolean? NullableBooleanVALUE { get; set; }
     public Single SingleVALUE { get; set; }
     public String StringVALUE { get; set; } = null!;
     public TimeOnly TimeOnlyVALUE { get; set; }

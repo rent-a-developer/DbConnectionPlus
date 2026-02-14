@@ -1,5 +1,4 @@
-﻿using NSubstitute.DbConnection;
-using Oracle.ManagedDataAccess.Client;
+﻿using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Oracle;
@@ -303,8 +302,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void QuoteTemporaryTableName_ShouldQuoteTableName()
     {
-        this.MockDbConnection.SetupQuery("SELECT VALUE FROM v$parameter WHERE NAME = 'private_temp_table_prefix'")
-            .Returns(new { VALUE = "MockPrefix" });
+        this.MockDbCommand.ExecuteScalar().Returns("MockPrefix");
 
         this.adapter.QuoteTemporaryTableName("TempTable", this.MockDbConnection)
             .Should().Be("\"MockPrefixTempTable\"");
@@ -325,8 +323,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void SupportsTemporaryTables_OracleVersionEqualToOrGreaterThan18_ShouldReturnTrue()
     {
-        this.MockDbConnection.SetupQuery("SELECT 1 FROM v$instance WHERE version >= '18'")
-            .Returns(new { Value = 1 });
+        // Fake the query "SELECT 1 FROM v$instance WHERE version >= '18'" to return a result, which indicates that the
+        // Oracle version is 18 or higher.
+        this.MockDbDataReader.Read().Returns(true);
 
         this.adapter.SupportsTemporaryTables(this.MockDbConnection)
             .Should().BeTrue();
@@ -335,8 +334,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void SupportsTemporaryTables_OracleVersionLessThan18_ShouldReturnFalse()
     {
-        this.MockDbConnection.SetupQuery("SELECT 1 FROM v$instance WHERE version >= '18'")
-            .Returns(Array.Empty<Object>());
+        // Fake the query "SELECT 1 FROM v$instance WHERE version >= '18'" to return no results, which indicates that
+        // the Oracle version is lower than 18.
+        this.MockDbDataReader.Read().Returns(false);
 
         this.adapter.SupportsTemporaryTables(this.MockDbConnection)
             .Should().BeFalse();

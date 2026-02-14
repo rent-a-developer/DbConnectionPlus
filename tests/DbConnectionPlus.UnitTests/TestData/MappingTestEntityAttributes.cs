@@ -5,25 +5,33 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 [Table("MappingTestEntity")]
 public record MappingTestEntityAttributes
 {
-    [Column("ComputedColumn")]
+    [Column("Computed")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public Int32 ComputedColumn_ { get; set; }
+    public Int32 Computed_ { get; set; }
 
-    [Column("IdentityColumn")]
+    [Column("ConcurrencyToken")]
+    [ConcurrencyCheck]
+    public Byte[]? ConcurrencyToken_ { get; set; }
+
+    [Column("Identity")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Int32 IdentityColumn_ { get; set; }
+    public Int32 Identity_ { get; set; }
 
     [Key]
-    [Column("KeyColumn1")]
-    public Int64 KeyColumn1_ { get; set; }
+    [Column("Key1")]
+    public Int64 Key1_ { get; set; }
 
     [Key]
-    [Column("KeyColumn2")]
-    public Int64 KeyColumn2_ { get; set; }
+    [Column("Key2")]
+    public Int64 Key2_ { get; set; }
 
     [NotMapped]
-    public String? NotMappedColumn { get; set; }
+    public String? NotMapped { get; set; }
 
-    [Column("ValueColumn")]
-    public Int32 ValueColumn_ { get; set; }
+    [Column("RowVersion")]
+    [Timestamp]
+    public Byte[]? RowVersion_ { get; set; }
+
+    [Column("Value")]
+    public Int32 Value_ { get; set; }
 }

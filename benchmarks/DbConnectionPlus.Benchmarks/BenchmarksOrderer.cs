@@ -17,12 +17,9 @@ public class BenchmarksOrderer : IOrderer
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
     ) =>
         benchmarksCase
-            .OrderBy(a =>
-                a.Descriptor.WorkloadMethod.DeclaringType!
-                    .GetMethods()
-                    .ToList()
-                    .IndexOf(a.Descriptor.WorkloadMethod)
-            );
+            .OrderBy(a => a.Descriptor.Categories[0])
+            .ThenByDescending(a => a.Descriptor.Baseline)
+            .ThenBy(a => a.Descriptor.WorkloadMethod.Name);
 
     /// <inheritdoc />
     public String? GetHighlightGroupKey(BenchmarkCase benchmarkCase) =>
@@ -47,10 +44,8 @@ public class BenchmarksOrderer : IOrderer
         ImmutableArray<BenchmarkCase> benchmarksCases,
         Summary summary
     ) =>
-        benchmarksCases.OrderBy(a =>
-            a.Descriptor.WorkloadMethod.DeclaringType!
-                .GetMethods()
-                .ToList()
-                .IndexOf(a.Descriptor.WorkloadMethod)
-        );
+        benchmarksCases
+            .OrderBy(a => a.Descriptor.Categories[0])
+            .ThenByDescending(a => a.Descriptor.Baseline)
+            .ThenBy(a => a.Descriptor.WorkloadMethod.Name);
 }

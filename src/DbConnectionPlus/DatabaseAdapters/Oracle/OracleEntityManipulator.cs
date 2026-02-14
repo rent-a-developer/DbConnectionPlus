@@ -31,18 +31,51 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entitiesList = entities.ToList();
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         var totalNumberOfAffectedRows = 0;
 
-        foreach (var entity in entitiesList)
+        using (command)
+        using (cancellationTokenRegistration)
         {
-            if (entity is null)
+            try
             {
-                continue;
-            }
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
 
-            totalNumberOfAffectedRows += this.DeleteEntity(connection, entity, transaction, cancellationToken);
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
+                }
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
         }
 
         return totalNumberOfAffectedRows;
@@ -59,19 +92,52 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entities);
 
-        var entitiesList = entities.ToList();
+        var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
+
+        var (command, parameters) = this.CreateDeleteEntityCommand(connection, transaction, entityTypeMetadata);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         var totalNumberOfAffectedRows = 0;
 
-        foreach (var entity in entitiesList)
+        using (command)
+        using (cancellationTokenRegistration)
         {
-            if (entity is null)
+            try
             {
-                continue;
-            }
+                foreach (var entity in entities)
+                {
+                    if (entity is null)
+                    {
+                        continue;
+                    }
 
-            totalNumberOfAffectedRows += await this
-                .DeleteEntityAsync(connection, entity, transaction, cancellationToken).ConfigureAwait(false);
+                    this.PopulateParametersFromEntityProperties(entityTypeMetadata, parameters, entity);
+
+                    DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                    var numberOfAffectedRows =
+                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
+                }
+            }
+            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
+                    exception,
+                    cancellationToken
+                )
+            )
+            {
+                throw new OperationCanceledException(cancellationToken);
+            }
         }
 
         return totalNumberOfAffectedRows;
@@ -102,7 +168,18 @@ internal class OracleEntityManipulator : IEntityManipulator
             {
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                return command.ExecuteNonQuery();
+                var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
+                return numberOfAffectedRows;
             }
             catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
                     exception,
@@ -140,7 +217,18 @@ internal class OracleEntityManipulator : IEntityManipulator
             {
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                var numberOfAffectedRows = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
+                return numberOfAffectedRows;
             }
             catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
                     exception,
@@ -396,7 +484,18 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    totalNumberOfAffectedRows += command.ExecuteNonQuery();
+                    var numberOfAffectedRows = command.ExecuteNonQuery();
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
@@ -452,8 +551,19 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    totalNumberOfAffectedRows +=
+                    var numberOfAffectedRows =
                         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+                    if (numberOfAffectedRows != 1)
+                    {
+                        ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                            1,
+                            numberOfAffectedRows,
+                            entity
+                        );
+                    }
+
+                    totalNumberOfAffectedRows += numberOfAffectedRows;
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
@@ -502,6 +612,15 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var numberOfAffectedRows = command.ExecuteNonQuery();
 
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
                 UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
@@ -548,6 +667,15 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var numberOfAffectedRows = await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
+                if (numberOfAffectedRows != 1)
+                {
+                    ThrowHelper.ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
+                        1,
+                        numberOfAffectedRows,
+                        entity
+                    );
+                }
+
                 var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
                 UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
@@ -581,15 +709,18 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetDeleteEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetDeleteEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 
-        foreach (var property in entityTypeMetadata.KeyProperties)
+        var whereProperties = entityTypeMetadata.KeyProperties
+            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+            .Concat(entityTypeMetadata.RowVersionProperties);
+
+        foreach (var property in whereProperties)
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = property.PropertyName;
@@ -618,11 +749,10 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetInsertEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetInsertEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 
@@ -639,11 +769,20 @@ internal class OracleEntityManipulator : IEntityManipulator
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "return_" + property.ColumnName;
+
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
                 DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+
             parameter.Direction = ParameterDirection.Output;
+
+            if (property.PropertyType == typeof(Byte[]))
+            {
+                // Use max size for byte arrays to actually retrieve the full value:
+                parameter.Size = 32767;
+            }
+
             parameters.Add(parameter);
             command.Parameters.Add(parameter);
         }
@@ -669,15 +808,18 @@ internal class OracleEntityManipulator : IEntityManipulator
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(entityTypeMetadata);
 
-        var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            this.GetUpdateEntitySqlCode(entityTypeMetadata),
-            transaction
-        );
+        var command = connection.CreateCommand();
+
+        command.CommandText = this.GetUpdateEntitySqlCode(entityTypeMetadata);
+        command.Transaction = transaction;
 
         var parameters = new List<DbParameter>();
 
-        foreach (var property in entityTypeMetadata.UpdateProperties.Concat(entityTypeMetadata.KeyProperties))
+        var whereProperties = entityTypeMetadata.KeyProperties
+            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+            .Concat(entityTypeMetadata.RowVersionProperties);
+
+        foreach (var property in entityTypeMetadata.UpdateProperties.Concat(whereProperties))
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = property.PropertyName;
@@ -690,11 +832,20 @@ internal class OracleEntityManipulator : IEntityManipulator
         {
             var parameter = command.CreateParameter();
             parameter.ParameterName = "return_" + property.ColumnName;
+
             parameter.DbType = this.databaseAdapter.GetDbType(
                 property.PropertyType,
                 DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+
             parameter.Direction = ParameterDirection.Output;
+
+            if (property.PropertyType == typeof(Byte[]))
+            {
+                // Use max size for byte arrays to actually retrieve the full value:
+                parameter.Size = 32767;
+            }
+
             parameters.Add(parameter);
             command.Parameters.Add(parameter);
         }
@@ -732,7 +883,11 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var prependSeparator = false;
 
-                foreach (var keyProperty in entityTypeMetadata.KeyProperties)
+                var whereProperties = entityTypeMetadata.KeyProperties
+                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                    .Concat(entityTypeMetadata.RowVersionProperties);
+
+                foreach (var keyProperty in whereProperties)
                 {
                     if (prependSeparator)
                     {
@@ -912,7 +1067,11 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 prependSeparator = false;
 
-                foreach (var property in entityTypeMetadata.KeyProperties)
+                var whereProperties = entityTypeMetadata.KeyProperties
+                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                    .Concat(entityTypeMetadata.RowVersionProperties);
+
+                foreach (var property in whereProperties)
                 {
                     if (prependSeparator)
                     {

@@ -1,6 +1,8 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
+using RentADeveloper.DbConnectionPlus.Exceptions;
+
 namespace RentADeveloper.DbConnectionPlus;
 
 /// <summary>
@@ -34,18 +36,23 @@ public static partial class DbConnectionExtensions
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
     /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>
@@ -112,18 +119,23 @@ public static partial class DbConnectionExtensions
     /// <exception cref="ArgumentException">
     /// No instance property of the type <typeparamref name="TEntity" /> is configured as a key property.
     /// </exception>
+    /// <exception cref="DbUpdateConcurrencyException">
+    /// A concurrency violation was encountered while deleting an entity. A concurrency violation occurs when an
+    /// unexpected number of rows are affected by a delete operation. This is usually because the data in the database
+    /// has been modified since the entity has been loaded.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was cancelled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <remarks>
     /// <para>
     /// The table from which the entities will be deleted can be configured via <see cref="TableAttribute" /> or
-    /// <see cref="Configure"/>. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
+    /// <see cref="Configure" />. Per default, the singular name of the type <typeparamref name="TEntity" /> is used
     /// as the table name.
     /// </para>
     /// <para>
     /// The type <typeparamref name="TEntity" /> must have at least one instance property configured as key property.
-    /// Use <see cref="KeyAttribute" /> or <see cref="Configure"/> to configure key properties.
+    /// Use <see cref="KeyAttribute" /> or <see cref="Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
     /// <example>

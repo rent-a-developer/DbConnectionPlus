@@ -162,6 +162,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         (
             `Id` BIGINT,
             `BooleanValue` TINYINT(1),
+            `BytesValue` BLOB,
             `ByteValue` TINYINT UNSIGNED,
             `CharValue` CHAR(1),
             `DateOnlyValue` DATE,
@@ -173,6 +174,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             `Int16Value` SMALLINT,
             `Int32Value` INT,
             `Int64Value` BIGINT,
+            `NullableBooleanValue` TINYINT(1) NULL,
             `SingleValue` FLOAT,
             `StringValue` TEXT,
             `TimeOnlyValue` TIME,
@@ -194,29 +196,33 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         );
         GO
 
-        CREATE TABLE `EntityWithNonNullableProperty`
-        (
-            `Id` BIGINT NOT NULL PRIMARY KEY,
-            `Value` BIGINT NULL
-        );
-        GO
-
-        CREATE TABLE `EntityWithNullableProperty`
-        (
-            `Id` BIGINT NOT NULL PRIMARY KEY,
-            `Value` BIGINT NULL
-        );
-        GO
-
         CREATE TABLE `MappingTestEntity`
         (
-            `KeyColumn1` BIGINT NOT NULL,
-            `KeyColumn2` BIGINT NOT NULL,
-            `ValueColumn` INT NOT NULL,
-            `ComputedColumn` INT AS (`ValueColumn`+999),
-            `IdentityColumn` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-            `NotMappedColumn` TEXT NULL
+            `Computed` INT AS (`Value`+999),
+            `ConcurrencyToken` BLOB,
+            `Identity` INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+            `Key1` BIGINT NOT NULL,
+            `Key2` BIGINT NOT NULL,
+            `Value` INT NOT NULL,
+            `NotMapped` TEXT NULL,
+            `RowVersion` BLOB
         );
+        GO
+
+        CREATE TRIGGER Trigger_BeforeInsert_MappingTestEntity
+        BEFORE INSERT ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+          SET NEW.RowVersion = UNHEX(REPLACE(UUID(), '-', ''));
+        END;
+        GO
+
+        CREATE TRIGGER Trigger_BeforeUpdate_MappingTestEntity
+        BEFORE UPDATE ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+          SET NEW.RowVersion = UNHEX(REPLACE(UUID(), '-', ''));
+        END;
         GO
 
         CREATE PROCEDURE `GetEntities` ()
@@ -267,12 +273,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
 
         TRUNCATE TABLE `EntityWithEnumStoredAsInteger`;
-        GO
-
-        TRUNCATE TABLE `EntityWithNonNullableProperty`;
-        GO
-
-        TRUNCATE TABLE `EntityWithNullableProperty`;
         GO
 
         TRUNCATE TABLE `MappingTestEntity`;

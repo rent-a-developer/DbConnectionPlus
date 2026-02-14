@@ -71,7 +71,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
+        var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -79,7 +79,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Objects",
             entities,
-            typeof(EntityWithEnumProperty),
+            typeof(EntityWithEnumStoredAsInteger),
             TestContext.Current.CancellationToken
         );
 
@@ -116,7 +116,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
-        var entities = Generate.Multiple<EntityWithEnumProperty>();
+        var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -124,7 +124,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Objects",
             entities,
-            typeof(EntityWithEnumProperty),
+            typeof(EntityWithEnumStoredAsString),
             TestContext.Current.CancellationToken
         );
 
@@ -168,8 +168,8 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            Generate.Multiple<EntityWithEnumProperty>(),
-            typeof(EntityWithEnumProperty),
+            Generate.Multiple<EntityWithEnumStoredAsString>(),
+            typeof(EntityWithEnumStoredAsString),
             TestContext.Current.CancellationToken
         );
 
@@ -187,7 +187,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     )
     {
         var entities = Generate.Multiple<MappingTestEntityAttributes>();
-        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+        entities.ForEach(a => a.NotMapped = "ShouldNotBePersisted");
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -205,7 +205,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMappedColumn));
+            .Should().NotContain(nameof(MappingTestEntityAttributes.NotMapped));
 
         await reader.DisposeAsync();
 
@@ -213,7 +213,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -227,7 +227,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         MappingTestEntityFluentApi.Configure();
 
         var entities = Generate.Multiple<MappingTestEntityFluentApi>();
-        entities.ForEach(a => a.NotMappedColumn = "ShouldNotBePersisted");
+        entities.ForEach(a => a.NotMapped = "ShouldNotBePersisted");
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -245,7 +245,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldNames()
-            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMappedColumn));
+            .Should().NotContain(nameof(MappingTestEntityFluentApi.NotMapped));
 
         await reader.DisposeAsync();
 
@@ -253,7 +253,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             .Should().BeEquivalentTo(
                 entities,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMappedColumn"))
+                    .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -316,12 +316,12 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Objects",
-            Generate.Multiple<EntityWithStringProperty>(),
-            typeof(EntityWithStringProperty),
+            Generate.Multiple<Entity>(),
+            typeof(Entity),
             TestContext.Current.CancellationToken
         );
 
-        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "String");
+        var columnCollation = this.GetCollationOfTemporaryTableColumn("Objects", "StringValue");
 
         columnCollation
             .Should().Be(this.TestDatabaseProvider.DatabaseCollation);

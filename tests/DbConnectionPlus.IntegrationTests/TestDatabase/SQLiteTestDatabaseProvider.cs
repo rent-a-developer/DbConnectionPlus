@@ -129,6 +129,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         (
             Id INTEGER,
             BooleanValue INTEGER,
+            BytesValue BLOB,
             ByteValue INTEGER,
             CharValue TEXT,
             DateOnlyValue TEXT,
@@ -140,6 +141,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Int16Value INTEGER,
             Int32Value INTEGER,
             Int64Value INTEGER,
+            NullableBooleanValue INTEGER NULL,
             SingleValue REAL,
             StringValue TEXT,
             TimeOnlyValue TEXT,
@@ -164,26 +166,23 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             Enum INTEGER
         );
 
-        CREATE TABLE EntityWithNonNullableProperty
-        (
-            Id INTEGER NOT NULL,
-            Value INTEGER NULL
-        );
-
-        CREATE TABLE EntityWithNullableProperty
-        (
-            Id INTEGER NOT NULL,
-            Value INTEGER NULL
-        );
-
         CREATE TABLE MappingTestEntity
         (
-            KeyColumn1 INTEGER NOT NULL,
-            KeyColumn2 INTEGER NOT NULL,
-            ValueColumn INTEGER NOT NULL,
-            ComputedColumn INTEGER GENERATED ALWAYS AS (ValueColumn+999) VIRTUAL,
-            IdentityColumn INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-            NotMappedColumn TEXT NULL
+            Computed INTEGER GENERATED ALWAYS AS (Value+999) VIRTUAL,
+            ConcurrencyToken BLOB,
+            Identity INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            Key1 INTEGER NOT NULL,
+            Key2 INTEGER NOT NULL,
+            Value INTEGER NOT NULL,
+            RowVersion BLOB DEFAULT (randomblob(8)),
+            NotMapped TEXT NULL
         );
+
+        CREATE TRIGGER TriggerMappingTestEntity
+        BEFORE UPDATE ON MappingTestEntity
+        FOR EACH ROW
+        BEGIN
+        	UPDATE MappingTestEntity SET RowVersion = randomblob(8) WHERE Key1 = OLD.Key1 AND Key2 = OLD.Key2;
+        END;
         """;
 }

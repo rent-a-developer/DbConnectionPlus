@@ -64,18 +64,17 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    name,
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    values,
-                    valuesType,
-                    databaseCollation,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                name,
+                // ReSharper disable once PossibleMultipleEnumeration
+                values,
+                valuesType,
+                databaseCollation,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -86,16 +85,15 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    databaseCollation,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                databaseCollation,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -177,18 +175,16 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    name,
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    values,
-                    valuesType,
-                    databaseCollation,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            await using var createCommand = connection.CreateCommand();
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                name,
+                // ReSharper disable once PossibleMultipleEnumeration
+                values,
+                valuesType,
+                databaseCollation,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 #pragma warning restore CA2007
 
             await using var cancellationTokenRegistration =
@@ -201,17 +197,16 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         else
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    databaseCollation,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
-            );
+            await using var createCommand = connection.CreateCommand();
 #pragma warning restore CA2007
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                databaseCollation,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+            createCommand.Transaction = transaction;
 
             await using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
@@ -443,11 +438,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     private static void DropTemporaryTable(String name, SqlConnection connection, SqlTransaction? transaction)
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]",
-            transaction
-        );
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -468,12 +462,11 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     )
     {
 #pragma warning disable CA2007
-        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]",
-            transaction
-        );
+        await using var command = connection.CreateCommand();
 #pragma warning restore CA2007
+
+        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -494,11 +487,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             (connection.DataSource, connection.Database),
             static (_, args) =>
             {
-                using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                    args.connection,
-                    GetCurrentDatabaseCollationQuery,
-                    args.transaction
-                );
+                using var command = args.connection.CreateCommand();
+
+                command.CommandText = GetCurrentDatabaseCollationQuery;
+                command.Transaction = args.transaction;
 
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -528,12 +520,11 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
 
 #pragma warning disable CA2007
-        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            GetCurrentDatabaseCollationQuery,
-            transaction
-        );
+        await using var command = connection.CreateCommand();
 #pragma warning restore CA2007
+
+        command.CommandText = GetCurrentDatabaseCollationQuery;
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

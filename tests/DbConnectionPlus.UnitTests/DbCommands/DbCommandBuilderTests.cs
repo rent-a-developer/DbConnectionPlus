@@ -113,6 +113,27 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task BuildDbCommand_InterpolatedParameter_DuplicateName_ShouldAppendSuffix(Boolean useAsyncApi)
+    {
+        var value = Generate.ScalarValue();
+
+        var (command, _) = await CallApi(
+            useAsyncApi,
+            $"SELECT {Parameter(value)}, {Parameter(value)}, {Parameter(value)}, {Parameter(value)}, {Parameter(value)}",
+            this.MockDatabaseAdapter,
+            this.MockDbConnection
+        );
+
+        command.CommandText
+            .Should().Be("SELECT @Value, @Value2, @Value3, @Value4, @Value5");
+
+        command.Parameters.OfType<DbParameter>().Select(a => a.ParameterName)
+            .Should().BeEquivalentTo("Value", "Value2", "Value3", "Value4", "Value5");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger(
             Boolean useAsyncApi
@@ -319,7 +340,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             useAsyncApi,
             $"""
              SELECT  {Parameter(baseDiscount * 5 / 3)},
-                     {Parameter(entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0])}
+                     {Parameter(entityIds.Where(a => a > 5).ToArray()[0])}
              """,
             this.MockDatabaseAdapter,
             this.MockDbConnection
@@ -329,7 +350,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be(
                 """
                 SELECT  @BaseDiscount53,
-                        @EntityIdsWhereaa5SelectaaToStringToArray0
+                        @EntityIdsWhereaa5ToArray0
                 """
             );
 
@@ -343,10 +364,10 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be(baseDiscount * 5 / 3);
 
         command.Parameters[1].ParameterName
-            .Should().Be("EntityIdsWhereaa5SelectaaToStringToArray0");
+            .Should().Be("EntityIdsWhereaa5ToArray0");
 
         command.Parameters[1].Value
-            .Should().Be(entityIds.Where(a => a > 5).Select(a => a.ToString()).ToArray()[0]);
+            .Should().Be(entityIds.Where(a => a > 5).ToArray()[0]);
     }
 
     [Theory]

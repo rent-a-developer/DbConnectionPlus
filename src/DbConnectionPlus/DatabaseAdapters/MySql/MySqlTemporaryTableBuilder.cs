@@ -60,15 +60,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -79,15 +78,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -162,16 +160,15 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
-            );
+            await using var createCommand = connection.CreateCommand();
 #pragma warning restore CA2007
+
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+            createCommand.Transaction = transaction;
 
             await using var cancellationTokenRegistration =
 #pragma warning disable CA2007
@@ -185,16 +182,16 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         else
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    name,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
-            );
+            await using var createCommand = connection.CreateCommand();
 #pragma warning restore CA2007
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                name,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+
+            createCommand.Transaction = transaction;
 
             await using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken)
@@ -400,11 +397,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     private static void DropTemporaryTable(String name, MySqlConnection connection, MySqlTransaction? transaction)
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"DROP TEMPORARY TABLE IF EXISTS `{name}`",
-            transaction
-        );
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -425,12 +421,11 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     )
     {
 #pragma warning disable CA2007
-        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"DROP TEMPORARY TABLE IF EXISTS `{name}`",
-            transaction
-        );
+        await using var command = connection.CreateCommand();
 #pragma warning restore CA2007
+
+        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

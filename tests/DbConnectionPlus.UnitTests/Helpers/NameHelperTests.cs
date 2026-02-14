@@ -14,6 +14,7 @@ public class NameHelperTests : UnitTestsBase
     [InlineData("abc[]-=/<>", 5, "Abc")]
     [InlineData("this.GetId()", 2, "Id")]
     [InlineData("[productId]", 10, "ProductId")]
+    [InlineData("entityIds.Where(a => a > 5).ToArray()[0]", 60, "EntityIdsWhereaa5ToArray0")]
     [InlineData("", 10, "")]
     public void CreateNameFromCallerArgumentExpression_ShouldCreateName(
         String expression,

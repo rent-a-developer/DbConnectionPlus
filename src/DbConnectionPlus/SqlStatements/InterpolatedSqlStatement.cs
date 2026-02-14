@@ -182,15 +182,15 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public Boolean Equals(InterpolatedSqlStatement other) =>
+    public readonly Boolean Equals(InterpolatedSqlStatement other) =>
         this.fragments.SequenceEqual(other.Fragments);
 
     /// <inheritdoc />
-    public override Boolean Equals(Object? obj) =>
+    public readonly override Boolean Equals(Object? obj) =>
         obj is InterpolatedSqlStatement other && this.Equals(other);
 
     /// <inheritdoc />
-    public override Int32 GetHashCode()
+    public readonly override Int32 GetHashCode()
     {
         var hashCode = new HashCode();
 
@@ -203,7 +203,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public override String ToString()
+    public readonly override String ToString()
     {
         using var stringBuilder = new ValueStringBuilder(stackalloc Char[500]);
 
@@ -220,8 +220,8 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
         {
             switch (fragment)
             {
-                case Parameter parameter:
-                    parameters.Add(parameter.Name, parameter.Value);
+                case Literal literal:
+                    stringBuilder.Append(literal.Value);
                     break;
 
                 case InterpolatedParameter interpolatedParameter:
@@ -258,8 +258,8 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                     interpolatedTemporaryTables.Add(interpolatedTemporaryTable);
                     break;
 
-                case Literal literal:
-                    stringBuilder.Append(literal.Value);
+                case Parameter parameter:
+                    parameters.Add(parameter.Name, parameter.Value);
                     break;
             }
         }
@@ -355,7 +355,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <summary>
     /// The temporary tables used in this SQL statement.
     /// </summary>
-    internal IReadOnlyList<InterpolatedTemporaryTable> TemporaryTables => this.temporaryTables;
+    internal readonly IReadOnlyList<InterpolatedTemporaryTable> TemporaryTables => this.temporaryTables;
 
     private readonly List<IInterpolatedSqlStatementFragment> fragments;
     private readonly List<InterpolatedTemporaryTable> temporaryTables;

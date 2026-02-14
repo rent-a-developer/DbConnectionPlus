@@ -69,17 +69,16 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    quotedTableName,
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    values,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                quotedTableName,
+                // ReSharper disable once PossibleMultipleEnumeration
+                values,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -90,15 +89,14 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    quotedTableName,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
+            using var createCommand = connection.CreateCommand();
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                quotedTableName,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
             );
+            createCommand.Transaction = transaction;
 
             using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
@@ -166,18 +164,17 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateSingleColumnTemporaryTableSqlCode(
-                    quotedTableName,
-                    // ReSharper disable once PossibleMultipleEnumeration
-                    values,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
-            );
+            await using var createCommand = connection.CreateCommand();
 #pragma warning restore CA2007
+
+            createCommand.CommandText = this.BuildCreateSingleColumnTemporaryTableSqlCode(
+                quotedTableName,
+                // ReSharper disable once PossibleMultipleEnumeration
+                values,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+            createCommand.Transaction = transaction;
 
             await using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
@@ -189,16 +186,15 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         else
         {
 #pragma warning disable CA2007
-            await using var createCommand = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-                connection,
-                this.BuildCreateMultiColumnTemporaryTableSqlCode(
-                    quotedTableName,
-                    valuesType,
-                    DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                ),
-                transaction
-            );
+            await using var createCommand = connection.CreateCommand();
 #pragma warning restore CA2007
+
+            createCommand.CommandText = this.BuildCreateMultiColumnTemporaryTableSqlCode(
+                quotedTableName,
+                valuesType,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+            createCommand.Transaction = transaction;
 
             await using var cancellationTokenRegistration =
                 DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
@@ -556,11 +552,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleTransaction? transaction
     )
     {
-        using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"DROP TABLE {quotedTableName}",
-            transaction
-        );
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"DROP TABLE {quotedTableName}";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
@@ -581,12 +576,11 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     )
     {
 #pragma warning disable CA2007
-        await using var command = DbConnectionExtensions.DbCommandFactory.CreateDbCommand(
-            connection,
-            $"DROP TABLE {quotedTableName}",
-            transaction
-        );
+        await using var command = connection.CreateCommand();
 #pragma warning restore CA2007
+
+        command.CommandText = $"DROP TABLE {quotedTableName}";
+        command.Transaction = transaction;
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 

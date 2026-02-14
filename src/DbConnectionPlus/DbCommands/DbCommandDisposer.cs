@@ -8,7 +8,7 @@ namespace RentADeveloper.DbConnectionPlus.DbCommands;
 /// When disposed, disposes the command, any temporary tables created for the command, and the cancellation token
 /// registration associated with the command.
 /// </summary>
-internal sealed class DbCommandDisposer : IDisposable, IAsyncDisposable
+internal class DbCommandDisposer : IDisposable, IAsyncDisposable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DbCommandDisposer" /> class.
