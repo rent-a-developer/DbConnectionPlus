@@ -16,6 +16,8 @@ public class NameHelperTests : UnitTestsBase
     [InlineData("[productId]", 10, "ProductId")]
     [InlineData("entityIds.Where(a => a > 5).ToArray()[0]", 60, "EntityIdsWhereaa5ToArray0")]
     [InlineData("", 10, "")]
+    [InlineData("..........1234567890", 10, "1234567890")]
+    [InlineData(".....12345.....67890", 10, "1234567890")]
     public void CreateNameFromCallerArgumentExpression_ShouldCreateName(
         String expression,
         Int32 maximumLength,
