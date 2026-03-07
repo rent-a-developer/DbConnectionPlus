@@ -26,7 +26,7 @@ internal static class NameHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static String CreateNameFromCallerArgumentExpression(ReadOnlySpan<Char> expression, Int32 maximumLength)
     {
-        // Remove common prefixes that are not relevant for the name.
+        // Remove common prefixes:
 
         if (expression.StartsWith("this.", StringComparison.Ordinal))
         {
@@ -43,18 +43,18 @@ internal static class NameHelper
             expression = expression[3..];
         }
 
-        var scanLength = Math.Min(expression.Length, maximumLength);
+        var bufferLength = Math.Min(expression.Length, maximumLength);
 
-        var buffer = scanLength <= 512 ? stackalloc Char[scanLength] : new Char[scanLength];
+        var buffer = bufferLength <= 512 ? stackalloc Char[bufferLength] : new Char[bufferLength];
 
-        ref var src = ref MemoryMarshal.GetReference(expression);
-        ref var dst = ref MemoryMarshal.GetReference(buffer);
+        ref var expressionPointer = ref MemoryMarshal.GetReference(expression);
+        ref var bufferPointer = ref MemoryMarshal.GetReference(buffer);
 
         var count = 0;
 
-        for (var i = 0; i < scanLength; i++)
+        for (var i = 0; i < expression.Length; i++)
         {
-            var character = Unsafe.Add(ref src, i);
+            var character = Unsafe.Add(ref expressionPointer, i);
 
             if (
                 (UInt32)(character - '0') <= 9 || // Digits
@@ -63,11 +63,16 @@ internal static class NameHelper
                 character == '_'
             )
             {
-                Unsafe.Add(ref dst, count++) = character;
+                Unsafe.Add(ref bufferPointer, count++) = character;
+
+                if (count == maximumLength)
+                {
+                    break;
+                }
             }
         }
 
-        // Convert the first character to uppercase if it is a lowercase letter.
+        // Convert the first character to uppercase if necessary.
         if (count != 0 && (UInt32)(buffer[0] - 'a') <= 25)
         {
             buffer[0] = (Char)(buffer[0] - 32);
