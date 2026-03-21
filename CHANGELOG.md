@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-03-21
+
+### Changed
+- **BREAKING:** Database adapters have been extracted into separate NuGet packages. Users must now install the adapter package(s) for the database system(s) they use and explicitly register them via `UseXxx()` extension methods.
+  - `RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer` — `UseSqlServer()`
+  - `RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql` — `UseMySql()`
+  - `RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql` — `UsePostgreSql()`
+  - `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle` — `UseOracle()`
+  - `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite` — `UseSqlite()`
+
+### Migration from 1.x
+
+1. Install the adapter package(s) for the database(s) you use (see list above).
+2. Register adapters at application startup:
+   ```csharp
+   DbConnectionExtensions.Configure(config => config.UseSqlServer());
+   ```
+
 ## [1.2.1] - 2026-03-07
 
 ### Fixed

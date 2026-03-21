@@ -102,8 +102,10 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             .Should().Throw<InvalidOperationException>()
             .WithMessage(
                 "No database adapter is registered for the database connection of the type " +
-                $"{typeof(FakeConnectionC)}. Please call {nameof(DbConnectionExtensions)}." +
-                $"{nameof(Configure)} to register an adapter for that connection type."
+                $"{typeof(FakeConnectionC)}. Please install the corresponding adapter NuGet package " +
+                "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) " +
+                "and register it by calling the appropriate UseXxx() extension method via " +
+                $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
             );
 
     [Fact]
@@ -123,8 +125,14 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
     }
 
     [Fact]
-    public void GetDatabaseAdapter_ShouldGetDefaultAdapters()
+    public void GetDatabaseAdapter_ShouldGetRegisteredAdapters()
     {
+        DbConnectionPlusConfiguration.Instance.UseMySql();
+        DbConnectionPlusConfiguration.Instance.UseOracle();
+        DbConnectionPlusConfiguration.Instance.UsePostgreSql();
+        DbConnectionPlusConfiguration.Instance.UseSqlite();
+        DbConnectionPlusConfiguration.Instance.UseSqlServer();
+
         DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(MySqlConnection))
             .Should().BeOfType<MySqlDatabaseAdapter>();
 

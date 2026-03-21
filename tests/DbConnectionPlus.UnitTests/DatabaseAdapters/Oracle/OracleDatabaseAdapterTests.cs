@@ -316,6 +316,10 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
+            this.adapter.SupportsTemporaryTables(this.MockDbConnection)
+        );
+
+        ArgumentNullGuardVerifier.Verify(() =>
             this.adapter.WasSqlStatementCancelledByCancellationToken(new(), CancellationToken.None)
         );
     }

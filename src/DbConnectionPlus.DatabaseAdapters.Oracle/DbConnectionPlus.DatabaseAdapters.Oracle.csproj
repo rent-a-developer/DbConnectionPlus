@@ -2,13 +2,13 @@
 
 	<PropertyGroup>
 		<AnalysisLevel>latest-all</AnalysisLevel>
-		<AssemblyName>RentADeveloper.DbConnectionPlus</AssemblyName>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus</AssemblyTitle>
+		<AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle</AssemblyName>
+		<AssemblyTitle>rent-a-developer DbConnectionPlus Oracle Database Adapter</AssemblyTitle>
 		<Authors>David Liebeherr</Authors>
 		<Company>rent-a-developer</Company>
 		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
-		<Description>A lightweight .NET ORM and extension library for the type DbConnection that adds high-performance, type-safe helpers to reduce boilerplate code, boost productivity, and make working with SQL databases in C# more enjoyable.</Description>
-		<DocumentationFile>RentADeveloper.DbConnectionPlus.xml</DocumentationFile>
+		<Description>Oracle database adapter for DbConnectionPlus.</Description>
+		<DocumentationFile>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.xml</DocumentationFile>
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -23,10 +23,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageReleaseNotes>See CHANGELOG.md.</PackageReleaseNotes>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageTags>ORM sql server mysql postgresql sqlite oracle SqlConnection DbConnection extensions connection entity insert delete update CRUD</PackageTags>
 		<RepositoryType>GIT</RepositoryType>
 		<RepositoryUrl>https://github.com/rent-a-developer/DbConnectionPlus.git</RepositoryUrl>
-		<RootNamespace>RentADeveloper.DbConnectionPlus</RootNamespace>
+		<RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle</RootNamespace>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<TargetFramework>net8.0</TargetFramework>
 		<TieredCompilation>true</TieredCompilation>
@@ -55,10 +54,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="fasterflect.reflect" Version="3.1.0" />
-		<PackageReference Include="FastMember" Version="1.5.0" />
-		<PackageReference Include="Humanizer.Core" Version="3.0.1" />
-		<PackageReference Include="LinkDotNet.StringBuilder" Version="3.3.0" />
+		<ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
 		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

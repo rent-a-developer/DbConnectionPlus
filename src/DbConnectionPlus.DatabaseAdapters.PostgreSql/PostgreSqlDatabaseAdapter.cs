@@ -9,7 +9,7 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 /// <summary>
 /// The database adapter for PostgreSQL databases.
 /// </summary>
-internal class PostgreSqlDatabaseAdapter : IDatabaseAdapter
+public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlDatabaseAdapter" /> class.

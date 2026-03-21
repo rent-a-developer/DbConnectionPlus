@@ -1,0 +1,277 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</name>
+    </assembly>
+    <members>
+        <member name="T:RentADeveloper.DbConnectionPlus.Configuration.SqlServerConfigurationExtensions">
+            <summary>
+            Extension methods for registering the SQL Server database adapter.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.Configuration.SqlServerConfigurationExtensions.UseSqlServer(RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration)">
+            <summary>
+            Registers the SQL Server database adapter for use with <see cref="T:Microsoft.Data.SqlClient.SqlConnection" />.
+            </summary>
+            <param name="configuration">The configuration instance.</param>
+            <returns>The configuration instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="configuration"/> is <see langword="null"/>.
+            </exception>
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter">
+            <summary>
+            The database adapter for SQL Server databases.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter" /> class.
+            </summary>
+        </member>
+        <member name="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.EntityManipulator">
+            <inheritdoc />
+        </member>
+        <member name="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.TemporaryTableBuilder">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.FormatParameterName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.GetDataType(System.Type,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.QuoteIdentifier(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.QuoteTemporaryTableName(System.String,System.Data.Common.DbConnection)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator">
+            <summary>
+            The entity manipulator for SQL Server.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.#ctor(RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter)">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator" /> class.
+            </summary>
+            <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.DeleteEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.DeleteEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.DeleteEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.DeleteEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.InsertEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.InsertEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.InsertEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.InsertEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.CreateDeleteEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to delete an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the key property values of the entity to delete.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.CreateInsertEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to insert an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the property values of the entity to insert.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.CreateUpdateEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to update an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the property values of the entity to update.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.GetDeleteEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to delete an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
+            <returns>The SQL code to delete an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.GetInsertEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to insert an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
+            <returns>The SQL code to insert an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.GetUpdateEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to update an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
+            <returns>The SQL code to update an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.PopulateParametersFromEntityProperties(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata,System.Collections.Generic.List{System.Data.Common.DbParameter},System.Object)">
+            <summary>
+            Populates the provided parameters with the property values of the provided entity.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <param name="parameters">The parameters to populate.</param>
+            <param name="entity">The entity from which to get the property values.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateDatabaseGeneratedProperties(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata,System.Data.Common.DbDataReader,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Updates the database generated properties of the provided entity from the provided data reader.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <param name="reader">The data reader from which to read the values for the properties.</param>
+            <param name="entity">The entity to update.</param>
+            <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerEntityManipulator.UpdateDatabaseGeneratedPropertiesAsync(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata,System.Data.Common.DbDataReader,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously updates the database generated properties of the provided entity from the provided data
+            reader.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <param name="reader">The data reader from which to read the values for the properties.</param>
+            <param name="entity">The entity to update.</param>
+            <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder">
+            <summary>
+            The temporary table builder for SQL Server.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.#ctor(RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter)">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder" /> class.
+            </summary>
+            <param name="databaseAdapter">The database adapter to use to build temporary tables.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="databaseAdapter" /> is <see langword="null" />.
+            </exception>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.BuildTemporaryTable(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,System.String,System.Collections.IEnumerable,System.Type,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.BuildTemporaryTableAsync(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,System.String,System.Collections.IEnumerable,System.Type,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.BuildCreateMultiColumnTemporaryTableSqlCode(System.String,System.Type,System.String,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <summary>
+            Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
+            <paramref name="objectsType" />.
+            </summary>
+            <param name="tableName">The name of the table to create.</param>
+            <param name="objectsType">The type of objects with which to populate the table.</param>
+            <param name="collation">The collation to use for text columns.</param>
+            <param name="enumSerializationMode">The mode to use to serialize <see cref="T:System.Enum" /> values.</param>
+            <returns>The built SQL code.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.BuildCreateSingleColumnTemporaryTableSqlCode(System.String,System.Collections.IEnumerable,System.Type,System.String,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <summary>
+            Builds an SQL code to create a single-column temporary table to be populated with values of the type
+            <paramref name="valuesType" />.
+            </summary>
+            <param name="tableName">The name of the table to create.</param>
+            <param name="values">The values with which to populate the table.</param>
+            <param name="valuesType">The type of values with which the table will be populated.</param>
+            <param name="collation">The collation to use for text columns.</param>
+            <param name="enumSerializationMode">The mode to use to serialize <see cref="T:System.Enum" /> values.</param>
+            <returns>The built SQL code.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.CreateValuesDataReader(System.Collections.IEnumerable,System.Type)">
+            <summary>
+            Creates a <see cref="T:System.Data.Common.DbDataReader" /> that reads data from the specified sequence of values.
+            </summary>
+            <param name="values">The sequence containing the values to be read.</param>
+            <param name="valuesType">The type of values in <paramref name="values" />.</param>
+            <returns>A <see cref="T:System.Data.Common.DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.DropTemporaryTable(System.String,Microsoft.Data.SqlClient.SqlConnection,Microsoft.Data.SqlClient.SqlTransaction)">
+            <summary>
+            Drops the temporary table with the specified name.
+            </summary>
+            <param name="name">The name of the table to drop.</param>
+            <param name="connection">The connection to use to drop the table.</param>
+            <param name="transaction">The transaction within to drop the table.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.DropTemporaryTableAsync(System.String,Microsoft.Data.SqlClient.SqlConnection,Microsoft.Data.SqlClient.SqlTransaction)">
+            <summary>
+            Asynchronously drops the temporary table with the specified name.
+            </summary>
+            <param name="name">The name of the table to drop.</param>
+            <param name="connection">The connection to use to drop the table.</param>
+            <param name="transaction">The transaction within to drop the table.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.GetCurrentDatabaseCollation(Microsoft.Data.SqlClient.SqlConnection,Microsoft.Data.SqlClient.SqlTransaction)">
+            <summary>
+            Gets the collation of the database the specified connection is currently connected to.
+            </summary>
+            <param name="connection">The connection to the database of which to get the collation.</param>
+            <param name="transaction">The database transaction within to perform the operation.</param>
+            <returns>The collation of the database the specified connection is currently connected to.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerTemporaryTableBuilder.GetCurrentDatabaseCollationAsync(Microsoft.Data.SqlClient.SqlConnection,Microsoft.Data.SqlClient.SqlTransaction)">
+            <summary>
+            Asynchronously gets the collation of the database the specified connection is currently connected to.
+            </summary>
+            <param name="connection">The connection to the database of which to get the collation.</param>
+            <param name="transaction">The database transaction within to perform the operation.</param>
+            <returns>
+            A task representing the asynchronous operation.
+            <see cref="P:System.Threading.Tasks.ValueTask`1.Result" /> will contain the collation of the database the specified connection is
+            currently connected to.
+            </returns>
+        </member>
+    </members>
+</doc>

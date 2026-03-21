@@ -1,4 +1,6 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Benchmarks;
+﻿using RentADeveloper.DbConnectionPlus.Configuration;
+
+namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 // Note: All benchmark settings (i.e. *_EntitiesPerOperation and *_OperationsPerInvoke) are chosen so that each invoke
 // takes at least 100 milliseconds to complete on a reasonably fast machine.
@@ -9,6 +11,8 @@ public partial class Benchmarks
 {
     static Benchmarks()
     {
+        DbConnectionPlusConfiguration.Instance.UseSqlite();
+
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new TimeSpanTypeHandler());
     }

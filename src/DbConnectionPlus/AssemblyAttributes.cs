@@ -2,3 +2,8 @@
 [assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.IntegrationTests")]
 [assembly: InternalsVisibleTo("DbConnectionPlus.Benchmarks")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer")]
+[assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql")]
+[assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql")]
+[assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle")]
+[assembly: InternalsVisibleTo("RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite")]

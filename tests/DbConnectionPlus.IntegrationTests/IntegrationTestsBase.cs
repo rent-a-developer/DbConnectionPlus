@@ -6,8 +6,16 @@
 using System.Data.Common;
 using System.Globalization;
 using LinkDotNet.StringBuilder;
+using Microsoft.Data.Sqlite;
+using MySqlConnector;
+using Npgsql;
+using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
@@ -30,6 +38,19 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
 
         this.logDbCommands = false;
 
+        // Reset all settings to defaults before each test.
+        DbConnectionPlusConfiguration.Instance = new()
+        {
+            EnumSerializationMode = EnumSerializationMode.Strings,
+            InterceptDbCommand = this.InterceptDbCommand
+        };
+
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<MySqlConnection>(new MySqlDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<OracleConnection>(new OracleDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<NpgsqlConnection>(new PostgreSqlDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqliteConnection>(new SqliteDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqlConnection>(new SqlServerDatabaseAdapter());
+
         this.TestDatabaseProvider = new();
         this.TestDatabaseProvider.ResetDatabase();
 
@@ -43,12 +64,6 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
 
         OracleDatabaseAdapter.AllowTemporaryTables = true;
 
-        // Reset all settings to defaults before each test.
-        DbConnectionPlusConfiguration.Instance = new()
-        {
-            EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = this.InterceptDbCommand
-        };
         EntityHelper.ResetEntityTypeMetadataCache();
     }
 
