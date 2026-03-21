@@ -9,7 +9,7 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// <summary>
 /// The database adapter for Oracle databases.
 /// </summary>
-internal class OracleDatabaseAdapter : IDatabaseAdapter
+public class OracleDatabaseAdapter : IDatabaseAdapter
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OracleDatabaseAdapter" /> class.
@@ -212,12 +212,16 @@ internal class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
-        this.supportsTemporaryTablesPerConnectionString.GetOrAdd(
+    public Boolean SupportsTemporaryTables(DbConnection connection)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+
+        return this.supportsTemporaryTablesPerConnectionString.GetOrAdd(
             connection.ConnectionString,
             // Oracle 18c added support for private temporary tables.
             _ => connection.Exists("SELECT 1 FROM v$instance WHERE version >= '18'")
         );
+    }
 
     /// <inheritdoc />
     public Boolean WasSqlStatementCancelledByCancellationToken(

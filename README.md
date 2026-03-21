@@ -83,10 +83,40 @@ All examples in this document use SQL Server.
 ## Quick start
 First, [install NuGet](https://docs.nuget.org/docs/start-here/installing-nuget).
 
-Then install the [NuGet package](https://www.nuget.org/packages/RentADeveloper.DbConnectionPlus/) from the package
-manager console:
+### Installation
+
+Install the core package:
+
 ```shell
 PM> Install-Package RentADeveloper.DbConnectionPlus
+```
+
+Then install the adapter package for the database system you use:
+
+| Database    | Package                                                                  |
+|-------------|--------------------------------------------------------------------------|
+| SQL Server  | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer`             |
+| MySQL       | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql`                 |
+| PostgreSQL  | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql`            |
+| Oracle      | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle`                |
+| SQLite      | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite`                |
+
+For example, to use SQL Server:
+
+```shell
+PM> Install-Package RentADeveloper.DbConnectionPlus
+PM> Install-Package RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer
+```
+
+### Register Database Adapters
+
+Before using DbConnectionPlus, register the adapter(s) for the database system(s) you use. This should be done once at application startup:
+
+```csharp
+using RentADeveloper.DbConnectionPlus.Configuration;
+
+// Register one or more adapters:
+DbConnectionExtensions.Configure(config => config.UseSqlServer());
 ```
 
 Import the library and the static helpers:
@@ -1203,7 +1233,28 @@ DbConnectionExtensions.Configure(config =>
 });
 ```
 
-See [SqlServerDatabaseAdapter](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/src/DbConnectionPlus/DatabaseAdapters/SqlServer/SqlServerDatabaseAdapter.cs) 
+You can also create an extension method for convenient registration:
+
+```csharp
+namespace RentADeveloper.DbConnectionPlus.Configuration;
+
+public static class MyCustomConfigurationExtensions
+{
+    public static DbConnectionPlusConfiguration UseMyCustomDatabase(this DbConnectionPlusConfiguration configuration)
+    {
+        configuration.RegisterDatabaseAdapter<MyConnectionType>(new MyDatabaseAdapter());
+        return configuration;
+    }
+}
+```
+
+Then register it like any built-in adapter:
+
+```csharp
+DbConnectionExtensions.Configure(config => config.UseMyCustomDatabase());
+```
+
+See [SqlServerDatabaseAdapter](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/src/DbConnectionPlus.DatabaseAdapters.SqlServer/SqlServerDatabaseAdapter.cs)
 for an example implementation of a database adapter.
 
 ## Benchmarks

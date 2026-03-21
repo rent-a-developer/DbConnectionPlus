@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using LinkDotNet.StringBuilder;
-using Microsoft.Data;
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
@@ -231,14 +230,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             }
         }
 
-        try
-        {
-            await mySqlBulkCopy.WriteToServerAsync(reader, cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationAbortedException)
-        {
-            throw new OperationCanceledException(cancellationToken);
-        }
+        await mySqlBulkCopy.WriteToServerAsync(reader, cancellationToken).ConfigureAwait(false);
 
         return new(
             () => DropTemporaryTable(name, mySqlConnection, mySqlTransaction),

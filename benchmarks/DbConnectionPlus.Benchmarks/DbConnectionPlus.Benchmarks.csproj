@@ -20,9 +20,6 @@
 		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
 		<PackageReference Include="Dapper" Version="2.1.66" />
 		<PackageReference Include="Dapper.Contrib" Version="2.0.78" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
-		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
 		<PackageReference Include="Verify.XunitV3" Version="31.9.4" />
 		<PackageReference Include="xunit.v3" Version="3.2.2" />
 		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
@@ -37,6 +34,9 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
+		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.SqlServer\DbConnectionPlus.DatabaseAdapters.SqlServer.csproj" />
+		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Sqlite\DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
+		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Oracle\DbConnectionPlus.DatabaseAdapters.Oracle.csproj" />
 		<ProjectReference Include="..\..\tests\DbConnectionPlus.UnitTests\DbConnectionPlus.UnitTests.csproj" />
 	</ItemGroup>
 

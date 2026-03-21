@@ -8,7 +8,7 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 /// <summary>
 /// The database adapter for MySQL databases.
 /// </summary>
-internal class MySqlDatabaseAdapter : IDatabaseAdapter
+public class MySqlDatabaseAdapter : IDatabaseAdapter
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MySqlDatabaseAdapter" /> class.

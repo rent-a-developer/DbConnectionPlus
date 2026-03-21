@@ -1,13 +1,3 @@
-using Microsoft.Data.Sqlite;
-using MySqlConnector;
-using Npgsql;
-using Oracle.ManagedDataAccess.Client;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
-using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
-
 namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 /// <summary>
@@ -20,11 +10,6 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// </summary>
     internal DbConnectionPlusConfiguration()
     {
-        this.databaseAdapters.Add(typeof(MySqlConnection), new MySqlDatabaseAdapter());
-        this.databaseAdapters.Add(typeof(OracleConnection), new OracleDatabaseAdapter());
-        this.databaseAdapters.Add(typeof(NpgsqlConnection), new PostgreSqlDatabaseAdapter());
-        this.databaseAdapters.Add(typeof(SqliteConnection), new SqliteDatabaseAdapter());
-        this.databaseAdapters.Add(typeof(SqlConnection), new SqlServerDatabaseAdapter());
     }
 
     /// <summary>
@@ -174,8 +159,10 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
             ? adapter
             : throw new InvalidOperationException(
                 $"No database adapter is registered for the database connection of the type {connectionType}. " +
-                $"Please call {nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)} to " +
-                "register an adapter for that connection type."
+                "Please install the corresponding adapter NuGet package " +
+                "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) " +
+                "and register it by calling the appropriate UseXxx() extension method via " +
+                $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
             );
     }
 

@@ -1,0 +1,343 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle</name>
+    </assembly>
+    <members>
+        <member name="T:RentADeveloper.DbConnectionPlus.Configuration.OracleConfigurationExtensions">
+            <summary>
+            Extension methods for registering the Oracle database adapter.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.Configuration.OracleConfigurationExtensions.UseOracle(RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration)">
+            <summary>
+            Registers the Oracle database adapter for use with <see cref="T:Oracle.ManagedDataAccess.Client.OracleConnection" />.
+            </summary>
+            <param name="configuration">The configuration instance.</param>
+            <returns>The configuration instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="configuration"/> is <see langword="null"/>.
+            </exception>
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter">
+            <summary>
+            The database adapter for Oracle databases.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter" /> class.
+            </summary>
+        </member>
+        <member name="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.EntityManipulator">
+            <inheritdoc />
+        </member>
+        <member name="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.TemporaryTableBuilder">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.FormatParameterName(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.GetDataType(System.Type,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.GetDbType(System.Type,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <summary>
+            Gets the corresponding database specific <see cref="T:System.Data.DbType" /> value for the type <paramref name="type" />.
+            </summary>
+            <param name="type">The type to get the database specific <see cref="T:System.Data.DbType" /> value for.</param>
+            <param name="enumSerializationMode">The mode to use to serialize <see cref="T:System.Enum" /> values.</param>
+            <returns>
+            The corresponding database specific <see cref="T:System.Data.DbType" /> value for the type <paramref name="type" />.
+            </returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+                <list type="bullet">
+                    <item>
+                        <description>
+                            <paramref name="enumSerializationMode" /> is not a valid <see cref="T:RentADeveloper.DbConnectionPlus.EnumSerializationMode" />
+            value.
+                        </description>
+                    </item>
+                    <item>
+                        <description>
+                            The type <paramref name="type" /> could not be mapped to a database specific
+            <see cref="T:System.Data.DbType" /> value.
+                        </description>
+                    </item>
+                </list>
+            </exception>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.QuoteIdentifier(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.QuoteTemporaryTableName(System.String,System.Data.Common.DbConnection)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables">
+            <summary>
+            <para>
+            Determines whether the temporary tables feature of DbConnectionPlus
+            (<see cref="M:RentADeveloper.DbConnectionPlus.DbConnectionExtensions.TemporaryTable``1(System.Collections.Generic.IEnumerable{``0},System.String)" />) is allowed to be used with Oracle databases.
+            Disabled by default.
+            </para>
+            <para>
+            WARNING:
+            Before enabling this feature, read the following note:
+            When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
+            following implications:
+            The temporary tables feature of DbConnectionPlus creates private temporary tables and drops them after use.
+            Unfortunately DDL statements (like creating and dropping a private temporary table) cause an implicit commit of
+            the current transaction in an Oracle database.
+            That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
+            committed when the temporary table is created and again when it is dropped!
+            </para>
+            <para>
+            Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
+            explicit transactions or at least be aware of the implications.
+            You have been warned!
+            </para>
+            </summary>
+            <remarks>
+            If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
+            </remarks>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.ThrowTemporaryTablesFeatureIsDisabledException">
+            <summary>
+            Throws an <see cref="T:System.InvalidOperationException" /> indicating that the temporary tables feature of
+            DbConnectionPlus is disabled for Oracle databases.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Always thrown.</exception>
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator">
+            <summary>
+            The entity manipulator for PostgreSQL.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.#ctor(RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter)">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator" /> class.
+            </summary>
+            <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.DeleteEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.DeleteEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.DeleteEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.DeleteEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.InsertEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.InsertEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.InsertEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.InsertEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.UpdateEntities``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.UpdateEntitiesAsync``1(System.Data.Common.DbConnection,System.Collections.Generic.IEnumerable{``0},System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.UpdateEntity``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.UpdateEntityAsync``1(System.Data.Common.DbConnection,``0,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.CreateDeleteEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to delete an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the key property values of the entity to delete.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.CreateInsertEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to insert an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the property values of the entity to insert.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.CreateUpdateEntityCommand(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Creates a command to update an entity.
+            </summary>
+            <param name="connection">The connection to use to create the command.</param>
+            <param name="transaction">The transaction to assign to the command.</param>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <returns>
+            A tuple containing the created command and the parameters for the property values of the entity to update.
+            </returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.GetDeleteEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to delete an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
+            <returns>The SQL code to delete an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.GetInsertEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to insert an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
+            <returns>The SQL code to insert an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.GetUpdateEntitySqlCode(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata)">
+            <summary>
+            Gets the SQL code to update an entity of the provided entity type.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
+            <returns>The SQL code to update an entity of the specified type.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.PopulateParametersFromEntityProperties(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata,System.Collections.Generic.List{System.Data.Common.DbParameter},System.Object)">
+            <summary>
+            Populates the provided parameters with the property values of the provided entity.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <param name="parameters">The parameters to populate.</param>
+            <param name="entity">The entity from which to get the property values.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleEntityManipulator.UpdateDatabaseGeneratedProperties(RentADeveloper.DbConnectionPlus.Entities.EntityTypeMetadata,System.Data.Common.DbParameter[],System.Object)">
+            <summary>
+            Updates the database generated properties of the provided entity from the provided output parameters.
+            </summary>
+            <param name="entityTypeMetadata">The metadata for the entity type.</param>
+            <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
+            <param name="entity">The entity to update.</param>
+        </member>
+        <member name="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder">
+            <summary>
+            The temporary table builder for Oracle.
+            </summary>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.#ctor(RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter)">
+            <summary>
+            Initializes a new instance of the <see cref="T:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder" /> class.
+            </summary>
+            <param name="databaseAdapter">The database adapter to use to build temporary tables.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="databaseAdapter" /> is <see langword="null" />.
+            </exception>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.BuildTemporaryTable(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,System.String,System.Collections.IEnumerable,System.Type,System.Threading.CancellationToken)">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            <see cref="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables" /> is set to <see langword="false" />.
+            </exception>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.BuildTemporaryTableAsync(System.Data.Common.DbConnection,System.Data.Common.DbTransaction,System.String,System.Collections.IEnumerable,System.Type,System.Threading.CancellationToken)">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            <see cref="P:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables" /> is set to <see langword="false" />.
+            </exception>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.BuildCreateMultiColumnTemporaryTableSqlCode(System.String,System.Type,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <summary>
+            Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
+            <paramref name="objectsType" />.
+            </summary>
+            <param name="quotedTableName">The quoted name of the table to create.</param>
+            <param name="objectsType">The type of objects with which to populate the table.</param>
+            <param name="enumSerializationMode">The mode to use to serialize <see cref="T:System.Enum" /> values.</param>
+            <returns>The built SQL code.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.BuildCreateSingleColumnTemporaryTableSqlCode(System.String,System.Collections.IEnumerable,System.Type,RentADeveloper.DbConnectionPlus.EnumSerializationMode)">
+            <summary>
+            Builds an SQL code to create a single-column temporary table to be populated with values of the type
+            <paramref name="valuesType" />.
+            </summary>
+            <param name="quotedTableName">The quoted name of the table to create.</param>
+            <param name="values">The values with which to populate the table.</param>
+            <param name="valuesType">The type of values with which the table will be populated.</param>
+            <param name="enumSerializationMode">The mode to use to serialize <see cref="T:System.Enum" /> values.</param>
+            <returns>The built SQL code.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.PopulateTemporaryTable(Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess.Client.OracleTransaction,System.String,System.Type,System.Data.Common.DbDataReader,System.Threading.CancellationToken)">
+            <summary>
+            Populates the specified temporary table with the data from the specified data reader.
+            </summary>
+            <param name="connection">The database connection to use to populate the table.</param>
+            <param name="transaction">The database transaction within to populate the table.</param>
+            <param name="quotedTableName">The quoted name of the table to populate.</param>
+            <param name="valuesType">The type of values with which to populate the table.</param>
+            <param name="dataReader">The data reader to use to populate the table.</param>
+            <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.PopulateTemporaryTableAsync(Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess.Client.OracleTransaction,System.String,System.Type,System.Data.Common.DbDataReader,System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously populates the specified temporary table with the data from the specified data reader.
+            </summary>
+            <param name="connection">The database connection to use to populate the table.</param>
+            <param name="transaction">The database transaction within to populate the table.</param>
+            <param name="quotedTableName">The quoted name of the table to populate.</param>
+            <param name="valuesType">The type of values with which to populate the table.</param>
+            <param name="dataReader">The data reader to use to populate the table.</param>
+            <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+            <returns>A task that represents the asynchronous operation.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.BuildInsertSqlCode(System.String,System.Type,System.Data.Common.DbDataReader)">
+            <summary>
+            Builds an SQL code to insert data from the specified data reader into the specified temporary table.
+            </summary>
+            <param name="quotedTableName">The quoted name of the table to insert data into.</param>
+            <param name="valuesType">The type of values with which to populate the table.</param>
+            <param name="dataReader">The data reader to read data from.</param>
+            <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.CreateValuesDataReader(System.Collections.IEnumerable,System.Type)">
+            <summary>
+            Creates a <see cref="T:System.Data.Common.DbDataReader" /> that reads data from the specified sequence of values.
+            </summary>
+            <param name="values">The sequence containing the values to be read.</param>
+            <param name="valuesType">The type of values in <paramref name="values" />.</param>
+            <returns>A <see cref="T:System.Data.Common.DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.DropTemporaryTable(System.String,Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess.Client.OracleTransaction)">
+            <summary>
+            Drops the temporary table with the specified name.
+            </summary>
+            <param name="quotedTableName">The quoted name of the table to drop.</param>
+            <param name="connection">The connection to use to drop the table.</param>
+            <param name="transaction">The transaction within to drop the table.</param>
+        </member>
+        <member name="M:RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleTemporaryTableBuilder.DropTemporaryTableAsync(System.String,Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess.Client.OracleTransaction)">
+            <summary>
+            Asynchronously drops the temporary table with the specified name.
+            </summary>
+            <param name="quotedTableName">The quoted name of the table to drop.</param>
+            <param name="connection">The connection to use to drop the table.</param>
+            <param name="transaction">The transaction within to drop the table.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+    </members>
+</doc>

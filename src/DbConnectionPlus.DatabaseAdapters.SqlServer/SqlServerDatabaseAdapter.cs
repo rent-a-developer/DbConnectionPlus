@@ -3,20 +3,20 @@
 
 using RentADeveloper.DbConnectionPlus.Converters;
 
-namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
+namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 
 /// <summary>
-/// The database adapter for SQLite databases.
+/// The database adapter for SQL Server databases.
 /// </summary>
-internal class SqliteDatabaseAdapter : IDatabaseAdapter
+public class SqlServerDatabaseAdapter : IDatabaseAdapter
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteDatabaseAdapter" /> class.
+    /// Initializes a new instance of the <see cref="SqlServerDatabaseAdapter" /> class.
     /// </summary>
-    public SqliteDatabaseAdapter()
+    public SqlServerDatabaseAdapter()
     {
-        this.entityManipulator = new(this);
         this.temporaryTableBuilder = new(this);
+        this.entityManipulator = new(this);
     }
 
     /// <inheritdoc />
@@ -34,7 +34,7 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
         switch (value)
         {
             case DateTime:
-                parameter.DbType = DbType.DateTime;
+                parameter.DbType = DbType.DateTime2;
                 parameter.Value = value;
                 break;
 
@@ -87,22 +87,22 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
             return enumSerializationMode switch
             {
                 EnumSerializationMode.Strings =>
-                    "TEXT",
+                    "nvarchar(200)", // 200 should be enough for most enum names
 
                 EnumSerializationMode.Integers =>
-                    "INTEGER",
+                    "int",
 
                 _ =>
                     ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
             };
         }
 
-        if (!typeToSqliteDataType.TryGetValue(effectiveType, out var result))
+        if (!typeToSqlDataType.TryGetValue(effectiveType, out var result))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(type),
                 type,
-                $"Could not map the type {type} to an SQLite data type."
+                $"Could not map the type {type} to an SQL Server data type."
             );
         }
 
@@ -111,46 +111,72 @@ internal class SqliteDatabaseAdapter : IDatabaseAdapter
 
     /// <inheritdoc />
     public String QuoteIdentifier(String identifier) =>
-        "\"" + identifier + "\"";
+        "[" + identifier + "]";
 
     /// <inheritdoc />
     public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
-        "temp.\"" + tableName + "\"";
+        "[#" + tableName + "]";
 
     /// <inheritdoc />
     public Boolean SupportsTemporaryTables(DbConnection connection) =>
         true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
+    public Boolean WasSqlStatementCancelledByCancellationToken(
+        Exception exception,
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(exception);
 
-        // SQLite does not support proper statement cancellation.
+        if (exception is not SqlException sqlException)
+        {
+            return false;
+        }
+
+        // Unfortunately SQL Server does not raise a specific error when a statement is being cancelled by the user.
+        // However, if a cancellation was requested via the specified cancellation token and
+        // SQL Server raised an error with class 11, number 0 and state 0, then we can be pretty sure the error was
+        // raised because of the cancellation.
+
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        foreach (SqlError error in sqlException.Errors)
+        {
+            if (error is { Class: 11, Number: 0, State: 0 })
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
-    private readonly SqliteEntityManipulator entityManipulator;
-    private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
+    private readonly SqlServerEntityManipulator entityManipulator;
+    private readonly SqlServerTemporaryTableBuilder temporaryTableBuilder;
 
-    private static readonly Dictionary<Type, String> typeToSqliteDataType = new()
+    private static readonly Dictionary<Type, String> typeToSqlDataType = new()
     {
-        { typeof(Boolean), "INTEGER" },
-        { typeof(Byte), "INTEGER" },
-        { typeof(Byte[]), "BLOB" },
-        { typeof(Char), "TEXT" },
-        { typeof(DateOnly), "TEXT" },
-        { typeof(DateTime), "TEXT" },
-        { typeof(DateTimeOffset), "TEXT" },
-        { typeof(Decimal), "TEXT" },
-        { typeof(Double), "REAL" },
-        { typeof(Guid), "TEXT" },
-        { typeof(Int16), "INTEGER" },
-        { typeof(Int32), "INTEGER" },
-        { typeof(Int64), "INTEGER" },
-        { typeof(Single), "REAL" },
-        { typeof(String), "TEXT" },
-        { typeof(TimeOnly), "TEXT" },
-        { typeof(TimeSpan), "TEXT" }
+        { typeof(Boolean), "bit" },
+        { typeof(Byte), "tinyint" },
+        { typeof(Byte[]), "varbinary(max)" },
+        { typeof(Char), "char(1)" },
+        { typeof(DateOnly), "date" },
+        { typeof(DateTime), "datetime2" },
+        { typeof(DateTimeOffset), "datetimeoffset" },
+        { typeof(Decimal), "decimal(28,10)" },
+        { typeof(Double), "float" },
+        { typeof(Guid), "uniqueidentifier" },
+        { typeof(Int16), "smallint" },
+        { typeof(Int32), "int" },
+        { typeof(Int64), "bigint" },
+        { typeof(Object), "sql_variant" },
+        { typeof(Single), "real" },
+        { typeof(String), "nvarchar(max)" },
+        { typeof(TimeOnly), "time" },
+        { typeof(TimeSpan), "time" }
     };
 }

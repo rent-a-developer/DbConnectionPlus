@@ -8,6 +8,13 @@
     <File Path="LICENSE.md" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/DatabaseAdapters/">
+    <Project Path="src/DbConnectionPlus.DatabaseAdapters.MySql/DbConnectionPlus.DatabaseAdapters.MySql.csproj" />
+    <Project Path="src/DbConnectionPlus.DatabaseAdapters.Oracle/DbConnectionPlus.DatabaseAdapters.Oracle.csproj" />
+    <Project Path="src/DbConnectionPlus.DatabaseAdapters.PostgreSql/DbConnectionPlus.DatabaseAdapters.PostgreSql.csproj" />
+    <Project Path="src/DbConnectionPlus.DatabaseAdapters.Sqlite/DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
+    <Project Path="src/DbConnectionPlus.DatabaseAdapters.SqlServer/DbConnectionPlus.DatabaseAdapters.SqlServer.csproj" />
+  </Folder>
   <Project Path="src/DbConnectionPlus/DbConnectionPlus.csproj" />
   <Project Path="benchmarks/DbConnectionPlus.Benchmarks/DbConnectionPlus.Benchmarks.csproj" Id="beba4892-ec19-4a36-a22d-51d1bab9cba2" />
   <Project Path="tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj" Id="1ee1a1c4-cd33-4c04-bf42-72f52cd60606" />
