@@ -1,7 +1,7 @@
-[![NuGet Version](https://img.shields.io/nuget/v/RentADeveloper.DbConnectionPlus)](https://www.nuget.org/packages/RentADeveloper.DbConnectionPlus/)
+[![NuGet Version](https://img.shields.io/nuget/v/DbConnectionPlus)](https://www.nuget.org/packages/DbConnectionPlus/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rent-a-developer_DbConnectionPlus&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rent-a-developer_DbConnectionPlus)
 [![license](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE.md)
-![semver](https://img.shields.io/badge/semver-2.0.0-blue)
+![semver](https://img.shields.io/badge/semver-3.0.0-blue)
 
 # ![image icon](https://raw.githubusercontent.com/rent-a-developer/DbConnectionPlus/main/icon.png) DbConnectionPlus
 A lightweight .NET ORM and extension library for the type
@@ -88,24 +88,24 @@ First, [install NuGet](https://docs.nuget.org/docs/start-here/installing-nuget).
 Install the core package:
 
 ```shell
-PM> Install-Package RentADeveloper.DbConnectionPlus
+PM> Install-Package DbConnectionPlus
 ```
 
 Then install the adapter package for the database system you use:
 
 | Database    | Package                                                                  |
 |-------------|--------------------------------------------------------------------------|
-| SQL Server  | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer`             |
-| MySQL       | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql`                 |
-| PostgreSQL  | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql`            |
-| Oracle      | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle`                |
-| SQLite      | `RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite`                |
+| SQL Server  | `DbConnectionPlus.DatabaseAdapters.SqlServer`             |
+| MySQL       | `DbConnectionPlus.DatabaseAdapters.MySql`                 |
+| PostgreSQL  | `DbConnectionPlus.DatabaseAdapters.PostgreSql`            |
+| Oracle      | `DbConnectionPlus.DatabaseAdapters.Oracle`                |
+| SQLite      | `DbConnectionPlus.DatabaseAdapters.Sqlite`                |
 
 For example, to use SQL Server:
 
 ```shell
-PM> Install-Package RentADeveloper.DbConnectionPlus
-PM> Install-Package RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer
+PM> Install-Package DbConnectionPlus
+PM> Install-Package DbConnectionPlus.DatabaseAdapters.SqlServer
 ```
 
 ### Register Database Adapters

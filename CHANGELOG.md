@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.0.0] - 2026-05-29
+
+### Changed
+- **BREAKING:** All NuGet packages have been renamed:
+	- RentADeveloper.DbConnectionPlus > DbConnectionPlus
+	- RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql > DbConnectionPlus.DatabaseAdapters.MySql
+	- RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle > DbConnectionPlus.DatabaseAdapters.Oracle
+	- RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql > DbConnectionPlus.DatabaseAdapters.PostgreSql
+	- RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite > DbConnectionPlus.DatabaseAdapters.Sqlite
+	- RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer > DbConnectionPlus.DatabaseAdapters.SqlServer
+
+### Migration from 2.x
+
+1. Remove the 'RentADeveloper.DbConnectionPlus*' packages and add the 'DbConnectionPlus*' packages.
+
 ## [2.0.0] - 2026-03-21
 
 ### Changed
