@@ -221,7 +221,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
             switch (fragment)
             {
                 case Literal literal:
-                    stringBuilder.Append(literal.Value);
+                    stringBuilder.Append(literal.Value.ReplaceLineEndings());
                     break;
 
                 case InterpolatedParameter interpolatedParameter:

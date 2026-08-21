@@ -33,7 +33,12 @@ updates:
           - "NSubstitute"
           - "NSubstitute.Community.*"
           - "xunit*"
-
+    ignore:
+      # AutoFixture.AutoNSubstitute 4.18.1 requires NSubstitute [2.0.3, 6.0.0). Remove this once
+      # AutoFixture 5.0.0 ships as a stable release (5.0.0-rc.1 is a pre-release).
+      - dependency-name: "NSubstitute"
+        versions: [ ">=6.0.0" ]
+        
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

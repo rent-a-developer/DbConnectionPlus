@@ -2,7 +2,7 @@
 * text=auto
 
 # Force specific line endings where it matters.
-*.cs        text eol=crlf
+*.cs        text
 *.csproj    text eol=crlf
 *.slnx      text eol=crlf
 *.props     text eol=crlf
