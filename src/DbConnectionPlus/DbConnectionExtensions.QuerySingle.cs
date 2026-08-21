@@ -4,6 +4,7 @@
 using RentADeveloper.DbConnectionPlus.Materializers;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
+using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
 
 namespace RentADeveloper.DbConnectionPlus;
 
@@ -14,8 +15,8 @@ public static partial class DbConnectionExtensions
 {
     /// <summary>
     /// Executes the specified SQL statement and materializes the single row of the result set returned by the statement
-    /// into a dynamic object where each column is represented as a property of the dynamic object with the same name
-    /// as the column.
+    /// into a <see cref="DataRow" /> where each column is available through the string indexer under the same name as
+    /// the column.
     /// </summary>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
@@ -24,7 +25,7 @@ public static partial class DbConnectionExtensions
     /// <param name="commandType">A value indicating how <paramref name="statement" /> is to be interpreted.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
-    /// A dynamic object containing the data of the single row of the result set returned by the statement.
+    /// A <see cref="DataRow" /> containing the data of the single row of the result set returned by the statement.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection" /> is <see langword="null" />.</exception>
     /// <exception cref="InvalidOperationException">
@@ -49,17 +50,35 @@ public static partial class DbConnectionExtensions
     /// may throw.
     /// </remarks>
     /// <example>
+    /// <para>
+    /// Read the columns through the string indexer. This works on every runtime, including in an application
+    /// published with Native AOT:
+    /// </para>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var product = connection.QuerySingle($"SELECT * FROM Product WHERE Id = {Parameter(id)}");
+    ///
+    /// var id = product["Id"];
+    /// var name = product["Name"];
+    /// ...
+    /// </code>
+    /// <para>
+    /// Where the runtime supports dynamic code generation, the columns can also be read and written as members
+    /// through a <see langword="dynamic" /> reference. This is not available in an application published with
+    /// Native AOT, where the string indexer above must be used:
+    /// </para>
+    /// <code>
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    ///
+    /// dynamic product = connection.QuerySingle($"SELECT * FROM Product WHERE Id = {Parameter(id)}");
     ///
     /// var id = product.Id;
     /// var name = product.Name;
     /// ...
     /// </code>
     /// </example>
-    public static dynamic QuerySingle(
+    public static DataRow QuerySingle(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -117,8 +136,8 @@ public static partial class DbConnectionExtensions
 
     /// <summary>
     /// Asynchronously executes the specified SQL statement and materializes the single row of the result set returned
-    /// by the statement into a dynamic object where each column is represented as a property of the dynamic object
-    /// with the same name as the column.
+    /// by the statement into a <see cref="DataRow" /> where each column is available through the string indexer under
+    /// the same name as the column.
     /// </summary>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
@@ -128,8 +147,8 @@ public static partial class DbConnectionExtensions
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
     /// A task representing the asynchronous operation.
-    /// <see cref="Task{TResult}.Result" /> will contain a dynamic object containing the data of the single row of the
-    /// result set returned by the statement.
+    /// <see cref="Task{TResult}.Result" /> will contain a <see cref="DataRow" /> containing the data of the single row
+    /// of the result set returned by the statement.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection" /> is <see langword="null" />.</exception>
     /// <exception cref="InvalidOperationException">
@@ -154,17 +173,35 @@ public static partial class DbConnectionExtensions
     /// for additional exceptions this method may throw.
     /// </remarks>
     /// <example>
+    /// <para>
+    /// Read the columns through the string indexer. This works on every runtime, including in an application
+    /// published with Native AOT:
+    /// </para>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var product = await connection.QuerySingleAsync($"SELECT * FROM Product WHERE Id = {Parameter(id)}");
+    ///
+    /// var id = product["Id"];
+    /// var name = product["Name"];
+    /// ...
+    /// </code>
+    /// <para>
+    /// Where the runtime supports dynamic code generation, the columns can also be read and written as members
+    /// through a <see langword="dynamic" /> reference. This is not available in an application published with
+    /// Native AOT, where the string indexer above must be used:
+    /// </para>
+    /// <code>
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    ///
+    /// dynamic product = await connection.QuerySingleAsync($"SELECT * FROM Product WHERE Id = {Parameter(id)}");
     ///
     /// var id = product.Id;
     /// var name = product.Name;
     /// ...
     /// </code>
     /// </example>
-    public static async Task<dynamic> QuerySingleAsync(
+    public static async Task<DataRow> QuerySingleAsync(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

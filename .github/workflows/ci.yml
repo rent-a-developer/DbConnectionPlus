@@ -1,0 +1,518 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    # Version tags (v1.2.3) run the full pipeline and then publish the packages to NuGet.org.
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CONFIGURATION: Release
+  CONSUMER_DIRECTORY: tests/package-consumption
+  COVERAGE_REPORTS: artifacts/test-results/**/coverage.opencover.*.xml
+  DOCFX_CONFIG: docs/docfx.json
+  DOCS_SITE: docs/_site
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  NUGET_CONFIG: NuGet.config
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  PACKAGE_OUTPUT: artifacts/packages
+  RELEASE_NOTES_FILE: release-notes.md
+  RELEASE_NOTES_SCRIPT: scripts/extract-release-notes.ps1
+  SOLUTION: DbConnectionPlus.slnx
+  TEST_RESULTS: artifacts/test-results
+  TESTINGPLATFORM_TELEMETRY_OPTOUT: true
+
+jobs:
+  # Enforce the formatting the repo ships tooling for. A style rule that is not enforced in CI drifts with
+  # the first external pull request.
+  #
+  # Whitespace only: the semantic style and analyzer rules are already enforced by the build itself
+  # (EnforceCodeStyleInBuild + TreatWarningsAsErrors + Roslynator at error) in the verify job below. What
+  # that does NOT cover is tests/ and benchmarks/, which set neither property - so for those projects this
+  # job is the only formatting gate there is.
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+          dotnet-quality: ga
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', '**/*.slnx', '.config/dotnet-tools.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
+
+      - name: Verify C# formatting (dotnet format)
+        run: dotnet format whitespace ${{ env.SOLUTION }} --no-restore --verify-no-changes
+
+  # Build the solution, run both test suites against real databases, and hand the coverage to SonarQube.
+  #
+  # No `services:` block, and no connection strings: the integration suite starts its own containers through
+  # Testcontainers, on the Docker daemon this runner already provides. That is the same code path a developer
+  # runs locally, so a database that is configured wrong now fails in both places or in neither - and the
+  # readiness gate this job used to carry by hand is the module wait strategies' job instead.
+  verify:
+    name: Build, test and analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          # Shallow clones make SonarQube's blame and new-code detection wrong.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Both SDKs are required: 10.0.x builds the net10.0 target of the src/ and test projects, and the 8.0.x
+      # install provides the .NET 8 runtime their net8.0 target executes on.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+          dotnet-quality: ga
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', '**/*.slnx', '.config/dotnet-tools.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
+
+      # TreatWarningsAsErrors is on for the six shipping projects, so this is also the style, trim-analyzer
+      # and public-API gate: an IL2xxx/IL3050 diagnostic fails here, and so does an undeclared or vanished
+      # public member (RS0016 / RS0017).
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
+
+      # --no-build, and the configuration named explicitly. Without both, `dotnet test` silently rebuilds the
+      # whole solution in Debug and tests that instead of the Release build above. The xUnit TRX reporter and
+      # Coverlet MTP extension replace the VSTest logger and data collector used before the MTP migration.
+      #
+      # This step pulls and starts the four database images, so the bulk of its wall time is the suite plus a
+      # cold Oracle - keep an eye on the job timeout above when adding a database system.
+      - name: Test
+        run: dotnet test --solution ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --results-directory "${{ env.TEST_RESULTS }}" --report-xunit-trx --coverlet --coverlet-output-format opencover
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: test-results
+          path: ${{ env.TEST_RESULTS }}
+          if-no-files-found: warn
+          retention-days: 14
+
+      # Skipped rather than failed when the token is absent, which is the case for pull requests from forks.
+      # The scanner reads the coverage produced by the test step above; it does not run the tests again.
+      - name: SonarQube scan
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
+        with:
+          args: >
+            -Dsonar.cs.opencover.reportsPaths=${{ env.COVERAGE_REPORTS }}
+
+  # Build the documentation and pack the six packages. Everything downstream consumes the artifact this
+  # produces, so nothing reaches NuGet.org that was not built exactly once, here.
+  package-and-docs:
+    name: Package and docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs:
+      - lint
+      - verify
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+          dotnet-quality: ga
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', '**/*.slnx', '.config/dotnet-tools.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # docfx is pinned in .config/dotnet-tools.json rather than installed globally at its latest version,
+      # so a docfx release cannot change the documentation build without a commit that says so.
+      - name: Restore tools
+        run: dotnet tool restore --configfile ${{ env.NUGET_CONFIG }}
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
+
+      - name: Build
+        run: dotnet build ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
+
+      # Invalid XML documentation fails these two steps, which is the point: the docs are generated from it.
+      - name: Build DocFX metadata
+        run: dotnet tool run docfx metadata ${{ env.DOCFX_CONFIG }}
+
+      - name: Build DocFX site
+        run: dotnet tool run docfx build ${{ env.DOCFX_CONFIG }}
+
+      # IsPackable in the project files is the source of truth for which projects ship as packages: the six
+      # under src/ do, the tests and the benchmarks do not.
+      - name: Pack NuGet packages
+        run: dotnet pack ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.PACKAGE_OUTPUT }} /p:ContinuousIntegrationBuild=true
+
+      - name: Determine packed version
+        id: version
+        run: |
+          nupkg="$(ls "${PACKAGE_OUTPUT}"/DbConnectionPlus.[0-9]*.nupkg)"
+          version="$(basename "${nupkg}" .nupkg | sed 's/^DbConnectionPlus\.//')"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "Packed version ${version}"
+
+      - name: Upload documentation site
+        # The Pages artifact is only consumed by deploy-docs (pushes to main); skip the upload on PRs.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: ${{ env.DOCS_SITE }}
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: nuget-packages
+          path: |
+            ${{ env.PACKAGE_OUTPUT }}/*.nupkg
+            ${{ env.PACKAGE_OUTPUT }}/*.snupkg
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+  # The Native AOT gate, run against the exact packages that will be published rather than against the
+  # projects. Under trimming a broken [DynamicallyAccessedMembers] chain binds no columns and throws nothing,
+  # and nothing is trimmed on the JIT - so the suite in `verify` passes with the defect present. This job is
+  # the only thing in the pipeline that can see it.
+  #
+  # Both target frameworks are gated: net8.0 is the documented AOT floor and needs an IL3050 suppression
+  # inside the library that net10.0 does not, because only net9.0+ annotates
+  # RuntimeFeature.IsDynamicCodeSupported as a feature guard. The net10.0 publish compiling WITHOUT that
+  # suppression is what verifies it.
+  verify-package-aot:
+    name: Verify packed-package Native AOT (${{ matrix.framework }}, ${{ matrix.runtime }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    needs: package-and-docs
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both frameworks on Linux, and net10.0 additionally on Windows. The trimming behaviour under test is
+        # the ILC compiler's and does not vary by host, so the second framework is not worth doubling the
+        # Windows leg for - but keeping one Windows leg exercises the MSVC publish path, which is what a
+        # Windows consumer of these packages actually runs.
+        include:
+          - os: ubuntu-latest
+            runtime: linux-x64
+            framework: net8.0
+          - os: ubuntu-latest
+            runtime: linux-x64
+            framework: net10.0
+          - os: windows-latest
+            runtime: win-x64
+            framework: net10.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+          dotnet-quality: ga
+
+      - name: Download the exact packages to be published
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: nuget-packages
+          path: ${{ env.PACKAGE_OUTPUT }}
+
+      # A linux-x64 native publish needs a C++ toolchain and zlib.
+      - name: Install the Native AOT prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+      - name: Publish from the packages, gate the IL diagnostics, and run the native binary
+        shell: pwsh
+        run: >
+          ./scripts/verify-package-aot.ps1
+          -Framework ${{ matrix.framework }}
+          -Runtime ${{ matrix.runtime }}
+          -PackageVersion ${{ needs.package-and-docs.outputs.version }}
+
+  # Prove the documented net8.0 floor with the .NET 8 SDK and nothing else installed. The consumer installs
+  # all six packages, so this also proves every adapter's driver dependency flows and that one shared
+  # DbConnectionPlus assembly satisfies all five adapters - none of which a project-referenced test can see.
+  verify-net8-consumers:
+    name: Consume packages on .NET 8 SDK (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    needs: package-and-docs
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET 8 SDK only
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 8.0.x
+          dotnet-quality: ga
+
+      - name: Download NuGet packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: nuget-packages
+          path: ${{ env.PACKAGE_OUTPUT }}
+
+      # The repository's global.json pins the 10.0 SDK, which does not exist on this runner. A consumer has
+      # no such file, so overwriting it for the consumer subtree is what reproduces a consumer's environment.
+      # It is never committed.
+      - name: Pin the .NET 8 SDK for the consumers (CI only, not committed)
+        shell: bash
+        run: |
+          cat > "${CONSUMER_DIRECTORY}/global.json" <<'JSON'
+          {
+            "sdk": {
+              "version": "8.0.100",
+              "rollForward": "latestFeature"
+            }
+          }
+          JSON
+
+      - name: Confirm the active SDK is 8.0
+        shell: bash
+        working-directory: ${{ env.CONSUMER_DIRECTORY }}
+        run: dotnet --version
+
+      # working-directory matters and is not cosmetic: the SDK resolves global.json from the CURRENT
+      # DIRECTORY upward, so running this from the repository root would pick up the root global.json, which
+      # pins the 10.0 SDK - and the job would either fail outright or quietly test the wrong SDK on a runner
+      # image that happens to ship one. Run it where the 8.0 pin above lives.
+      - name: Run the all-adapters package consumer (net8.0 SDK)
+        working-directory: ${{ env.CONSUMER_DIRECTORY }}
+        run: >
+          dotnet run --project AllAdaptersConsumer/AllAdaptersConsumer.csproj
+          --configuration ${{ env.CONFIGURATION }}
+          -p:DbConnectionPlusVersion=${{ needs.package-and-docs.outputs.version }}
+
+  # Publish the DocFX site to GitHub Pages on every push to main (requires Pages to be set to
+  # "GitHub Actions" as the source in the repository settings).
+  deploy-docs:
+    name: Deploy docs to GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: package-and-docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
+
+  # Publishing is deliberate, not automatic: it runs only when a version tag (v1.2.3) is pushed, never on a
+  # regular push to main. Nothing is ever packed or pushed by hand - see the "Releases" section of AGENTS.md.
+  publish-nuget:
+    name: Publish to NuGet.org
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs:
+      - package-and-docs
+      # Nothing reaches NuGet.org that a real consumer could not install, publish natively, and run.
+      - verify-package-aot
+      - verify-net8-consumers
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_USER: ${{ secrets.NUGET_USER }}
+
+    steps:
+      - name: Checkout release metadata
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.x
+          dotnet-quality: ga
+
+      - name: Download NuGet packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: nuget-packages
+          path: ${{ env.PACKAGE_OUTPUT }}
+
+      - name: Validate the release changelog before publication
+        shell: pwsh
+        run: ./${{ env.RELEASE_NOTES_SCRIPT }} -Version "$($env:GITHUB_REF_NAME -replace '^v', '')"
+
+      # The <Version> in src/Directory.Build.props is the single source of truth for all six packages;
+      # tagging a different version would otherwise publish stale packages, or silently publish nothing at
+      # all thanks to --skip-duplicate.
+      - name: Verify the tag matches the packed version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          status=0
+          for id in \
+            DbConnectionPlus \
+            DbConnectionPlus.DatabaseAdapters.MySql \
+            DbConnectionPlus.DatabaseAdapters.Oracle \
+            DbConnectionPlus.DatabaseAdapters.PostgreSql \
+            DbConnectionPlus.DatabaseAdapters.Sqlite \
+            DbConnectionPlus.DatabaseAdapters.SqlServer
+          do
+            if [[ ! -f "${PACKAGE_OUTPUT}/${id}.${tag_version}.nupkg" ]]; then
+              echo "::error title=Tag/version mismatch::Tag ${GITHUB_REF_NAME} expects ${id}.${tag_version}.nupkg, but the build produced:"
+              ls -1 "${PACKAGE_OUTPUT}"
+              status=1
+            fi
+          done
+          exit "${status}"
+
+      - name: Select publish mode
+        id: publish-mode
+        shell: bash
+        run: |
+          if [[ -n "${NUGET_USER}" ]]; then
+            echo "mode=trusted" >> "${GITHUB_OUTPUT}"
+          elif [[ -n "${NUGET_API_KEY}" ]]; then
+            echo "mode=api-key" >> "${GITHUB_OUTPUT}"
+          else
+            echo "::error title=NuGet credentials missing::Configure Trusted Publishing with NUGET_USER or add NUGET_API_KEY."
+            exit 1
+          fi
+
+      - name: NuGet login
+        id: nuget-login
+        if: steps.publish-mode.outputs.mode == 'trusted'
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
+        with:
+          user: ${{ env.NUGET_USER }}
+
+      - name: Publish packages with Trusted Publishing
+        if: steps.publish-mode.outputs.mode == 'trusted'
+        run: dotnet nuget push "${{ env.PACKAGE_OUTPUT }}/*.nupkg" --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --source nuget.org --skip-duplicate
+
+      - name: Publish packages with API key
+        if: steps.publish-mode.outputs.mode == 'api-key'
+        run: dotnet nuget push "${{ env.PACKAGE_OUTPUT }}/*.nupkg" --api-key "${{ env.NUGET_API_KEY }}" --source nuget.org --skip-duplicate
+
+  # Turn the tag into a GitHub Release: the matching CHANGELOG section becomes the notes and the packages are
+  # attached, so a release is browsable without leaving GitHub.
+  github-release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: publish-nuget
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - name: Download NuGet packages
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: nuget-packages
+          path: ${{ env.PACKAGE_OUTPUT }}
+
+      - name: Extract the changelog section for this version
+        shell: pwsh
+        run: ./${{ env.RELEASE_NOTES_SCRIPT }} -Version "$($env:GITHUB_REF_NAME -replace '^v', '')"
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "DbConnectionPlus ${GITHUB_REF_NAME}" \
+            --notes-file "${RELEASE_NOTES_FILE}" \
+            --verify-tag \
+            "${PACKAGE_OUTPUT}"/*.nupkg "${PACKAGE_OUTPUT}"/*.snupkg

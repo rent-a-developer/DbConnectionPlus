@@ -1,73 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<AnalysisLevel>latest-all</AnalysisLevel>
 		<AssemblyName>RentADeveloper.DbConnectionPlus</AssemblyName>
 		<AssemblyTitle>rent-a-developer DbConnectionPlus</AssemblyTitle>
-		<Authors>David Liebeherr</Authors>
-		<Company>rent-a-developer</Company>
-		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
 		<Description>A lightweight .NET ORM and extension library for the type DbConnection that adds high-performance, type-safe helpers to reduce boilerplate code, boost productivity, and make working with SQL databases in C# more enjoyable.</Description>
-		<DocumentationFile>RentADeveloper.DbConnectionPlus.xml</DocumentationFile>
-		<EnableNETAnalyzers>True</EnableNETAnalyzers>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<IncludeSymbols>true</IncludeSymbols>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
 		<PackageId>DbConnectionPlus</PackageId>
-		<PackageIcon>Resources\icon.png</PackageIcon>
-		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/rent-a-developer/DbConnectionPlus</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageReleaseNotes>See CHANGELOG.md.</PackageReleaseNotes>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageTags>ORM sql server mysql postgresql sqlite oracle SqlConnection DbConnection extensions connection entity insert delete update CRUD</PackageTags>
-		<RepositoryType>GIT</RepositoryType>
-		<RepositoryUrl>https://github.com/rent-a-developer/DbConnectionPlus.git</RepositoryUrl>
 		<RootNamespace>RentADeveloper.DbConnectionPlus</RootNamespace>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<TargetFramework>net8.0</TargetFramework>
-		<TieredCompilation>true</TieredCompilation>
-		<TieredPGO>true</TieredPGO>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<Version>3.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\..\CHANGELOG.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\LICENSE.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Update="Resources\icon.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
+		<!--
+		  Travels with the assembly so that ILLink and ILC honour it in a consuming application's trimmed or
+		  Native AOT publish. See the file itself for what it keeps and why an annotation cannot do it.
+		-->
+		<EmbeddedResource Include="ILLink.Descriptors.xml">
+			<LogicalName>ILLink.Descriptors.xml</LogicalName>
+		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="fasterflect.reflect" Version="3.1.0" />
-		<PackageReference Include="FastMember" Version="1.5.0" />
-		<PackageReference Include="Humanizer.Core" Version="3.0.1" />
-		<PackageReference Include="LinkDotNet.StringBuilder" Version="3.3.0" />
-		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Roslynator.Analyzers" Version="4.15.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+		<PackageReference Include="Humanizer.Core" Version="3.0.10" />
+		<PackageReference Include="LinkDotNet.StringBuilder" Version="3.4.2" />
 	</ItemGroup>
 
 </Project>

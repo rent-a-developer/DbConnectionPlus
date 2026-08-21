@@ -1,0 +1,14 @@
+#nullable enable
+RentADeveloper.DbConnectionPlus.Configuration.SqliteConfigurationExtensions
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter! parameter, object? value) -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.EntityManipulator.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.FormatParameterName(string! parameterName) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.GetDataType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.QuoteIdentifier(string! identifier) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.QuoteTemporaryTableName(string! tableName, System.Data.Common.DbConnection! connection) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.SqliteDatabaseAdapter() -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection! connection) -> bool
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.TemporaryTableBuilder.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite.SqliteDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> bool
+static RentADeveloper.DbConnectionPlus.Configuration.SqliteConfigurationExtensions.UseSqlite(this RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration! configuration) -> RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration!

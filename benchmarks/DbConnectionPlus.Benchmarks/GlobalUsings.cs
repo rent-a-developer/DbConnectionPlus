@@ -4,7 +4,5 @@ global using BenchmarkDotNet.Attributes;
 global using Dapper;
 global using Dapper.Contrib.Extensions;
 global using Microsoft.Data.Sqlite;
-global using RentADeveloper.DbConnectionPlus.Benchmarks.DapperTypeHandlers;
 global using RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
-global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;

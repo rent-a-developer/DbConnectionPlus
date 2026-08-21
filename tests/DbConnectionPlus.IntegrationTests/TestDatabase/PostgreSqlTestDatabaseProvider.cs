@@ -2,6 +2,7 @@ using System.Data.Common;
 using Npgsql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
+using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 
@@ -10,25 +11,6 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgreSqlTestDatabaseProvider" /> class.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// The environment variable 'ConnectionString_PostgreSQL' is not set.
-    /// </exception>
-    static PostgreSqlTestDatabaseProvider()
-    {
-        connectionString = Environment.GetEnvironmentVariable(ConnectionStringKey)?.Trim()!;
-
-        if (String.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException($"The environment variable '{ConnectionStringKey}' is not set!");
-        }
-
-        Console.Out.WriteLine("Using the following connection string for PostgreSQL:");
-        Console.Out.WriteLine(connectionString);
-    }
-
     /// <inheritdoc />
     public Boolean CanRetrieveStructureOfTemporaryTables => true;
 
@@ -65,7 +47,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public DbConnection CreateConnection()
     {
-        var connection = new NpgsqlConnection(connectionString);
+        var connection = new NpgsqlConnection(ConnectionString);
         connection.Open();
         connection.ChangeDatabase(DatabaseName);
         return connection;
@@ -115,7 +97,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
     public void ResetDatabase()
     {
-        using var connection = new NpgsqlConnection(connectionString);
+        using var connection = new NpgsqlConnection(ConnectionString);
         connection.Open();
 
         if (!isDatabasePrepared)
@@ -134,7 +116,15 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         connection.ExecuteNonQuery(PurgeTablesSql);
     }
 
-    private const String ConnectionStringKey = "ConnectionString_PostgreSQL";
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() =>
+        TestDatabaseContainers.StartPostgreSqlAsync();
+
+    /// <summary>
+    /// The connection string that connects to the PostgreSQL server running in the test container.
+    /// </summary>
+    private static String ConnectionString =>
+        TestDatabaseContainers.PostgreSql.ConnectionString;
 
     private const String CreateDatabaseObjectsSql =
         """
@@ -247,8 +237,6 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";
         TRUNCATE TABLE "MappingTestEntity";
         """;
-
-    private static readonly String connectionString;
 
     private static Boolean isDatabasePrepared;
 }

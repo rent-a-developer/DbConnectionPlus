@@ -1,0 +1,42 @@
+<Project>
+
+	<!--
+		Properties shared by EVERY project in the solution - the six shipping libraries, the two test projects
+		and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
+		Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
+
+		Anything that only the shipping libraries need belongs in src/Directory.Build.props instead, which
+		imports this file. MSBuild uses the NEAREST Directory.Build.props and stops there, so that import is
+		what keeps these properties applying under src/ as well.
+	-->
+
+	<PropertyGroup>
+		<Authors>David Liebeherr</Authors>
+		<Company>rent-a-developer</Company>
+		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<TieredCompilation>true</TieredCompilation>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--
+			The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
+			consumer of the packages. Only the shipping projects turn their diagnostics into errors
+			(TreatWarningsAsErrors in src/Directory.Build.props).
+		-->
+		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Roslynator.Analyzers" Version="4.16.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+</Project>

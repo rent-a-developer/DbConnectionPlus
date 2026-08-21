@@ -1,0 +1,14 @@
+#nullable enable
+RentADeveloper.DbConnectionPlus.Configuration.SqlServerConfigurationExtensions
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter! parameter, object? value) -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.EntityManipulator.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.FormatParameterName(string! parameterName) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.GetDataType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.QuoteIdentifier(string! identifier) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.QuoteTemporaryTableName(string! tableName, System.Data.Common.DbConnection! connection) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.SqlServerDatabaseAdapter() -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection! connection) -> bool
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.TemporaryTableBuilder.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer.SqlServerDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> bool
+static RentADeveloper.DbConnectionPlus.Configuration.SqlServerConfigurationExtensions.UseSqlServer(this RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration! configuration) -> RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration!

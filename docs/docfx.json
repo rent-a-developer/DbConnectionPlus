@@ -4,13 +4,14 @@
     {
       "src": [
         {
-          "src": "../src/DbConnectionPlus",
+          "src": "../src",
           "files": [
-            "**/bin/Release/net8.0/RentADeveloper.DbConnectionPlus.dll"
+            "**/*.csproj"
           ]
         }
       ],
-      "dest": "api"
+      "dest": "api",
+      "noRestore": true
     }
   ],
   "build": {
@@ -27,15 +28,20 @@
     "resource": [
       {
         "files": [
-          "images/**"
+          "assets/**"
         ]
       }
     ],
     "output": "_site",
-    "template": ["default","material/material"],
+    "template": [
+      "default",
+      "modern"
+    ],
     "globalMetadata": {
       "_appName": "DbConnectionPlus API Documentation",
       "_appTitle": "DbConnectionPlus API Documentation",
+      "_appLogoPath": "assets/logo.svg",
+      "_appFaviconPath": "assets/favicon.ico",
       "_enableSearch": true
     }
   }

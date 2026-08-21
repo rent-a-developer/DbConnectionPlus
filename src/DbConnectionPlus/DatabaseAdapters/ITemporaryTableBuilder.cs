@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
@@ -82,6 +82,7 @@ public interface ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     );
@@ -162,6 +163,7 @@ public interface ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     );

@@ -119,6 +119,11 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>SQLite runs in-process, in memory, so there is no server and nothing to start.</remarks>
+    public static ValueTask StartDatabaseAsync() =>
+        default;
+
     private readonly SqliteConnection connection;
 
     private Boolean isDatabasePrepared;

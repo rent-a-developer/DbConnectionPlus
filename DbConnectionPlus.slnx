@@ -1,12 +1,15 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
     <File Path="CHANGELOG.md" />
     <File Path="CONTRIBUTING.md" />
-    <File Path="CREATERELEASE.md" />
     <File Path="DESIGN-DECISIONS.md" />
     <File Path="LICENSE.md" />
+    <File Path="NuGet.config" />
+    <File Path="PACKAGE_README.md" />
     <File Path="README.md" />
+    <File Path="SECURITY.md" />
   </Folder>
   <Folder Name="/DatabaseAdapters/">
     <Project Path="src/DbConnectionPlus.DatabaseAdapters.MySql/DbConnectionPlus.DatabaseAdapters.MySql.csproj" />
@@ -19,4 +22,9 @@
   <Project Path="benchmarks/DbConnectionPlus.Benchmarks/DbConnectionPlus.Benchmarks.csproj" Id="beba4892-ec19-4a36-a22d-51d1bab9cba2" />
   <Project Path="tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj" Id="1ee1a1c4-cd33-4c04-bf42-72f52cd60606" />
   <Project Path="tests/DbConnectionPlus.IntegrationTests/DbConnectionPlus.IntegrationTests.csproj" Id="5704a89e-05f8-4afe-a359-d6b9dd62725c" />
+  <!--
+    tests/package-consumption/ is deliberately NOT in the solution. Those projects consume the packed NuGet
+    packages, so they cannot restore until `dotnet pack` has run, and adding them here would make a plain
+    `dotnet build DbConnectionPlus.slnx` fail on a clean clone. See their README for how to run them.
+  -->
 </Solution>

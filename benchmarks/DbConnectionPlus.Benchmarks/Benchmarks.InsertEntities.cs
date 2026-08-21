@@ -1,4 +1,4 @@
-// ReSharper disable InvokeAsExtensionMethod
+﻿// ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable InconsistentNaming
 
 #pragma warning disable RCS1196
@@ -33,6 +33,8 @@ public partial class Benchmarks
     [BenchmarkCategory(InsertEntities_Category)]
     public void InsertEntities_Command()
     {
+        this.AssignNextInsertEntitiesIds();
+
         using var command = this.connection.CreateCommand();
 
         command.CommandText = InsertEntitySql;
@@ -48,13 +50,11 @@ public partial class Benchmarks
             { "DecimalValue", new("DecimalValue", null) },
             { "DoubleValue", new("DoubleValue", null) },
             { "EnumValue", new("EnumValue", null) },
-            { "GuidValue", new("GuidValue", null) },
             { "Int16Value", new("Int16Value", null) },
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) },
-            { "TimeSpanValue", new("TimeSpanValue", null) }
+            { "StringValue", new("StringValue", null) }
         };
 
         command.Parameters.AddRange(parameters.Values);
@@ -69,16 +69,38 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(InsertEntities_Category)]
-    public void InsertEntities_Dapper() =>
+    public void InsertEntities_Dapper()
+    {
+        this.AssignNextInsertEntitiesIds();
+
         SqlMapperExtensions.Insert(this.connection, this.insertEntities_entitiesToInsert);
+    }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(InsertEntities_Category)]
-    public void InsertEntities_DbConnectionPlus() =>
+    public void InsertEntities_DbConnectionPlus()
+    {
+        this.AssignNextInsertEntitiesIds();
+
         this.connection.InsertEntities(this.insertEntities_entitiesToInsert);
+    }
+
+    // A fresh key per entity, because Id is the primary key and the benchmarks insert the same set of entities
+    // over and over into a table that starts out empty. This runs inside the measured region, but it is a few
+    // hundred nanoseconds of field writes against an operation of several milliseconds, and all three
+    // implementations pay it.
+    private void AssignNextInsertEntitiesIds()
+    {
+        foreach (var entity in this.insertEntities_entitiesToInsert)
+        {
+            entity.Id = ++this.insertEntities_nextId;
+        }
+    }
 
     private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert =
-        Generate.Multiple<BenchmarkEntity>(InsertEntities_EntitiesPerOperation);
+        Generate.Multiple(InsertEntities_EntitiesPerOperation);
+
+    private Int64 insertEntities_nextId;
 
     private const String InsertEntities_Category = "InsertEntities";
     private const Int32 InsertEntities_EntitiesPerOperation = 200;
@@ -95,13 +117,11 @@ public partial class Benchmarks
                                              DecimalValue,
                                              DoubleValue,
                                              EnumValue,
-                                             GuidValue,
                                              Int16Value,
                                              Int32Value,
                                              Int64Value,
                                              SingleValue,
-                                             StringValue,
-                                             TimeSpanValue
+                                             StringValue
                                            )
                                            VALUES
                                            (
@@ -114,13 +134,11 @@ public partial class Benchmarks
                                              @DecimalValue,
                                              @DoubleValue,
                                              @EnumValue,
-                                             @GuidValue,
                                              @Int16Value,
                                              @Int32Value,
                                              @Int64Value,
                                              @SingleValue,
-                                             @StringValue,
-                                             @TimeSpanValue
+                                             @StringValue
                                            )
                                            """;
 }

@@ -1,6 +1,9 @@
-using System.Data.SqlTypes;
+﻿using System.Data.SqlTypes;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using NSubstitute.ExceptionExtensions;
+using RentADeveloper.DbConnectionPlus.Entities;
+using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Materializers;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -55,6 +58,44 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
             .Should().Throw<ArgumentException>()
             .WithMessage("The SQL statement did not return any columns.*");
+    }
+
+    [Fact]
+    public void GetMaterializer_NoFieldMatchesAWritableProperty_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(2);
+
+        dataReader.GetName(0).Returns("NotAPropertyOfEntity");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+
+        dataReader.GetName(1).Returns("AlsoNotAPropertyOfEntity");
+        dataReader.GetFieldType(1).Returns(typeof(Int32));
+
+        Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage(
+                "None of the 2 field(s) of the result set (NotAPropertyOfEntity, AlsoNotAPropertyOfEntity) could " +
+                $"be mapped to a writable property of the entity type {typeof(Entity)}.*"
+            );
+    }
+
+    [Fact]
+    public void GetMaterializer_SomeFieldsMatchAWritableProperty_ShouldNotThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(2);
+
+        dataReader.GetName(0).Returns("CharValue");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+
+        dataReader.GetName(1).Returns("NotAPropertyOfEntity");
+        dataReader.GetFieldType(1).Returns(typeof(String));
+
+        Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
+            .Should().NotThrow();
     }
 
     [Fact]
@@ -149,7 +190,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     {
         var entities = Generate.Multiple<Entity>(1);
 
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+        var dataReader = CreateEntityDataReader(entities);
 
         dataReader.Read();
 
@@ -166,7 +207,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     {
         var entities = Generate.Multiple<Entity>(1);
 
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+        var dataReader = CreateEntityDataReader(entities);
 
         dataReader.Read();
 
@@ -615,7 +656,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     {
         var entities = Generate.Multiple<Entity>(1);
 
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+        var dataReader = CreateEntityDataReader(entities);
 
         dataReader.Read();
 
@@ -634,7 +675,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     {
         var entities = Generate.Multiple<Entity>(1);
 
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+        var dataReader = CreateEntityDataReader(entities);
 
         dataReader.Read();
 
@@ -696,7 +737,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         var entities = Generate.Multiple<Entity>(1);
         var entityWithDifferentCasingProperties = Generate.MapTo<EntityWithDifferentCasingProperties>(entities[0]);
 
-        var dataReader = new EnumHandlingObjectReader(typeof(Entity), entities);
+        var dataReader = CreateEntityDataReader(entities);
 
         dataReader.Read();
 
@@ -738,8 +779,442 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     }
 
     [Fact]
-    public void ShouldGuardAgainstNullArguments() =>
+    public void ReflectionMaterializer_ShouldMaterializeTheSameEntityAsTheExpressionMaterializer()
+    {
+        var entities = Generate.Multiple<Entity>(1);
+
+        var dataReader = CreateEntityDataReader(entities);
+
+        dataReader.Read();
+
+        var expressionMaterializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<Entity>(dataReader);
+
+        var materializedEntity = reflectionMaterializer(dataReader);
+
+        materializedEntity
+            .Should().BeEquivalentTo(entities[0]);
+
+        materializedEntity
+            .Should().BeEquivalentTo(expressionMaterializer(dataReader));
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_Mapping_Attributes_ShouldUseAttributesMapping()
+    {
+        var entity = Generate.Single<MappingTestEntityAttributes>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(3);
+
+        var ordinal = 0;
+        dataReader.GetName(ordinal).Returns("Key1");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.Key1_);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Value");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Value_);
+
+        ordinal++;
+        var notMappedColumnOrdinal = ordinal;
+        dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+
+        var materializer = GetReflectionMaterializer<MappingTestEntityAttributes>(dataReader);
+
+        var materializedEntity = materializer(dataReader);
+
+        _ = dataReader.DidNotReceive().IsDBNull(notMappedColumnOrdinal);
+        _ = dataReader.DidNotReceive().GetString(notMappedColumnOrdinal);
+
+        materializedEntity.Key1_
+            .Should().Be(entity.Key1_);
+
+        materializedEntity.Value_
+            .Should().Be(entity.Value_);
+
+        materializedEntity.NotMapped
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderFieldNameMatchesEntityPropertyCaseInsensitively_ShouldMaterialize()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("id"); // lower-case
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetInt64(0).Returns(789);
+
+        var materializer = GetReflectionMaterializer<Entity>(dataReader);
+
+        materializer(dataReader).Id
+            .Should().Be(789);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderHasCompatibleFieldTypes_ShouldConvertValues()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        var entityId = Generate.Id();
+        var enumValue = Generate.Single<TestEnum>();
+
+        dataReader.FieldCount.Returns(2);
+
+        dataReader.GetName(0).Returns("Id");
+        dataReader.GetFieldType(0).Returns(typeof(String)); // EntityWithEnumStoredAsInteger.Id is of type Int64.
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns(entityId.ToString());
+
+        dataReader.GetName(1).Returns("Enum");
+        dataReader.GetFieldType(1).Returns(typeof(Decimal)); // EntityWithEnumStoredAsInteger.Enum is of type TestEnum.
+        dataReader.IsDBNull(1).Returns(false);
+        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+
+        var materializer = GetReflectionMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
+
+        var entity = materializer(dataReader);
+
+        entity.Id
+            .Should().Be(entityId);
+
+        entity.Enum
+            .Should().Be(enumValue);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderFieldValueCannotBeConverted_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("CharValue");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns("ab");
+
+        var materializer = GetReflectionMaterializer<Entity>(dataReader);
+
+        Invoking(() => materializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
+                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"{typeof(Entity)}. See inner exception for details.*"
+            )
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
+                "one character long."
+            );
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NonNullableEntityProperty_DataReaderFieldContainsNull_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("Id");
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.IsDBNull(0).Returns(true);
+
+        var materializer = GetReflectionMaterializer<Entity>(dataReader);
+
+        Invoking(() => materializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding " +
+                $"property of the type {typeof(Entity)} is non-nullable.*"
+            );
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NullableEntityProperty_DataReaderFieldContainsNull_ShouldMaterializeNull()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("NullableBooleanValue");
+        dataReader.GetFieldType(0).Returns(typeof(Boolean));
+        dataReader.IsDBNull(0).Returns(true);
+        dataReader.GetBoolean(0).Throws(new SqlNullValueException());
+
+        var materializer = GetReflectionMaterializer<Entity>(dataReader);
+
+        var entity = Invoking(() => materializer(dataReader))
+            .Should().NotThrow().Subject;
+
+        entity.NullableBooleanValue
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_ShouldMaterializeDateTimeOffsetValue()
+    {
+        var entity = Generate.Single<EntityWithDateTimeOffset>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(2);
+
+        var ordinal = 0;
+        dataReader.GetName(ordinal).Returns("Id");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt64(ordinal).Returns(entity.Id);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("DateTimeOffsetValue");
+        dataReader.GetFieldType(ordinal).Returns(typeof(DateTimeOffset));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetValue(ordinal).Returns(entity.DateTimeOffsetValue);
+
+        var materializer = GetReflectionMaterializer<EntityWithDateTimeOffset>(dataReader);
+
+        materializer(dataReader)
+            .Should().BeEquivalentTo(entity);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_CompatiblePublicConstructor_ShouldUsePublicConstructor()
+    {
+        var entities = Generate.Multiple<Entity>(1);
+
+        var dataReader = CreateEntityDataReader(entities);
+
+        dataReader.Read();
+
+        var expressionMaterializer = EntityMaterializerFactory.GetMaterializer<EntityWithPublicConstructor>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<EntityWithPublicConstructor>(dataReader);
+
+        var materializedEntity = reflectionMaterializer(dataReader);
+
+        materializedEntity
+            .Should().BeEquivalentTo(entities[0]);
+
+        materializedEntity
+            .Should().BeEquivalentTo(expressionMaterializer(dataReader));
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_CompatiblePrivateConstructor_ShouldUsePrivateConstructor()
+    {
+        var entities = Generate.Multiple<Entity>(1);
+
+        var dataReader = CreateEntityDataReader(entities);
+
+        dataReader.Read();
+
+        var materializer = GetReflectionMaterializer<EntityWithPrivateConstructor>(dataReader);
+
+        materializer(dataReader)
+            .Should().BeEquivalentTo(entities[0]);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_ConstructorParametersInADifferentOrderThanTheFields_ShouldMaterialize()
+    {
+        var enumValue = Generate.Single<TestEnum>();
+        var name = Generate.Single<String>();
+        var id = Generate.Id();
+
+        // Item's constructor is (Id, Name, Enum); the result set deliberately returns the columns in another order.
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(3);
+
+        dataReader.GetName(0).Returns("Name");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns(name);
+
+        dataReader.GetName(1).Returns("Enum");
+        dataReader.GetFieldType(1).Returns(typeof(Int32)); // Item.Enum is of type TestEnum.
+        dataReader.IsDBNull(1).Returns(false);
+        dataReader.GetInt32(1).Returns((Int32)enumValue);
+
+        dataReader.GetName(2).Returns("Id");
+        dataReader.GetFieldType(2).Returns(typeof(Int64));
+        dataReader.IsDBNull(2).Returns(false);
+        dataReader.GetInt64(2).Returns(id);
+
+        var materializer = GetReflectionMaterializer<Item>(dataReader);
+
+        materializer(dataReader)
+            .Should().Be(new Item(id, name, enumValue));
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NonNullableConstructorParameter_DataReaderFieldContainsNull_ShouldThrow()
+    {
+        var dataReader = CreateItemDataReader();
+
+        dataReader.IsDBNull(0).Returns(true);
+
+        var expectedMessage =
+            "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding property " +
+            $"of the type {typeof(Item)} is non-nullable.*";
+
+        var reflectionMaterializer = GetReflectionMaterializer<Item>(dataReader);
+        var expressionMaterializer = EntityMaterializerFactory.GetMaterializer<Item>(dataReader);
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(expectedMessage);
+
+        Invoking(() => expressionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(expectedMessage);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NullableConstructorParameter_DataReaderFieldContainsNull_ShouldPassNull()
+    {
+        var dataReader = CreateItemDataReader();
+
+        dataReader.IsDBNull(1).Returns(true);
+
+        var materializer = GetReflectionMaterializer<Item>(dataReader);
+
+        materializer(dataReader).Name
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_ConstructorParameterValueCannotBeConverted_ShouldThrow()
+    {
+        var dataReader = CreateItemDataReader();
+
+        dataReader.GetString(2).Returns("NonExistent");
+
+        var expectedMessage =
+            "The column 'Enum' returned by the SQL statement contains a value that could not be converted to the " +
+            $"type {typeof(TestEnum)} of the corresponding property of the type {typeof(Item)}. See inner " +
+            "exception for details.*";
+
+        var expectedInnerMessage =
+            $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. That " +
+            "string does not match any of the names of the enum's members.*";
+
+        var reflectionMaterializer = GetReflectionMaterializer<Item>(dataReader);
+        var expressionMaterializer = EntityMaterializerFactory.GetMaterializer<Item>(dataReader);
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(expectedMessage)
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(expectedInnerMessage);
+
+        Invoking(() => expressionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(expectedMessage)
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(expectedInnerMessage);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_PrivateParameterlessConstructor_ShouldUsePrivateConstructor()
+    {
+        var entities = Generate.Multiple<Entity>(1);
+
+        var dataReader = CreateEntityDataReader(entities);
+
+        dataReader.Read();
+
+        var materializer = GetReflectionMaterializer<EntityWithPrivateParameterlessConstructor>(dataReader);
+
+        materializer(dataReader)
+            .Should().BeEquivalentTo(entities[0]);
+    }
+
+    [Fact]
+    public void ShouldGuardAgainstNullArguments()
+    {
         ArgumentNullGuardVerifier.Verify(() =>
             EntityMaterializerFactory.GetMaterializer<Entity>(Substitute.For<DbDataReader>())
+        );
+
+        var dataReader = CreateEntityDataReader(Generate.Multiple<Entity>(1));
+
+        ArgumentNullGuardVerifier.Verify(() =>
+            EntityMaterializerFactory.CreateReflectionMaterializer<Entity>(
+                dataReader,
+                dataReader.GetFieldNames(),
+                dataReader.GetFieldTypes()
+            )
+        );
+    }
+
+    /// <summary>
+    /// Creates a data reader whose three columns match the constructor of <see cref="Item" />, so that both
+    /// materializers take the constructor-injection strategy.
+    /// </summary>
+    /// <returns>The data reader, positioned on a row of valid values.</returns>
+    private static DbDataReader CreateItemDataReader()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(3);
+
+        dataReader.GetName(0).Returns("Id");
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetInt64(0).Returns(Generate.Id());
+
+        dataReader.GetName(1).Returns("Name");
+        dataReader.GetFieldType(1).Returns(typeof(String));
+        dataReader.IsDBNull(1).Returns(false);
+        dataReader.GetString(1).Returns(Generate.Single<String>());
+
+        dataReader.GetName(2).Returns("Enum");
+        dataReader.GetFieldType(2).Returns(typeof(String)); // Item.Enum is of type TestEnum.
+        dataReader.IsDBNull(2).Returns(false);
+        dataReader.GetString(2).Returns(Generate.Single<TestEnum>().ToString());
+
+        return dataReader;
+    }
+
+    /// <summary>
+    /// Creates a multi-column reader over the mapped, readable properties of <see cref="Entity" />.
+    /// </summary>
+    /// <param name="entities">The entities the reader reads.</param>
+    /// <returns>The created reader.</returns>
+    private static EnumerableReader CreateEntityDataReader(IEnumerable entities) =>
+        new(
+            entities,
+            [.. EntityHelper.GetEntityTypeMetadata(typeof(Entity)).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.SerializeEnums | EnumerableReaderOptions.ReadCharsAsStrings
+        );
+
+    /// <summary>
+    /// Creates the reflection materializer - the one that serves applications published with Native AOT - for the
+    /// shape of <paramref name="dataReader" />.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
+    /// <param name="dataReader">The data reader to create the materializer for.</param>
+    /// <returns>The reflection materializer.</returns>
+    /// <remarks>
+    /// The unit tests run on the JIT, where <see cref="RuntimeFeature.IsDynamicCodeSupported" /> is
+    /// <see langword="true" /> and <c>GetMaterializer</c> therefore always picks the expression-compiled path. The
+    /// reflection path is reached directly instead.
+    /// </remarks>
+    private static Func<DbDataReader, TEntity> GetReflectionMaterializer<TEntity>(DbDataReader dataReader) =>
+        EntityMaterializerFactory.CreateReflectionMaterializer<TEntity>(
+            dataReader,
+            dataReader.GetFieldNames(),
+            dataReader.GetFieldTypes()
         );
 }

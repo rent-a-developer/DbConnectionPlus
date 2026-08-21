@@ -1,9 +1,10 @@
-// Copyright (c) 2026 David Liebeherr
+﻿// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Materializers;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
+using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
 
 namespace RentADeveloper.DbConnectionPlus;
 
@@ -14,9 +15,8 @@ public static partial class DbConnectionExtensions
 {
     /// <summary>
     /// Executes the specified SQL statement and materializes the result set returned by the statement into a sequence
-    /// of dynamic objects.
-    /// Each row of the result set is mapped to a dynamic object where each column is represented as a property of the
-    /// dynamic object with the same name as the column.
+    /// of <see cref="DataRow" /> instances. Each row of the result set is mapped to a <see cref="DataRow" /> where
+    /// each column is available through the string indexer under the same name as the column.
     /// </summary>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
@@ -25,7 +25,7 @@ public static partial class DbConnectionExtensions
     /// <param name="commandType">A value indicating how <paramref name="statement" /> is to be interpreted.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
-    /// A sequence of dynamic objects containing the data of the result set returned by the statement.
+    /// A sequence of <see cref="DataRow" /> instances containing the data of the result set returned by the statement.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection" /> is <see langword="null" />.</exception>
     /// <exception cref="OperationCanceledException">
@@ -36,12 +36,33 @@ public static partial class DbConnectionExtensions
     /// may throw.
     /// </remarks>
     /// <example>
+    /// <para>
+    /// Read the columns through the string indexer. This works on every runtime, including in an application
+    /// published with Native AOT:
+    /// </para>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var products = connection.Query($"SELECT * FROM Product WHERE CategoryId = {Parameter(categoryId)}");
     ///
     /// foreach (var product in products)
+    /// {
+    ///     var id = product["Id"];
+    ///     var name = product["Name"];
+    ///     ...
+    /// }
+    /// </code>
+    /// <para>
+    /// Where the runtime supports dynamic code generation, the columns can also be read and written as members
+    /// through a <see langword="dynamic" /> reference. This is not available in an application published with
+    /// Native AOT, where the string indexer above must be used:
+    /// </para>
+    /// <code>
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    ///
+    /// var products = connection.Query($"SELECT * FROM Product WHERE CategoryId = {Parameter(categoryId)}");
+    ///
+    /// foreach (dynamic product in products)
     /// {
     ///     var id = product.Id;
     ///     var name = product.Name;
@@ -49,7 +70,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static IEnumerable<dynamic> Query(
+    public static IEnumerable<DataRow> Query(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -120,9 +141,9 @@ public static partial class DbConnectionExtensions
 
     /// <summary>
     /// Asynchronously executes the specified SQL statement and materializes the result set returned by the statement
-    /// into a sequence of dynamic objects.
-    /// Each row of the result set is mapped to a dynamic object where each column is represented as a property of the
-    /// dynamic object with the same name as the column.
+    /// into a sequence of <see cref="DataRow" /> instances. Each row of the result set is mapped to a
+    /// <see cref="DataRow" /> where each column is available through the string indexer under the same name as the
+    /// column.
     /// </summary>
     /// <param name="connection">The database connection to use to execute the statement.</param>
     /// <param name="statement">The SQL statement to execute.</param>
@@ -131,7 +152,8 @@ public static partial class DbConnectionExtensions
     /// <param name="commandType">A value indicating how <paramref name="statement" /> is to be interpreted.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>
-    /// An asynchronous sequence of dynamic objects containing the data of the result set returned by the statement.
+    /// An asynchronous sequence of <see cref="DataRow" /> instances containing the data of the result set returned by
+    /// the statement.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="connection" /> is <see langword="null" />.</exception>
     /// <exception cref="OperationCanceledException">
@@ -142,12 +164,33 @@ public static partial class DbConnectionExtensions
     /// for additional exceptions this method may throw.
     /// </remarks>
     /// <example>
+    /// <para>
+    /// Read the columns through the string indexer. This works on every runtime, including in an application
+    /// published with Native AOT:
+    /// </para>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var products = connection.QueryAsync($"SELECT * FROM Product WHERE CategoryId = {Parameter(categoryId)}");
     ///
     /// await foreach (var product in products)
+    /// {
+    ///     var id = product["Id"];
+    ///     var name = product["Name"];
+    ///     ...
+    /// }
+    /// </code>
+    /// <para>
+    /// Where the runtime supports dynamic code generation, the columns can also be read and written as members
+    /// through a <see langword="dynamic" /> reference. This is not available in an application published with
+    /// Native AOT, where the string indexer above must be used:
+    /// </para>
+    /// <code>
+    /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
+    ///
+    /// var products = connection.QueryAsync($"SELECT * FROM Product WHERE CategoryId = {Parameter(categoryId)}");
+    ///
+    /// await foreach (dynamic product in products)
     /// {
     ///     var id = product.Id;
     ///     var name = product.Name;
@@ -155,7 +198,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static async IAsyncEnumerable<dynamic> QueryAsync(
+    public static async IAsyncEnumerable<DataRow> QueryAsync(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

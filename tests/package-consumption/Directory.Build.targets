@@ -1,0 +1,5 @@
+<Project>
+
+	<!-- Deliberately empty: stops MSBuild's upward search (see Directory.Build.props next to this file). -->
+
+</Project>

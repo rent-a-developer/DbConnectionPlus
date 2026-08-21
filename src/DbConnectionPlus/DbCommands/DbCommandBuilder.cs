@@ -215,39 +215,39 @@ internal static class DbCommandBuilder
                     break;
 
                 case InterpolatedParameter interpolatedParameter:
-                {
-                    var parameterName = interpolatedParameter.InferredName ??
-                                        "Parameter_" + (parameterCount + 1);
-
-                    if (!parameterNameOccurrences.TryAdd(parameterName, 1))
                     {
-                        // Parameter name is already used, so we append a suffix to make it unique.
-                        var count = ++parameterNameOccurrences[parameterName];
-                        parameterName += count;
+                        var parameterName = interpolatedParameter.InferredName ??
+                                            "Parameter_" + (parameterCount + 1);
+
+                        if (!parameterNameOccurrences.TryAdd(parameterName, 1))
+                        {
+                            // Parameter name is already used, so we append a suffix to make it unique.
+                            var count = ++parameterNameOccurrences[parameterName];
+                            parameterName += count;
+                        }
+
+                        var dbParameter = command.CreateParameter();
+                        dbParameter.ParameterName = parameterName;
+                        databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
+                        dbParameters.Add(dbParameter);
+
+                        codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
+
+                        parameterCount++;
+                        break;
                     }
 
-                    var dbParameter = command.CreateParameter();
-                    dbParameter.ParameterName = parameterName;
-                    databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
-                    dbParameters.Add(dbParameter);
-
-                    codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
-
-                    parameterCount++;
-                    break;
-                }
-
                 case Parameter parameter:
-                {
-                    var dbParameter = command.CreateParameter();
-                    dbParameter.ParameterName = parameter.Name;
-                    databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
-                    dbParameters.Add(dbParameter);
+                    {
+                        var dbParameter = command.CreateParameter();
+                        dbParameter.ParameterName = parameter.Name;
+                        databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
+                        dbParameters.Add(dbParameter);
 
-                    parameterNameOccurrences[parameter.Name] = 1;
-                    parameterCount++;
-                    break;
-                }
+                        parameterNameOccurrences[parameter.Name] = 1;
+                        parameterCount++;
+                        break;
+                    }
 
                 case InterpolatedTemporaryTable interpolatedTemporaryTable:
                     codeBuilder.Append(

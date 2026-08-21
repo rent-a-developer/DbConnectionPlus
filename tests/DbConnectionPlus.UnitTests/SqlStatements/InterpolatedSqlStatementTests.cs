@@ -506,9 +506,9 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
                   {{itemsTable.Name}}
                   --------------------------------------
-                  '{"Id":1,"Name":"A","Enum":1}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
-                  '{"Id":2,"Name":"B","Enum":2}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
-                  '{"Id":3,"Name":"C","Enum":3}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
+                  'Item { Id = 1, Name = A, Enum = Value1 }' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
+                  'Item { Id = 2, Name = B, Enum = Value2 }' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
+                  'Item { Id = 3, Name = C, Enum = Value3 }' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.Item)
 
                   {{idsTable.Name}}
                   ------------------------------------

@@ -1,4 +1,4 @@
-// ReSharper disable InvokeAsExtensionMethod
+﻿// ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable InconsistentNaming
 
 #pragma warning disable RCS1196
@@ -33,6 +33,8 @@ public partial class Benchmarks
     [BenchmarkCategory(InsertEntity_Category)]
     public void InsertEntity_Command()
     {
+        this.AssignNextInsertEntityId();
+
         using var command = this.connection.CreateCommand();
 
         command.CommandText = InsertEntitySql;
@@ -48,13 +50,11 @@ public partial class Benchmarks
             { "DecimalValue", new("DecimalValue", null) },
             { "DoubleValue", new("DoubleValue", null) },
             { "EnumValue", new("EnumValue", null) },
-            { "GuidValue", new("GuidValue", null) },
             { "Int16Value", new("Int16Value", null) },
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) },
-            { "TimeSpanValue", new("TimeSpanValue", null) }
+            { "StringValue", new("StringValue", null) }
         };
 
         command.Parameters.AddRange(parameters.Values);
@@ -66,14 +66,30 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(InsertEntity_Category)]
-    public void InsertEntity_Dapper() =>
+    public void InsertEntity_Dapper()
+    {
+        this.AssignNextInsertEntityId();
+
         SqlMapperExtensions.Insert(this.connection, this.insertEntity_entityToInsert);
+    }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(InsertEntity_Category)]
-    public void InsertEntity_DbConnectionPlus() =>
-        this.connection.InsertEntity(this.insertEntity_entityToInsert);
+    public void InsertEntity_DbConnectionPlus()
+    {
+        this.AssignNextInsertEntityId();
 
-    private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single<BenchmarkEntity>();
+        this.connection.InsertEntity(this.insertEntity_entityToInsert);
+    }
+
+    private void AssignNextInsertEntityId() =>
+        this.insertEntity_entityToInsert.Id = ++this.insertEntity_nextId;
+
+    private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single();
+
+    // A fresh key per invocation, because Id is the primary key and the benchmarks insert the same entity over
+    // and over into a table that starts out empty.
+    private Int64 insertEntity_nextId;
+
     private const String InsertEntity_Category = "InsertEntity";
 }

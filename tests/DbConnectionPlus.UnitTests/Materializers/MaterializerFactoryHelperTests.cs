@@ -157,6 +157,74 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             );
     }
 
+    [Theory]
+    [InlineData(typeof(Boolean), nameof(DbDataReader.GetBoolean))]
+    [InlineData(typeof(Byte), nameof(DbDataReader.GetByte))]
+    [InlineData(typeof(DateTime), nameof(DbDataReader.GetDateTime))]
+    [InlineData(typeof(Decimal), nameof(DbDataReader.GetDecimal))]
+    [InlineData(typeof(Double), nameof(DbDataReader.GetDouble))]
+    [InlineData(typeof(Single), nameof(DbDataReader.GetFloat))]
+    [InlineData(typeof(Guid), nameof(DbDataReader.GetGuid))]
+    [InlineData(typeof(Int16), nameof(DbDataReader.GetInt16))]
+    [InlineData(typeof(Int32), nameof(DbDataReader.GetInt32))]
+    [InlineData(typeof(Int64), nameof(DbDataReader.GetInt64))]
+    [InlineData(typeof(String), nameof(DbDataReader.GetString))]
+    [InlineData(typeof(Byte[]), nameof(DbDataReader.GetValue))]
+    [InlineData(typeof(DateOnly), nameof(DbDataReader.GetValue))]
+    [InlineData(typeof(DateTimeOffset), nameof(DbDataReader.GetValue))]
+    [InlineData(typeof(TimeOnly), nameof(DbDataReader.GetValue))]
+    [InlineData(typeof(TimeSpan), nameof(DbDataReader.GetValue))]
+    public void CreateGetDbDataReaderFieldValueFunction_ShouldCallTheSameMethodAsTheExpression(
+        Type fieldType,
+        String expectedDbDataReaderMethodName
+    )
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
+                Expression.Constant(dataReader),
+                Expression.Constant(1),
+                1,
+                "FieldA",
+                fieldType
+            )
+            .ToString()
+            .Should().Contain($".{expectedDbDataReaderMethodName}(1)");
+
+        _ = MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(1, "FieldA", fieldType)(dataReader);
+
+        dataReader.ReceivedCalls().Select(call => call.GetMethodInfo().Name)
+            .Should().Equal(expectedDbDataReaderMethodName);
+    }
+
+    [Fact]
+    public void CreateGetDbDataReaderFieldValueFunction_UnsupportedFieldType_ShouldThrow()
+    {
+        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
+                    1,
+                    "FieldA",
+                    typeof(BigInteger)
+                )
+            )
+            .Should().Throw<ArgumentException>()
+            .WithMessage(
+                $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not " +
+                "supported.*"
+            );
+
+        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
+                    1,
+                    "",
+                    typeof(BigInteger)
+                )
+            )
+            .Should().Throw<ArgumentException>()
+            .WithMessage(
+                $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not " +
+                "supported.*"
+            );
+    }
+
     [Fact]
     public void DbDataReaderGetValueMethod_ShouldReferenceDbDataReaderGetValue()
     {
@@ -214,6 +282,24 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             .Should().Be(expectedResult);
 
     [Fact]
+    public void MakeValueConverterConvertValueToTypeMethod_ShouldReferenceValueConverterConvertValueToType()
+    {
+        var method = MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(typeof(Int32));
+
+        method.DeclaringType
+            .Should().Be(typeof(ValueConverter));
+
+        method.Name
+            .Should().Be(nameof(ValueConverter.ConvertValueToType));
+
+        method.GetGenericArguments()
+            .Should().Equal(typeof(Int32));
+
+        method.GetParameters().Select(p => (p.Name, p.ParameterType))
+            .Should().Equal(("value", typeof(Object)));
+    }
+
+    [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
         var dataReader = Substitute.For<DbDataReader>();
@@ -222,6 +308,14 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
                 Expression.Constant(dataReader),
                 Expression.Constant(1),
+                1,
+                "FieldA",
+                typeof(Int32)
+            )
+        );
+
+        ArgumentNullGuardVerifier.Verify(() =>
+            MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
                 1,
                 "FieldA",
                 typeof(Int32)
@@ -281,20 +375,5 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
 
         property.PropertyType
             .Should().Be(typeof(Int32));
-    }
-
-    [Fact]
-    public void ValueConverterConvertValueToTypeMethod_ShouldReferenceValueConverterConvertValueToType()
-    {
-        var method = MaterializerFactoryHelper.ValueConverterConvertValueToTypeMethod;
-
-        method.DeclaringType
-            .Should().Be(typeof(ValueConverter));
-
-        method.Name
-            .Should().Be(nameof(ValueConverter.ConvertValueToType));
-
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().Equal(("value", typeof(Object)));
     }
 }

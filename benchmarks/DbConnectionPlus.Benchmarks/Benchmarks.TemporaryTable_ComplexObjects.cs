@@ -54,13 +54,11 @@ public partial class Benchmarks
             { "DecimalValue", new("DecimalValue", null) },
             { "DoubleValue", new("DoubleValue", null) },
             { "EnumValue", new("EnumValue", null) },
-            { "GuidValue", new("GuidValue", null) },
             { "Int16Value", new("Int16Value", null) },
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) },
-            { "TimeSpanValue", new("TimeSpanValue", null) }
+            { "StringValue", new("StringValue", null) }
         };
 
         insertCommand.Parameters.AddRange(parameters.Values);
@@ -107,6 +105,22 @@ public partial class Benchmarks
         return result;
     }
 
+    // There is deliberately no TemporaryTable_ComplexObjects_Dapper_Aot benchmark, and it is not for want of
+    // trying: annotating a copy of the benchmark above with [DapperAot] does get three of its four call sites
+    // intercepted - both SqlMapper.Execute calls and the SqlMapper.Query<BenchmarkEntity>. The fourth is
+    // SqlMapperExtensions.Insert, i.e. Dapper.Contrib, which interceptors cannot reach because the call into Dapper
+    // happens inside the Contrib assembly rather than in this project. Measured, by publishing that variant and
+    // running it:
+    //
+    //   System.PlatformNotSupportedException: Dynamic code generation is not supported on this platform.
+    //      at Dapper.SqlMapper.CreateParamInfoGenerator(...)
+    //      at Dapper.SqlMapper.ExecuteImpl(...)
+    //      at Dapper.Contrib.Extensions.SqlMapperExtensions.Insert[T](...)
+    //
+    // Replacing the Contrib insert with a hand-written INSERT would make it interceptable, but then the Dapper
+    // column would be assembling the SQL by hand while DbConnectionPlus generates it - strictly less work, and a
+    // flattering number for the wrong reason. See the README next to this file.
+
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
     public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbConnectionPlus() =>
@@ -115,7 +129,7 @@ public partial class Benchmarks
             .ToList();
 
     private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities =
-        Generate.Multiple<BenchmarkEntity>(TemporaryTable_ComplexObjects_EntitiesPerOperation);
+        Generate.Multiple(TemporaryTable_ComplexObjects_EntitiesPerOperation);
 
     private const String CreateTempEntitiesTableSql = """
                                                       CREATE TEMP TABLE Entities (
@@ -128,13 +142,11 @@ public partial class Benchmarks
                                                           DecimalValue TEXT,
                                                           DoubleValue REAL,
                                                           EnumValue TEXT,
-                                                          GuidValue TEXT,
                                                           Int16Value INTEGER,
                                                           Int32Value INTEGER,
                                                           Int64Value INTEGER,
                                                           SingleValue REAL,
-                                                          StringValue TEXT,
-                                                          TimeSpanValue TEXT
+                                                          StringValue TEXT
                                                       )
                                                       """;
 
@@ -149,13 +161,11 @@ public partial class Benchmarks
                                                       DecimalValue,
                                                       DoubleValue,
                                                       EnumValue,
-                                                      GuidValue,
                                                       Int16Value,
                                                       Int32Value,
                                                       Int64Value,
                                                       SingleValue,
-                                                      StringValue,
-                                                      TimeSpanValue
+                                                      StringValue
                                                   )
                                                   VALUES (
                                                       @Id,
@@ -167,13 +177,11 @@ public partial class Benchmarks
                                                       @DecimalValue,
                                                       @DoubleValue,
                                                       @EnumValue,
-                                                      @GuidValue,
                                                       @Int16Value,
                                                       @Int32Value,
                                                       @Int64Value,
                                                       @SingleValue,
-                                                      @StringValue,
-                                                      @TimeSpanValue
+                                                      @StringValue
                                                   )
                                                   """;
 

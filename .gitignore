@@ -11,9 +11,19 @@ bin
 .sonarlint/
 
 BenchmarkDotNet.Artifacts/
+artifacts/
 docs/api
 docs/_site
+.idea/
 
-release
+# The package consumers' isolated NuGet cache. See tests/package-consumption/nuget.config.
+tests/package-consumption/.packages/
 
-src/DbConnectionPlus/RentADeveloper.DbConnectionPlus.xml
+# Written by the CI "Consume packages on .NET 8 SDK" job to pin the SDK for the consumer subtree.
+tests/package-consumption/global.json
+
+# Written by the CI publish and release jobs from the matching CHANGELOG.md section.
+release-notes.md
+
+# Stale XML documentation files left next to the project files by an older build configuration.
+src/*/RentADeveloper.*.xml

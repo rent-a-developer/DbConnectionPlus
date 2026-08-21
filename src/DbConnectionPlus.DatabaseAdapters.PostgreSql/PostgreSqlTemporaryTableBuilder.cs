@@ -1,9 +1,9 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using FastMember;
 using LinkDotNet.StringBuilder;
 using Npgsql;
+using NpgsqlTypes;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
 using RentADeveloper.DbConnectionPlus.Entities;
@@ -37,6 +37,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -97,7 +98,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         using var reader = CreateValuesDataReader(values, valuesType);
 
-        this.PopulateTemporaryTable(npgsqlConnection, name, reader, cancellationToken);
+        this.PopulateTemporaryTable(npgsqlConnection, name, valuesType, reader, cancellationToken);
 
         return new(
             () => DropTemporaryTable(name, npgsqlConnection, npgsqlTransaction),
@@ -111,6 +112,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -177,7 +179,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         await using var reader = CreateValuesDataReader(values, valuesType);
 #pragma warning restore CA2007
 
-        await this.PopulateTemporaryTableAsync(npgsqlConnection, name, reader, cancellationToken)
+        await this.PopulateTemporaryTableAsync(npgsqlConnection, name, valuesType, reader, cancellationToken)
             .ConfigureAwait(false);
 
         return new(
@@ -196,6 +198,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
@@ -246,6 +249,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
@@ -267,27 +271,57 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     }
 
     /// <summary>
+    /// Determines the <see cref="NpgsqlDbType" /> of every column of a temporary table that is populated with
+    /// values of the specified type.
+    /// </summary>
+    /// <param name="valuesType">The type of values with which the table is populated.</param>
+    /// <returns>The <see cref="NpgsqlDbType" /> of every column, in column order.</returns>
+    /// <remarks>
+    /// The types come from the entity metadata rather than from <see cref="DbDataReader.GetFieldType" />, which the
+    /// binary importer would otherwise be the natural source for. That method annotates its return value with
+    /// <see cref="DynamicallyAccessedMembersAttribute" />, so a reader cannot report a property type through it
+    /// without an <c>IL2073</c>, and an <c>IL2xxx</c> is never suppressed here — see the remarks on
+    /// <c>EnumerableReader.GetFieldType</c>. <see cref="PostgreSqlDatabaseAdapter.GetDbType" /> takes a plain
+    /// <see cref="Type" />, so reading the property types here is warning-free and yields the same values.
+    /// </remarks>
+    private NpgsqlDbType[] GetColumnDbTypes(
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
+    {
+        var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
+
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            return [this.databaseAdapter.GetDbType(valuesType, enumSerializationMode)];
+        }
+
+        return
+        [
+            .. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+                .Select(a => this.databaseAdapter.GetDbType(a.PropertyType, enumSerializationMode))
+        ];
+    }
+
+    /// <summary>
     /// Populates the specified temporary table with the data from the specified data reader.
     /// </summary>
     /// <param name="connection">The database connection to use to populate the table.</param>
     /// <param name="tableName">The name of the table to populate.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
     /// <param name="dataReader">The data reader to use to populate the table.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     private void PopulateTemporaryTable(
         NpgsqlConnection connection,
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
     {
         using var importer = connection.BeginBinaryImport($"COPY \"{tableName}\" FROM STDIN (FORMAT BINARY)");
 
-        var npgsqlDbTypes = dataReader
-            .GetFieldTypes()
-            .Select(t =>
-                this.databaseAdapter.GetDbType(t, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
-            )
-            .ToArray();
+        var npgsqlDbTypes = this.GetColumnDbTypes(valuesType);
 
         while (dataReader.Read())
         {
@@ -327,12 +361,15 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// </summary>
     /// <param name="connection">The database connection to use to populate the table.</param>
     /// <param name="tableName">The name of the table to populate.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
     /// <param name="dataReader">The data reader to use to populate the table.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task PopulateTemporaryTableAsync(
         NpgsqlConnection connection,
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -343,12 +380,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-        var npgsqlDbTypes = dataReader
-            .GetFieldTypes()
-            .Select(a =>
-                this.databaseAdapter.GetDbType(a, DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
-            )
-            .ToArray();
+        var npgsqlDbTypes = this.GetColumnDbTypes(valuesType);
 
         while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -391,19 +423,20 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>
     /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
     /// </returns>
-    private static DbDataReader CreateValuesDataReader(IEnumerable values, Type valuesType)
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
             return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new ObjectReader(
-            valuesType,
+        return new EnumerableReader(
             values,
-            EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => a.PropertyName)
-                .ToArray()
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
         );
     }
 

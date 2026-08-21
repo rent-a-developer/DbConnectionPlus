@@ -164,7 +164,7 @@ public class EntityHelperTests : UnitTestsBase
 
         var entity = specimenFactoryCreateMethod
             .MakeGenericMethod(entityType)
-            .Invoke(null, [fixture]);
+            .Invoke(null, [fixture])!;
 
         var entityProperties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -208,7 +208,7 @@ public class EntityHelperTests : UnitTestsBase
         metadata.InsertProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
-                    { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion: false }
+                { IsIgnored: false, IsComputed: false, IsIdentity: false, IsRowVersion: false }
                 )
             );
 
@@ -227,14 +227,14 @@ public class EntityHelperTests : UnitTestsBase
         metadata.UpdateProperties
             .Should().BeEquivalentTo(
                 allPropertiesMetadata.Where(a => a is
-                    {
-                        IsComputed: false,
-                        IsConcurrencyToken: false,
-                        IsIgnored: false,
-                        IsIdentity: false,
-                        IsKey: false,
-                        IsRowVersion: false
-                    }
+                {
+                    IsComputed: false,
+                    IsConcurrencyToken: false,
+                    IsIgnored: false,
+                    IsIdentity: false,
+                    IsKey: false,
+                    IsRowVersion: false
+                }
                 )
             );
 
@@ -458,6 +458,67 @@ public class EntityHelperTests : UnitTestsBase
         ArgumentNullGuardVerifier.Verify(() => EntityHelper.GetEntityTypeMetadata(typeof(Entity)));
     }
 
+    [Fact]
+    public void GetEntityTypeMetadata_ShouldNotInvokePropertyAccessorsWhileCreatingMetadata()
+    {
+        // Every accessor of this entity throws, so building its metadata would fail if the accessors were
+        // resolved and invoked eagerly.
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithThrowingAccessors));
+
+        var property = metadata.MappedProperties
+            .Single(p => p.PropertyName == nameof(EntityWithThrowingAccessors.Value));
+
+        property.PropertyGetter
+            .Should().NotBeNull();
+
+        // The accessor is real - it simply had not been called yet.
+        Invoking(() => property.PropertyGetter!(new EntityWithThrowingAccessors()))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage("Getter was invoked.");
+    }
+
+    [Fact]
+    public void GetEntityTypeMetadata_PropertyAccessors_ShouldWorkAcrossRepeatedCalls()
+    {
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithNonPublicSetter));
+
+        var property = metadata.MappedProperties
+            .Single(p => p.PropertyName == nameof(EntityWithNonPublicSetter.Value));
+
+        var entity = new EntityWithNonPublicSetter();
+
+        foreach (var value in new[] { 1, 2, 3 })
+        {
+            property.PropertySetter!(entity, value);
+
+            property.PropertyGetter!(entity)
+                .Should().Be(value);
+        }
+    }
+
+    [Fact]
+    public void GetEntityTypeMetadata_ShouldCreateAccessorsForNonPublicAndInitOnlySetters()
+    {
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithNonPublicSetter));
+
+        var privateSetterProperty = metadata.MappedProperties
+            .Single(p => p.PropertyName == nameof(EntityWithNonPublicSetter.Value));
+
+        var initOnlyProperty = metadata.MappedProperties
+            .Single(p => p.PropertyName == nameof(EntityWithNonPublicSetter.Name));
+
+        var entity = new EntityWithNonPublicSetter();
+
+        privateSetterProperty.PropertySetter!(entity, 42);
+        initOnlyProperty.PropertySetter!(entity, "Ada");
+
+        entity.Value
+            .Should().Be(42);
+
+        entity.Name
+            .Should().Be("Ada");
+    }
+
     /// <summary>
     /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
     /// </summary>
@@ -467,4 +528,30 @@ public class EntityHelperTests : UnitTestsBase
             BindingFlags.Public | BindingFlags.Static,
             [typeof(ISpecimenBuilder)]
         )!;
+
+    /// <summary>
+    /// An entity whose property accessors throw, used to prove that creating metadata does not invoke them.
+    /// </summary>
+    private sealed class EntityWithThrowingAccessors
+    {
+        public Int32 Value
+        {
+            get => throw new InvalidOperationException("Getter was invoked.");
+            set => throw new InvalidOperationException("Setter was invoked.");
+        }
+    }
+
+    /// <summary>
+    /// An entity with a non-public setter and an init-only setter, which reflection must still be able to write.
+    /// </summary>
+    private sealed class EntityWithNonPublicSetter
+    {
+        public String? Name { get; init; }
+
+        // The private setter is the point of this entity - it exists to be written through reflection, which
+        // RCS1170 cannot see, so it believes the property should be read-only.
+#pragma warning disable RCS1170
+        public Int32 Value { get; private set; }
+#pragma warning restore RCS1170
+    }
 }

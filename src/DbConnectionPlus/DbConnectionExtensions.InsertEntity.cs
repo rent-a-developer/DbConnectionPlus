@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
@@ -80,7 +80,9 @@ public static partial class DbConnectionExtensions
     /// connection.InsertEntity(newProduct);
     /// </code>
     /// </example>
-    public static Int32 InsertEntity<TEntity>(
+    public static Int32 InsertEntity<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -174,7 +176,9 @@ public static partial class DbConnectionExtensions
     /// await connection.InsertEntityAsync(newProduct);
     /// </code>
     /// </example>
-    public static Task<Int32> InsertEntityAsync<TEntity>(
+    public static Task<Int32> InsertEntityAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,

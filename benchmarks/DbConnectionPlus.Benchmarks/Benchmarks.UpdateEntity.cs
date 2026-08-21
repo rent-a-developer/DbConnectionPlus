@@ -26,16 +26,37 @@ public partial class Benchmarks
             nameof(UpdateEntity_DbConnectionPlus)
         ]
     )]
-    public void UpdateEntity__Setup() =>
+    public void UpdateEntity__Setup()
+    {
         this.SetupDatabase(1);
+
+        // Building the updated entity inside the benchmark charged its generation to all three implementations -
+        // including the DbCommand baseline and Dapper - which both dominated the measurement and hid changes in
+        // DbConnectionPlus behind a baseline that moved with them.
+        //
+        // A pool rather than a single entity, so that consecutive invocations write different values. Reusing one
+        // entity would mean every invocation after the first writes the values that are already stored, which is not
+        // what an update does in practice.
+        this.updateEntity_ModifiedEntitiesPool =
+        [
+            .. Enumerable
+                .Range(0, UpdateEntity_UpdatedEntityPoolSize)
+                .Select(_ => Generate.UpdateFor(this.entitiesInDb[0]))
+        ];
+    }
+
+    private BenchmarkEntity UpdateEntity_GetNextModifiedEntity()
+    {
+        this.updateEntity_ModifiedEntitiesPoolIndex = (this.updateEntity_ModifiedEntitiesPoolIndex + 1) % UpdateEntity_UpdatedEntityPoolSize;
+
+        return this.updateEntity_ModifiedEntitiesPool[this.updateEntity_ModifiedEntitiesPoolIndex];
+    }
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(UpdateEntity_Category)]
     public void UpdateEntity_Command()
     {
-        var entity = this.entitiesInDb[0];
-
-        var updatedEntity = Generate.UpdateFor(entity);
+        var updatedEntity = this.UpdateEntity_GetNextModifiedEntity();
 
         using var command = this.connection.CreateCommand();
 
@@ -49,13 +70,11 @@ public partial class Benchmarks
                                         DecimalValue = @DecimalValue,
                                         DoubleValue = @DoubleValue,
                                         EnumValue = @EnumValue,
-                                        GuidValue = @GuidValue,
                                         Int16Value = @Int16Value,
                                         Int32Value = @Int32Value,
                                         Int64Value = @Int64Value,
                                         SingleValue = @SingleValue,
-                                        StringValue = @StringValue,
-                                        TimeSpanValue = @TimeSpanValue
+                                        StringValue = @StringValue
                               WHERE     Id = @Id
                               """;
 
@@ -70,13 +89,11 @@ public partial class Benchmarks
             { "DecimalValue", new("DecimalValue", null) },
             { "DoubleValue", new("DoubleValue", null) },
             { "EnumValue", new("EnumValue", null) },
-            { "GuidValue", new("GuidValue", null) },
             { "Int16Value", new("Int16Value", null) },
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) },
-            { "TimeSpanValue", new("TimeSpanValue", null) }
+            { "StringValue", new("StringValue", null) }
         };
 
         command.Parameters.AddRange(parameters.Values);
@@ -88,25 +105,17 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(UpdateEntity_Category)]
-    public void UpdateEntity_Dapper()
-    {
-        var entity = this.entitiesInDb[0];
-
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        SqlMapperExtensions.Update(this.connection, updatedEntity);
-    }
+    public void UpdateEntity_Dapper() =>
+        SqlMapperExtensions.Update(this.connection, this.UpdateEntity_GetNextModifiedEntity());
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(UpdateEntity_Category)]
-    public void UpdateEntity_DbConnectionPlus()
-    {
-        var entity = this.entitiesInDb[0];
+    public void UpdateEntity_DbConnectionPlus() =>
+        this.connection.UpdateEntity(this.UpdateEntity_GetNextModifiedEntity());
 
-        var updatedEntity = Generate.UpdateFor(entity);
-
-        this.connection.UpdateEntity(updatedEntity);
-    }
+    private List<BenchmarkEntity> updateEntity_ModifiedEntitiesPool = null!;
+    private Int32 updateEntity_ModifiedEntitiesPoolIndex;
 
     private const String UpdateEntity_Category = "UpdateEntity";
+    private const Int32 UpdateEntity_UpdatedEntityPoolSize = 64;
 }

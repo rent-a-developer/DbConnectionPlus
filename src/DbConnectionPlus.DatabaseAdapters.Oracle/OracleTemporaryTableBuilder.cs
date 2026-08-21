@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using FastMember;
 using LinkDotNet.StringBuilder;
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DbCommands;
@@ -39,6 +38,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -133,6 +133,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -235,6 +236,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
         String quotedTableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
@@ -286,6 +288,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
         String quotedTableName,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
@@ -352,6 +355,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleConnection connection,
         OracleTransaction? transaction,
         String quotedTableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
@@ -400,6 +404,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleConnection connection,
         OracleTransaction? transaction,
         String quotedTableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
@@ -444,6 +449,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
     private static (String SqlCode, OracleParameter[] Parameters) BuildInsertSqlCode(
         String quotedTableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader
     )
@@ -523,19 +529,20 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="values">The sequence containing the values to be read.</param>
     /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
-    private static DbDataReader CreateValuesDataReader(IEnumerable values, Type valuesType)
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
             return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new ObjectReader(
-            valuesType,
+        return new EnumerableReader(
             values,
-            EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => a.PropertyName)
-                .ToArray()
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
         );
     }
 

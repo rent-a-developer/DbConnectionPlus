@@ -1,4 +1,4 @@
-// ReSharper disable InvokeAsExtensionMethod
+﻿// ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable InconsistentNaming
 
 #pragma warning disable RCS1196
@@ -7,7 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [IterationCleanup(
+    [GlobalCleanup(
         Targets =
         [
             nameof(DeleteEntities_Command),
@@ -18,7 +18,7 @@ public partial class Benchmarks
     public void DeleteEntities__Cleanup() =>
         this.connection.Dispose();
 
-    [IterationSetup(
+    [GlobalSetup(
         Targets =
         [
             nameof(DeleteEntities_Command),
@@ -26,64 +26,84 @@ public partial class Benchmarks
             nameof(DeleteEntities_DbConnectionPlus)
         ]
     )]
-    public void DeleteEntities__Setup() =>
+    public void DeleteEntities__Setup()
+    {
         this.SetupDatabase(DeleteEntities_EntitiesPerOperation * DeleteEntities_OperationsPerInvoke);
 
-    [Benchmark(Baseline = true)]
+        // The batches are built once here so that the benchmarks do not slice the entity list inside the measured
+        // region. The slicing was identical for all three implementations and therefore only compressed the ratios.
+        this.deleteEntities_batches = [.. this.entitiesInDb.Chunk(DeleteEntities_EntitiesPerOperation)];
+    }
+
+    [Benchmark(Baseline = true, OperationsPerInvoke = DeleteEntities_OperationsPerInvoke)]
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_Command()
     {
-        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        using var transaction = this.connection.BeginTransaction();
+
+        foreach (var batch in this.deleteEntities_batches)
         {
             using var command = this.connection.CreateCommand();
+
+            command.Transaction = transaction;
             command.CommandText = "DELETE FROM Entity WHERE Id = @Id";
 
             var idParameter = command.CreateParameter();
+
             idParameter.ParameterName = "@Id";
+
             command.Parameters.Add(idParameter);
 
-            var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
-
-            foreach (var entity in entities)
+            foreach (var entity in batch)
             {
                 idParameter.Value = entity.Id;
 
                 command.ExecuteNonQuery();
             }
-
-            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
         }
+
+        transaction.Rollback();
     }
 
-    [Benchmark(Baseline = false)]
+    [Benchmark(Baseline = false, OperationsPerInvoke = DeleteEntities_OperationsPerInvoke)]
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_Dapper()
     {
-        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        using var transaction = this.connection.BeginTransaction();
+
+        foreach (var batch in this.deleteEntities_batches)
         {
-            var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
-
-            SqlMapperExtensions.Delete(this.connection, entities);
-
-            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
+            SqlMapperExtensions.Delete(this.connection, batch, transaction);
         }
+
+        transaction.Rollback();
     }
 
-    [Benchmark(Baseline = false)]
+    [Benchmark(Baseline = false, OperationsPerInvoke = DeleteEntities_OperationsPerInvoke)]
     [BenchmarkCategory(DeleteEntities_Category)]
     public void DeleteEntities_DbConnectionPlus()
     {
-        for (var i = 0; i < DeleteEntities_OperationsPerInvoke; i++)
+        using var transaction = this.connection.BeginTransaction();
+
+        foreach (var batch in this.deleteEntities_batches)
         {
-            var entities = this.entitiesInDb.Take(DeleteEntities_EntitiesPerOperation).ToList();
-
-            this.connection.DeleteEntities(entities);
-
-            this.entitiesInDb.RemoveRange(0, DeleteEntities_EntitiesPerOperation);
+            this.connection.DeleteEntities(batch, transaction);
         }
+
+        transaction.Rollback();
     }
+
+    private List<BenchmarkEntity[]> deleteEntities_batches = null!;
 
     private const String DeleteEntities_Category = "DeleteEntities";
     private const Int32 DeleteEntities_EntitiesPerOperation = 250;
+
+    // Batches per invocation: one reported operation is one delete call over
+    // DeleteEntities_EntitiesPerOperation entities.
+    //
+    // The transaction is rolled back rather than committed, so every invocation puts the rows back. See
+    // DeleteEntity_OperationsPerInvoke for why that matters and for the measurement showing a rollback costs
+    // what a commit costs. Twenty batches is 5 000 seeded rows, down from 75 000, and it amortizes the
+    // transaction far past the point where it could affect the ratios.
     private const Int32 DeleteEntities_OperationsPerInvoke = 20;
 }

@@ -1,6 +1,7 @@
 using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
+using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 
@@ -9,25 +10,6 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerTestDatabaseProvider" /> class.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// The environment variable 'ConnectionString_SqlServer' is not set.
-    /// </exception>
-    static SqlServerTestDatabaseProvider()
-    {
-        connectionString = Environment.GetEnvironmentVariable(ConnectionStringKey)?.Trim()!;
-
-        if (String.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException($"The environment variable '{ConnectionStringKey}' is not set!");
-        }
-
-        Console.Out.WriteLine("Using the following connection string for SQL Server:");
-        Console.Out.WriteLine(connectionString);
-    }
-
     /// <inheritdoc />
     public Boolean CanRetrieveStructureOfTemporaryTables => true;
 
@@ -64,7 +46,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public DbConnection CreateConnection()
     {
-        var connection = new SqlConnection(connectionString);
+        var connection = new SqlConnection(ConnectionString);
         connection.Open();
 
         connection.ChangeDatabase(DatabaseName);
@@ -118,7 +100,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public void ResetDatabase()
     {
-        using var connection = new SqlConnection(connectionString);
+        using var connection = new SqlConnection(ConnectionString);
         connection.Open();
 
         if (!isDatabasePrepared)
@@ -147,6 +129,16 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         ExecuteScript(connection, PurgeTablesSql);
     }
 
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() =>
+        TestDatabaseContainers.StartSqlServerAsync();
+
+    /// <summary>
+    /// The connection string that connects to the SQL Server server running in the test container.
+    /// </summary>
+    private static String ConnectionString =>
+        TestDatabaseContainers.SqlServer.ConnectionString;
+
     private static void ExecuteScript(SqlConnection connection, String script)
     {
         var statements = script
@@ -158,8 +150,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
             connection.ExecuteNonQuery(statement);
         }
     }
-
-    private const String ConnectionStringKey = "ConnectionString_SqlServer";
 
     private const String CreateDatabaseObjectsSql =
         """
@@ -284,8 +274,6 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE MappingTestEntity;
         GO
         """;
-
-    private static readonly String connectionString;
 
     private static Boolean isDatabasePrepared;
 }

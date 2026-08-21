@@ -1,6 +1,8 @@
 using System.Data.SqlTypes;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using NSubstitute.ExceptionExtensions;
+using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Materializers;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Materializers;
@@ -613,8 +615,347 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
     }
 
     [Fact]
-    public void ShouldGuardAgainstNullArguments() =>
+    public void ReflectionMaterializer_ShouldMaterializeTheSameValueTupleAsTheExpressionMaterializer()
+    {
+        var entity = Generate.Single<Entity>();
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(7);
+
+        var ordinal = 0;
+
+        dataReader.GetName(ordinal).Returns("Boolean");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Boolean));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetBoolean(ordinal).Returns(entity.BooleanValue);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Char");
+        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetString(ordinal).Returns(entity.CharValue.ToString());
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("DateTime");
+        dataReader.GetFieldType(ordinal).Returns(typeof(DateTime));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetDateTime(ordinal).Returns(entity.DateTimeValue);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Nullable");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Decimal));
+        dataReader.IsDBNull(ordinal).Returns(true);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Enum");
+        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetString(ordinal).Returns(entity.EnumValue.ToString());
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Guid");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Guid));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetGuid(ordinal).Returns(entity.GuidValue);
+
+        ordinal++;
+        dataReader.GetName(ordinal).Returns("Int32");
+        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.IsDBNull(ordinal).Returns(false);
+        dataReader.GetInt32(ordinal).Returns(entity.Int32Value);
+
+        var expressionMaterializer = ValueTupleMaterializerFactory
+            .GetMaterializer<(Boolean, Char, DateTime, Decimal?, TestEnum, Guid, Int32)>(dataReader);
+
+        var reflectionMaterializer =
+            GetReflectionMaterializer<(Boolean, Char, DateTime, Decimal?, TestEnum, Guid, Int32)>(dataReader);
+
+        var valueTuple = reflectionMaterializer(dataReader);
+
+        valueTuple
+            .Should().Be(
+                (
+                    entity.BooleanValue,
+                    entity.CharValue,
+                    entity.DateTimeValue,
+                    (Decimal?)null,
+                    entity.EnumValue,
+                    entity.GuidValue,
+                    entity.Int32Value
+                )
+            );
+
+        valueTuple
+            .Should().Be(expressionMaterializer(dataReader));
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_MoreThan7FieldsValueTupleType_ShouldMaterializeNestedValueTuples()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(15);
+
+        for (var i = 0; i < 15; i++)
+        {
+            dataReader.GetName(i).Returns($"Value{i + 1}");
+            dataReader.GetFieldType(i).Returns(typeof(Int32));
+            dataReader.IsDBNull(i).Returns(false);
+            dataReader.GetInt32(i).Returns(i + 1);
+        }
+
+        var expressionMaterializer = ValueTupleMaterializerFactory
+            .GetMaterializer<(
+                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
+                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
+                Int32
+                )>(dataReader);
+
+        var reflectionMaterializer = GetReflectionMaterializer<(
+            Int32, Int32, Int32, Int32, Int32, Int32, Int32,
+            Int32, Int32, Int32, Int32, Int32, Int32, Int32,
+            Int32
+            )>(dataReader);
+
+        var valueTuple = reflectionMaterializer(dataReader);
+
+        valueTuple
+            .Should().Be((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
+
+        valueTuple
+            .Should().Be(expressionMaterializer(dataReader));
+
+        // The innermost value tuple is the one that only carries the 15th field.
+        valueTuple.Rest.Rest.Item1
+            .Should().Be(15);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_EightFieldsValueTupleType_ShouldMaterializeNestedValueTuple()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(8);
+
+        for (var i = 0; i < 8; i++)
+        {
+            dataReader.GetName(i).Returns($"Value{i + 1}");
+            dataReader.GetFieldType(i).Returns(typeof(Int32));
+            dataReader.IsDBNull(i).Returns(false);
+            dataReader.GetInt32(i).Returns(i + 1);
+        }
+
+        var materializer =
+            GetReflectionMaterializer<(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32)>(dataReader);
+
+        materializer(dataReader)
+            .Should().Be((1, 2, 3, 4, 5, 6, 7, 8));
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderHasCompatibleFieldTypes_ShouldConvertValues()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        var entityId = Generate.Id();
+        var enumValue = Generate.Single<TestEnum>();
+
+        dataReader.FieldCount.Returns(2);
+
+        dataReader.GetName(0).Returns("Id");
+        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetString(0).Returns(entityId.ToString());
+
+        dataReader.GetName(1).Returns("Enum");
+        dataReader.GetFieldType(1).Returns(typeof(Decimal));
+        dataReader.IsDBNull(1).Returns(false);
+        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+
+        var materializer = GetReflectionMaterializer<(Int64 Id, TestEnum Enum)>(dataReader);
+
+        var valueTuple = materializer(dataReader);
+
+        valueTuple.Id
+            .Should().Be(entityId);
+
+        valueTuple.Enum
+            .Should().Be(enumValue);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_ShouldMaterializeBinaryData()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        var bytes = Generate.Single<Byte[]>();
+
+        dataReader.GetName(0).Returns("Data");
+        dataReader.GetFieldType(0).Returns(typeof(Byte[]));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetValue(0).Returns(bytes);
+
+        var materializer = GetReflectionMaterializer<ValueTuple<Byte[]>>(dataReader);
+
+        materializer(dataReader).Item1
+            .Should().BeEquivalentTo(bytes);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NonNullableValueTupleField_DataReaderFieldContainsNull_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("Id");
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.IsDBNull(0).Returns(true);
+
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int64>>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<Int64>>(dataReader);
+
+        var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>().Which.Message;
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
+                $"of the value tuple type {typeof(ValueTuple<Int64>)} is non-nullable."
+            )
+            .And.Message
+            .Should().Be(expectedMessage);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_NullableValueTupleField_DataReaderFieldContainsNull_ShouldMaterializeNull()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetName(0).Returns("Id");
+        dataReader.IsDBNull(0).Returns(true);
+        dataReader.GetInt64(0).Throws(new SqlNullValueException());
+
+        var materializer = GetReflectionMaterializer<ValueTuple<Int64?>>(dataReader);
+
+        Invoking(() => materializer(dataReader))
+            .Should().NotThrow().Subject.Item1
+            .Should().BeNull();
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderFieldValueCannotBeConverted_ShouldThrow()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+
+        dataReader.GetName(0).Returns("Enum");
+        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetInt32(0).Returns(999);
+
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<TestEnum>>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<TestEnum>>(dataReader);
+
+        var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>().Which.Message;
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
+                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
+                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
+            )
+            .WithInnerException<InvalidCastException>()
+            .WithMessage(
+                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+            );
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>().Which.Message
+            .Should().Be(expectedMessage);
+    }
+
+    [Fact]
+    public void ReflectionMaterializer_DataReaderFieldHasNoName_ShouldReportThePositionOfTheField()
+    {
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(2);
+
+        dataReader.GetName(0).Returns("");
+        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.IsDBNull(0).Returns(false);
+        dataReader.GetInt64(0).Returns(Generate.Id());
+
+        dataReader.GetName(1).Returns("");
+        dataReader.GetFieldType(1).Returns(typeof(Int64));
+        dataReader.IsDBNull(1).Returns(true);
+
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<(Int64, Int64)>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<(Int64, Int64)>(dataReader);
+
+        var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>().Which.Message;
+
+        Invoking(() => reflectionMaterializer(dataReader))
+            .Should().Throw<InvalidCastException>()
+            .WithMessage(
+                "The 2nd column returned by the SQL statement contains a NULL value, but the corresponding field " +
+                $"of the value tuple type {typeof((Int64, Int64))} is non-nullable."
+            )
+            .And.Message
+            .Should().Be(expectedMessage);
+    }
+
+    [Fact]
+    public void ShouldGuardAgainstNullArguments()
+    {
         ArgumentNullGuardVerifier.Verify(() =>
             ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int32>>(Substitute.For<DbDataReader>())
+        );
+
+        var dataReader = Substitute.For<DbDataReader>();
+
+        dataReader.FieldCount.Returns(1);
+        dataReader.GetName(0).Returns("Value");
+        dataReader.GetFieldType(0).Returns(typeof(Int32));
+
+        ArgumentNullGuardVerifier.Verify(() =>
+            ValueTupleMaterializerFactory.CreateReflectionMaterializer<ValueTuple<Int32>>(
+                dataReader,
+                dataReader.GetFieldNames(),
+                dataReader.GetFieldTypes()
+            )
+        );
+    }
+
+    /// <summary>
+    /// Creates the reflection materializer - the one that serves applications published with Native AOT - for the
+    /// shape of <paramref name="dataReader" />.
+    /// </summary>
+    /// <typeparam name="TValueTuple">The type of value tuple to materialize.</typeparam>
+    /// <param name="dataReader">The data reader to create the materializer for.</param>
+    /// <returns>The reflection materializer.</returns>
+    /// <remarks>
+    /// The unit tests run on the JIT, where <see cref="RuntimeFeature.IsDynamicCodeSupported" /> is
+    /// <see langword="true" /> and <c>GetMaterializer</c> therefore always picks the expression-compiled path. The
+    /// reflection path is reached directly instead.
+    /// </remarks>
+    private static Func<DbDataReader, TValueTuple> GetReflectionMaterializer<TValueTuple>(DbDataReader dataReader) =>
+        ValueTupleMaterializerFactory.CreateReflectionMaterializer<TValueTuple>(
+            dataReader,
+            dataReader.GetFieldNames(),
+            dataReader.GetFieldTypes()
         );
 }

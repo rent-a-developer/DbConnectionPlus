@@ -2,6 +2,7 @@ using System.Data.Common;
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
+using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 
@@ -10,25 +11,6 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class MySqlTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MySqlTestDatabaseProvider" /> class.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// The environment variable 'ConnectionString_MySql' is not set.
-    /// </exception>
-    static MySqlTestDatabaseProvider()
-    {
-        connectionString = Environment.GetEnvironmentVariable(ConnectionStringKey)?.Trim()!;
-
-        if (String.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException($"The environment variable '{ConnectionStringKey}' is not set!");
-        }
-
-        Console.Out.WriteLine("Using the following connection string for MySQL:");
-        Console.Out.WriteLine(connectionString);
-    }
-
     /// <inheritdoc />
     public Boolean CanRetrieveStructureOfTemporaryTables => true;
 
@@ -65,7 +47,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public DbConnection CreateConnection()
     {
-        var connection = new MySqlConnection(connectionString);
+        var connection = new MySqlConnection(ConnectionString);
         connection.Open();
 
         // Needed for MySqlBulkCopy to work.
@@ -123,7 +105,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public void ResetDatabase()
     {
-        using var connection = new MySqlConnection(connectionString);
+        using var connection = new MySqlConnection(ConnectionString);
         connection.Open();
 
         if (!isDatabasePrepared)
@@ -142,6 +124,16 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         ExecuteScript(connection, PurgeTablesSql);
     }
 
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() =>
+        TestDatabaseContainers.StartMySqlAsync();
+
+    /// <summary>
+    /// The connection string that connects to the MySQL server running in the test container.
+    /// </summary>
+    private static String ConnectionString =>
+        TestDatabaseContainers.MySql.ConnectionString;
+
     private static void ExecuteScript(MySqlConnection connection, String script)
     {
         var statements = script
@@ -153,8 +145,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
             connection.ExecuteNonQuery(statement);
         }
     }
-
-    private const String ConnectionStringKey = "ConnectionString_MySql";
 
     private const String CreateDatabaseObjectsSql =
         """
@@ -278,8 +268,6 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE `MappingTestEntity`;
         GO
         """;
-
-    private static readonly String connectionString;
 
     private static Boolean isDatabasePrepared;
 }

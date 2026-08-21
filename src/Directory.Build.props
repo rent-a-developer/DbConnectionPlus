@@ -1,0 +1,105 @@
+<Project>
+
+	<!--
+		Shared build properties for the shipping libraries.
+
+		The repository-root Directory.Build.props carries what every project needs (authorship, language
+		settings, the style analyzers). MSBuild uses the nearest Directory.Build.props and stops, so this file
+		imports it explicitly - without that import, the projects under src/ would silently lose all of it.
+
+		What lives here is what only a shipping, packable library needs: multi-targeting, the AOT and public-API
+		analyzers, warnings-as-errors, and the NuGet package metadata. Per-project identity - AssemblyName,
+		AssemblyTitle, RootNamespace, PackageId, Description, PackageTags - stays in each .csproj.
+	-->
+
+	<Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+
+	<PropertyGroup>
+		<!--
+			All six shipping packages are versioned and released together, so the version lives here rather
+			than being repeated in each .csproj - where it was six edits per release and easy to half-apply.
+			CONTRIBUTING.md requires the bump alongside the CHANGELOG and README updates.
+		-->
+		<Version>4.0.0</Version>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!--
+			net8.0 is the documented Native AOT floor; net10.0 is the recommended target.
+
+			The unit tests multi-target the same pair, because the two builds of these libraries are not the
+			same code - net8.0 carries an IL3050 suppression net10.0 does not. The integration tests stay
+			net8.0 (they are bound by database containers, not by the runtime) and the benchmarks are net10.0
+			(BenchmarkDotNet's NativeAotToolchain.Net10_0 publishes that TFM).
+		-->
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!--
+			Enables the trim, AOT and single-file analyzers, and marks the produced assemblies trimmable
+			via [assembly: AssemblyMetadata("IsTrimmable", "True")].
+		-->
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!--
+			Every shipping project produces a package, but only on demand: CI packs on every run and
+			publishes only for a pushed version tag. See the "Releases" section of AGENTS.md.
+		-->
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<TieredPGO>true</TieredPGO>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Package metadata that is identical for all six packages. The rest is per-project. -->
+		<PackageIcon>logo-128.png</PackageIcon>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/rent-a-developer/DbConnectionPlus</PackageProjectUrl>
+		<PackageReadmeFile>PACKAGE_README.md</PackageReadmeFile>
+		<PackageReleaseNotes>See CHANGELOG.md.</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<RepositoryType>GIT</RepositoryType>
+		<RepositoryUrl>https://github.com/rent-a-developer/DbConnectionPlus.git</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--
+			The files every package carries. The icon is one file for all six packages rather than a copy per
+			project; $(MSBuildThisFileDirectory) resolves it relative to this file, not to the project.
+		-->
+		<None Include="$(MSBuildThisFileDirectory)../CHANGELOG.md" Pack="true" PackagePath="/" />
+		<None Include="$(MSBuildThisFileDirectory)../LICENSE.md" Pack="true" PackagePath="/" />
+		<None Include="$(MSBuildThisFileDirectory)../PACKAGE_README.md" Pack="true" PackagePath="/" />
+		<None Include="$(MSBuildThisFileDirectory)../assets/logo-128.png" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--
+			Guards the public surface of every shipping package: a public member that is not listed in the
+			project's PublicAPI.*.txt files is RS0016, and removing a listed one is RS0017 - both build errors
+			here, because TreatWarningsAsErrors is on. Update the files with scripts/update-public-api.ps1.
+		-->
+		<PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="PublicAPI.Shipped.txt" Condition="Exists('PublicAPI.Shipped.txt')" />
+		<AdditionalFiles Include="PublicAPI.Unshipped.txt" Condition="Exists('PublicAPI.Unshipped.txt')" />
+	</ItemGroup>
+
+</Project>

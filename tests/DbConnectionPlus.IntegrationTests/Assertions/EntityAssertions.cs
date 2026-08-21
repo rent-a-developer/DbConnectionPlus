@@ -8,86 +8,86 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.Assertions;
 public static class EntityAssertions
 {
     /// <summary>
-    /// Asserts that the given dynamic object matches the given entity.
+    /// Asserts that the given data row matches the given entity.
     /// </summary>
-    /// <param name="dynamicObject">The dynamic object to assert.</param>
+    /// <param name="dataRow">The data row to assert.</param>
     /// <param name="entity">The entity to assert against.</param>
-    public static void AssertDynamicObjectMatchesEntity(
-        dynamic dynamicObject,
+    public static void AssertDataRowMatchesEntity(
+        DataRow dataRow,
         Entity entity
     )
     {
         // We need to use the ValueConverter here because each database provider handles the types a bit
         // differently.
 
-        ValueConverter.ConvertValueToType<Boolean>((Object)dynamicObject.BooleanValue)
+        ValueConverter.ConvertValueToType<Boolean>(dataRow["BooleanValue"])
             .Should().Be(entity.BooleanValue);
 
-        ValueConverter.ConvertValueToType<Byte>((Object)dynamicObject.ByteValue)
+        ValueConverter.ConvertValueToType<Byte>(dataRow["ByteValue"])
             .Should().Be(entity.ByteValue);
 
-        ValueConverter.ConvertValueToType<Char>((Object)dynamicObject.CharValue)
+        ValueConverter.ConvertValueToType<Char>(dataRow["CharValue"])
             .Should().Be(entity.CharValue);
 
-        ValueConverter.ConvertValueToType<DateOnly>((Object)dynamicObject.DateOnlyValue)
+        ValueConverter.ConvertValueToType<DateOnly>(dataRow["DateOnlyValue"])
             .Should().Be(entity.DateOnlyValue);
 
-        ValueConverter.ConvertValueToType<DateTime>((Object)dynamicObject.DateTimeValue)
+        ValueConverter.ConvertValueToType<DateTime>(dataRow["DateTimeValue"])
             .Should().Be(entity.DateTimeValue);
 
-        ValueConverter.ConvertValueToType<Decimal>((Object)dynamicObject.DecimalValue)
+        ValueConverter.ConvertValueToType<Decimal>(dataRow["DecimalValue"])
             .Should().Be(entity.DecimalValue);
 
-        ValueConverter.ConvertValueToType<Double>((Object)dynamicObject.DoubleValue)
+        ValueConverter.ConvertValueToType<Double>(dataRow["DoubleValue"])
             .Should().Be(entity.DoubleValue);
 
-        ValueConverter.ConvertValueToType<TestEnum>((Object)dynamicObject.EnumValue)
+        ValueConverter.ConvertValueToType<TestEnum>(dataRow["EnumValue"])
             .Should().Be(entity.EnumValue);
 
-        ValueConverter.ConvertValueToType<Guid>((Object)dynamicObject.GuidValue)
+        ValueConverter.ConvertValueToType<Guid>(dataRow["GuidValue"])
             .Should().Be(entity.GuidValue);
 
-        ValueConverter.ConvertValueToType<Int64>((Object)dynamicObject.Id)
+        ValueConverter.ConvertValueToType<Int64>(dataRow["Id"])
             .Should().Be(entity.Id);
 
-        ValueConverter.ConvertValueToType<Int16>((Object)dynamicObject.Int16Value)
+        ValueConverter.ConvertValueToType<Int16>(dataRow["Int16Value"])
             .Should().Be(entity.Int16Value);
 
-        ValueConverter.ConvertValueToType<Int32>((Object)dynamicObject.Int32Value)
+        ValueConverter.ConvertValueToType<Int32>(dataRow["Int32Value"])
             .Should().Be(entity.Int32Value);
 
-        ValueConverter.ConvertValueToType<Int64>((Object)dynamicObject.Int64Value)
+        ValueConverter.ConvertValueToType<Int64>(dataRow["Int64Value"])
             .Should().Be(entity.Int64Value);
 
-        ValueConverter.ConvertValueToType<Single>((Object)dynamicObject.SingleValue)
+        ValueConverter.ConvertValueToType<Single>(dataRow["SingleValue"])
             .Should().Be(entity.SingleValue);
 
-        ValueConverter.ConvertValueToType<String>((Object)dynamicObject.StringValue)
+        ValueConverter.ConvertValueToType<String>(dataRow["StringValue"])
             .Should().Be(entity.StringValue);
 
-        ValueConverter.ConvertValueToType<TimeOnly>((Object)dynamicObject.TimeOnlyValue)
+        ValueConverter.ConvertValueToType<TimeOnly>(dataRow["TimeOnlyValue"])
             .Should().Be(entity.TimeOnlyValue);
 
-        ValueConverter.ConvertValueToType<TimeSpan>((Object)dynamicObject.TimeSpanValue)
+        ValueConverter.ConvertValueToType<TimeSpan>(dataRow["TimeSpanValue"])
             .Should().Be(entity.TimeSpanValue);
     }
 
     /// <summary>
-    /// Asserts that the given list of dynamic objects matches the given list of entities.
+    /// Asserts that the given list of data rows matches the given list of entities.
     /// </summary>
-    /// <param name="dynamicObjects">The list of dynamic objects to assert.</param>
+    /// <param name="dataRows">The list of data rows to assert.</param>
     /// <param name="entities">The list of entities to assert against.</param>
-    public static void AssertDynamicObjectsMatchEntities(
-        List<dynamic> dynamicObjects,
+    public static void AssertDataRowsMatchEntities(
+        List<DataRow> dataRows,
         List<Entity> entities
     )
     {
         for (var i = 0; i < entities.Count; i++)
         {
             var entity = entities[i];
-            var dynamicObject = dynamicObjects[i];
+            var dataRow = dataRows[i];
 
-            AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+            AssertDataRowMatchesEntity(dataRow, entity);
         }
     }
 }

@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+
+		<!--
+			net8.0 is the documented AOT floor and behaves differently from net10.0: the feature guard on
+			RuntimeFeature.IsDynamicCodeSupported was only recognised from .NET 9 on, so net8.0 needs an
+			IL3050 suppression inside the library that net10.0 does not. Both have to stay in the gate -
+			the net10.0 publish compiling WITHOUT that suppression is what verifies it.
+		-->
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+
+		<RootNamespace>RentADeveloper.DbConnectionPlus.PackageConsumption.Aot</RootNamespace>
+		<AssemblyName>AotConsumer</AssemblyName>
+
+		<!-- Set explicitly: the Directory.Build.props boundary in this folder cuts off the repository's. -->
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+
+		<IsPackable>false</IsPackable>
+		<IsTestProject>false</IsTestProject>
+		<TrimMode>full</TrimMode>
+
+		<!-- CI overrides this with the version it just packed. -->
+		<DbConnectionPlusVersion Condition="'$(DbConnectionPlusVersion)' == ''">4.0.0</DbConnectionPlusVersion>
+
+		<!--
+			PublishAot is deliberately NOT set here; it is passed on the publish command line instead (see
+			README.md). Setting it in the project file writes the AOT feature switches - notably
+			RuntimeFeature.IsDynamicCodeSupported=false - into runtimeconfig.json for ordinary `dotnet run`
+			builds as well, so the JIT baseline run would silently behave like an AOT run and the two could
+			no longer be compared.
+		-->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- The assertion harness both consumers share. Linked, not project-referenced - see the file. -->
+		<Compile Include="../Check.cs" Link="Check.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--
+			THE references under test. Microsoft.Data.Sqlite is deliberately NOT referenced directly: it has
+			to arrive through the adapter package's dependency, which is one of the things this consumer
+			proves.
+		-->
+		<PackageReference Include="DbConnectionPlus" Version="$(DbConnectionPlusVersion)" />
+		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.Sqlite" Version="$(DbConnectionPlusVersion)" />
+	</ItemGroup>
+
+</Project>

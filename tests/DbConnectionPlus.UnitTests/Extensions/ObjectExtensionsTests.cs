@@ -10,18 +10,41 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Extensions;
 public class ObjectExtensionsTests : UnitTestsBase
 {
     [Fact]
-    public void ToDebugString_ShouldHandleObjectsWithCyclicReferences()
-    {
-        var itemA = new Item("A");
-        var itemB = new Item("B");
-
-        itemA.Reference = itemB;
-        itemB.Reference = itemA;
-
-        itemA.ToDebugString()
+    public void ToDebugString_ShouldUseToStringForUnhandledTypes() => new Item("A").ToDebugString()
             .Should().Be(
-                """'{"Id":"A","Reference":{"Id":"B","Reference":null}}' (RentADeveloper.DbConnectionPlus.UnitTests.Extensions.ObjectExtensionsTests+Item)"""
+                "'Item A' (RentADeveloper.DbConnectionPlus.UnitTests.Extensions.ObjectExtensionsTests+Item)"
             );
+
+    [Fact]
+    public void ToDebugString_ShouldRenderSequencesElementByElement()
+    {
+        new List<String> { "A", "B" }.ToDebugString()
+            .Should().Be("'[A,B]' (System.Collections.Generic.List`1[System.String])");
+
+        new Object?[] { 1, null, "A", true }.ToDebugString()
+            .Should().Be("'[1,{null},A,True]' (System.Object[])");
+
+        new Int32[][] { [1, 2], [3] }.ToDebugString()
+            .Should().Be("'[[1,2],[3]]' (System.Int32[][])");
+
+        Array.Empty<Int32>().ToDebugString()
+            .Should().Be("'[]' (System.Int32[])");
+    }
+
+    [Fact]
+    public void ToDebugString_ShouldTruncateSelfReferencingSequencesInsteadOfRecursingForever()
+    {
+        var values = new List<Object?> { 1 };
+
+        values.Add(values);
+
+        // The depth bound replaces the cycle handling that the previous JsonSerializer-based implementation got
+        // from ReferenceHandler.IgnoreCycles. What matters is that this terminates at all; the exact nesting
+        // depth at which it stops is an implementation detail.
+        var debugString = values.ToDebugString();
+
+        debugString.Should().StartWith("'[1,[1,[1,");
+        debugString.Should().Contain("[...]");
     }
 
     [Fact]
@@ -107,16 +130,19 @@ public class ObjectExtensionsTests : UnitTestsBase
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
 
         new Object().ToDebugString()
-            .Should().Be("'{}' (System.Object)");
+            .Should().Be("'System.Object' (System.Object)");
 
         new EntityWithEnumStoredAsString { Enum = TestEnum.Value3, Id = 1 }.ToDebugString()
             .Should().Be(
-                """'{"Enum":3,"Id":1}' (RentADeveloper.DbConnectionPlus.UnitTests.TestData.EntityWithEnumStoredAsString)"""
+                "'EntityWithEnumStoredAsString { Enum = Value3, Id = 1 }' " +
+                "(RentADeveloper.DbConnectionPlus.UnitTests.TestData.EntityWithEnumStoredAsString)"
             );
     }
 
-    private record Item(String Id)
+    private sealed class Item(String id)
     {
-        public Item? Reference { get; set; }
+        /// <inheritdoc />
+        public override String ToString() =>
+            $"Item {id}";
     }
 }

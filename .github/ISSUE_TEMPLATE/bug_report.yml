@@ -1,0 +1,77 @@
+name: Bug report
+description: Something does not work as documented.
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      description: Which database is affected?
+      options:
+        - MySQL
+        - Oracle
+        - PostgreSQL
+        - SQL Server
+        - SQLite
+        - Several / not database-specific
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "4.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: api
+    attributes:
+      label: Which API
+      description: Where does the problem show up?
+      options:
+        - Query / QueryFirst / QuerySingle (materialization)
+        - InsertEntity / UpdateEntity / DeleteEntity (entity CRUD)
+        - TemporaryTable
+        - ExecuteNonQuery / ExecuteScalar / ExecuteReader
+        - Configuration (Configure, UseXxx, entity mapping)
+        - Native AOT / trimming
+        - Other / not applicable
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: >
+        The smallest snippet that shows the problem - usually the entity class, the DDL of the table, and
+        the call you made. A link to a minimal repository works too.
+      render: csharp
+    validations:
+      required: true
+  - type: textarea
+    id: exception
+    attributes:
+      label: Exception, if any
+      description: The full exception including the stack trace and any inner exception.
+      render: text
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: ".NET 10.0.x, Windows 11 / Ubuntu 24.04, database server version, Native AOT yes/no"
+    validations:
+      required: true
+  - type: checkboxes
+    id: trimming
+    attributes:
+      label: Publish configuration
+      description: >
+        Under trimming, a missing annotation binds fewer columns with no error at all. If entity properties
+        come back at their default values, this is the first thing to check.
+      options:
+        - label: The application is published with PublishAot or PublishTrimmed.

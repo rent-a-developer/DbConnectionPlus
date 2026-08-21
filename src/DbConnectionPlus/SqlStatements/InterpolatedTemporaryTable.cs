@@ -10,5 +10,16 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// <param name="Name">The name for the table.</param>
 /// <param name="Values">The values with which to populate the table.</param>
 /// <param name="ValuesType">The type of values in <paramref name="Values" />.</param>
-public record InterpolatedTemporaryTable(String Name, IEnumerable Values, Type ValuesType)
+/// <remarks>
+/// The annotation on <paramref name="ValuesType" /> is applied to both the parameter and the generated property:
+/// the type is read back off the property when the temporary table is built, and without the annotation on the
+/// property the trimmer would not see that requirement.
+/// </remarks>
+public record InterpolatedTemporaryTable(
+    String Name,
+    IEnumerable Values,
+    [property: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+    [param: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+    Type ValuesType
+)
     : IInterpolatedSqlStatementFragment;

@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using FastMember;
 using LinkDotNet.StringBuilder;
 using Microsoft.Data.Sqlite;
 using RentADeveloper.DbConnectionPlus.Converters;
@@ -37,6 +36,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -111,6 +111,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -203,6 +204,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
@@ -253,6 +255,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
@@ -282,6 +285,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
     private static (String SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader
     )
@@ -361,19 +365,20 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="values">The sequence containing the values to be read.</param>
     /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
-    private static DbDataReader CreateValuesDataReader(IEnumerable values, Type valuesType)
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
             return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new ObjectReader(
-            valuesType,
+        return new EnumerableReader(
             values,
-            EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => a.PropertyName)
-                .ToArray()
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
         );
     }
 
@@ -433,6 +438,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         SqliteConnection connection,
         SqliteTransaction? transaction,
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
@@ -488,6 +494,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         SqliteConnection connection,
         SqliteTransaction? transaction,
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken

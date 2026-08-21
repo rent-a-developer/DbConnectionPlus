@@ -21,7 +21,9 @@ internal class OracleEntityManipulator : IEntityManipulator
         this.databaseAdapter = databaseAdapter;
 
     /// <inheritdoc />
-    public Int32 DeleteEntities<TEntity>(
+    public Int32 DeleteEntities<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -82,7 +84,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntitiesAsync<TEntity>(
+    public async Task<Int32> DeleteEntitiesAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -144,7 +148,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 DeleteEntity<TEntity>(
+    public Int32 DeleteEntity<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -193,7 +199,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntityAsync<TEntity>(
+    public async Task<Int32> DeleteEntityAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -242,7 +250,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntities<TEntity>(
+    public Int32 InsertEntities<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -298,7 +308,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntitiesAsync<TEntity>(
+    public async Task<Int32> InsertEntitiesAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -355,7 +367,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntity<TEntity>(
+    public Int32 InsertEntity<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -401,7 +415,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntityAsync<TEntity>(
+    public async Task<Int32> InsertEntityAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -447,7 +463,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntities<TEntity>(
+    public Int32 UpdateEntities<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -514,7 +532,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntitiesAsync<TEntity>(
+    public async Task<Int32> UpdateEntitiesAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -582,7 +602,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntity<TEntity>(
+    public Int32 UpdateEntity<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -637,7 +659,9 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntityAsync<TEntity>(
+    public async Task<Int32> UpdateEntityAsync<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,

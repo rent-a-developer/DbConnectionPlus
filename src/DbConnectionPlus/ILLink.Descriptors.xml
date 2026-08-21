@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  Copyright (c) 2026 David Liebeherr
+  Licensed under the MIT License. See LICENSE.md in the project root for more information.
+
+  Keeps the members of the value tuple types that a value tuple query materializes through reflection.
+
+  WHY THIS FILE IS NECESSARY
+
+  A C# value tuple with more than seven fields is represented by the runtime as a NESTED value tuple: the
+  eighth type argument of System.ValueTuple`8 is itself a value tuple holding the remaining fields.
+  Materializing one therefore has to discover the fields and the constructor of a type that is only reached
+  through the generic arguments of another type at run time.
+
+  [DynamicallyAccessedMembers] cannot express that. The annotation on the query methods' type parameter
+  preserves the members of the OUTERMOST value tuple type; it says nothing about the nested one, and
+  annotations are not recursive. Without this file, publishing an application with Native AOT (or trimming it)
+  removes the nested value tuple's fields and constructor, and a query for a value tuple with more than seven
+  fields fails at run time. That was measured by the Native AOT smoke test, and it is why this file exists.
+
+  WHY THIS IS NOT A SUPPRESSION
+
+  A descriptor PRESERVES members; it does not silence a diagnostic. It is the sanctioned instrument for exactly
+  this case - reflection over types the trimmer cannot reason about statically, whose members are nonetheless
+  guaranteed to be there. The project rule is to make the reflection safe rather than to suppress the warning
+  that reports it; this file is the "make it safe" half.
+
+  THIS FILE IS LOAD-BEARING FOR THE PUBLIC API
+
+  It is also what lets the generic query methods carry no [RequiresUnreferencedCode], and therefore what keeps
+  a consumer's trimmed or Native AOT publish free of IL2026. ValueTupleMaterializerFactory.GetValueTupleConstructors
+  suppresses one IL2065 and names this file as the justification, so deleting or shortening the list below does
+  not merely regress a feature - it makes that suppression untrue. If you need to change it, read the comment at
+  that method first; restoring [RequiresUnreferencedCode] on the query methods is the correct response, not
+  leaving a suppression in place that no longer holds.
+
+  COST
+
+  The fields and constructors of eight small runtime types, kept in every trimmed application that references
+  DbConnectionPlus. Preserving only the fields would not be enough, because the constructors are what
+  materialization invokes.
+-->
+
+<linker>
+	<assembly fullname="System.Private.CoreLib">
+		<type fullname="System.ValueTuple`1" preserve="all" />
+		<type fullname="System.ValueTuple`2" preserve="all" />
+		<type fullname="System.ValueTuple`3" preserve="all" />
+		<type fullname="System.ValueTuple`4" preserve="all" />
+		<type fullname="System.ValueTuple`5" preserve="all" />
+		<type fullname="System.ValueTuple`6" preserve="all" />
+		<type fullname="System.ValueTuple`7" preserve="all" />
+		<type fullname="System.ValueTuple`8" preserve="all" />
+	</assembly>
+</linker>

@@ -163,6 +163,8 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
         this.dataReader.GetEnumerator();
 
     /// <inheritdoc />
+    [return: DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     public override Type GetFieldType(Int32 ordinal) =>
         this.dataReader.GetFieldType(ordinal);
 
@@ -203,6 +205,8 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
         this.dataReader.GetOrdinal(name);
 
     /// <inheritdoc />
+    [return: DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     public override Type GetProviderSpecificFieldType(Int32 ordinal) =>
         this.dataReader.GetProviderSpecificFieldType(ordinal);
 

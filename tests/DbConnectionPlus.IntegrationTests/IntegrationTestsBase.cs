@@ -25,7 +25,13 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 /// Base class for integration tests that need a database connection.
 /// </summary>
 /// <typeparam name="TTestDatabaseProvider">The type of the test database provider to use for the tests.</typeparam>
-public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable, IAsyncDisposable
+/// <remarks>
+/// The <see cref="TestDatabaseFixture{TTestDatabaseProvider}" /> is not taken as a constructor argument on
+/// purpose: it carries no data, it only starts the Docker container the test database runs in - and it has to do
+/// that before this constructor opens a connection to it.
+/// </remarks>
+public abstract class IntegrationTestsBase<TTestDatabaseProvider>
+    : IClassFixture<TestDatabaseFixture<TTestDatabaseProvider>>, IDisposable, IAsyncDisposable
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     protected IntegrationTestsBase()
@@ -54,7 +60,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
         this.TestDatabaseProvider = new();
         this.TestDatabaseProvider.ResetDatabase();
 
-        currentTestDatabaseProvider.Value = this.TestDatabaseProvider;
+        currentDatabaseAdapter.Value = this.TestDatabaseProvider.DatabaseAdapter;
 
         this.Connection = this.TestDatabaseProvider.CreateConnection();
 
@@ -103,7 +109,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// </returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
     public static String P(String parameterName) =>
-        currentTestDatabaseProvider.Value!.DatabaseAdapter.FormatParameterName(parameterName);
+        currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
 
     /// <summary>
     /// Returns the specified database identifier properly quoted for use in SQL statements according to the current
@@ -113,7 +119,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <returns>The quoted identifier, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
     public static String Q(String identifier) =>
-        currentTestDatabaseProvider.Value!.DatabaseAdapter.QuoteIdentifier(identifier);
+        currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
 
     /// <summary>
     /// Returns the specified temporary table name properly quoted for use in SQL statements according to the current
@@ -123,7 +129,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
     public static String QT(String tableName) =>
-        currentTestDatabaseProvider.Value!.DatabaseAdapter.QuoteTemporaryTableName(
+        currentDatabaseAdapter.Value!.QuoteTemporaryTableName(
             tableName,
             currentTestDatabaseConnection.Value!
         );
@@ -230,12 +236,10 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
             $"""
              SELECT 1
              FROM   {Q(metadata.TableName)}
-             WHERE  {
-                 String.Join(
+             WHERE  {String.Join(
                      " AND ",
                      [.. keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}")]
-                 )
-             }
+                 )}
              """,
             keyProperties.Select(p => (p.PropertyName, p.PropertyGetter!(entity))).ToArray()!
         );
@@ -396,7 +400,11 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider> : IDisposable,
     private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
 
     /// <summary>
-    /// The test database provider for the currently running integration test.
+    /// The database adapter for the test database of the currently running integration test.
     /// </summary>
-    private static readonly AsyncLocal<ITestDatabaseProvider> currentTestDatabaseProvider = new();
+    /// <remarks>
+    /// The adapter rather than the provider: an interface that declares a static abstract member - which
+    /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
+    /// </remarks>
+    private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
 }

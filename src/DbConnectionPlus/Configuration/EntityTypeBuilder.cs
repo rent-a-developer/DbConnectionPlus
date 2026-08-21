@@ -100,16 +100,14 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// <exception cref="ArgumentException">
     /// <paramref name="propertyExpression" /> is not a valid property access expression.
     /// </exception>
-    private static String GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression)
-    {
-        if (propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }) return propertyInfo.Name;
-
-        throw new ArgumentException(
-            $"The expression '{propertyExpression}' is not a valid property access expression. The expression should " +
-            "represent a simple property access: 'a => a.MyProperty'.",
-            nameof(propertyExpression)
-        );
-    }
+    private static String GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression) =>
+        propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }
+            ? propertyInfo.Name
+            : throw new ArgumentException(
+                $"The expression '{propertyExpression}' is not a valid property access expression. The expression should " +
+                "represent a simple property access: 'a => a.MyProperty'.",
+                nameof(propertyExpression)
+            );
 
     private readonly ConcurrentDictionary<String, IEntityPropertyBuilder> propertyBuilders = new();
     private Boolean isFrozen;

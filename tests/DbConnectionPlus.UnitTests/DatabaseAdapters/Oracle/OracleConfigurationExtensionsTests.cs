@@ -6,7 +6,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Oracle;
 public class OracleConfigurationExtensionsTests : UnitTestsBase
 {
     [Fact]
-    public void ShouldGuardAgainstNullArguments() => 
+    public void ShouldGuardAgainstNullArguments() =>
         ArgumentNullGuardVerifier.Verify(() => OracleConfigurationExtensions.UseOracle(new()));
 
     [Fact]
@@ -15,9 +15,9 @@ public class OracleConfigurationExtensionsTests : UnitTestsBase
         var configuration = new DbConnectionPlusConfiguration();
 
         var result = configuration.UseOracle();
-        
+
         result.Should().BeSameAs(configuration);
-        
+
         var adapter = configuration.GetDatabaseAdapter(typeof(OracleConnection));
         adapter.Should().NotBeNull();
         adapter.Should().BeOfType<OracleDatabaseAdapter>();

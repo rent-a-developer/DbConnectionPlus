@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.Reflection;
-using Fasterflect;
 
 namespace RentADeveloper.DbConnectionPlus.Entities;
 
@@ -21,14 +20,16 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// <param name="IsKey">Determines whether the property is a key property.</param>
 /// <param name="IsRowVersion">Determines whether the property is a row version used for concurrency control.</param>
 /// <param name="PropertyGetter">
-/// The getter function for the property.
+/// The getter function for the property, taking the entity and returning the value of the property.
 /// This is <see langword="null" /> if the property has no getter.
+/// The underlying reflection accessor is created on the first call, not when this metadata is created.
 /// </param>
 /// <param name="PropertyInfo">The property info of the property.</param>
 /// <param name="PropertyName">The name of the property.</param>
 /// <param name="PropertySetter">
-/// The setter function for the property.
+/// The setter function for the property, taking the entity and the value to assign to the property.
 /// This is <see langword="null" /> if the property has no setter.
+/// The underlying reflection accessor is created on the first call, not when this metadata is created.
 /// </param>
 /// <param name="PropertyType">The property type of the property.</param>
 public sealed record EntityPropertyMetadata(
@@ -41,9 +42,9 @@ public sealed record EntityPropertyMetadata(
     Boolean IsIgnored,
     Boolean IsKey,
     Boolean IsRowVersion,
-    MemberGetter? PropertyGetter,
+    Func<Object, Object?>? PropertyGetter,
     PropertyInfo PropertyInfo,
     String PropertyName,
-    MemberSetter? PropertySetter,
+    Action<Object, Object?>? PropertySetter,
     Type PropertyType
 );

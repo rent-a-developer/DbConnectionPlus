@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using FastMember;
 using LinkDotNet.StringBuilder;
 using Microsoft.Data;
 using RentADeveloper.DbConnectionPlus.DbCommands;
@@ -36,6 +35,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -145,6 +145,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -273,6 +274,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         String collation,
         EnumSerializationMode enumSerializationMode
@@ -340,6 +342,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
         String tableName,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         String collation,
         EnumSerializationMode enumSerializationMode
@@ -414,19 +417,20 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="values">The sequence containing the values to be read.</param>
     /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
-    private static DbDataReader CreateValuesDataReader(IEnumerable values, Type valuesType)
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
             return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new ObjectReader(
-            valuesType,
+        return new EnumerableReader(
             values,
-            EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => a.PropertyName)
-                .ToArray()
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
         );
     }
 

@@ -7,7 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.MySql;
 public class MySqlConfigurationExtensionsTests : UnitTestsBase
 {
     [Fact]
-    public void ShouldGuardAgainstNullArguments() => 
+    public void ShouldGuardAgainstNullArguments() =>
         ArgumentNullGuardVerifier.Verify(() => MySqlConfigurationExtensions.UseMySql(new()));
 
     [Fact]
@@ -16,9 +16,9 @@ public class MySqlConfigurationExtensionsTests : UnitTestsBase
         var configuration = new DbConnectionPlusConfiguration();
 
         var result = configuration.UseMySql();
-        
+
         result.Should().BeSameAs(configuration);
-        
+
         var adapter = configuration.GetDatabaseAdapter(typeof(MySqlConnection));
         adapter.Should().NotBeNull();
         adapter.Should().BeOfType<MySqlDatabaseAdapter>();

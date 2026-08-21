@@ -305,7 +305,7 @@ public static class Generate
 
         foreach (var property in propertiesToCopy)
         {
-            property.PropertySetter!(targetEntity, property.PropertyGetter!(sourceEntity));
+            property.PropertySetter!(targetEntity!, property.PropertyGetter!(sourceEntity!));
         }
     }
 

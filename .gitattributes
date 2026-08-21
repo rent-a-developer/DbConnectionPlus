@@ -1,0 +1,36 @@
+# Auto-detect text files, normalize to LF in the repository.
+* text=auto
+
+# Force specific line endings where it matters.
+*.cs        text eol=crlf
+*.csproj    text eol=crlf
+*.slnx      text eol=crlf
+*.props     text eol=crlf
+*.targets   text eol=crlf
+*.config    text eol=crlf
+*.resx      text eol=crlf
+*.editorconfig text eol=crlf
+*.DotSettings  text eol=crlf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.md        text eol=lf
+*.properties text eol=lf
+
+# PowerShell is the repository's scripting language and runs on both hosts; CRLF is what pwsh writes on
+# Windows, which is where these are edited.
+*.ps1       text eol=crlf
+
+# Windows batch files require CRLF; shell scripts require LF.
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.sh        text eol=lf
+
+# Binary files - never touch.
+*.png       binary
+*.jpg       binary
+*.ico       binary
+*.dll       binary
+*.exe       binary
+*.snk       binary
+*.db        binary

@@ -499,7 +499,7 @@ public class ValueConverterTests : UnitTestsBase
     {
         if (expectedCanConvert)
         {
-            var result = MaterializerFactoryHelper.ValueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType)
+            var result = MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType)
                 .Invoke(null, [sourceValue]);
 
             if (result is Byte[] resultBytes && expectedTargetValue is Byte[] expectedTargetValueBytes)
@@ -524,7 +524,7 @@ public class ValueConverterTests : UnitTestsBase
         else
         {
             Invoking(() =>
-                    MaterializerFactoryHelper.ValueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType)
+                    MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType)
                         .Invoke(null, [sourceValue])
                 )
                 .Should().Throw<TargetInvocationException>()

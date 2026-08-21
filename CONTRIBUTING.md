@@ -7,16 +7,50 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a 
-   build.
-2. Update the README.md with details of changes to the interface, this includes new environment 
-   variables and useful file locations.
-3. Update the CHANGELOG.md following the [Keep a Changelog](https://keepachangelog.com/) format.
-4. Increase the version numbers in any examples files and the README.md to the new version that this
-   Pull Request would represent. The versioning scheme we use is [SemVer](https://semver.org/).
-5. Ensure all tests pass and the build succeeds with no warnings.
-6. Your Pull Request will be reviewed by project maintainers. Address any feedback provided.
-7. Once approved by the maintainers, your Pull Request will be merged.
+1. Branch from `main` as `feature/<issue#>-<slug>` or `bugfix/<issue#>-<slug>`, and use
+   [Conventional Commits](https://www.conventionalcommits.org/) for the messages.
+2. Make the change, with tests. New behavior and fixed bugs need coverage; a change to one database adapter
+   almost always has to be mirrored into the other four.
+3. Run the pre-commit gate. It formats, builds and runs the unit suite:
+   ```shell
+   pwsh -File scripts/preflight.ps1
+   ```
+   `TreatWarningsAsErrors` is on for the six shipping projects, so the build is also the style, trim-analyzer
+   and public-API gate. **Never suppress an `IL2xxx` warning to get a green build** — it is the only
+   build-time evidence that the trimming annotations are complete.
+4. If you touched a reflection path, also run the Native AOT gate. Nothing else in the repository can see
+   silent trimming damage:
+   ```shell
+   pwsh -File scripts/verify-package-aot.ps1 -Pack
+   ```
+5. If you changed a database adapter, run that adapter's integration tests against a real database — see
+   [.agents/skills/integration-db/SKILL.md](.agents/skills/integration-db/SKILL.md).
+6. Update the companion files: `CHANGELOG.md` under the upcoming version following
+   [Keep a Changelog](https://keepachangelog.com/), `README.md` for any public API change, and the affected
+   project's `PublicAPI.Unshipped.txt` via `pwsh -File scripts/update-public-api.ps1`.
+7. Open the pull request and work through the checklist in its template. CI runs the same gates plus CodeQL
+   and a dependency review; all of them must be green.
+8. Your Pull Request will be reviewed by project maintainers. Address any feedback provided.
+9. Once approved by the maintainers, your Pull Request will be merged.
+
+The full working guide — layout, the adapter seam, code style, the declared public API and Native AOT — is
+[AGENTS.md](AGENTS.md). It is written for AI coding agents, but everything in it applies to people too.
+
+## Releasing
+
+Releases are cut by CI from a pushed tag; nothing is packed or pushed by hand. The versioning scheme is
+[SemVer](https://semver.org/).
+
+1. Bump `<Version>` in `src/Directory.Build.props` — one edit for all six packages.
+2. Give the `CHANGELOG.md` section for that version a real date (`## [4.1.0] - 2026-08-17`). CI reads this
+   section, uses it as the release notes, and refuses to publish if it is missing, undated or empty.
+3. Merge to `main`, then push the tag:
+   ```shell
+   git tag v4.1.0 && git push origin v4.1.0
+   ```
+
+CI verifies the tag against the packed version, runs every gate, then pushes all six packages to NuGet.org and
+creates the GitHub release. Details: [AGENTS.md](AGENTS.md#releases).
 
 ## Code of Conduct
 

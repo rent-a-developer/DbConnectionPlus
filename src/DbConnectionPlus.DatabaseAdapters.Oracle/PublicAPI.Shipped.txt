@@ -1,0 +1,17 @@
+#nullable enable
+RentADeveloper.DbConnectionPlus.Configuration.OracleConfigurationExtensions
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter! parameter, object? value) -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.EntityManipulator.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.FormatParameterName(string! parameterName) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.GetDataType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.GetDbType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> System.Data.DbType
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.OracleDatabaseAdapter() -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.QuoteIdentifier(string! identifier) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.QuoteTemporaryTableName(string! tableName, System.Data.Common.DbConnection! connection) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection! connection) -> bool
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.TemporaryTableBuilder.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> bool
+static RentADeveloper.DbConnectionPlus.Configuration.OracleConfigurationExtensions.UseOracle(this RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration! configuration) -> RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration!
+static RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables.get -> bool
+static RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle.OracleDatabaseAdapter.AllowTemporaryTables.set -> void

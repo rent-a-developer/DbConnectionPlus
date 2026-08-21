@@ -5,7 +5,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.SqlServer;
 public class SqlServerConfigurationExtensionsTests : UnitTestsBase
 {
     [Fact]
-    public void ShouldGuardAgainstNullArguments() => 
+    public void ShouldGuardAgainstNullArguments() =>
         ArgumentNullGuardVerifier.Verify(() => SqlServerConfigurationExtensions.UseSqlServer(new()));
 
     [Fact]
@@ -14,9 +14,9 @@ public class SqlServerConfigurationExtensionsTests : UnitTestsBase
         var configuration = new DbConnectionPlusConfiguration();
 
         var result = configuration.UseSqlServer();
-        
+
         result.Should().BeSameAs(configuration);
-        
+
         var adapter = configuration.GetDatabaseAdapter(typeof(SqlConnection));
         adapter.Should().NotBeNull();
         adapter.Should().BeOfType<SqlServerDatabaseAdapter>();

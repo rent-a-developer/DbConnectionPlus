@@ -1,0 +1,15 @@
+#nullable enable
+RentADeveloper.DbConnectionPlus.Configuration.PostgreSqlConfigurationExtensions
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter! parameter, object? value) -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.EntityManipulator.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.FormatParameterName(string! parameterName) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.GetDataType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.GetDbType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> NpgsqlTypes.NpgsqlDbType
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.PostgreSqlDatabaseAdapter() -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.QuoteIdentifier(string! identifier) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.QuoteTemporaryTableName(string! tableName, System.Data.Common.DbConnection! connection) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection! connection) -> bool
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.TemporaryTableBuilder.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql.PostgreSqlDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> bool
+static RentADeveloper.DbConnectionPlus.Configuration.PostgreSqlConfigurationExtensions.UsePostgreSql(this RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration! configuration) -> RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration!

@@ -1,5 +1,11 @@
 ﻿namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
+// The entity the benchmarks read and write.
+//
+// There is deliberately no Guid and no TimeSpan property. SQLite stores both as TEXT and neither is
+// IConvertible, so Dapper.AOT's generated row factory - which never consults the handlers registered through
+// SqlMapper.AddTypeHandler - cannot map them and throws an invalid-cast error.
+// See the README next to this file.
 [System.ComponentModel.DataAnnotations.Schema.Table("Entity")]
 public record BenchmarkEntity
 {
@@ -11,7 +17,6 @@ public record BenchmarkEntity
     public Decimal DecimalValue { get; set; }
     public Double DoubleValue { get; set; }
     public TestEnum EnumValue { get; set; }
-    public Guid GuidValue { get; set; }
 
     [System.ComponentModel.DataAnnotations.Key]
     public Int64 Id { get; set; }
@@ -22,5 +27,4 @@ public record BenchmarkEntity
 
     public Single SingleValue { get; set; }
     public String StringValue { get; set; } = null!;
-    public TimeSpan TimeSpanValue { get; set; }
 }

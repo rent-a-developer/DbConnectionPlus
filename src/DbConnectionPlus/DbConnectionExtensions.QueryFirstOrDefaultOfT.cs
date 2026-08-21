@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 David Liebeherr
+// Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using RentADeveloper.DbConnectionPlus.Converters;
@@ -177,7 +177,9 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static T? QueryFirstOrDefault<T>(
+    public static T? QueryFirstOrDefault<
+        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
+    >(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -428,7 +430,9 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static async Task<T?> QueryFirstOrDefaultAsync<T>(
+    public static async Task<T?> QueryFirstOrDefaultAsync<
+        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
+    >(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

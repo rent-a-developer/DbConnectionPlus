@@ -60,7 +60,7 @@ public abstract class
 
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             "GetEntities",
@@ -68,7 +68,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
 
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
+        EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
 
     [Theory]
@@ -125,14 +125,14 @@ public abstract class
 
         var entities = Generate.Multiple<Entity>();
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {TemporaryTable(entities)}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
 
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
+        EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
 
     [Theory]
@@ -142,14 +142,14 @@ public abstract class
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
 
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
+        EntityAssertions.AssertDataRowsMatchEntities(dataRows, [entity]);
     }
 
     [Theory]
@@ -164,14 +164,14 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
 
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, [entity]);
+        EntityAssertions.AssertDataRowsMatchEntities(dataRows, [entity]);
     }
 
     [Theory]
@@ -228,7 +228,7 @@ public abstract class
 
         var entityIds = Generate.Ids();
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}",
@@ -237,7 +237,7 @@ public abstract class
 
         for (var i = 0; i < entityIds.Count; i++)
         {
-            ValueConverter.ConvertValueToType<Int64>((Object)dynamicObjects[i].Id)
+            ValueConverter.ConvertValueToType<Int64>(dataRows[i]["Id"])
                 .Should().Be(entityIds[i]);
         }
     }
@@ -245,18 +245,18 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Query_ShouldReturnDynamicObjectsForQueryResult(Boolean useAsyncApi)
+    public async Task Query_ShouldReturnDataRowsForQueryResult(Boolean useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>();
 
-        var dynamicObjects = await CallApi(
+        var dataRows = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {Q("Entity")}",
             cancellationToken: TestContext.Current.CancellationToken
         ).ToListAsync(TestContext.Current.CancellationToken);
 
-        EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
+        EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
 
     [Theory]
@@ -268,7 +268,7 @@ public abstract class
         {
             var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
 
-            var dynamicObjects = await CallApi(
+            var dataRows = await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
@@ -276,7 +276,7 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken);
 
-            EntityAssertions.AssertDynamicObjectsMatchEntities(dynamicObjects, entities);
+            EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
 
             await transaction.RollbackAsync();
         }
@@ -290,7 +290,7 @@ public abstract class
             .Should().BeEmpty();
     }
 
-    private static IAsyncEnumerable<dynamic> CallApi(
+    private static IAsyncEnumerable<DataRow> CallApi(
         Boolean useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,

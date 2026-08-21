@@ -2,6 +2,7 @@ using System.Data.Common;
 using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
+using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 
@@ -10,25 +11,6 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class OracleTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OracleTestDatabaseProvider" /> class.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// The environment variable 'ConnectionString_Oracle' is not set.
-    /// </exception>
-    static OracleTestDatabaseProvider()
-    {
-        connectionString = Environment.GetEnvironmentVariable(ConnectionStringKey)?.Trim()!;
-
-        if (String.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException($"The environment variable '{ConnectionStringKey}' is not set!");
-        }
-
-        Console.Out.WriteLine("Using the following connection string for Oracle:");
-        Console.Out.WriteLine(connectionString);
-    }
-
     /// <inheritdoc />
     public Boolean CanRetrieveStructureOfTemporaryTables => false;
 
@@ -65,7 +47,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public DbConnection CreateConnection()
     {
-        var connection = new OracleConnection(connectionString);
+        var connection = new OracleConnection(ConnectionString);
 
         // Clear the connection we got from the pool, so that its session actually ends.
         // Otherwise, Oracle will keep temporary tables alive for that session and we will eventually run out of them.
@@ -109,7 +91,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public void ResetDatabase()
     {
-        using var connection = new OracleConnection(connectionString);
+        using var connection = new OracleConnection(ConnectionString);
         connection.Open();
 
         if (!isDatabasePrepared)
@@ -123,6 +105,16 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         ExecuteScript(connection, PurgeTablesSql);
     }
 
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() =>
+        TestDatabaseContainers.StartOracleAsync();
+
+    /// <summary>
+    /// The connection string that connects to the Oracle server running in the test container.
+    /// </summary>
+    private static String ConnectionString =>
+        TestDatabaseContainers.Oracle.ConnectionString;
+
     private static void ExecuteScript(OracleConnection connection, String script)
     {
         var statements = script
@@ -134,8 +126,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
             connection.ExecuteNonQuery(statement);
         }
     }
-
-    private const String ConnectionStringKey = "ConnectionString_Oracle";
 
     private const String CreateDatabaseObjectsSql =
         """
@@ -252,8 +242,6 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "MappingTestEntity";
         GO
         """;
-
-    private static readonly String connectionString;
 
     private static Boolean isDatabasePrepared;
 }

@@ -177,7 +177,9 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static T QueryFirst<T>(
+    public static T QueryFirst<
+        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
+    >(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -424,7 +426,9 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static async Task<T> QueryFirstAsync<T>(
+    public static async Task<T> QueryFirstAsync<
+        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
+    >(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

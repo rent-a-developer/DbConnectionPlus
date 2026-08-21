@@ -58,13 +58,11 @@ public partial class Benchmarks
                 ["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DoubleValue"] = dataReader.GetDouble(ordinal++),
                 ["EnumValue"] = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++)),
-                ["GuidValue"] = Guid.Parse(dataReader.GetString(ordinal++)),
                 ["Int16Value"] = (Int16)dataReader.GetInt64(ordinal++),
                 ["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++),
                 ["Int64Value"] = dataReader.GetInt64(ordinal++),
                 ["SingleValue"] = dataReader.GetFloat(ordinal++),
-                ["StringValue"] = dataReader.GetString(ordinal++),
-                ["TimeSpanValue"] = TimeSpan.Parse(dataReader.GetString(ordinal), CultureInfo.InvariantCulture)
+                ["StringValue"] = dataReader.GetString(ordinal++)
             };
 
             entities.Add(new DataRow(dictionary));
@@ -80,7 +78,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]
-    public List<dynamic> Query_Dynamic_DbConnectionPlus() =>
+    public List<DataRow> Query_Dynamic_DbConnectionPlus() =>
         this.connection.Query("SELECT * FROM Entity").ToList();
 
     private const String Query_Dynamic_Category = "Query_Dynamic";

@@ -2,8 +2,9 @@
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
 using System.Reflection;
-using Fasterflect;
 using RentADeveloper.DbConnectionPlus.Converters;
+using RentADeveloper.DbConnectionPlus.Materializers;
+using RentADeveloper.DbConnectionPlus.Readers;
 
 namespace RentADeveloper.DbConnectionPlus.Entities;
 
@@ -12,6 +13,47 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// </summary>
 public static class EntityHelper
 {
+    /// <summary>
+    /// The members of an entity type that this library reflects over, and which therefore must survive trimming.
+    /// </summary>
+    /// <remarks>
+    /// Constructors cover <see cref="FindCompatibleConstructor" /> and <see cref="FindParameterlessConstructor" />
+    /// (both of which pass <see cref="BindingFlags.Public" /> and <see cref="BindingFlags.NonPublic" />), and
+    /// public properties cover the property scan in <see cref="CreateEntityTypeMetadata"/>.
+    /// Every entry point that ends up reflecting over an entity type annotates its type parameter or
+    /// <see cref="Type" /> parameter with this exact set — an incomplete annotation does not fail loudly, it
+    /// silently binds fewer columns.
+    /// </remarks>
+    internal const DynamicallyAccessedMemberTypes EntityMemberTypes =
+        DynamicallyAccessedMemberTypes.PublicConstructors |
+        DynamicallyAccessedMemberTypes.NonPublicConstructors |
+        DynamicallyAccessedMemberTypes.PublicProperties;
+
+    /// <summary>
+    /// The members that must survive trimming for a type used as the result type of a query.
+    /// </summary>
+    /// <remarks>
+    /// The generic query methods accept an entity type, a value tuple type or a built-in type, and only decide
+    /// which one it is at run time. Their type parameter therefore has to preserve the union of what both
+    /// materializers reflect over — <see cref="EntityMemberTypes" /> plus the value tuple's public fields.
+    /// </remarks>
+    internal const DynamicallyAccessedMemberTypes QueryResultMemberTypes =
+        EntityMemberTypes |
+        ValueTupleMaterializerFactory.ValueTupleMemberTypes;
+
+    /// <summary>
+    /// The members that must survive trimming for a type whose values are written to a temporary table.
+    /// </summary>
+    /// <remarks>
+    /// A temporary table is filled either from entities, whose metadata is read through
+    /// <see cref="GetEntityTypeMetadata" />, or from scalar values, which are streamed through
+    /// <see cref="EnumerableReader"/> — and that reader reports the value type from
+    /// <see cref="DbDataReader.GetFieldType" />, whose contract requires the type's public fields and properties.
+    /// </remarks>
+    internal const DynamicallyAccessedMemberTypes TemporaryTableValueMemberTypes =
+        EntityMemberTypes |
+        DynamicallyAccessedMemberTypes.PublicFields;
+
     /// <summary>
     /// Tries to find a constructor of the type <paramref name="type" /> that has parameters compatible to the
     /// specified expected parameters.
@@ -41,7 +83,9 @@ public static class EntityHelper
     ///         </item>
     ///     </list>
     /// </exception>
-    public static ConstructorInfo? FindCompatibleConstructor(Type type, (String Name, Type Type)[] expectedParameters)
+    public static ConstructorInfo? FindCompatibleConstructor(
+        [DynamicallyAccessedMembers(EntityMemberTypes)] Type type,
+        (String Name, Type Type)[] expectedParameters)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(expectedParameters);
@@ -90,7 +134,8 @@ public static class EntityHelper
     /// </returns>
     /// <param name="type">The type of which to find the parameterless constructor.</param>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
-    public static ConstructorInfo? FindParameterlessConstructor(Type type)
+    public static ConstructorInfo? FindParameterlessConstructor(
+        [DynamicallyAccessedMembers(EntityMemberTypes)] Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -115,14 +160,21 @@ public static class EntityHelper
     /// <exception cref="InvalidOperationException">
     /// There is more than one identity property defined for the entity type <paramref name="entityType" />.
     /// </exception>
-    public static EntityTypeMetadata GetEntityTypeMetadata(Type entityType)
+    public static EntityTypeMetadata GetEntityTypeMetadata(
+        [DynamicallyAccessedMembers(EntityMemberTypes)] Type entityType)
     {
         ArgumentNullException.ThrowIfNull(entityType);
 
-        return entityTypeMetadataPerEntityType.GetOrAdd(
-            entityType,
-            static entityType2 => CreateEntityTypeMetadata(entityType2)
-        );
+        // The cache is deliberately not populated through the GetOrAdd factory overload:
+        // [DynamicallyAccessedMembers] does not flow into a lambda, so the annotation on entityType would be
+        // lost on the way to CreateEntityTypeMetadata and the trimmer would drop the entity's members.
+        // Reading through TryGetValue first keeps the hot path allocation- and reflection-free.
+        if (entityTypeMetadataPerEntityType.TryGetValue(entityType, out var entityTypeMetadata))
+        {
+            return entityTypeMetadata;
+        }
+
+        return entityTypeMetadataPerEntityType.GetOrAdd(entityType, CreateEntityTypeMetadata(entityType));
     }
 
     /// <summary>
@@ -130,6 +182,52 @@ public static class EntityHelper
     /// </summary>
     internal static void ResetEntityTypeMetadataCache() =>
         entityTypeMetadataPerEntityType.Clear();
+
+    /// <summary>
+    /// Creates the getter function for the property <paramref name="property" />.
+    /// </summary>
+    /// <param name="property">The property for which to create the getter function.</param>
+    /// <returns>A function taking an entity and returning the value of <paramref name="property" />.</returns>
+    /// <remarks>
+    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
+    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
+    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
+    /// one is correct.
+    /// </remarks>
+    private static Func<Object, Object?> CreatePropertyGetter(PropertyInfo property)
+    {
+        MethodInvoker? getMethodInvoker = null;
+
+        return entity =>
+        {
+            getMethodInvoker ??= MethodInvoker.Create(property.GetMethod!);
+
+            return getMethodInvoker.Invoke(entity);
+        };
+    }
+
+    /// <summary>
+    /// Creates the setter function for the property <paramref name="property" />.
+    /// </summary>
+    /// <param name="property">The property for which to create the setter function.</param>
+    /// <returns>An action taking an entity and the value to assign to <paramref name="property" />.</returns>
+    /// <remarks>
+    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
+    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
+    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
+    /// one is correct.
+    /// </remarks>
+    private static Action<Object, Object?> CreatePropertySetter(PropertyInfo property)
+    {
+        MethodInvoker? setMethodInvoker = null;
+
+        return (entity, value) =>
+        {
+            setMethodInvoker ??= MethodInvoker.Create(property.SetMethod!);
+
+            setMethodInvoker.Invoke(entity, value);
+        };
+    }
 
     /// <summary>
     /// Creates the metadata for the entity type <paramref name="entityType" />.
@@ -141,7 +239,8 @@ public static class EntityHelper
     /// <exception cref="InvalidOperationException">
     /// There is more than one identity property defined for the entity type <paramref name="entityType" />.
     /// </exception>
-    private static EntityTypeMetadata CreateEntityTypeMetadata(Type entityType)
+    private static EntityTypeMetadata CreateEntityTypeMetadata(
+        [DynamicallyAccessedMembers(EntityMemberTypes)] Type entityType)
     {
         String tableName;
 
@@ -185,10 +284,10 @@ public static class EntityHelper
                     propertyBuilder.IsIgnored,
                     propertyBuilder.IsKey,
                     propertyBuilder.IsRowVersion,
-                    property.CanRead ? Reflect.PropertyGetter(property) : null,
+                    property.CanRead ? CreatePropertyGetter(property) : null,
                     property,
                     property.Name,
-                    property.CanWrite ? Reflect.PropertySetter(property) : null,
+                    property.CanWrite ? CreatePropertySetter(property) : null,
                     property.PropertyType
                 );
             }
@@ -206,10 +305,10 @@ public static class EntityHelper
                     property.GetCustomAttribute<NotMappedAttribute>() is not null,
                     property.GetCustomAttribute<KeyAttribute>() is not null,
                     property.GetCustomAttribute<TimestampAttribute>() is not null,
-                    property.CanRead ? Reflect.PropertyGetter(property) : null,
+                    property.CanRead ? CreatePropertyGetter(property) : null,
                     property,
                     property.Name,
-                    property.CanWrite ? Reflect.PropertySetter(property) : null,
+                    property.CanWrite ? CreatePropertySetter(property) : null,
                     property.PropertyType
                 );
             }

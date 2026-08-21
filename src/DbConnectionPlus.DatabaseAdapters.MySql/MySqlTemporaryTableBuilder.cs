@@ -36,6 +36,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -135,6 +136,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         String name,
         IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         CancellationToken cancellationToken = default
     )
@@ -249,6 +251,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateMultiColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
@@ -299,6 +302,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private String BuildCreateSingleColumnTemporaryTableSqlCode(
         String tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
@@ -327,7 +331,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>
     /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
     /// </returns>
-    private static DbDataReader CreateValuesDataReader(IEnumerable values, Type valuesType)
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
+        Type valuesType)
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
@@ -352,32 +359,40 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                     }
                 }
 
-                var newValuesType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
+                // The reader is built per branch instead of first resolving the type into a local: that keeps the
+                // fully known typeof(...) values flowing straight into EnumerableReader, whose valuesType
+                // parameter is annotated. Routing them through a switch expression would launder the annotation
+                // away, because the throw helper's generic return value carries none.
+                switch (DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
                 {
-                    EnumSerializationMode.Integers =>
-                        typeof(Int32?),
+                    case EnumSerializationMode.Integers:
+                        return new EnumerableReader(
+                            enumValues,
+                            typeof(Int32?),
+                            Constants.SingleColumnTemporaryTableColumnName
+                        );
 
-                    EnumSerializationMode.Strings =>
-                        typeof(String),
+                    case EnumSerializationMode.Strings:
+                        return new EnumerableReader(
+                            enumValues,
+                            typeof(String),
+                            Constants.SingleColumnTemporaryTableColumnName
+                        );
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<Type>(
+                    default:
+                        return ThrowHelper.ThrowInvalidEnumSerializationModeException<EnumerableReader>(
                             DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
-                };
-
-                return new EnumerableReader(enumValues, newValuesType, Constants.SingleColumnTemporaryTableColumnName);
+                        );
+                }
             }
 
             return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new EnumHandlingObjectReader(
-            valuesType,
+        return new EnumerableReader(
             values,
-            EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => a.PropertyName)
-                .ToArray()
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.SerializeEnums | EnumerableReaderOptions.ReadCharsAsStrings
         );
     }
 

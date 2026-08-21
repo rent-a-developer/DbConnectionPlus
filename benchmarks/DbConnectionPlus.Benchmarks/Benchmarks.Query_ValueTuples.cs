@@ -68,6 +68,12 @@ public partial class Benchmarks
             )
             .ToList();
 
+    // There is no Query_ValueTuples_Dapper_Aot benchmark, so this category's Native AOT group compares
+    // DbConnectionPlus against the raw DbCommand baseline alone. Dapper.AOT's generator does not materialize value
+    // tuples: annotating the call site produced no interceptor and no diagnostic either, so it would silently have
+    // run as ordinary Dapper and thrown in the Native AOT job. Adding [BindTupleByName] only silences the DAP012
+    // advisory, it does not enable generation. See the README next to this file.
+
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_ValueTuples_Category)]
     public List<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>

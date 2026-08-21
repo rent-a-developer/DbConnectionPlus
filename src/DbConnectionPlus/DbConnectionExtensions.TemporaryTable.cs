@@ -132,7 +132,9 @@ public static partial class DbConnectionExtensions
     /// setting <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
     /// </para>
     /// </remarks>
-    public static InterpolatedTemporaryTable TemporaryTable<T>(
+    public static InterpolatedTemporaryTable TemporaryTable<
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] T
+    >(
         IEnumerable<T> values,
         [CallerArgumentExpression(nameof(values))]
         String? valuesExpression = null

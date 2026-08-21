@@ -1,0 +1,7 @@
+interface:
+  display_name: "Integration Databases"
+  short_description: "Run scoped integration tests against real databases"
+  default_prompt: "Use $integration-db to run the appropriate integration tests against the required databases."
+
+policy:
+  allow_implicit_invocation: false

@@ -63,7 +63,7 @@ public abstract class
 
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             "GetFirstEntity",
@@ -71,7 +71,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
     }
 
     [Theory]
@@ -89,14 +89,14 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
 
         this.ExistsTemporaryTableInDb(temporaryTableName)
             .Should().BeFalse();
@@ -114,14 +114,14 @@ public abstract class
 
         var entity = Generate.Single<Entity>();
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {TemporaryTable([entity])}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
     }
 
     [Theory]
@@ -131,14 +131,14 @@ public abstract class
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
     }
 
     [Theory]
@@ -153,14 +153,14 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
     }
 
     [Theory]
@@ -211,17 +211,17 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             statement,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        ((Object?)dynamicObject)
+        dataRow
             .Should().NotBeNull();
 
-        ((Object?)dynamicObject.Id)
+        dataRow!["Id"]
             .Should().Be(entityId);
 
         this.ExistsTemporaryTableInDb(temporaryTableName)
@@ -240,32 +240,32 @@ public abstract class
 
         var entityId = Generate.Id();
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable([entityId])}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        ValueConverter.ConvertValueToType<Int64>((Object)dynamicObject!.Id)
+        ValueConverter.ConvertValueToType<Int64>(dataRow!["Id"])
             .Should().Be(entityId);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QuerySingleOrDefault_ShouldReturnDynamicObjectForFirstRow(Boolean useAsyncApi)
+    public async Task QuerySingleOrDefault_ShouldReturnDataRowForSingleRow(Boolean useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        var dynamicObject = await CallApi(
+        var dataRow = await CallApi(
             useAsyncApi,
             this.Connection,
             $"SELECT * FROM {Q("Entity")}",
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+        EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
     }
 
     [Theory]
@@ -277,7 +277,7 @@ public abstract class
         {
             var entity = this.CreateEntityInDb<Entity>(transaction);
 
-            var dynamicObject = await CallApi(
+            var dataRow = await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT * FROM {Q("Entity")}",
@@ -285,7 +285,7 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             );
 
-            EntityAssertions.AssertDynamicObjectMatchesEntity(dynamicObject, entity);
+            EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
 
             await transaction.RollbackAsync();
         }
@@ -299,7 +299,7 @@ public abstract class
             .Should().BeNull();
     }
 
-    private static Task<dynamic?> CallApi(
+    private static Task<DataRow?> CallApi(
         Boolean useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,
@@ -322,7 +322,7 @@ public abstract class
 
         try
         {
-            return Task.FromResult<dynamic?>(
+            return Task.FromResult(
                 connection.QuerySingleOrDefault(
                     statement,
                     transaction,
@@ -334,7 +334,7 @@ public abstract class
         }
         catch (Exception ex)
         {
-            return Task.FromException<dynamic?>(ex);
+            return Task.FromException<DataRow?>(ex);
         }
     }
 }

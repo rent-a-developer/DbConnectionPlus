@@ -1,0 +1,14 @@
+#nullable enable
+RentADeveloper.DbConnectionPlus.Configuration.MySqlConfigurationExtensions
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.BindParameterValue(System.Data.Common.DbParameter! parameter, object? value) -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.EntityManipulator.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.IEntityManipulator!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.FormatParameterName(string! parameterName) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.GetDataType(System.Type! type, RentADeveloper.DbConnectionPlus.EnumSerializationMode enumSerializationMode) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.MySqlDatabaseAdapter() -> void
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.QuoteIdentifier(string! identifier) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.QuoteTemporaryTableName(string! tableName, System.Data.Common.DbConnection! connection) -> string!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.SupportsTemporaryTables(System.Data.Common.DbConnection! connection) -> bool
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.TemporaryTableBuilder.get -> RentADeveloper.DbConnectionPlus.DatabaseAdapters.ITemporaryTableBuilder!
+RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql.MySqlDatabaseAdapter.WasSqlStatementCancelledByCancellationToken(System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> bool
+static RentADeveloper.DbConnectionPlus.Configuration.MySqlConfigurationExtensions.UseMySql(this RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration! configuration) -> RentADeveloper.DbConnectionPlus.Configuration.DbConnectionPlusConfiguration!

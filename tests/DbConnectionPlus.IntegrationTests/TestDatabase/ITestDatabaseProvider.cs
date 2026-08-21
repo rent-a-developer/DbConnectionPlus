@@ -123,4 +123,15 @@ public interface ITestDatabaseProvider
     /// Prepares the test database and resets it to a clean state.
     /// </summary>
     public void ResetDatabase();
+
+    /// <summary>
+    /// Starts the database server the test database runs on and waits until it accepts connections.
+    /// </summary>
+    /// <remarks>
+    /// Called by <see cref="TestDatabaseFixture{TTestDatabaseProvider}" /> before the first test of a test class
+    /// runs, so implementations must do nothing when the server is already running. For a database system that
+    /// runs in a Docker container this starts the container - see
+    /// <see cref="Containers.TestDatabaseContainers" />; SQLite runs in-process and has nothing to start.
+    /// </remarks>
+    public static abstract ValueTask StartDatabaseAsync();
 }

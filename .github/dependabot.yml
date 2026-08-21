@@ -1,0 +1,40 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      # The five vendor ADO.NET drivers. They are independent of each other, but a driver bump is always
+      # reviewed the same way - run that adapter's integration tests - so one PR per week beats five.
+      database-drivers:
+        patterns:
+          - "Microsoft.Data.SqlClient"
+          - "Microsoft.Data.Sqlite*"
+          - "MySqlConnector"
+          - "Npgsql"
+          - "Oracle.ManagedDataAccess*"
+      # Analyzers only ever change what the build rejects, never what ships. Grouping them keeps a week's
+      # worth of new diagnostics in one PR instead of one per analyzer package.
+      analyzers:
+        patterns:
+          - "ErrorProne.NET.*"
+          - "Microsoft.CodeAnalysis.PublicApiAnalyzers"
+          - "Roslynator.*"
+          - "NSubstitute.Analyzers.*"
+      # The test stack. A bump here can never affect a consumer.
+      test-stack:
+        patterns:
+          - "AutoFixture*"
+          - "AwesomeAssertions"
+          - "Bogus"
+          - "coverlet.*"
+          - "Mapster"
+          - "NSubstitute"
+          - "NSubstitute.Community.*"
+          - "xunit*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
