@@ -38,6 +38,14 @@ this project adheres to [Semantic Versioning](https://semver.org/).
   target entity type now throws `InvalidOperationException` instead of returning entities with every property
   left at its default value — a typo in a `SELECT` alias previously produced a sequence of empty objects with
   no error. Constructor injection is unaffected; it already failed loudly.
+- **BREAKING:** Converting a `String` to a `TimeSpan`, `DateTimeOffset`, `DateOnly` or `TimeOnly` now parses
+  with `CultureInfo.InvariantCulture` instead of the culture of the current thread. The reverse direction
+  already wrote with the invariant culture, so the two halves disagreed: a `TimeSpan` this library had itself
+  written as `1:2:03:04.567` did not parse back at all under a culture whose decimal separator is a comma, and
+  a text column holding `03/04/2026` read as the 4th of March on an `en-US` machine but as the 3rd of April on
+  a `de-DE` one — silently, with no error. Reading a value out of a database no longer depends on the locale
+  of the machine that runs the code. Applications that stored date and time values in text columns in a
+  culture-specific format have to convert those columns, or read them as `String` and parse them themselves.
 - **BREAKING:** `EntityPropertyMetadata.PropertyGetter` and `EntityPropertyMetadata.PropertySetter` are now
   typed `Func<Object, Object?>?` and `Action<Object, Object?>?` instead of Fasterflect's `MemberGetter?` and
   `MemberSetter?`. The delegate shapes are identical, so code that only *invokes* an accessor needs no change;

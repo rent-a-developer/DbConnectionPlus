@@ -22,7 +22,6 @@ concurrency:
 env:
   CONFIGURATION: Release
   CONSUMER_DIRECTORY: tests/package-consumption
-  COVERAGE_REPORTS: artifacts/test-results/**/coverage.opencover.*.xml
   DOCFX_CONFIG: docs/docfx.json
   DOCS_SITE: docs/_site
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -78,7 +77,7 @@ jobs:
       - name: Verify C# formatting (dotnet format)
         run: dotnet format whitespace ${{ env.SOLUTION }} --no-restore --verify-no-changes
 
-  # Build the solution, run both test suites against real databases, and hand the coverage to SonarQube.
+  # Build the solution, run both test suites against real databases, and hand the coverage to Codecov.
   #
   # No `services:` block, and no connection strings: the integration suite starts its own containers through
   # Testcontainers, on the Docker daemon this runner already provides. That is the same code path a developer
@@ -89,15 +88,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    permissions:
+      contents: read
+      # Codecov authenticates with a GitHub OIDC token minted for this run - see the upload step below.
+      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
-          # Shallow clones make SonarQube's blame and new-code detection wrong.
-          fetch-depth: 0
           persist-credentials: false
 
       # Both SDKs are required: 10.0.x builds the net10.0 target of the src/ and test projects, and the 8.0.x
@@ -136,6 +135,19 @@ jobs:
       - name: Test
         run: dotnet test --solution ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --results-directory "${{ env.TEST_RESULTS }}" --report-xunit-trx --coverlet --coverlet-output-format opencover
 
+      # No stored secret: use_oidc trades the run's GitHub OIDC token for Codecov's, the same way the
+      # publish-nuget job authenticates to NuGet.org. That is what the `id-token: write` permission above is
+      # for. Nothing here expires, so this cannot rot the way a long-lived analysis token does.
+      #
+      # A pull request from a fork gets no OIDC token, so the upload fails there - hence fail_ci_if_error is
+      # limited to pushes to main, where a silent upload failure would quietly freeze the coverage number.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          use_oidc: true
+          directory: ${{ env.TEST_RESULTS }}
+          fail_ci_if_error: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -144,15 +156,6 @@ jobs:
           path: ${{ env.TEST_RESULTS }}
           if-no-files-found: warn
           retention-days: 14
-
-      # Skipped rather than failed when the token is absent, which is the case for pull requests from forks.
-      # The scanner reads the coverage produced by the test step above; it does not run the tests again.
-      - name: SonarQube scan
-        if: env.SONAR_TOKEN != ''
-        uses: SonarSource/sonarqube-scan-action@v6.0.0
-        with:
-          args: >
-            -Dsonar.cs.opencover.reportsPaths=${{ env.COVERAGE_REPORTS }}
 
   # Build the documentation and pack the six packages. Everything downstream consumes the artifact this
   # produces, so nothing reaches NuGet.org that was not built exactly once, here.

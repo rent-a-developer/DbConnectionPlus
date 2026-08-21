@@ -209,7 +209,7 @@ public static partial class DbConnectionExtensions
     {
         try
         {
-            return (TTarget)ValueConverter.ConvertValueToType<TTarget>(value)!;
+            return ValueConverter.ConvertValueToType<TTarget>(value)!;
         }
         catch (Exception exception) when (value is null or DBNull)
         {

@@ -39,31 +39,6 @@ csharp_style_unused_value_assignment_preference = discard_variable:error
 csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
 dotnet_analyzer_diagnostic.category-roslynator.severity = error
 
-# RCS1037: Remove trailing white-space
-dotnet_diagnostic.RCS1037.severity = none
-
-# RCS1227: Validate arguments correctly
-dotnet_diagnostic.RCS1227.severity = none
-
-# RCS1124: Inline local variable
-dotnet_diagnostic.RCS1124.severity = suggestion
-
-# IDE0290: Use primary constructor
-dotnet_diagnostic.IDE0290.severity = none
-
-# CA2100: Review SQL queries for security vulnerabilities
-dotnet_diagnostic.CA2100.severity = none
-
-# RCS1222: Merge preprocessor directives
-dotnet_diagnostic.RCS1222.severity = none
-
-# RCS1237: Use bit shift operator
-dotnet_diagnostic.RCS1237.severity = none
-
-# xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
-dotnet_diagnostic.xUnit1051.severity = none
-
-[*.{cs,vb}]
 #### Naming styles ####
 
 # Naming rules
@@ -132,6 +107,69 @@ dotnet_style_prefer_collection_expression = when_types_loosely_match:error
 dotnet_style_namespace_match_folder = true:error
 dotnet_style_predefined_type_for_locals_parameters_members = false:silent
 dotnet_style_predefined_type_for_member_access = false:silent
+
+# RCS1037: Remove trailing white-space
+dotnet_diagnostic.RCS1037.severity = none
+
+# RCS1227: Validate arguments correctly
+dotnet_diagnostic.RCS1227.severity = none
+
+# RCS1124: Inline local variable
+dotnet_diagnostic.RCS1124.severity = suggestion
+
+# IDE0290: Use primary constructor
+dotnet_diagnostic.IDE0290.severity = none
+
+# CA2100: Review SQL queries for security vulnerabilities
+dotnet_diagnostic.CA2100.severity = none
+
+# RCS1222: Merge preprocessor directives
+dotnet_diagnostic.RCS1222.severity = none
+
+# RCS1237: Use bit shift operator
+dotnet_diagnostic.RCS1237.severity = none
+
+# xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
+dotnet_diagnostic.xUnit1051.severity = none
+
+#### SonarAnalyzer.CSharp ####
+
+# The rules below do not fit this codebase and are off for good.
+
+# S125: Sections of code should not be commented out
+# The two hits are deliberate pseudo-code explaining the expression trees the materializer factories emit.
+dotnet_diagnostic.S125.severity = none
+
+# S3011: Reflection should not be used to increase accessibility of classes, methods, or fields
+# Binding non-public constructors and members is what an entity materializer does; the sites are documented.
+dotnet_diagnostic.S3011.severity = none
+
+# S3267: Loops should be simplified using the "Where" LINQ method
+# Both loops throw on the non-matching element rather than skipping it, and they sit on a hot path.
+dotnet_diagnostic.S3267.severity = none
+
+# S3881: "IDisposable" should be implemented correctly
+# DbCommandDisposer is internal, is never derived from, and owns no unmanaged resource.
+dotnet_diagnostic.S3881.severity = none
+
+# S3928: Parameter names used into ArgumentException constructors should match an existing one
+# The generic throw helpers name the CALLER's parameter, which by design is not in their own signature.
+dotnet_diagnostic.S3928.severity = none
+
+# S2077: Formatting SQL queries is security-sensitive
+# The temporary table builders emit DDL, where a table or column name can never be a bound parameter. Same
+# reason CA2100 is off above; the identifiers are quoted per adapter, not interpolated user input.
+dotnet_diagnostic.S2077.severity = none
+
+# S2325: Methods and properties that don't access instance data should be static
+# CA1822 already covers this and correctly skips public members. S2325 does not: both hits are shipped public
+# API listed in PublicAPI.Shipped.txt, where going static is a breaking change.
+dotnet_diagnostic.S2325.severity = none
+
+# S4456: Parameter validation in yielding methods should be wrapped
+# The public Query overloads validate their arguments inside the iterator, so the exception surfaces on the
+# first MoveNext instead of at the call. Fixing it means splitting four public methods.
+dotnet_diagnostic.S4456.severity = none
 
 [*.ps1]
 end_of_line = crlf

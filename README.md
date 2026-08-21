@@ -10,7 +10,7 @@ that adds high-performance, type-safe helpers to reduce boilerplate code, boost 
 SQL databases in C# more enjoyable.**
 
 [![CI](https://github.com/rent-a-developer/DbConnectionPlus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rent-a-developer/DbConnectionPlus/actions/workflows/ci.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rent-a-developer_DbConnectionPlus&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rent-a-developer_DbConnectionPlus)
+[![Coverage](https://codecov.io/gh/rent-a-developer/DbConnectionPlus/branch/main/graph/badge.svg)](https://codecov.io/gh/rent-a-developer/DbConnectionPlus)
 [![NuGet Version](https://img.shields.io/nuget/v/DbConnectionPlus)](https://www.nuget.org/packages/DbConnectionPlus/)
 [![.NET 8 | 10](https://img.shields.io/badge/.NET-8.0%20%7C%2010.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![API docs](https://img.shields.io/badge/API%20docs-GitHub%20Pages-2b6cb0)](https://rent-a-developer.github.io/DbConnectionPlus/)

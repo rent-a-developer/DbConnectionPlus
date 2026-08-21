@@ -835,7 +835,7 @@ internal static class EntityMaterializerFactory
                 ReadFieldValue(dataReader, entityType, constructorArgumentBindings[argumentIndex]);
         }
 
-        return (TEntity)entityConstructor.Invoke(constructorArguments.AsSpan())!;
+        return (TEntity)entityConstructor.Invoke(constructorArguments.AsSpan());
     }
 
     /// <summary>
@@ -858,7 +858,7 @@ internal static class EntityMaterializerFactory
         ReflectionPropertyBinding[] propertyBindings
     )
     {
-        var entity = entityConstructor.Invoke()!;
+        var entity = entityConstructor.Invoke();
 
         foreach (var propertyBinding in propertyBindings)
         {

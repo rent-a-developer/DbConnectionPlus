@@ -125,6 +125,65 @@ public class ValueConverterTests : UnitTestsBase
             );
     }
 
+    [Theory]
+    [InlineData("de-DE")]
+    [InlineData("fr-FR")]
+    [InlineData("en-US")]
+    public void ConvertValueToType_DateAndTimeStringValue_AmbiguousDate_ShouldNotDependOnTheCurrentCulture(
+        String cultureName
+    )
+    {
+        // "03/04/2026" is the 4th of March under en-US and the 3rd of April under de-DE and fr-FR. Read with
+        // the invariant culture it is the 4th of March everywhere, so one database value can no longer decode
+        // into two different dates depending on the locale of the machine that runs the code.
+        var expectedDate = new DateOnly(2026, 3, 4);
+
+        RunUnderCulture(cultureName, () =>
+        {
+            ValueConverter.ConvertValueToType<DateOnly>("03/04/2026")
+                .Should().Be(expectedDate);
+
+            ValueConverter.ConvertValueToType("03/04/2026", typeof(DateOnly))
+                .Should().Be(expectedDate);
+        });
+    }
+
+    [Theory]
+    [InlineData("de-DE")]
+    [InlineData("fr-FR")]
+    [InlineData("en-US")]
+    public void ConvertValueToType_DateAndTimeStringValue_ShouldRoundTripUnderAnyCulture(String cultureName)
+    {
+        // The converter writes these four types with the invariant culture, so it has to read them back the
+        // same way. It did not: under a culture whose decimal separator is a comma, a TimeSpan this library
+        // itself had written as "1:2:03:04.567" did not parse back at all, and the conversion threw.
+        var timeSpan = new TimeSpan(1, 2, 3, 4, 567);
+        var dateTimeOffset = new DateTimeOffset(2026, 3, 4, 14, 30, 0, TimeSpan.FromHours(2));
+        var dateOnly = new DateOnly(2026, 3, 4);
+        var timeOnly = new TimeOnly(14, 30, 0);
+
+        RunUnderCulture(cultureName, () =>
+        {
+            AssertRoundTrips(timeSpan);
+            AssertRoundTrips(dateTimeOffset);
+            AssertRoundTrips(dateOnly);
+            AssertRoundTrips(timeOnly);
+        });
+
+        // Converts the value to its String representation and back, both through the converter itself, so the
+        // assertion is that the writing half and the reading half agree - not that either matches a literal.
+        static void AssertRoundTrips<TValue>(TValue value)
+        {
+            var text = ValueConverter.ConvertValueToType<String>(value);
+
+            ValueConverter.ConvertValueToType<TValue>(text)
+                .Should().Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
+
+            ValueConverter.ConvertValueToType(text, typeof(TValue))
+                .Should().Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
+        }
+    }
+
     [Fact]
     public void
         ConvertValueToType_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
@@ -551,6 +610,45 @@ public class ValueConverterTests : UnitTestsBase
     {
         ArgumentNullGuardVerifier.Verify(() => ValueConverter.CanConvert(typeof(Int16), typeof(Int32)));
         ArgumentNullGuardVerifier.Verify(() => ValueConverter.ConvertValueToType(1, typeof(Int32)));
+    }
+
+    /// <summary>
+    /// Runs <paramref name="assertions" /> with the current culture set to <paramref name="cultureName" />,
+    /// and restores the previous culture afterwards.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="UnitTestsBase" /> pins every test to en-US, and en-US is exactly the culture under which
+    /// culture-dependent date and time parsing still looks correct - which is why the whole suite passed
+    /// while the converter was reading with the current culture. A test for that has to leave the pin.
+    /// The assembly runs with <c>ParallelMode.None</c>, so changing the culture cannot affect another test.
+    /// </remarks>
+    /// <param name="cultureName">The name of the culture to run the assertions under.</param>
+    /// <param name="assertions">The assertions to run.</param>
+    private static void RunUnderCulture(String cultureName, Action assertions)
+    {
+        var culture = new CultureInfo(cultureName);
+
+        // Without ICU, every culture collapses into the invariant one and the test would pass while proving
+        // nothing. de-DE and fr-FR both separate decimals with a comma; the invariant culture uses a dot.
+        Assert.SkipWhen(
+            cultureName != "en-US" &&
+            culture.NumberFormat.NumberDecimalSeparator ==
+            CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator,
+            $"Globalization is in invariant mode, so '{cultureName}' is not a real culture here."
+        );
+
+        var previousCulture = CultureInfo.CurrentCulture;
+
+        CultureInfo.CurrentCulture = Thread.CurrentThread.CurrentCulture = culture;
+
+        try
+        {
+            assertions();
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = Thread.CurrentThread.CurrentCulture = previousCulture;
+        }
     }
 
     public static IEnumerable<(

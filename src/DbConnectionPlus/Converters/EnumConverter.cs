@@ -237,14 +237,14 @@ internal static class EnumConverter
 
             case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
                 ThrowCouldNotConvertNullToNonNullableEnumTypeException(targetType);
-                return null!; // Just to satisfy the compiler.
+                return null; // Just to satisfy the compiler.
 
             case not null when value.GetType().IsAssignableTo(effectiveTargetType):
                 return value;
 
             case String stringValue when String.IsNullOrWhiteSpace(stringValue):
                 ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
-                return null!; // Just to satisfy the compiler.
+                return null; // Just to satisfy the compiler.
 
             case String stringValue:
                 if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
@@ -278,7 +278,7 @@ internal static class EnumConverter
                     value,
                     targetType
                 );
-                return null!; // Just to satisfy the compiler.
+                return null; // Just to satisfy the compiler.
         }
     }
 

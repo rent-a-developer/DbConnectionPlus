@@ -124,7 +124,7 @@ internal static class ValueConverter
                 return (TTarget)(Object)guidResult;
 
             case String stringValue when effectiveTargetType == typeof(TimeSpan):
-                if (!TimeSpan.TryParse(stringValue, out var timeSpanResult))
+                if (!TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -143,7 +143,7 @@ internal static class ValueConverter
                 return (TTarget)(Object)stringValue[0];
 
             case String stringValue when effectiveTargetType == typeof(DateTimeOffset):
-                if (!DateTimeOffset.TryParse(stringValue, out var dateTimeOffsetResult))
+                if (!DateTimeOffset.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateTimeOffsetResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -151,7 +151,7 @@ internal static class ValueConverter
                 return (TTarget)(Object)dateTimeOffsetResult;
 
             case String stringValue when effectiveTargetType == typeof(DateOnly):
-                if (!DateOnly.TryParse(stringValue, out var dateOnlyResult))
+                if (!DateOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -159,7 +159,7 @@ internal static class ValueConverter
                 return (TTarget)(Object)dateOnlyResult;
 
             case String stringValue when effectiveTargetType == typeof(TimeOnly):
-                if (!TimeOnly.TryParse(stringValue, out var timeOnlyResult))
+                if (!TimeOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -270,7 +270,7 @@ internal static class ValueConverter
 
             case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
                 ThrowCouldNotConvertNullOrDbNullToNonNullableTargetTypeException(value, targetType);
-                return null!; // Just to satisfy the compiler.
+                return null; // Just to satisfy the compiler.
 
             case not null when value.GetType().IsAssignableTo(effectiveTargetType):
                 return value;
@@ -284,7 +284,7 @@ internal static class ValueConverter
                 return guidResult;
 
             case String stringValue when effectiveTargetType == typeof(TimeSpan):
-                if (!TimeSpan.TryParse(stringValue, out var timeSpanResult))
+                if (!TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -303,7 +303,7 @@ internal static class ValueConverter
                 return stringValue[0];
 
             case String stringValue when effectiveTargetType == typeof(DateTimeOffset):
-                if (!DateTimeOffset.TryParse(stringValue, out var dateTimeOffsetResult))
+                if (!DateTimeOffset.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateTimeOffsetResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -311,7 +311,7 @@ internal static class ValueConverter
                 return dateTimeOffsetResult;
 
             case String stringValue when effectiveTargetType == typeof(DateOnly):
-                if (!DateOnly.TryParse(stringValue, out var dateOnlyResult))
+                if (!DateOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -319,7 +319,7 @@ internal static class ValueConverter
                 return dateOnlyResult;
 
             case String stringValue when effectiveTargetType == typeof(TimeOnly):
-                if (!TimeOnly.TryParse(stringValue, out var timeOnlyResult))
+                if (!TimeOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
@@ -375,7 +375,7 @@ internal static class ValueConverter
                 )
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(value, targetType, exception);
-                    return null!; // Just to satisfy the compiler
+                    return null; // Just to satisfy the compiler
                 }
         }
     }
