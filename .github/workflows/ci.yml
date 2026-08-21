@@ -149,7 +149,7 @@ jobs:
       # The scanner reads the coverage produced by the test step above; it does not run the tests again.
       - name: SonarQube scan
         if: env.SONAR_TOKEN != ''
-        uses: SonarSource/sonarqube-scan-action@v6.0.0
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
         with:
           args: >
             -Dsonar.cs.opencover.reportsPaths=${{ env.COVERAGE_REPORTS }}
