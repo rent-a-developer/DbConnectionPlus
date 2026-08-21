@@ -124,9 +124,7 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
     public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbConnectionPlus() =>
-        this.connection
-            .Query<BenchmarkEntity>($"SELECT * FROM {TemporaryTable(this.temporaryTable_ComplexObjects_Entities)}")
-            .ToList();
+        [.. this.connection.Query<BenchmarkEntity>($"SELECT * FROM {TemporaryTable(this.temporaryTable_ComplexObjects_Entities)}")];
 
     private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities =
         Generate.Multiple(TemporaryTable_ComplexObjects_EntitiesPerOperation);

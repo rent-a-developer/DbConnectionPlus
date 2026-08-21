@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record EntityWithPrivateParameterlessConstructor : Entity
 {

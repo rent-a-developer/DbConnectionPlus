@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Configuration;
+namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 /// <summary>
 /// Represents an object that can be frozen to prevent further modifications.

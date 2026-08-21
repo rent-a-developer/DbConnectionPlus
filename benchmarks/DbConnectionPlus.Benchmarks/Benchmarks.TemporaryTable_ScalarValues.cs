@@ -97,13 +97,11 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
     public List<Int64> TemporaryTable_ScalarValues_DbConnectionPlus() =>
-        this.connection.Query<Int64>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")
-            .ToList();
+        [.. this.connection.Query<Int64>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")];
 
-    private readonly List<Int64> temporaryTable_ScalarValues_Values = Enumerable
+    private readonly List<Int64> temporaryTable_ScalarValues_Values = [.. Enumerable
         .Range(0, TemporaryTable_ScalarValues_ValuesPerOperation)
-        .Select(a => (Int64)a)
-        .ToList();
+        .Select(a => (Int64)a)];
 
     private const String TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
     private const Int32 TemporaryTable_ScalarValues_ValuesPerOperation = 5000;

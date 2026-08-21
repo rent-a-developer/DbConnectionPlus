@@ -1,4 +1,4 @@
-﻿// ReSharper disable RedundantExplicitArrayCreation
+// ReSharper disable RedundantExplicitArrayCreation
 // ReSharper disable RedundantCast
 // ReSharper disable NotAccessedPositionalProperty.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local

@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.Mocks;
+namespace RentADeveloper.DbConnectionPlus.UnitTests.Mocks;
 
 /// <summary>
 /// A simple mock implementation of <see cref="DbParameterCollection" />.
@@ -46,7 +46,9 @@ public class MockDbParameterCollection : DbParameterCollection
         for (var index = 0; index < this.parameters.Count; ++index)
         {
             if (this.parameters[index].ParameterName == parameterName)
+            {
                 return index;
+            }
         }
 
         return -1;

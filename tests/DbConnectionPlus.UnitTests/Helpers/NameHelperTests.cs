@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.Helpers;
+using RentADeveloper.DbConnectionPlus.Helpers;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Helpers;
 

@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.SqlServer;
 

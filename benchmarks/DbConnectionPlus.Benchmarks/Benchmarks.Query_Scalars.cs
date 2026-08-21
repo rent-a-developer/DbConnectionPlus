@@ -52,12 +52,12 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Scalars_Category)]
     public List<Int64> Query_Scalars_Dapper() =>
-        SqlMapper.Query<Int64>(this.connection, "SELECT Id FROM Entity").ToList();
+        [.. SqlMapper.Query<Int64>(this.connection, "SELECT Id FROM Entity")];
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Scalars_Category)]
     public List<Int64> Query_Scalars_DbConnectionPlus() =>
-        this.connection.Query<Int64>("SELECT Id FROM Entity").ToList();
+        [.. this.connection.Query<Int64>("SELECT Id FROM Entity")];
 
     private const String Query_Scalars_Category = "Query_Scalars";
     private const Int32 Query_Scalars_EntitiesPerOperation = 600;

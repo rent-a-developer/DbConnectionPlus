@@ -1,4 +1,4 @@
-﻿using MySqlConnector;
+using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 
 

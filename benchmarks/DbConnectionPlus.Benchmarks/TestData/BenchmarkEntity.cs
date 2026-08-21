@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
+namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
 // The entity the benchmarks read and write.
 //

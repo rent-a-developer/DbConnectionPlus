@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;

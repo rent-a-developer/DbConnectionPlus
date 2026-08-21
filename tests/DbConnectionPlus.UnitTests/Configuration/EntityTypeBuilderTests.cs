@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.Configuration;
+namespace RentADeveloper.DbConnectionPlus.UnitTests.Configuration;
 
 public class EntityTypeBuilderTests : UnitTestsBase
 {

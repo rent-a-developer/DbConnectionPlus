@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.MySql;
 

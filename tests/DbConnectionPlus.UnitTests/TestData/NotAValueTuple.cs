@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
+namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 /// <summary>
 /// A type that implements the same interfaces as <see cref="ValueTuple" /> but is not a <see cref="ValueTuple" />.

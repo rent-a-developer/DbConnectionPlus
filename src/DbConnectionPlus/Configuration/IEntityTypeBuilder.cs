@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Configuration;
+namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 /// <summary>
 /// Represents a builder for configuring an entity type.

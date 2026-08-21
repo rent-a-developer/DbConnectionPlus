@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DbCommands;
+namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DbCommands;
 
 public sealed class
     DbCommandHelperTests_MySql :

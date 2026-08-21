@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Exceptions;
+namespace RentADeveloper.DbConnectionPlus.Exceptions;
 
 /// <summary>
 /// An exception that is thrown when a concurrency violation is encountered while deleting or updating an entity in a

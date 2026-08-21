@@ -1,4 +1,4 @@
-﻿using Npgsql;
+using Npgsql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.PostgreSql;

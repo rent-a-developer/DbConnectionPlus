@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
+using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Sqlite;
 

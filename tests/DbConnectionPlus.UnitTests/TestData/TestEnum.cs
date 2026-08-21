@@ -1,4 +1,4 @@
-﻿#pragma warning disable RCS1042
+#pragma warning disable RCS1042
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 

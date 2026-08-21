@@ -1,4 +1,4 @@
-﻿using System.Data.SqlTypes;
+using System.Data.SqlTypes;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using NSubstitute.ExceptionExtensions;

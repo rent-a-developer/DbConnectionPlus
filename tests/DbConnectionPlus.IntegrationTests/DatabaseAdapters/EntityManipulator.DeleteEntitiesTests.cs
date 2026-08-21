@@ -1,4 +1,4 @@
-﻿using System.Data.Common;
+using System.Data.Common;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 using RentADeveloper.DbConnectionPlus.Exceptions;
 

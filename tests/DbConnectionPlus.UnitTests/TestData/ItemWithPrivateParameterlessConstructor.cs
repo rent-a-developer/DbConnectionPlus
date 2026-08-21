@@ -1,4 +1,4 @@
-﻿// ReSharper disable ConvertToStaticClass
+// ReSharper disable ConvertToStaticClass
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 

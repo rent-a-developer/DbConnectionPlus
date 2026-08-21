@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Filters;
+using BenchmarkDotNet.Filters;
 using BenchmarkDotNet.Running;
 
 namespace RentADeveloper.DbConnectionPlus.Benchmarks;

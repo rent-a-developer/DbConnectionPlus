@@ -1,4 +1,4 @@
-﻿// ReSharper disable PossibleMultipleEnumeration
+// ReSharper disable PossibleMultipleEnumeration
 // ReSharper disable GenericEnumeratorNotDisposed
 
 using System.Diagnostics.CodeAnalysis;

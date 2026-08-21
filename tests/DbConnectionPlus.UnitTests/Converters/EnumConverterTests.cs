@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.Converters;
+using RentADeveloper.DbConnectionPlus.Converters;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Converters;
 

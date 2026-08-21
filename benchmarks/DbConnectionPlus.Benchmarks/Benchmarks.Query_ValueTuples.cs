@@ -61,12 +61,11 @@ public partial class Benchmarks
     [BenchmarkCategory(Query_ValueTuples_Category)]
     public List<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>
         Query_ValueTuples_Dapper() =>
-        SqlMapper
+        [.. SqlMapper
             .Query<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>(
                 this.connection,
                 "SELECT Id, DateTimeValue, EnumValue, StringValue FROM Entity"
-            )
-            .ToList();
+            )];
 
     // There is no Query_ValueTuples_Dapper_Aot benchmark, so this category's Native AOT group compares
     // DbConnectionPlus against the raw DbCommand baseline alone. Dapper.AOT's generator does not materialize value
@@ -78,11 +77,10 @@ public partial class Benchmarks
     [BenchmarkCategory(Query_ValueTuples_Category)]
     public List<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>
         Query_ValueTuples_DbConnectionPlus() =>
-        this.connection
+        [.. this.connection
             .Query<(Int64 Id, DateTime DateTimeValue, TestEnum EnumValue, String StringValue)>(
                 "SELECT Id, DateTimeValue, EnumValue, StringValue FROM Entity"
-            )
-            .ToList();
+            )];
 
     private const String Query_ValueTuples_Category = "Query_ValueTuples";
     private const Int32 Query_ValueTuples_EntitiesPerOperation = 150;

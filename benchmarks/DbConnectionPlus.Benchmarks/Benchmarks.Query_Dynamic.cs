@@ -74,12 +74,12 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]
     public List<dynamic> Query_Dynamic_Dapper() =>
-        SqlMapper.Query(this.connection, "SELECT * FROM Entity").ToList();
+        [.. SqlMapper.Query(this.connection, "SELECT * FROM Entity")];
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]
     public List<DataRow> Query_Dynamic_DbConnectionPlus() =>
-        this.connection.Query("SELECT * FROM Entity").ToList();
+        [.. this.connection.Query("SELECT * FROM Entity")];
 
     private const String Query_Dynamic_Category = "Query_Dynamic";
     private const Int32 Query_Dynamic_EntitiesPerOperation = 100;

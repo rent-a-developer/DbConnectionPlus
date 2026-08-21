@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.Materializers;
+using RentADeveloper.DbConnectionPlus.Materializers;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Materializers;
 

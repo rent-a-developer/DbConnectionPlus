@@ -1,4 +1,4 @@
-﻿using System.Dynamic;
+using System.Dynamic;
 using System.Linq.Expressions;
 using AutoFixture;
 using AutoFixture.AutoNSubstitute;

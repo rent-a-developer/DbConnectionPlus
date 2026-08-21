@@ -1,4 +1,4 @@
-﻿// ReSharper disable InvokeAsExtensionMethod
+// ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable InconsistentNaming
 
 #pragma warning disable RCS1196

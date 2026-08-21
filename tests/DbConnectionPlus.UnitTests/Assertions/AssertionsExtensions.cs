@@ -1,4 +1,4 @@
-﻿using AwesomeAssertions.Execution;
+using AwesomeAssertions.Execution;
 using AwesomeAssertions.Types;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.Assertions;

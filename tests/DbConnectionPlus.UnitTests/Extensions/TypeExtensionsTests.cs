@@ -1,4 +1,4 @@
-﻿// ReSharper disable InvokeAsExtensionMethod
+// ReSharper disable InvokeAsExtensionMethod
 
 using RentADeveloper.DbConnectionPlus.Extensions;
 using TypeExtensions = RentADeveloper.DbConnectionPlus.Extensions.TypeExtensions;

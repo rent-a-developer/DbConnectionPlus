@@ -1,4 +1,4 @@
-﻿// ReSharper disable ConvertToPrimaryConstructor
+// ReSharper disable ConvertToPrimaryConstructor
 
 #pragma warning disable IDE0290
 

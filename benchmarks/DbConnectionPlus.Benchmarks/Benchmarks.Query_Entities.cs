@@ -1,4 +1,4 @@
-﻿// ReSharper disable InvokeAsExtensionMethod
+// ReSharper disable InvokeAsExtensionMethod
 // ReSharper disable InconsistentNaming
 
 #pragma warning disable RCS1196
@@ -54,7 +54,7 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Entities_Category)]
     public List<BenchmarkEntity> Query_Entities_Dapper() =>
-        SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity").ToList();
+        [.. SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity")];
 
     // Dapper under Native AOT: the same call as Query_Entities_Dapper, but Dapper.AOT replaces the call site
     // with generated code at build time, which is the only way to use Dapper there at all. This is the
@@ -64,12 +64,12 @@ public partial class Benchmarks
     [BenchmarkCategory(Query_Entities_Category)]
     [DapperAot]
     public List<BenchmarkEntity> Query_Entities_Dapper_Aot() =>
-        SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity").ToList();
+        [.. SqlMapper.Query<BenchmarkEntity>(this.connection, "SELECT * FROM Entity")];
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Entities_Category)]
     public List<BenchmarkEntity> Query_Entities_DbConnectionPlus() =>
-        this.connection.Query<BenchmarkEntity>("SELECT * FROM Entity").ToList();
+        [.. this.connection.Query<BenchmarkEntity>("SELECT * FROM Entity")];
 
     private const String Query_Entities_Category = "Query_Entities";
     private const Int32 Query_Entities_EntitiesPerOperation = 100;

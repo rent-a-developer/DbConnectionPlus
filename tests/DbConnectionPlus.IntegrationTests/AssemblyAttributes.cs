@@ -1,4 +1,4 @@
-﻿using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
+using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containers;
 using Xunit.Sdk;
 using Xunit.v3;
 

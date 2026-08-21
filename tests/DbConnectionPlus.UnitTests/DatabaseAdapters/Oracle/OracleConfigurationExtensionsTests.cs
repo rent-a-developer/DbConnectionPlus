@@ -1,4 +1,4 @@
-﻿using Oracle.ManagedDataAccess.Client;
+using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Oracle;

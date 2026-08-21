@@ -861,7 +861,7 @@ internal static class ValueTupleMaterializerFactory
             var genericArguments = currentValueTupleType.GetGenericArguments();
 
             var hasNestedValueTuple = genericArguments.Length > ValueTupleFieldCountBeforeNesting;
-            
+
             if (!hasNestedValueTuple)
             {
                 fieldTypes.AddRange(genericArguments);

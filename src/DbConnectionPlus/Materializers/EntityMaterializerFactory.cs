@@ -585,7 +585,7 @@ internal static class EntityMaterializerFactory
 
         var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
             entityType,
-            [..dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
+            [.. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
         );
 
         var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)

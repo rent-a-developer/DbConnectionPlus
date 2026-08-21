@@ -1,4 +1,4 @@
-﻿namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
+namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
 public enum TestEnum
 {
