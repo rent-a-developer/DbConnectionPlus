@@ -32,7 +32,7 @@
 		<PackageReference Include="Mapster" Version="10.0.12" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
-		<PackageReference Include="NSubstitute" Version="5.3.0" />
+		<PackageReference Include="NSubstitute" Version="6.2.0" />
 		<PackageReference Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
 		<PackageReference Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
