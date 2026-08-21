@@ -1313,7 +1313,7 @@ Open a GitHub issue for problems or a pull request with tests and a clear descri
 
 ## Links
 
-- [API documentation](https://rent-a-developer.github.io/DbConnectionPlus/api/RentADeveloper.DbConnectionPlus.html)
+- [API documentation](https://rent-a-developer.github.io/DbConnectionPlus/)
 - [Change log](CHANGELOG.md)
 - [Design decisions](DESIGN-DECISIONS.md) - why the library works the way it does
 - Licensed under the [MIT license](LICENSE.md)

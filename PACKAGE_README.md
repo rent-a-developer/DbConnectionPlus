@@ -180,7 +180,7 @@ per-provider matrix.
 ## Documentation
 
 - **[Full documentation and examples](https://github.com/rent-a-developer/DbConnectionPlus#readme)**
-- [API reference](https://rent-a-developer.github.io/DbConnectionPlus/api/RentADeveloper.DbConnectionPlus.html)
+- [API reference](https://rent-a-developer.github.io/DbConnectionPlus/)
 - [Change log](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/CHANGELOG.md)
 - [Report an issue](https://github.com/rent-a-developer/DbConnectionPlus/issues)
 
