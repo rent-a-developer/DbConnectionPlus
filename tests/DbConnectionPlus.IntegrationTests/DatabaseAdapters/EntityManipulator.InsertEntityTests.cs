@@ -109,7 +109,7 @@ public abstract class EntityManipulator_InsertEntityTests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}")
+        (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}"))
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
@@ -137,7 +137,7 @@ public abstract class EntityManipulator_InsertEntityTests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}")
+        (await this.Connection.QueryFirstAsync<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}"))
             .Should().BeEquivalentTo(
                 entity,
                 options => options.Using<String>(context => context.Subject.Should().BeNull())
@@ -160,7 +160,7 @@ public abstract class EntityManipulator_InsertEntityTests
             TestContext.Current.CancellationToken
         );
 
-        this.Connection.QueryFirst<MappingTestEntity>($"SELECT * FROM {Q("MappingTestEntity")}")
+        (await this.Connection.QueryFirstAsync<MappingTestEntity>($"SELECT * FROM {Q("MappingTestEntity")}"))
             .Should().BeEquivalentTo(entity);
     }
 

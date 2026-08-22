@@ -77,7 +77,7 @@ public partial class Benchmarks
             BooleanValue = dataReader.GetInt64(ordinal++) == 1,
             BytesValue = (Byte[])dataReader.GetValue(ordinal++),
             ByteValue = dataReader.GetByte(ordinal++),
-            CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new(),
+            CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new InvalidOperationException(),
             DateTimeValue = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DecimalValue = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DoubleValue = dataReader.GetDouble(ordinal++),

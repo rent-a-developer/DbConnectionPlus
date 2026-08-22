@@ -7,7 +7,7 @@ public class DbCommandHelperTests : UnitTestsBase
     [Fact]
     public void RegisterDbCommandCancellation_CancellationToken_ShouldRegister()
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
         var registration = DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);

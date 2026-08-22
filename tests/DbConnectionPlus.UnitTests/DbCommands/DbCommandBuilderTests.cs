@@ -14,7 +14,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task BuildDbCommand_CancellationToken_ShouldUseCancellationToken(Boolean useAsyncApi)
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
         await cancellationTokenSource.CancelAsync();

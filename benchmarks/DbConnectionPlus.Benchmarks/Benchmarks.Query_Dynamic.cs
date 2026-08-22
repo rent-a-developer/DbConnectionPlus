@@ -53,7 +53,7 @@ public partial class Benchmarks
                 ["ByteValue"] = dataReader.GetByte(ordinal++),
                 ["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
                     ? charBuffer[0]
-                    : throw new(),
+                    : throw new InvalidOperationException(),
                 ["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DoubleValue"] = dataReader.GetDouble(ordinal++),
@@ -62,7 +62,7 @@ public partial class Benchmarks
                 ["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++),
                 ["Int64Value"] = dataReader.GetInt64(ordinal++),
                 ["SingleValue"] = dataReader.GetFloat(ordinal++),
-                ["StringValue"] = dataReader.GetString(ordinal++)
+                ["StringValue"] = dataReader.GetString(ordinal)
             };
 
             entities.Add(new DataRow(dictionary));

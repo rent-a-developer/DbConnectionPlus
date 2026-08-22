@@ -36,10 +36,8 @@
 		<PackageReference Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
 		<PackageReference Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
-		<PackageReference Include="System.Linq.Async" Version="7.0.1" />
+		<PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
 		<PackageReference Include="xunit.v3" Version="4.0.0" />
-        <PackageReference Include="System.Net.Http" Version="4.3.4" />
-		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
 		<!-- The native MTP coverage extension CI uses to produce the OpenCover report for SonarQube. -->
 		<PackageReference Include="coverlet.MTP" Version="10.0.1">
 			<PrivateAssets>all</PrivateAssets>
