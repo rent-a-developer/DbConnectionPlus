@@ -39,7 +39,7 @@ public abstract class
         using var command = this.Connection.CreateCommand();
         command.CommandText = "SELECT 1; " + this.TestDatabaseProvider.DelayTwoSecondsStatement + " SELECT 1;";
 
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
         ThreadPool.QueueUserWorkItem(_ =>
@@ -86,7 +86,7 @@ public abstract class
         await using var command = this.Connection.CreateCommand();
         command.CommandText = "SELECT 1; " + this.TestDatabaseProvider.DelayTwoSecondsStatement + " SELECT 1;";
 
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
 
         ThreadPool.QueueUserWorkItem(_ =>

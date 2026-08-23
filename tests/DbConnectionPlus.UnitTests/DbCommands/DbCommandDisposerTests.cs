@@ -10,7 +10,7 @@ public class DbCommandDisposerTests : UnitTestsBase
     [Fact]
     public void Dispose_AlreadyDisposed_ShouldNotDisposeCommandResourcesAgain()
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
         var cancellationTokenRegistration =
             DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
@@ -45,7 +45,7 @@ public class DbCommandDisposerTests : UnitTestsBase
     [Fact]
     public void Dispose_ShouldDisposeCommandResources()
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
         var cancellationTokenRegistration =
             DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
@@ -82,7 +82,7 @@ public class DbCommandDisposerTests : UnitTestsBase
     [Fact]
     public async Task DisposeAsync_AlreadyDisposed_ShouldNotDisposeCommandResourcesAsyncAgain()
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
         var cancellationTokenRegistration =
             DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
@@ -117,7 +117,7 @@ public class DbCommandDisposerTests : UnitTestsBase
     [Fact]
     public async Task DisposeAsync_ShouldDisposeCommandResourcesAsync()
     {
-        var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
         var cancellationTokenRegistration =
             DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);

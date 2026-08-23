@@ -105,7 +105,9 @@ public static class Generate
             }
         );
 
+#pragma warning disable S2930
         var cancellationTokenSource = new CancellationTokenSource();
+#pragma warning restore S2930
         fixture.Register<CancellationToken>(() => cancellationTokenSource.Token);
 
         TypeAdapterConfig<Entity, EntityWithDifferentCasingProperties>

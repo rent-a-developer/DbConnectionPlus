@@ -238,7 +238,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
              FROM   {Q(metadata.TableName)}
              WHERE  {String.Join(
                      " AND ",
-                     [.. keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}")]
+                     keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}").ToList()
                  )}
              """,
             keyProperties.Select(p => (p.PropertyName, p.PropertyGetter!(entity))).ToArray()!
@@ -387,7 +387,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <returns>A <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.</returns>
     protected static CancellationToken CreateCancellationTokenThatIsCancelledAfter100Milliseconds()
     {
+#pragma warning disable S2930
         var cancellationTokenSource = new CancellationTokenSource();
+#pragma warning restore S2930
         cancellationTokenSource.CancelAfter(100);
         return cancellationTokenSource.Token;
     }
@@ -397,7 +399,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <summary>
     /// The connection to the test database for the currently running integration test.
     /// </summary>
+#pragma warning disable S2743
     private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
+#pragma warning restore S2743
 
     /// <summary>
     /// The database adapter for the test database of the currently running integration test.
@@ -406,5 +410,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// The adapter rather than the provider: an interface that declares a static abstract member - which
     /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
     /// </remarks>
+#pragma warning disable S2743
     private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
+#pragma warning restore S2743
 }

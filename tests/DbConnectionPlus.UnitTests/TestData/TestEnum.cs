@@ -2,7 +2,7 @@
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
-public enum TestEnum : Int32
+public enum TestEnum
 {
     Value1 = 1,
     Value2 = 2,

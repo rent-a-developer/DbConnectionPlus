@@ -1,4 +1,6 @@
-﻿[*.cs]
+﻿root = true
+
+[*.cs]
 max_line_length = 120
 charset = utf-8
 
@@ -173,3 +175,18 @@ dotnet_diagnostic.S4456.severity = none
 
 [*.ps1]
 end_of_line = crlf
+
+[{tests,benchmarks}/**/*.cs]
+
+dotnet_diagnostic.S2344.severity = none
+dotnet_diagnostic.S3010.severity = none
+dotnet_diagnostic.S4144.severity = none
+dotnet_diagnostic.S3459.severity = none
+dotnet_diagnostic.S3453.severity = none
+dotnet_diagnostic.S1144.severity = none
+dotnet_diagnostic.S1172.severity = none
+dotnet_diagnostic.S3963.severity = none
+dotnet_diagnostic.S6562.severity = none
+dotnet_diagnostic.S2925.severity = none
+dotnet_diagnostic.S5034.severity = none
+dotnet_diagnostic.S2696.severity = none

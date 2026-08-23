@@ -20,7 +20,7 @@
 		<PackageReference Include="Npgsql" Version="10.0.3" />
 		<PackageReference Include="NSubstitute" Version="5.3.0" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
-		<PackageReference Include="System.Linq.Async" Version="7.0.1" />
+		<PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
 		<!--
 			The four database servers the suite tests against. Testcontainers starts each container on demand and
 			removes it when the run ends - see TestDatabase/Containers/. Testcontainers.XunitV3, not

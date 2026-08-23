@@ -221,7 +221,7 @@ public abstract class
         dataRow
             .Should().NotBeNull();
 
-        dataRow!["Id"]
+        dataRow["Id"]
             .Should().Be(entityId);
 
         this.ExistsTemporaryTableInDb(temporaryTableName)
