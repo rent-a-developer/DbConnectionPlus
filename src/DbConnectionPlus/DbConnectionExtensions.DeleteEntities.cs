@@ -58,20 +58,18 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class Product
     /// {
     ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Boolean IsDiscontinued { get; set; }
     /// }
-    /// 
+    ///
     /// connection.DeleteEntities(products.Where(a => a.IsDiscontinued));
     /// </code>
     /// </example>
-    public static int DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction = null,
@@ -84,12 +82,7 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.DeleteEntities(
-            connection,
-            entities,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.DeleteEntities(connection, entities, transaction, cancellationToken);
     }
 
     /// <summary>
@@ -143,20 +136,18 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class Product
     /// {
     ///     [Key]
     ///     public Int64 Id { get; set; }
     ///     public Boolean IsDiscontinued { get; set; }
     /// }
-    /// 
+    ///
     /// await connection.DeleteEntitiesAsync(products.Where(a => a.IsDiscontinued));
     /// </code>
     /// </example>
-    public static Task<int> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction = null,
@@ -169,7 +160,11 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator
-            .DeleteEntitiesAsync(connection, entities, transaction, cancellationToken);
+        return databaseAdapter.EntityManipulator.DeleteEntitiesAsync(
+            connection,
+            entities,
+            transaction,
+            cancellationToken
+        );
     }
 }

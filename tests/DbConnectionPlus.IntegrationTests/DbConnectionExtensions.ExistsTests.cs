@@ -2,28 +2,23 @@ using System.Data.Common;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_ExistsTests_MySql :
-    DbConnectionExtensions_ExistsTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExistsTests_MySql
+    : DbConnectionExtensions_ExistsTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExistsTests_Oracle :
-    DbConnectionExtensions_ExistsTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExistsTests_Oracle
+    : DbConnectionExtensions_ExistsTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExistsTests_PostgreSql :
-    DbConnectionExtensions_ExistsTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExistsTests_PostgreSql
+    : DbConnectionExtensions_ExistsTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExistsTests_Sqlite :
-    DbConnectionExtensions_ExistsTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExistsTests_Sqlite
+    : DbConnectionExtensions_ExistsTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExistsTests_SqlServer :
-    DbConnectionExtensions_ExistsTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExistsTests_SqlServer
+    : DbConnectionExtensions_ExistsTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_ExistsTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_ExistsTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Theory]
@@ -38,7 +33,8 @@ public abstract class
         this.DelayNextDbCommand = true;
 
         await Invoking(() => CallApi(useAsyncApi, this.Connection, "SELECT 1", cancellationToken: cancellationToken))
-            .Should().ThrowAsync<OperationCanceledException>()
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
@@ -51,14 +47,17 @@ public abstract class
 
         this.CreateEntitiesInDb<Entity>(1);
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 "GetFirstEntityId",
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
     }
 
     [Theory]
@@ -71,48 +70,50 @@ public abstract class
         var entities = Generate.Multiple<Entity>(1);
 
         InterpolatedSqlStatement statement = $"""
-                                              SELECT     1
-                                              FROM       {TemporaryTable(entities)}
-                                              WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
-                                              """;
+            SELECT     1
+            FROM       {TemporaryTable(entities)}
+            WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
+            """;
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        Exists_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task Exists_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = Generate.Multiple<Entity>(1);
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"""
-                 SELECT     1
-                 FROM       {TemporaryTable(entities)}
-                 WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
-                 """,
+                SELECT     1
+                FROM       {TemporaryTable(entities)}
+                WHERE      {Q("Id")} = {Parameter(entities[0].Id)}
+                """,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        ).Should().BeTrue();
     }
 
     [Theory]
@@ -122,13 +123,16 @@ public abstract class
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT 1 FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
     }
 
     [Theory]
@@ -143,13 +147,16 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
     }
 
     [Theory]
@@ -166,16 +173,18 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
@@ -189,13 +198,16 @@ public abstract class
 
         var entityIds = Generate.Ids(2);
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT 1 FROM {TemporaryTable(entityIds)} WHERE {Q("Value")} = {Parameter(entityIds[0])}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
     }
 
     [Theory]
@@ -205,21 +217,27 @@ public abstract class
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT 1 FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeTrue();
+            )
+        )
+            .Should()
+            .BeTrue();
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT 1 FROM {Q("Entity")} WHERE {Q("Id")} = -1",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeFalse();
+            )
+        )
+            .Should()
+            .BeFalse();
     }
 
     [Theory]
@@ -231,25 +249,31 @@ public abstract class
         {
             var entity = this.CreateEntityInDb<Entity>(transaction);
 
-            (await CallApi(
+            (
+                await CallApi(
                     useAsyncApi,
                     this.Connection,
                     $"SELECT 1 FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                     transaction,
                     cancellationToken: TestContext.Current.CancellationToken
-                ))
-                .Should().BeTrue();
+                )
+            )
+                .Should()
+                .BeTrue();
 
             await transaction.RollbackAsync();
         }
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT 1 FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeFalse();
+            )
+        )
+            .Should()
+            .BeFalse();
     }
 
     private static Task<bool> CallApi(
@@ -264,13 +288,7 @@ public abstract class
     {
         if (useAsyncApi)
         {
-            return connection.ExistsAsync(
-                statement,
-                transaction,
-                commandTimeout,
-                commandType,
-                cancellationToken
-            );
+            return connection.ExistsAsync(statement, transaction, commandTimeout, commandType, cancellationToken);
         }
 
         try

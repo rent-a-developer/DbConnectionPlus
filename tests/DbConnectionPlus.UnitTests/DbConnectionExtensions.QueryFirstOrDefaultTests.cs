@@ -4,26 +4,13 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QueryFirstOrDefaultTests : StatementMethodTestsBase
 {
-    public DbConnectionExtensions_QueryFirstOrDefaultTests() : base(
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QueryFirstOrDefaultAsync(sql, transaction, timeout, commandType, cancellationToken),
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QueryFirstOrDefault(sql, transaction, timeout, commandType, cancellationToken)
-    )
+    public DbConnectionExtensions_QueryFirstOrDefaultTests()
+        : base(
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QueryFirstOrDefaultAsync(sql, transaction, timeout, commandType, cancellationToken),
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QueryFirstOrDefault(sql, transaction, timeout, commandType, cancellationToken)
+        )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();
 
@@ -34,8 +21,7 @@ public class DbConnectionExtensions_QueryFirstOrDefaultTests : StatementMethodTe
         mockDbDataReader.Read().Returns(true);
         mockDbDataReader.ReadAsync(TestContext.Current.CancellationToken).Returns(true);
 
-        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
-            .Returns(mockDbDataReader);
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(mockDbDataReader);
 
         this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
             .Returns(mockDbDataReader);
@@ -44,12 +30,8 @@ public class DbConnectionExtensions_QueryFirstOrDefaultTests : StatementMethodTe
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QueryFirstOrDefault("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QueryFirstOrDefault("SELECT * FROM Entity"));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QueryFirstOrDefaultAsync("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QueryFirstOrDefaultAsync("SELECT * FROM Entity"));
     }
 }

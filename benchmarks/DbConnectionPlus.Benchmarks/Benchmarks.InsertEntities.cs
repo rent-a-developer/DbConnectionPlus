@@ -8,26 +8,22 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
+        Targets = [
             nameof(InsertEntities_Command),
             nameof(InsertEntities_Dapper),
-            nameof(InsertEntities_DbConnectionPlus)
+            nameof(InsertEntities_DbConnectionPlus),
         ]
     )]
-    public void InsertEntities__Cleanup() =>
-        this.connection.Dispose();
+    public void InsertEntities__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
+        Targets = [
             nameof(InsertEntities_Command),
             nameof(InsertEntities_Dapper),
-            nameof(InsertEntities_DbConnectionPlus)
+            nameof(InsertEntities_DbConnectionPlus),
         ]
     )]
-    public void InsertEntities__Setup() =>
-        this.SetupDatabase(0);
+    public void InsertEntities__Setup() => this.SetupDatabase(0);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(InsertEntities_Category)]
@@ -54,7 +50,7 @@ public partial class Benchmarks
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) }
+            { "StringValue", new("StringValue", null) },
         };
 
         command.Parameters.AddRange(parameters.Values);
@@ -97,8 +93,9 @@ public partial class Benchmarks
         }
     }
 
-    private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert =
-        Generate.Multiple(InsertEntities_EntitiesPerOperation);
+    private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert = Generate.Multiple(
+        InsertEntities_EntitiesPerOperation
+    );
 
     private long insertEntities_nextId;
 
@@ -106,39 +103,39 @@ public partial class Benchmarks
     private const int InsertEntities_EntitiesPerOperation = 200;
 
     private const string InsertEntitySql = """
-                                           INSERT INTO Entity
-                                           (
-                                             Id,
-                                             BooleanValue,
-                                             BytesValue,
-                                             ByteValue,
-                                             CharValue,
-                                             DateTimeValue,
-                                             DecimalValue,
-                                             DoubleValue,
-                                             EnumValue,
-                                             Int16Value,
-                                             Int32Value,
-                                             Int64Value,
-                                             SingleValue,
-                                             StringValue
-                                           )
-                                           VALUES
-                                           (
-                                             @Id,
-                                             @BooleanValue,
-                                             @BytesValue,
-                                             @ByteValue,
-                                             @CharValue,
-                                             @DateTimeValue,
-                                             @DecimalValue,
-                                             @DoubleValue,
-                                             @EnumValue,
-                                             @Int16Value,
-                                             @Int32Value,
-                                             @Int64Value,
-                                             @SingleValue,
-                                             @StringValue
-                                           )
-                                           """;
+        INSERT INTO Entity
+        (
+          Id,
+          BooleanValue,
+          BytesValue,
+          ByteValue,
+          CharValue,
+          DateTimeValue,
+          DecimalValue,
+          DoubleValue,
+          EnumValue,
+          Int16Value,
+          Int32Value,
+          Int64Value,
+          SingleValue,
+          StringValue
+        )
+        VALUES
+        (
+          @Id,
+          @BooleanValue,
+          @BytesValue,
+          @ByteValue,
+          @CharValue,
+          @DateTimeValue,
+          @DecimalValue,
+          @DoubleValue,
+          @EnumValue,
+          @Int16Value,
+          @Int32Value,
+          @Int64Value,
+          @SingleValue,
+          @StringValue
+        )
+        """;
 }

@@ -31,7 +31,7 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// if (supplier.IsRetired)
     /// {
     ///     var numberOfDeletedProducts = connection.ExecuteNonQuery(
@@ -70,9 +70,8 @@ public static partial class DbConnectionExtensions
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
                 return command.ExecuteNonQuery();
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -103,7 +102,7 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// if (supplier.IsRetired)
     /// {
     ///     var numberOfDeletedProducts = await connection.ExecuteNonQueryAsync(
@@ -125,15 +124,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         await using (commandDisposer)
         {
@@ -142,9 +143,8 @@ public static partial class DbConnectionExtensions
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
                 return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }

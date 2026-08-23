@@ -30,5 +30,5 @@ internal enum EnumerableReaderOptions
     /// Report <see cref="char" /> columns as <see cref="string" /> and return their values as
     /// <see cref="string" />, mirroring what the data readers of the major database systems do for CHAR columns.
     /// </summary>
-    ReadCharsAsStrings = 2
+    ReadCharsAsStrings = 2,
 }

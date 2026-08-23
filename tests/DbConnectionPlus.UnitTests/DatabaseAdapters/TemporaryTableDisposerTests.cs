@@ -65,8 +65,6 @@ public class TemporaryTableDisposerTests : UnitTestsBase
         Action dropTableFunction = () => { };
         Func<ValueTask> dropTableAsyncFunction = () => ValueTask.CompletedTask;
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            new TemporaryTableDisposer(dropTableFunction, dropTableAsyncFunction)
-        );
+        ArgumentNullGuardVerifier.Verify(() => new TemporaryTableDisposer(dropTableFunction, dropTableAsyncFunction));
     }
 }

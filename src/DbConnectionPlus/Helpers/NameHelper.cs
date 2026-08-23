@@ -57,9 +57,12 @@ internal static class NameHelper
             var character = Unsafe.Add(ref expressionPointer, i);
 
             if (
-                (uint)(character - '0') <= 9 || // Digits
-                (uint)(character - 'A') <= 25 || // Uppercase letters
-                (uint)(character - 'a') <= 25 || // Lowercase letters
+                (uint)(character - '0') <= 9
+                || // Digits
+                (uint)(character - 'A') <= 25
+                || // Uppercase letters
+                (uint)(character - 'a') <= 25
+                || // Lowercase letters
                 character == '_'
             )
             {

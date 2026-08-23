@@ -10,11 +10,24 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 /// <param name="asyncTestMethod">The asynchronous version of the statement method to test.</param>
 /// <param name="syncTestMethod">The synchronous version of the statement method to test.</param>
 public abstract class StatementMethodTestsBase(
-    Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
-            asyncTestMethod,
-    Action<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken>
-            syncTestMethod
-    ) : UnitTestsBase
+    Func<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken,
+        Task
+    > asyncTestMethod,
+    Action<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken
+    > syncTestMethod
+) : UnitTestsBase
 {
     [Fact]
     public async Task AsyncMethod_ShouldUseCommandTimeout()
@@ -30,10 +43,11 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (int)timeout.TotalSeconds),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (int)timeout.TotalSeconds),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
     [Fact]
@@ -48,10 +62,11 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
     [Fact]
@@ -68,10 +83,11 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
     [Fact]
@@ -88,10 +104,11 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (int)timeout.TotalSeconds),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.CommandTimeout == (int)timeout.TotalSeconds),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
     [Fact]
@@ -106,10 +123,11 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.CommandType == CommandType.StoredProcedure),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
     [Fact]
@@ -126,17 +144,29 @@ public abstract class StatementMethodTestsBase(
             TestContext.Current.CancellationToken
         );
 
-        this.MockInterceptDbCommand.Received().Invoke(
-            Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        this.MockInterceptDbCommand.Received()
+            .Invoke(
+                Arg.Is<DbCommand>(cmd => cmd.Transaction == transaction),
+                Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
+            );
     }
 
-    private readonly
-        Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
-        asyncTestMethod = asyncTestMethod;
+    private readonly Func<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken,
+        Task
+    > asyncTestMethod = asyncTestMethod;
 
-    private readonly
-        Action<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken>
-        syncTestMethod = syncTestMethod;
+    private readonly Action<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken
+    > syncTestMethod = syncTestMethod;
 }

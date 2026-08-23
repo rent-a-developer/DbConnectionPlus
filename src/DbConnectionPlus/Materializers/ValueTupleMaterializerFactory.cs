@@ -26,9 +26,9 @@ internal static class ValueTupleMaterializerFactory
     /// verifies that guard rather than so that a warning propagates.
     /// </remarks>
     internal const string MaterializerRequiresDynamicCodeMessage =
-        "Materializing value tuples compiles an expression tree at run time, which is not supported when the " +
-        "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported " +
-        "branch.";
+        "Materializing value tuples compiles an expression tree at run time, which is not supported when the "
+        + "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported "
+        + "branch.";
 
     /// <summary>
     /// The members of a value tuple type that this library reflects over, and which therefore must survive trimming.
@@ -53,8 +53,7 @@ internal static class ValueTupleMaterializerFactory
     /// </para>
     /// </remarks>
     internal const DynamicallyAccessedMemberTypes ValueTupleMemberTypes =
-        DynamicallyAccessedMemberTypes.PublicFields |
-        DynamicallyAccessedMemberTypes.PublicConstructors;
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicConstructors;
 
     /// <summary>
     /// The number of fields a value tuple holds before the runtime represents the remaining ones as a nested value
@@ -230,11 +229,7 @@ internal static class ValueTupleMaterializerFactory
     /// </remarks>
     internal static Func<DbDataReader, TValueTuple> CreateReflectionMaterializer<
         [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
-    >(
-        DbDataReader dataReader,
-        string[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
+    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
     {
         ArgumentNullException.ThrowIfNull(dataReader);
         ArgumentNullException.ThrowIfNull(dataReaderFieldNames);
@@ -271,12 +266,8 @@ internal static class ValueTupleMaterializerFactory
             .Select(ConstructorInvoker.Create)
             .ToArray();
 
-        return rowDataReader => MaterializeValueTuple<TValueTuple>(
-            rowDataReader,
-            valueTupleType,
-            valueTupleConstructors,
-            columnBindings
-        );
+        return rowDataReader =>
+            MaterializeValueTuple<TValueTuple>(rowDataReader, valueTupleType, valueTupleConstructors, columnBindings);
     }
 
     /// <summary>
@@ -314,16 +305,13 @@ internal static class ValueTupleMaterializerFactory
     [UnconditionalSuppressMessage(
         "AOT",
         "IL3050:Requires dynamic code",
-        Justification =
-            "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds " +
-            "to false and removes together with the expression-tree implementation. The net9.0+ analyzer " +
-            "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on " +
-            "IsDynamicCodeSupported that lets it do so."
+        Justification = "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds "
+            + "to false and removes together with the expression-tree implementation. The net9.0+ analyzer "
+            + "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on "
+            + "IsDynamicCodeSupported that lets it do so."
     )]
 #endif
-    private static Delegate CreateMaterializer<
-        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
-    >(
+    private static Delegate CreateMaterializer<[DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple>(
         Type[] valueTupleFieldTypes,
         DbDataReader dataReader,
         string[] dataReaderFieldNames,
@@ -374,12 +362,7 @@ internal static class ValueTupleMaterializerFactory
     [RequiresDynamicCode(MaterializerRequiresDynamicCodeMessage)]
     private static Delegate CreateExpressionMaterializer<
         [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
-    >(
-        Type[] valueTupleFieldTypes,
-        DbDataReader dataReader,
-        string[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
+    >(Type[] valueTupleFieldTypes, DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
     {
         var valueTupleType = typeof(TValueTuple);
 
@@ -454,9 +437,9 @@ internal static class ValueTupleMaterializerFactory
                     Expression.New(
                         typeof(InvalidCastException).GetConstructor([typeof(string)])!,
                         Expression.Constant(
-                            $"The {columnNameOrPosition} returned by the SQL statement contains a NULL " +
-                            $"value, but the corresponding field of the value tuple type {valueTupleType} " +
-                            "is non-nullable."
+                            $"The {columnNameOrPosition} returned by the SQL statement contains a NULL "
+                                + $"value, but the corresponding field of the value tuple type {valueTupleType} "
+                                + "is non-nullable."
                         )
                     ),
                     targetType
@@ -464,14 +447,12 @@ internal static class ValueTupleMaterializerFactory
 
             var throwInvalidCastExceptionExpression = Expression.Throw(
                 Expression.New(
-                    typeof(InvalidCastException).GetConstructor(
-                        [typeof(string), typeof(Exception)]
-                    )!,
+                    typeof(InvalidCastException).GetConstructor([typeof(string), typeof(Exception)])!,
                     Expression.Constant(
-                        $"The {columnNameOrPosition} returned by the SQL statement contains a " +
-                        $"value that could not be converted to the type {targetType} " +
-                        $"of the corresponding field of the value tuple type {valueTupleType}. " +
-                        "See inner exception for details."
+                        $"The {columnNameOrPosition} returned by the SQL statement contains a "
+                            + $"value that could not be converted to the type {targetType} "
+                            + $"of the corresponding field of the value tuple type {valueTupleType}. "
+                            + "See inner exception for details."
                     ),
                     exceptionParameterExpression
                 ),
@@ -487,26 +468,21 @@ internal static class ValueTupleMaterializerFactory
                     ),
                     targetType
                 ),
-                Expression.Catch(
-                    exceptionParameterExpression,
-                    throwInvalidCastExceptionExpression
-                )
+                Expression.Catch(exceptionParameterExpression, throwInvalidCastExceptionExpression)
             );
 
-            var isNotDbNullBranchExpression = dataReaderFieldType != targetType
-                ? convertFieldValueExpression
-                : getFieldValueCallExpression;
+            var isNotDbNullBranchExpression =
+                dataReaderFieldType != targetType ? convertFieldValueExpression : getFieldValueCallExpression;
 
-            dataReaderFieldValueExpressions[fieldOrdinal] =
-                Expression.Condition(
-                    Expression.Call(
-                        dataReaderParameterExpression,
-                        MaterializerFactoryHelper.DbDataReaderIsDBNullMethod,
-                        fieldOrdinalExpression
-                    ),
-                    isDbNullBranchExpression,
-                    isNotDbNullBranchExpression
-                );
+            dataReaderFieldValueExpressions[fieldOrdinal] = Expression.Condition(
+                Expression.Call(
+                    dataReaderParameterExpression,
+                    MaterializerFactoryHelper.DbDataReaderIsDBNullMethod,
+                    fieldOrdinalExpression
+                ),
+                isDbNullBranchExpression,
+                isNotDbNullBranchExpression
+            );
         }
 
         // In C# value tuples with more than 7 fields are represented as nested value tuples.
@@ -516,8 +492,9 @@ internal static class ValueTupleMaterializerFactory
 
         // First we chunk the field value expressions into groups of 7.
         // We use a stack to reverse the order, so we start with the expressions for the most inner value tuple.
-        var fieldValueExpressionChunks =
-            new Stack<Expression[]>(dataReaderFieldValueExpressions.Chunk(ValueTupleFieldCountBeforeNesting));
+        var fieldValueExpressionChunks = new Stack<Expression[]>(
+            dataReaderFieldValueExpressions.Chunk(ValueTupleFieldCountBeforeNesting)
+        );
 
         // Then we get the constructors for the value tuple types, which GetValueTupleConstructors returns from the
         // outermost to the innermost. Pushing them onto a stack in that order reverses it, so we start with the
@@ -542,10 +519,7 @@ internal static class ValueTupleMaterializerFactory
             // the "Rest" parameter.
             var arguments = newExpression is not null ? [.. chunk, newExpression] : chunk;
 
-            newExpression = Expression.New(
-                constructor,
-                arguments
-            );
+            newExpression = Expression.New(constructor, arguments);
         }
 
         return Expression.Lambda(newExpression!, dataReaderParameterExpression).Compile();
@@ -612,13 +586,13 @@ internal static class ValueTupleMaterializerFactory
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2065:Value passed to implicit 'this' parameter cannot be statically determined",
-        Justification =
-            "The nested value tuple types this walks are System.ValueTuple`1-`8, whose constructors the embedded " +
-            "ILLink.Descriptors.xml preserves in a consumer's trimmed or Native AOT publish. The caller has already " +
-            "rejected any type that is not a value tuple, and a unit test guards the descriptor's completeness."
+        Justification = "The nested value tuple types this walks are System.ValueTuple`1-`8, whose constructors the embedded "
+            + "ILLink.Descriptors.xml preserves in a consumer's trimmed or Native AOT publish. The caller has already "
+            + "rejected any type that is not a value tuple, and a unit test guards the descriptor's completeness."
     )]
     private static ConstructorInfo[] GetValueTupleConstructors(
-        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType)
+        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType
+    )
     {
         var valueTupleConstructors = new List<ConstructorInfo>();
 
@@ -630,10 +604,7 @@ internal static class ValueTupleMaterializerFactory
             var genericArguments = currentValueTupleType.GetGenericArguments();
 
             valueTupleConstructors.Add(
-                currentValueTupleType.GetConstructor(
-                    BindingFlags.Public | BindingFlags.Instance,
-                    genericArguments
-                )!
+                currentValueTupleType.GetConstructor(BindingFlags.Public | BindingFlags.Instance, genericArguments)!
             );
 
             // Fewer than eight arguments means there is no "Rest" field, so this is the innermost value tuple type.
@@ -804,9 +775,9 @@ internal static class ValueTupleMaterializerFactory
             }
 
             throw new InvalidCastException(
-                $"The {columnBinding.ColumnNameOrPosition} returned by the SQL statement contains a NULL " +
-                $"value, but the corresponding field of the value tuple type {valueTupleType} " +
-                "is non-nullable."
+                $"The {columnBinding.ColumnNameOrPosition} returned by the SQL statement contains a NULL "
+                    + $"value, but the corresponding field of the value tuple type {valueTupleType} "
+                    + "is non-nullable."
             );
         }
 
@@ -824,10 +795,10 @@ internal static class ValueTupleMaterializerFactory
         catch (Exception exception)
         {
             throw new InvalidCastException(
-                $"The {columnBinding.ColumnNameOrPosition} returned by the SQL statement contains a " +
-                $"value that could not be converted to the type {columnBinding.TargetType} " +
-                $"of the corresponding field of the value tuple type {valueTupleType}. " +
-                "See inner exception for details.",
+                $"The {columnBinding.ColumnNameOrPosition} returned by the SQL statement contains a "
+                    + $"value that could not be converted to the type {columnBinding.TargetType} "
+                    + $"of the corresponding field of the value tuple type {valueTupleType}. "
+                    + "See inner exception for details.",
                 exception
             );
         }
@@ -850,7 +821,8 @@ internal static class ValueTupleMaterializerFactory
     /// including the fields of all nested value tuple types.
     /// </returns>
     private static Type[] GetValueTupleFieldTypes(
-        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType)
+        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType
+    )
     {
         var fieldTypes = new List<Type>();
         var currentValueTupleType = valueTupleType;
@@ -936,9 +908,9 @@ internal static class ValueTupleMaterializerFactory
         if (dataReader.FieldCount != valueTupleFieldTypes.Length)
         {
             throw new ArgumentException(
-                $"The SQL statement returned {"column".ToQuantity(dataReader.FieldCount)}, but the value tuple type " +
-                $"{valueTupleType} has {"field".ToQuantity(valueTupleFieldTypes.Length)}. Make sure that the SQL " +
-                "statement returns the same number of columns as the number of fields in the value tuple type.",
+                $"The SQL statement returned {"column".ToQuantity(dataReader.FieldCount)}, but the value tuple type "
+                    + $"{valueTupleType} has {"field".ToQuantity(valueTupleFieldTypes.Length)}. Make sure that the SQL "
+                    + "statement returns the same number of columns as the number of fields in the value tuple type.",
                 nameof(dataReader)
             );
         }
@@ -955,9 +927,9 @@ internal static class ValueTupleMaterializerFactory
             if (!ValueConverter.CanConvert(dataReaderFieldType, valueTupleFieldType))
             {
                 throw new ArgumentException(
-                    $"The data type {dataReaderFieldType} of the {columnNameOrPosition} returned by the SQL " +
-                    $"statement is not compatible with the field type {valueTupleFieldType} of the corresponding " +
-                    $"field of the value tuple type {valueTupleType}.",
+                    $"The data type {dataReaderFieldType} of the {columnNameOrPosition} returned by the SQL "
+                        + $"statement is not compatible with the field type {valueTupleFieldType} of the corresponding "
+                        + $"field of the value tuple type {valueTupleType}.",
                     nameof(dataReader)
                 );
             }
@@ -965,8 +937,8 @@ internal static class ValueTupleMaterializerFactory
             if (!MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(dataReaderFieldType))
             {
                 throw new ArgumentException(
-                    $"The data type {dataReaderFieldType} of the {columnNameOrPosition} returned by the SQL " +
-                    "statement is not supported.",
+                    $"The data type {dataReaderFieldType} of the {columnNameOrPosition} returned by the SQL "
+                        + "statement is not supported.",
                     nameof(dataReader)
                 );
             }
@@ -991,24 +963,21 @@ internal static class ValueTupleMaterializerFactory
         Type[] valueTupleFieldTypes,
         string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
-    )
-        : IEquatable<MaterializerCacheKey>
+    ) : IEquatable<MaterializerCacheKey>
     {
         /// <inheritdoc />
         public bool Equals(MaterializerCacheKey other) =>
-            this.ValueTupleFieldTypes.SequenceEqual(other.ValueTupleFieldTypes) &&
-            this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames) &&
-            this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
+            this.ValueTupleFieldTypes.SequenceEqual(other.ValueTupleFieldTypes)
+            && this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames)
+            && this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
 
         /// <inheritdoc />
-        public override bool Equals(object? obj) =>
-            obj is MaterializerCacheKey other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
-
 
             foreach (var fieldType in this.ValueTupleFieldTypes)
             {

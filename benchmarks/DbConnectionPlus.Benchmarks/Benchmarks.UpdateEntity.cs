@@ -8,23 +8,12 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
-            nameof(UpdateEntity_Command),
-            nameof(UpdateEntity_Dapper),
-            nameof(UpdateEntity_DbConnectionPlus)
-        ]
+        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
     )]
-    public void UpdateEntity__Cleanup() =>
-        this.connection.Dispose();
+    public void UpdateEntity__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
-            nameof(UpdateEntity_Command),
-            nameof(UpdateEntity_Dapper),
-            nameof(UpdateEntity_DbConnectionPlus)
-        ]
+        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
     )]
     public void UpdateEntity__Setup()
     {
@@ -41,13 +30,14 @@ public partial class Benchmarks
         [
             .. Enumerable
                 .Range(0, UpdateEntity_UpdatedEntityPoolSize)
-                .Select(_ => Generate.UpdateFor(this.entitiesInDb[0]))
+                .Select(_ => Generate.UpdateFor(this.entitiesInDb[0])),
         ];
     }
 
     private BenchmarkEntity UpdateEntity_GetNextModifiedEntity()
     {
-        this.updateEntity_ModifiedEntitiesPoolIndex = (this.updateEntity_ModifiedEntitiesPoolIndex + 1) % UpdateEntity_UpdatedEntityPoolSize;
+        this.updateEntity_ModifiedEntitiesPoolIndex =
+            (this.updateEntity_ModifiedEntitiesPoolIndex + 1) % UpdateEntity_UpdatedEntityPoolSize;
 
         return this.updateEntity_ModifiedEntitiesPool[this.updateEntity_ModifiedEntitiesPoolIndex];
     }
@@ -61,22 +51,22 @@ public partial class Benchmarks
         using var command = this.connection.CreateCommand();
 
         command.CommandText = """
-                              UPDATE    Entity
-                              SET       BooleanValue = @BooleanValue,
-                                        BytesValue = @BytesValue,
-                                        ByteValue = @ByteValue,
-                                        CharValue = @CharValue,
-                                        DateTimeValue = @DateTimeValue,
-                                        DecimalValue = @DecimalValue,
-                                        DoubleValue = @DoubleValue,
-                                        EnumValue = @EnumValue,
-                                        Int16Value = @Int16Value,
-                                        Int32Value = @Int32Value,
-                                        Int64Value = @Int64Value,
-                                        SingleValue = @SingleValue,
-                                        StringValue = @StringValue
-                              WHERE     Id = @Id
-                              """;
+            UPDATE    Entity
+            SET       BooleanValue = @BooleanValue,
+                      BytesValue = @BytesValue,
+                      ByteValue = @ByteValue,
+                      CharValue = @CharValue,
+                      DateTimeValue = @DateTimeValue,
+                      DecimalValue = @DecimalValue,
+                      DoubleValue = @DoubleValue,
+                      EnumValue = @EnumValue,
+                      Int16Value = @Int16Value,
+                      Int32Value = @Int32Value,
+                      Int64Value = @Int64Value,
+                      SingleValue = @SingleValue,
+                      StringValue = @StringValue
+            WHERE     Id = @Id
+            """;
 
         var parameters = new Dictionary<string, SqliteParameter>
         {
@@ -93,7 +83,7 @@ public partial class Benchmarks
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) }
+            { "StringValue", new("StringValue", null) },
         };
 
         command.Parameters.AddRange(parameters.Values);

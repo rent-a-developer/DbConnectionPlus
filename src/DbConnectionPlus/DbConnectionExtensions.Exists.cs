@@ -38,9 +38,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var existLowStockProducts = connection.Exists(
     ///    $"SELECT 1 FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -78,9 +78,8 @@ public static partial class DbConnectionExtensions
                 using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
                 return reader.Read();
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -116,9 +115,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var existLowStockProducts = await connection.ExistsAsync(
     ///    $"SELECT 1 FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -138,15 +137,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         await using (commandDisposer)
         {
@@ -154,17 +155,15 @@ public static partial class DbConnectionExtensions
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
 #pragma warning disable CA2007
-                await using var reader = await command.ExecuteReaderAsync(
-                    CommandBehavior.SingleResult | CommandBehavior.SingleRow,
-                    cancellationToken
-                ).ConfigureAwait(false);
+                await using var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken)
+                    .ConfigureAwait(false);
 #pragma warning restore CA2007
 
                 return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }

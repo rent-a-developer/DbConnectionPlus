@@ -14,23 +14,17 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
 #pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
 
-        Parameter(productId).InferredName
-            .Should().Be("ProductId");
+        Parameter(productId).InferredName.Should().Be("ProductId");
 
-        Parameter(GetProductId()).InferredName
-            .Should().Be("ProductId");
+        Parameter(GetProductId()).InferredName.Should().Be("ProductId");
 
-        Parameter(GetProductIdByCategory("Shoes")).InferredName
-            .Should().Be("ProductIdByCategoryShoes");
+        Parameter(GetProductIdByCategory("Shoes")).InferredName.Should().Be("ProductIdByCategoryShoes");
 
-        Parameter(productIds[1]).InferredName
-            .Should().Be("ProductIds1");
+        Parameter(productIds[1]).InferredName.Should().Be("ProductIds1");
 
-        Parameter(TestProductId).InferredName
-            .Should().Be("TestProductId");
+        Parameter(TestProductId).InferredName.Should().Be("TestProductId");
 
-        Parameter(new { }).InferredName
-            .Should().BeNull();
+        Parameter(new { }).InferredName.Should().BeNull();
     }
 
     [Fact]
@@ -40,11 +34,9 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
 
         var interpolatedParameter = Parameter(value);
 
-        interpolatedParameter.InferredName
-            .Should().Be("Value");
+        interpolatedParameter.InferredName.Should().Be("Value");
 
-        interpolatedParameter.Value
-            .Should().Be(value);
+        interpolatedParameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -53,8 +45,9 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
         // ReSharper disable once InconsistentNaming
         const int longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890 = 1;
 
-        Parameter(longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890).InferredName
-            .Should().HaveLength(60)
+        Parameter(longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890)
+            .InferredName.Should()
+            .HaveLength(60)
             .And.Be("Longname_1234567890_1234567890_1234567890_1234567890_1234567");
     }
 

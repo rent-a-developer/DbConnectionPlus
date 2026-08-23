@@ -4,29 +4,23 @@ using RentADeveloper.DbConnectionPlus.IntegrationTests.Assertions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_QuerySingleOrDefaultTests_MySql :
-    DbConnectionExtensions_QuerySingleOrDefaultTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QuerySingleOrDefaultTests_MySql
+    : DbConnectionExtensions_QuerySingleOrDefaultTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QuerySingleOrDefaultTests_Oracle :
-    DbConnectionExtensions_QuerySingleOrDefaultTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QuerySingleOrDefaultTests_Oracle
+    : DbConnectionExtensions_QuerySingleOrDefaultTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QuerySingleOrDefaultTests_PostgreSql :
-    DbConnectionExtensions_QuerySingleOrDefaultTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QuerySingleOrDefaultTests_PostgreSql
+    : DbConnectionExtensions_QuerySingleOrDefaultTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QuerySingleOrDefaultTests_Sqlite :
-    DbConnectionExtensions_QuerySingleOrDefaultTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QuerySingleOrDefaultTests_Sqlite
+    : DbConnectionExtensions_QuerySingleOrDefaultTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QuerySingleOrDefaultTests_SqlServer :
-    DbConnectionExtensions_QuerySingleOrDefaultTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QuerySingleOrDefaultTests_SqlServer
+    : DbConnectionExtensions_QuerySingleOrDefaultTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_QuerySingleOrDefaultTests
-    <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_QuerySingleOrDefaultTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Theory]
@@ -50,7 +44,8 @@ public abstract class
                     cancellationToken: cancellationToken
                 )
             )
-            .Should().ThrowAsync<OperationCanceledException>()
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
@@ -98,17 +93,15 @@ public abstract class
 
         EntityAssertions.AssertDataRowMatchesEntity(dataRow!, entity);
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        QuerySingleOrDefault_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task QuerySingleOrDefault_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -170,31 +163,34 @@ public abstract class
     {
         this.CreateEntitiesInDb<Entity>(2);
 
-        await Invoking(() => CallApi(
+        await Invoking(() =>
+                CallApi(
                     useAsyncApi,
                     this.Connection,
                     $"SELECT * FROM {Q("Entity")}",
                     cancellationToken: TestContext.Current.CancellationToken
                 )
             )
-            .Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage(
-                "The SQL statement did return more than one row."
-            );
+            .Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("The SQL statement did return more than one row.");
     }
-
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task QuerySingleOrDefault_QueryReturnedNoRows_ShouldReturnNull(bool useAsyncApi) =>
-        ((object?)await CallApi(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
-            cancellationToken: TestContext.Current.CancellationToken
-        ))
-        .Should().BeNull();
+        (
+            (object?)
+                await CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = -1",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+        )
+            .Should()
+            .BeNull();
 
     [Theory]
     [InlineData(false)]
@@ -218,23 +214,19 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        dataRow
-            .Should().NotBeNull();
+        dataRow.Should().NotBeNull();
 
-        dataRow["Id"]
-            .Should().Be(entityId);
+        dataRow["Id"].Should().Be(entityId);
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        QuerySingleOrDefault_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task QuerySingleOrDefault_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -247,8 +239,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        ValueConverter.ConvertValueToType<long>(dataRow!["Id"])
-            .Should().Be(entityId);
+        ValueConverter.ConvertValueToType<long>(dataRow!["Id"]).Should().Be(entityId);
     }
 
     [Theory]
@@ -290,13 +281,17 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        ((object?)await CallApi(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeNull();
+        (
+            (object?)
+                await CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    $"SELECT * FROM {Q("Entity")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+        )
+            .Should()
+            .BeNull();
     }
 
     private static Task<DataRow?> CallApi(
@@ -323,13 +318,7 @@ public abstract class
         try
         {
             return Task.FromResult(
-                connection.QuerySingleOrDefault(
-                    statement,
-                    transaction,
-                    commandTimeout,
-                    commandType,
-                    cancellationToken
-                )
+                connection.QuerySingleOrDefault(statement, transaction, commandTimeout, commandType, cancellationToken)
             );
         }
         catch (Exception ex)

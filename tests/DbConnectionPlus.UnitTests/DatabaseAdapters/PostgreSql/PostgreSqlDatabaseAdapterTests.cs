@@ -14,11 +14,9 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.Binary);
+        parameter.DbType.Should().Be(DbType.Binary);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -30,11 +28,9 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.DateTime2);
+        parameter.DbType.Should().Be(DbType.DateTime2);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -48,11 +44,9 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, enumValue);
 
-        parameter.DbType
-            .Should().Be(DbType.Int32);
+        parameter.DbType.Should().Be(DbType.Int32);
 
-        parameter.Value
-            .Should().Be((int)enumValue);
+        parameter.Value.Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -66,11 +60,9 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, enumValue);
 
-        parameter.DbType
-            .Should().Be(DbType.String);
+        parameter.DbType.Should().Be(DbType.String);
 
-        parameter.Value
-            .Should().Be(enumValue.ToString());
+        parameter.Value.Should().Be(enumValue.ToString());
     }
 
     [Fact]
@@ -82,34 +74,30 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
     public void EntityManipulator_ShouldReturnManipulator() =>
-        this.adapter.EntityManipulator
-            .Should().BeOfType<PostgreSqlEntityManipulator>();
+        this.adapter.EntityManipulator.Should().BeOfType<PostgreSqlEntityManipulator>();
 
     [Fact]
     public void FormatParameterName_ShouldFormatParameterName() =>
-        this.adapter.FormatParameterName("Param1")
-            .Should().Be("@Param1");
+        this.adapter.FormatParameterName("Param1").Should().Be("@Param1");
 
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsInteger_ShouldReturnInteger()
     {
-        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers)
-            .Should().Be("integer");
+        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers).Should().Be("integer");
 
-        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Integers)
-            .Should().Be("integer");
+        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Integers).Should().Be("integer");
     }
 
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsNotSupported_ShouldThrow() =>
         Invoking(() => this.adapter.GetDataType(typeof(TestEnum), (EnumSerializationMode)999))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
                 $"The {nameof(EnumSerializationMode)} '999' ({typeof(EnumSerializationMode)}) is not supported.*"
             );
@@ -117,11 +105,11 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsString_ShouldReturnCharacterVarying()
     {
-        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings)
-            .Should().Be("character varying(200)");
+        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings).Should().Be("character varying(200)");
 
         this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Strings)
-            .Should().Be("character varying(200)");
+            .Should()
+            .Be("character varying(200)");
     }
 
     [Theory]
@@ -156,13 +144,13 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     [InlineData(typeof(TimeSpan?), "interval")]
     [InlineData(typeof(TimeSpan), "interval")]
     public void GetDataType_SupportedTypeType_ShouldReturnPostgreSqlDataType(Type type, string expectedResult) =>
-        this.adapter.GetDataType(type, EnumSerializationMode.Strings)
-            .Should().Be(expectedResult);
+        this.adapter.GetDataType(type, EnumSerializationMode.Strings).Should().Be(expectedResult);
 
     [Fact]
     public void GetDataType_UnsupportedType_ShouldThrow() =>
         Invoking(() => this.adapter.GetDataType(typeof(Entity), EnumSerializationMode.Strings))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage($"Could not map the type {typeof(Entity)} to a PostgreSQL data type.*");
 
     [Theory]
@@ -197,49 +185,40 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     [InlineData(typeof(TimeSpan?), NpgsqlDbType.Interval)]
     [InlineData(typeof(TimeSpan), NpgsqlDbType.Interval)]
     public void GetDbType_SupportedTypeType_ShouldReturnDbDataType(Type type, NpgsqlDbType expectedResult) =>
-        this.adapter.GetDbType(type, EnumSerializationMode.Strings)
-            .Should().Be(expectedResult);
+        this.adapter.GetDbType(type, EnumSerializationMode.Strings).Should().Be(expectedResult);
 
     [Fact]
     public void GetDbType_UnsupportedType_ShouldThrow() =>
         Invoking(() => this.adapter.GetDbType(typeof(Entity), EnumSerializationMode.Strings))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage($"Could not map the type {typeof(Entity)} to a {typeof(NpgsqlDbType)} value.*");
 
     [Fact]
     public void QuoteIdentifier_ShouldQuoteIdentifier() =>
-        this.adapter.QuoteIdentifier("MyTable")
-            .Should().Be("\"MyTable\"");
+        this.adapter.QuoteIdentifier("MyTable").Should().Be("\"MyTable\"");
 
     [Fact]
     public void QuoteTemporaryTableName_ShouldQuoteTableName() =>
-        this.adapter.QuoteTemporaryTableName("TempTable", this.MockDbConnection)
-            .Should().Be("\"TempTable\"");
+        this.adapter.QuoteTemporaryTableName("TempTable", this.MockDbConnection).Should().Be("\"TempTable\"");
 
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.BindParameterValue(Substitute.For<DbParameter>(), null)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.adapter.BindParameterValue(Substitute.For<DbParameter>(), null));
 
         ArgumentNullGuardVerifier.Verify(() =>
             this.adapter.WasSqlStatementCancelledByCancellationToken(new(), CancellationToken.None)
         );
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDbType(typeof(int), EnumSerializationMode.Integers)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.adapter.GetDbType(typeof(int), EnumSerializationMode.Integers));
     }
 
     [Fact]
     public void TemporaryTableBuilder_ShouldReturnBuilder() =>
-        this.adapter.TemporaryTableBuilder
-            .Should().BeOfType<PostgreSqlTemporaryTableBuilder>();
+        this.adapter.TemporaryTableBuilder.Should().BeOfType<PostgreSqlTemporaryTableBuilder>();
 
     private readonly PostgreSqlDatabaseAdapter adapter = new();
 }

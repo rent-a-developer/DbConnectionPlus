@@ -44,8 +44,7 @@ public static partial class DbConnectionExtensions
     internal static void OnBeforeExecutingCommand(
         DbCommand command,
         IReadOnlyList<InterpolatedTemporaryTable> temporaryTables
-    ) =>
-        DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
+    ) => DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
 
     private static readonly object configurationLockObject = new();
 }

@@ -7,7 +7,8 @@ public class EnumSerializerTests : UnitTestsBase
     [Fact]
     public void SerializeEnum_InvalidEnumSerializationMode_ShouldThrow() =>
         Invoking(() => EnumSerializer.SerializeEnum(TestEnum.Value3, (EnumSerializationMode)999))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
                 $"The {nameof(EnumSerializationMode)} '999' ({typeof(EnumSerializationMode)}) is not supported.*"
             );
@@ -27,9 +28,7 @@ public class EnumSerializerTests : UnitTestsBase
         TestEnum enumValue,
         EnumSerializationMode enumSerializationMode,
         object expectedResult
-    ) =>
-        EnumSerializer.SerializeEnum(enumValue, enumSerializationMode)
-            .Should().Be(expectedResult);
+    ) => EnumSerializer.SerializeEnum(enumValue, enumSerializationMode).Should().Be(expectedResult);
 
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>

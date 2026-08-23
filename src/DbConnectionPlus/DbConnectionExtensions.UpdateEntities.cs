@@ -79,7 +79,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class User
     /// {
     ///     [Key]
@@ -87,7 +87,7 @@ public static partial class DbConnectionExtensions
     ///     public DateTime LastLoginDate { get; set; }
     ///     public UserState State { get; set; }
     /// }
-    /// 
+    ///
     /// var usersWithoutLoginInPastYear = connection.Query<User>(
     ///     """
     ///     SELECT  *
@@ -95,19 +95,17 @@ public static partial class DbConnectionExtensions
     ///     WHERE   LastLoginDate < DATEADD(YEAR, -1, GETUTCDATE())
     ///     """
     /// );
-    /// 
+    ///
     /// foreach (var user in usersWithoutLoginInPastYear)
     /// {
     ///     user.State = UserState.Inactive;
     /// }
-    /// 
+    ///
     /// connection.UpdateEntities(usersWithoutLoginInPastYear);
     /// ]]>
     /// </code>
     /// </example>
-    public static int UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction = null,
@@ -120,12 +118,7 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.UpdateEntities(
-            connection,
-            entities,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.UpdateEntities(connection, entities, transaction, cancellationToken);
     }
 
     /// <summary>
@@ -200,7 +193,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class User
     /// {
     ///     [Key]
@@ -208,7 +201,7 @@ public static partial class DbConnectionExtensions
     ///     public DateTime LastLoginDate { get; set; }
     ///     public UserState State { get; set; }
     /// }
-    /// 
+    ///
     /// var usersWithoutLoginInPastYear = connection.QueryAsync<User>(
     ///     """
     ///     SELECT  *
@@ -216,19 +209,17 @@ public static partial class DbConnectionExtensions
     ///     WHERE   LastLoginDate < DATEADD(YEAR, -1, GETUTCDATE())
     ///     """
     /// );
-    /// 
+    ///
     /// await foreach (var user in usersWithoutLoginInPastYear)
     /// {
     ///     user.State = UserState.Inactive;
     /// }
-    /// 
+    ///
     /// await connection.UpdateEntitiesAsync(usersWithoutLoginInPastYear);
     /// ]]>
     /// </code>
     /// </example>
-    public static Task<int> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction = null,
@@ -241,7 +232,11 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator
-            .UpdateEntitiesAsync(connection, entities, transaction, cancellationToken);
+        return databaseAdapter.EntityManipulator.UpdateEntitiesAsync(
+            connection,
+            entities,
+            transaction,
+            cancellationToken
+        );
     }
 }

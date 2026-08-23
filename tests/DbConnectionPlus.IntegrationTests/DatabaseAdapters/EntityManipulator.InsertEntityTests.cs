@@ -3,33 +3,27 @@ using RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
-public sealed class
-    EntityManipulator_InsertEntityTests_MySql :
-    EntityManipulator_InsertEntityTests<MySqlTestDatabaseProvider>;
+public sealed class EntityManipulator_InsertEntityTests_MySql
+    : EntityManipulator_InsertEntityTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_InsertEntityTests_Oracle :
-    EntityManipulator_InsertEntityTests<OracleTestDatabaseProvider>;
+public sealed class EntityManipulator_InsertEntityTests_Oracle
+    : EntityManipulator_InsertEntityTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_InsertEntityTests_PostgreSql :
-    EntityManipulator_InsertEntityTests<PostgreSqlTestDatabaseProvider>;
+public sealed class EntityManipulator_InsertEntityTests_PostgreSql
+    : EntityManipulator_InsertEntityTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_InsertEntityTests_Sqlite :
-    EntityManipulator_InsertEntityTests<SqliteTestDatabaseProvider>;
+public sealed class EntityManipulator_InsertEntityTests_Sqlite
+    : EntityManipulator_InsertEntityTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_InsertEntityTests_SqlServer :
-    EntityManipulator_InsertEntityTests<SqlServerTestDatabaseProvider>;
+public sealed class EntityManipulator_InsertEntityTests_SqlServer
+    : EntityManipulator_InsertEntityTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_InsertEntityTests
-    <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class EntityManipulator_InsertEntityTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_InsertEntityTests() =>
-        this.manipulator = this.DatabaseAdapter.EntityManipulator;
+    protected EntityManipulator_InsertEntityTests() => this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Theory]
     [InlineData(false)]
@@ -44,15 +38,13 @@ public abstract class EntityManipulator_InsertEntityTests
 
         this.DelayNextDbCommand = true;
 
-        await Invoking(() =>
-                this.CallApi(useAsyncApi, this.Connection, entity, null, cancellationToken)
-            )
-            .Should().ThrowAsync<OperationCanceledException>()
+        await Invoking(() => this.CallApi(useAsyncApi, this.Connection, entity, null, cancellationToken))
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entity should not have been inserted.
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 
     [Theory]
@@ -66,11 +58,14 @@ public abstract class EntityManipulator_InsertEntityTests
 
         await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        (await this.Connection.QuerySingleAsync<int>(
+        (
+            await this.Connection.QuerySingleAsync<int>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().Be((int)entity.Enum);
+            )
+        )
+            .Should()
+            .Be((int)entity.Enum);
     }
 
     [Theory]
@@ -84,11 +79,14 @@ public abstract class EntityManipulator_InsertEntityTests
 
         await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        (await this.Connection.QuerySingleAsync<string>(
+        (
+            await this.Connection.QuerySingleAsync<string>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entity.Enum.ToString());
+            )
+        )
+            .Should()
+            .BeEquivalentTo(entity.Enum.ToString());
     }
 
     [Theory]
@@ -101,19 +99,16 @@ public abstract class EntityManipulator_InsertEntityTests
         entity.Identity_ = 0;
         entity.NotMapped = "ShouldNotBePersisted";
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}"))
-            .Should().BeEquivalentTo(
+            .Should()
+            .BeEquivalentTo(
                 entity,
-                options => options.Using<string>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMapped"))
+                options =>
+                    options
+                        .Using<string>(context => context.Subject.Should().BeNull())
+                        .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -129,19 +124,16 @@ public abstract class EntityManipulator_InsertEntityTests
         entity.Identity_ = 0;
         entity.NotMapped = "ShouldNotBePersisted";
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QueryFirstAsync<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}"))
-            .Should().BeEquivalentTo(
+            .Should()
+            .BeEquivalentTo(
                 entity,
-                options => options.Using<string>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMapped"))
+                options =>
+                    options
+                        .Using<string>(context => context.Subject.Should().BeNull())
+                        .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -152,16 +144,11 @@ public abstract class EntityManipulator_InsertEntityTests
     {
         var entity = Generate.Single<MappingTestEntity>();
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            entity,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
         (await this.Connection.QueryFirstAsync<MappingTestEntity>($"SELECT * FROM {Q("MappingTestEntity")}"))
-            .Should().BeEquivalentTo(entity);
+            .Should()
+            .BeEquivalentTo(entity);
     }
 
     [Theory]
@@ -172,13 +159,17 @@ public abstract class EntityManipulator_InsertEntityTests
         var entity = Generate.Single<Entity>();
 
         (await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken))
-            .Should().Be(1);
+            .Should()
+            .Be(1);
 
-        (await this.Connection.QuerySingleAsync<Entity>(
+        (
+            await this.Connection.QuerySingleAsync<Entity>(
                 $"SELECT * FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entity);
+            )
+        )
+            .Should()
+            .BeEquivalentTo(entity);
     }
 
     [Theory]
@@ -189,7 +180,8 @@ public abstract class EntityManipulator_InsertEntityTests
         var entity = Generate.Single<Entity>();
 
         (await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken))
-            .Should().Be(1);
+            .Should()
+            .Be(1);
     }
 
     [Theory]
@@ -203,11 +195,14 @@ public abstract class EntityManipulator_InsertEntityTests
 
         await this.CallApi(useAsyncApi, this.Connection, entity, null, TestContext.Current.CancellationToken);
 
-        (await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
+        (
+            await this.Connection.QuerySingleAsync<EntityWithDateTimeOffset>(
                 $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entity);
+            )
+        )
+            .Should()
+            .BeEquivalentTo(entity);
     }
 
     [Theory]
@@ -219,23 +214,24 @@ public abstract class EntityManipulator_InsertEntityTests
 
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
-            (await this.CallApi(
+            (
+                await this.CallApi(
                     useAsyncApi,
                     this.Connection,
                     entity,
                     transaction,
                     TestContext.Current.CancellationToken
-                ))
-                .Should().Be(1);
+                )
+            )
+                .Should()
+                .Be(1);
 
-            this.ExistsEntityInDb(entity, transaction)
-                .Should().BeTrue();
+            this.ExistsEntityInDb(entity, transaction).Should().BeTrue();
 
             await transaction.RollbackAsync();
         }
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 
     private Task<int> CallApi<TEntity>(
@@ -254,9 +250,7 @@ public abstract class EntityManipulator_InsertEntityTests
 
         try
         {
-            return Task.FromResult(
-                this.manipulator.InsertEntity(connection, entity, transaction, cancellationToken)
-            );
+            return Task.FromResult(this.manipulator.InsertEntity(connection, entity, transaction, cancellationToken));
         }
         catch (Exception ex)
         {

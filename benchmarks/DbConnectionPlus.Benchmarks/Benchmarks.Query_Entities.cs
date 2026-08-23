@@ -8,28 +8,24 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
+        Targets = [
             nameof(Query_Entities_Command),
             nameof(Query_Entities_Dapper),
             nameof(Query_Entities_Dapper_Aot),
-            nameof(Query_Entities_DbConnectionPlus)
+            nameof(Query_Entities_DbConnectionPlus),
         ]
     )]
-    public void Query_Entities__Cleanup() =>
-        this.connection.Dispose();
+    public void Query_Entities__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
+        Targets = [
             nameof(Query_Entities_Command),
             nameof(Query_Entities_Dapper),
             nameof(Query_Entities_Dapper_Aot),
-            nameof(Query_Entities_DbConnectionPlus)
+            nameof(Query_Entities_DbConnectionPlus),
         ]
     )]
-    public void Query_Entities__Setup() =>
-        this.SetupDatabase(Query_Entities_EntitiesPerOperation);
+    public void Query_Entities__Setup() => this.SetupDatabase(Query_Entities_EntitiesPerOperation);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Entities_Category)]

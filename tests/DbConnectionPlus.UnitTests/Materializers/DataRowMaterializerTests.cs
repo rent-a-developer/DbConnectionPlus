@@ -22,30 +22,24 @@ public class DataRowMaterializerTests : UnitTestsBase
         dataReader
             .GetValues(Arg.Any<object[]>())
             .Returns(callInfo =>
-                {
-                    var array = callInfo.Arg<object[]>();
-                    array[0] = value1;
-                    array[1] = value2;
-                    array[2] = value3;
-                    return 3;
-                }
-            );
+            {
+                var array = callInfo.Arg<object[]>();
+                array[0] = value1;
+                array[1] = value2;
+                array[2] = value3;
+                return 3;
+            });
 
         var dataRow = DataRowMaterializer.Materialize(dataReader);
 
-        dataRow
-            .Should().Contain("ColumnA", value1);
+        dataRow.Should().Contain("ColumnA", value1);
 
-        dataRow
-            .Should().Contain("ColumnB", value2);
+        dataRow.Should().Contain("ColumnB", value2);
 
-        dataRow
-            .Should().Contain("ColumnC", value3);
+        dataRow.Should().Contain("ColumnC", value3);
     }
 
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>
-        ArgumentNullGuardVerifier.Verify(() =>
-            DataRowMaterializer.Materialize(Substitute.For<DbDataReader>())
-        );
+        ArgumentNullGuardVerifier.Verify(() => DataRowMaterializer.Materialize(Substitute.For<DbDataReader>()));
 }

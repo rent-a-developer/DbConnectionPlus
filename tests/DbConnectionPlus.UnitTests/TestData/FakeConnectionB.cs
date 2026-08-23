@@ -9,38 +9,30 @@ public class FakeConnectionB : DbConnection
     public override string ConnectionString { get; set; }
 
     /// <inheritdoc />
-    public override string Database =>
-        null!;
+    public override string Database => null!;
 
     /// <inheritdoc />
-    public override string DataSource =>
-        null!;
+    public override string DataSource => null!;
 
     /// <inheritdoc />
-    public override string ServerVersion =>
-        null!;
+    public override string ServerVersion => null!;
 
     /// <inheritdoc />
-    public override ConnectionState State =>
-        ConnectionState.Closed;
+    public override ConnectionState State => ConnectionState.Closed;
 
     /// <inheritdoc />
-    public override void ChangeDatabase(string databaseName) =>
-        throw new NotImplementedException();
+    public override void ChangeDatabase(string databaseName) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override void Close() =>
-        throw new NotImplementedException();
+    public override void Close() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override void Open() =>
-        throw new NotImplementedException();
+    public override void Open() => throw new NotImplementedException();
 
     /// <inheritdoc />
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    protected override DbCommand CreateDbCommand() =>
-        throw new NotImplementedException();
+    protected override DbCommand CreateDbCommand() => throw new NotImplementedException();
 }

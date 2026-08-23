@@ -57,16 +57,13 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -98,8 +95,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string FormatParameterName(string parameterName) =>
-        ":\"" + parameterName + "\"";
+    public string FormatParameterName(string parameterName) => ":\"" + parameterName + "\"";
 
     /// <inheritdoc />
     public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
@@ -113,14 +109,11 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "NVARCHAR2(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "NVARCHAR2(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "NUMBER(10)",
+                EnumSerializationMode.Integers => "NUMBER(10)",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -174,14 +167,11 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    DbType.String,
+                EnumSerializationMode.Strings => DbType.String,
 
-                EnumSerializationMode.Integers =>
-                    DbType.Int32,
+                EnumSerializationMode.Integers => DbType.Int32,
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(enumSerializationMode),
             };
         }
 
@@ -198,8 +188,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string QuoteIdentifier(string identifier) =>
-        "\"" + identifier + "\"";
+    public string QuoteIdentifier(string identifier) => "\"" + identifier + "\"";
 
     /// <inheritdoc />
     public string QuoteTemporaryTableName(string tableName, DbConnection connection)
@@ -224,10 +213,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public bool WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    )
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -287,10 +273,10 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     /// <exception cref="InvalidOperationException">Always thrown.</exception>
     internal static void ThrowTemporaryTablesFeatureIsDisabledException() =>
         throw new InvalidOperationException(
-            "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-            $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} " +
-            "to true, but be sure to read the documentation first, because enabling this feature has implications " +
-            "for transaction management."
+            "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. "
+                + $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} "
+                + "to true, but be sure to read the documentation first, because enabling this feature has implications "
+                + "for transaction management."
         );
 
     private readonly OracleEntityManipulator entityManipulator;
@@ -315,7 +301,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         { typeof(float), DbType.Single },
         { typeof(string), DbType.String },
         { typeof(TimeOnly), DbType.Time },
-        { typeof(TimeSpan), DbType.Time }
+        { typeof(TimeSpan), DbType.Time },
     };
 
     private static readonly Dictionary<Type, string> typeToOracleDataType = new()
@@ -336,6 +322,6 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         { typeof(float), "BINARY_FLOAT" },
         { typeof(string), "NVARCHAR2(2000)" },
         { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
-        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" }
+        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" },
     };
 }

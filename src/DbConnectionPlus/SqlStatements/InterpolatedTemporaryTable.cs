@@ -20,6 +20,5 @@ public record InterpolatedTemporaryTable(
     IEnumerable Values,
     [property: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
     [param: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-    Type ValuesType
-)
-    : IInterpolatedSqlStatementFragment;
+        Type ValuesType
+) : IInterpolatedSqlStatementFragment;

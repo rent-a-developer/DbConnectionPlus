@@ -11,7 +11,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// Runs the SQL Server server the SQL Server integration tests use in a Docker container.
 /// </summary>
 internal sealed class SqlServerContainerFixture()
-    : DbContainerFixture<MsSqlBuilder, MsSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
+    : DbContainerFixture<MsSqlBuilder, MsSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
+        ITestDatabaseContainerFixture
 {
     /// <inheritdoc />
     public override string ConnectionString =>
@@ -26,17 +27,15 @@ internal sealed class SqlServerContainerFixture()
             Encrypt = false,
 
             // Several tests execute a command while a data reader is still open.
-            MultipleActiveResultSets = true
+            MultipleActiveResultSets = true,
         }.ConnectionString;
 
     /// <inheritdoc />
-    public override DbProviderFactory DbProviderFactory =>
-        SqlClientFactory.Instance;
+    public override DbProviderFactory DbProviderFactory => SqlClientFactory.Instance;
 
     /// <inheritdoc />
     protected override MsSqlBuilder Configure() =>
-        new MsSqlBuilder(Image)
-            .WithPassword(TestDatabaseContainers.Password);
+        new MsSqlBuilder(Image).WithPassword(TestDatabaseContainers.Password);
 
     private const string Image = "mcr.microsoft.com/mssql/server:2022-latest";
 }

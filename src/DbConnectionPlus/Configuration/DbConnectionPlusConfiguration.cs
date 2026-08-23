@@ -8,9 +8,7 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
     /// <summary>
     /// Initializes a new instance of the <see cref="DbConnectionPlusConfiguration" /> class.
     /// </summary>
-    internal DbConnectionPlusConfiguration()
-    {
-    }
+    internal DbConnectionPlusConfiguration() { }
 
     /// <summary>
     /// <para>
@@ -158,11 +156,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         return this.databaseAdapters.TryGetValue(connectionType, out var adapter)
             ? adapter
             : throw new InvalidOperationException(
-                $"No database adapter is registered for the database connection of the type {connectionType}. " +
-                "Please install the corresponding adapter NuGet package " +
-                "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) " +
-                "and register it by calling the appropriate UseXxx() extension method via " +
-                $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
+                $"No database adapter is registered for the database connection of the type {connectionType}. "
+                    + "Please install the corresponding adapter NuGet package "
+                    + "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) "
+                    + "and register it by calling the appropriate UseXxx() extension method via "
+                    + $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
             );
     }
 

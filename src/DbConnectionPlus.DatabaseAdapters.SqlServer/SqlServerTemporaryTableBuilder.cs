@@ -35,8 +35,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -76,8 +75,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -95,8 +96,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -145,8 +148,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -188,8 +190,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             createCommand.Transaction = transaction;
 #pragma warning restore CA2007
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -209,8 +212,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -262,7 +266,6 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         );
     }
 
-
     /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
@@ -274,8 +277,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateMultiColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         string collation,
         EnumSerializationMode enumSerializationMode
     )
@@ -310,11 +312,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
             if (
                 propertyType == typeof(string)
-                ||
-                (
-                    propertyType.IsEnumOrNullableEnumType() &&
-                    enumSerializationMode == EnumSerializationMode.Strings
-                )
+                || (propertyType.IsEnumOrNullableEnumType() && enumSerializationMode == EnumSerializationMode.Strings)
             )
             {
                 sqlBuilder.Append(" COLLATE ");
@@ -342,8 +340,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     private string BuildCreateSingleColumnTemporaryTableSqlCode(
         string tableName,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         string collation,
         EnumSerializationMode enumSerializationMode
     )
@@ -395,11 +392,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         if (
             valuesType == typeof(string)
-            ||
-            (
-                valuesType.IsEnumOrNullableEnumType() &&
-                enumSerializationMode == EnumSerializationMode.Strings
-            )
+            || (valuesType.IsEnumOrNullableEnumType() && enumSerializationMode == EnumSerializationMode.Strings)
         )
         {
             sqlBuilder.Append(" COLLATE ");
@@ -419,8 +412,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
@@ -483,10 +476,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="connection">The connection to the database of which to get the collation.</param>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The collation of the database the specified connection is currently connected to.</returns>
-    private static string GetCurrentDatabaseCollation(
-        SqlConnection connection,
-        SqlTransaction? transaction = null
-    ) =>
+    private static string GetCurrentDatabaseCollation(SqlConnection connection, SqlTransaction? transaction = null) =>
         databaseCollationPerDatabase.GetOrAdd(
             (connection.DataSource, connection.Database),
             static (_, args) =>
@@ -542,6 +532,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     private const string GetCurrentDatabaseCollationQuery =
         "SELECT CONVERT (VARCHAR(256), DATABASEPROPERTYEX(DB_NAME(), 'collation'))";
 
-    private static readonly ConcurrentDictionary<(string DataSource, string Database), string>
-        databaseCollationPerDatabase = [];
+    private static readonly ConcurrentDictionary<
+        (string DataSource, string Database),
+        string
+    > databaseCollationPerDatabase = [];
 }

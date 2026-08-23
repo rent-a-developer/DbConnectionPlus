@@ -73,20 +73,17 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         string temporaryTableName,
         string columnName,
         DbConnection connection
-    ) =>
-        throw new NotImplementedException();
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public string GetDataTypeOfTemporaryTableColumn(
         string temporaryTableName,
         string columnName,
         DbConnection connection
-    ) =>
-        throw new NotImplementedException();
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() =>
-        throw new NotImplementedException();
+    public string GetUnsupportedDataTypeLiteral() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public void ResetDatabase()
@@ -106,14 +103,12 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartOracleAsync();
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartOracleAsync();
 
     /// <summary>
     /// The connection string that connects to the Oracle server running in the test container.
     /// </summary>
-    private static string ConnectionString =>
-        TestDatabaseContainers.Oracle.ConnectionString;
+    private static string ConnectionString => TestDatabaseContainers.Oracle.ConnectionString;
 
     private static void ExecuteScript(OracleConnection connection, string script)
     {
@@ -127,8 +122,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const string CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE "Entity"
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
@@ -204,8 +198,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
 
         """;
 
-    private const string DropDatabaseObjectsSql =
-        """
+    private const string DropDatabaseObjectsSql = """
         DROP TABLE IF EXISTS "Entity" PURGE;
         GO
 
@@ -225,8 +218,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const string PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE "Entity";
         GO
 

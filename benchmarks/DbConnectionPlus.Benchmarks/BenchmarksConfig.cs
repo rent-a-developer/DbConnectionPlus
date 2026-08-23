@@ -38,8 +38,8 @@ public class BenchmarksConfig : ManualConfig
 
     // The settings both jobs share, so that the only difference between them is the toolchain.
     private static Job CreateJob(string id) =>
-        Job.Default
-            .WithId(id)
+        Job
+            .Default.WithId(id)
             // The default adaptive warmup runs ~9 iterations, but every iteration already executes tens of
             // thousands of invocations, so the tiered JIT has reached steady state before the first warmup
             // iteration completes. Three is enough; the rest was pure wall time.

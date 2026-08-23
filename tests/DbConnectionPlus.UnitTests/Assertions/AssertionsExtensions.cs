@@ -16,7 +16,8 @@ public static class AssertionsExtensions
     /// <param name="expectations">The expected types of which the subject should be one.</param>
     [CustomAssertion]
     public static void BeAnyOf(this TypeAssertions assertions, params Type[] expectations) =>
-        AssertionChain.GetOrCreate()
+        AssertionChain
+            .GetOrCreate()
             .ForCondition(expectations.Contains(assertions.Subject))
             .FailWith("Expected {context} to be any of {0}, but found {1}", expectations, assertions.Subject);
 }

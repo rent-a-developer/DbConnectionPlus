@@ -19,13 +19,11 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void Close_ShouldCloseReader()
     {
-        this.enumerableReader.IsClosed
-            .Should().BeFalse();
+        this.enumerableReader.IsClosed.Should().BeFalse();
 
         this.enumerableReader.Close();
 
-        this.enumerableReader.IsClosed
-            .Should().BeTrue();
+        this.enumerableReader.IsClosed.Should().BeTrue();
     }
 
     [Fact]
@@ -62,16 +60,14 @@ public class EnumerableReaderTests : UnitTestsBase
     public void Constructor_FieldNameEmptyOrWhitespace_ShouldThrow()
     {
         Invoking(() => new EnumerableReader(this.testValues, typeof(int), string.Empty))
-            .Should().Throw<ArgumentException>();
+            .Should()
+            .Throw<ArgumentException>();
 
-        Invoking(() => new EnumerableReader(this.testValues, typeof(int), " "))
-            .Should().Throw<ArgumentException>();
+        Invoking(() => new EnumerableReader(this.testValues, typeof(int), " ")).Should().Throw<ArgumentException>();
     }
 
     [Fact]
-    public void Depth_ShouldAlwaysReturnZero() =>
-        this.enumerableReader.Depth
-            .Should().Be(0);
+    public void Depth_ShouldAlwaysReturnZero() => this.enumerableReader.Depth.Should().Be(0);
 
     [Fact]
     public void Dispose_ShouldDisposeEnumerator()
@@ -104,56 +100,54 @@ public class EnumerableReaderTests : UnitTestsBase
     }
 
     [Fact]
-    public void FieldCount_ShouldAlwaysReturnOne() =>
-        this.enumerableReader.FieldCount
-            .Should().Be(1);
+    public void FieldCount_ShouldAlwaysReturnOne() => this.enumerableReader.FieldCount.Should().Be(1);
 
     [Fact]
     public void GetDataTypeName_InvalidOrdinal_ShouldThrow() =>
         Invoking(() => this.enumerableReader.GetDataTypeName(1))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
 
     [Fact]
     public void GetDataTypeName_ValidOrdinal_ShouldReturnNameOfValuesTypePassedToConstructor() =>
-        this.enumerableReader.GetDataTypeName(0)
-            .Should().Be(nameof(Int32));
+        this.enumerableReader.GetDataTypeName(0).Should().Be(nameof(Int32));
 
     [Fact]
     public void GetFieldType_InvalidOrdinal_ShouldThrow() =>
         Invoking(() => this.enumerableReader.GetFieldType(1))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
 
     [Fact]
     public void GetFieldType_ValidOrdinal_ShouldReturnValuesTypePassedToConstructor() =>
-        this.enumerableReader.GetFieldType(0)
-            .Should().Be(typeof(int));
+        this.enumerableReader.GetFieldType(0).Should().Be(typeof(int));
 
     [Fact]
     public void GetName_InvalidOrdinal_ShouldThrow() =>
         Invoking(() => this.enumerableReader.GetName(1))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
 
     [Fact]
     public void GetName_ValidOrdinal_ShouldReturnFieldNamePassedToConstructor() =>
-        this.enumerableReader.GetName(0)
-            .Should().Be(FieldName);
+        this.enumerableReader.GetName(0).Should().Be(FieldName);
 
     [Fact]
     public void GetOrdinal_InvalidFieldName_ShouldThrow() =>
         Invoking(() => this.enumerableReader.GetOrdinal("nonExistentField"))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
-                "The specified field name 'nonExistentField' is not supported. The only supported field name is " +
-                "'Value'.*"
+                "The specified field name 'nonExistentField' is not supported. The only supported field name is "
+                    + "'Value'.*"
             );
 
     [Fact]
     public void GetOrdinal_ValidFieldName_ShouldReturnOrdinal() =>
-        this.enumerableReader.GetOrdinal(FieldName)
-            .Should().Be(0);
+        this.enumerableReader.GetOrdinal(FieldName).Should().Be(0);
 
     [Fact]
     public void GetTypedValue_SingleColumn_ShouldReturnCurrentValue()
@@ -178,7 +172,8 @@ public class EnumerableReaderTests : UnitTestsBase
         this.enumerableReader.Read();
 
         Invoking(() => this.enumerableReader.GetValue(1))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
     }
 
@@ -189,8 +184,7 @@ public class EnumerableReaderTests : UnitTestsBase
         {
             this.enumerableReader.Read();
 
-            this.enumerableReader.GetValue(0)
-                .Should().Be(value);
+            this.enumerableReader.GetValue(0).Should().Be(value);
         }
     }
 
@@ -200,7 +194,8 @@ public class EnumerableReaderTests : UnitTestsBase
         this.enumerableReader.Read();
 
         Invoking(() => this.enumerableReader.GetValues([]))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage("The specified array must have a length greater than or equal to 1.*");
     }
 
@@ -213,8 +208,7 @@ public class EnumerableReaderTests : UnitTestsBase
         {
             this.enumerableReader.Read();
 
-            this.enumerableReader.GetValues(values)
-                .Should().Be(1);
+            this.enumerableReader.GetValues(values).Should().Be(1);
         }
     }
 
@@ -229,37 +223,43 @@ public class EnumerableReaderTests : UnitTestsBase
 
             this.enumerableReader.GetValues(buffer);
 
-            buffer[0]
-                .Should().Be(value);
+            buffer[0].Should().Be(value);
         }
     }
 
     [Fact]
     public void Fields_MultiColumn_ShouldMatchMappedReadableProperties()
     {
-        var properties = EntityHelper.GetEntityTypeMetadata(typeof(Entity)).MappedProperties.Where(a => a.CanRead)
+        var properties = EntityHelper
+            .GetEntityTypeMetadata(typeof(Entity))
+            .MappedProperties.Where(a => a.CanRead)
             .ToArray();
 
         using var reader = new EnumerableReader(new Entity[] { new() }, properties, EnumerableReaderOptions.None);
 
-        reader.FieldCount
-            .Should().Be(properties.Length);
+        reader.FieldCount.Should().Be(properties.Length);
 
-        Enumerable.Range(0, properties.Length).Select(reader.GetName)
-            .Should().Equal(properties.Select(a => a.PropertyName));
+        Enumerable
+            .Range(0, properties.Length)
+            .Select(reader.GetName)
+            .Should()
+            .Equal(properties.Select(a => a.PropertyName));
 
-        properties.Select(a => reader.GetOrdinal(a.PropertyName))
-            .Should().Equal(Enumerable.Range(0, properties.Length));
+        properties
+            .Select(a => reader.GetOrdinal(a.PropertyName))
+            .Should()
+            .Equal(Enumerable.Range(0, properties.Length));
 
-        reader.GetOrdinal("NonExistentField")
-            .Should().Be(-1);
+        reader.GetOrdinal("NonExistentField").Should().Be(-1);
     }
 
     [Fact]
     public void GetValues_MultiColumnShortBuffer_ShouldFillAvailableEntries()
     {
         var entity = Generate.Single<Entity>();
-        var properties = EntityHelper.GetEntityTypeMetadata(typeof(Entity)).MappedProperties.Where(a => a.CanRead)
+        var properties = EntityHelper
+            .GetEntityTypeMetadata(typeof(Entity))
+            .MappedProperties.Where(a => a.CanRead)
             .ToArray();
 
         using var reader = new EnumerableReader(new[] { entity }, properties, EnumerableReaderOptions.None);
@@ -268,16 +268,13 @@ public class EnumerableReaderTests : UnitTestsBase
 
         var values = new object[2];
 
-        reader.GetValues(values)
-            .Should().Be(values.Length);
+        reader.GetValues(values).Should().Be(values.Length);
 
         values.Should().Equal(properties.Take(values.Length).Select(a => a.PropertyGetter!(entity) ?? DBNull.Value));
     }
 
     [Fact]
-    public void HasRows_ShouldAlwaysReturnTrue() =>
-        this.enumerableReader.HasRows
-            .Should().BeTrue();
+    public void HasRows_ShouldAlwaysReturnTrue() => this.enumerableReader.HasRows.Should().BeTrue();
 
     [Fact]
     public void Indexer_InvalidFieldName_ShouldThrow()
@@ -285,10 +282,11 @@ public class EnumerableReaderTests : UnitTestsBase
         this.enumerableReader.Read();
 
         Invoking(() => this.enumerableReader["NonExistentField"])
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
-                "The specified field name 'NonExistentField' is not supported. The only supported field name is " +
-                "'Value'.*"
+                "The specified field name 'NonExistentField' is not supported. The only supported field name is "
+                    + "'Value'.*"
             );
     }
 
@@ -298,7 +296,8 @@ public class EnumerableReaderTests : UnitTestsBase
         this.enumerableReader.Read();
 
         Invoking(() => this.enumerableReader[1])
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
     }
 
@@ -309,8 +308,7 @@ public class EnumerableReaderTests : UnitTestsBase
         {
             this.enumerableReader.Read();
 
-            this.enumerableReader[FieldName]
-                .Should().Be(value);
+            this.enumerableReader[FieldName].Should().Be(value);
         }
     }
 
@@ -321,27 +319,25 @@ public class EnumerableReaderTests : UnitTestsBase
         {
             this.enumerableReader.Read();
 
-            this.enumerableReader[0]
-                .Should().Be(value);
+            this.enumerableReader[0].Should().Be(value);
         }
     }
 
     [Fact]
     public void IsClosed_ShouldReturnWhetherReaderIsClosed()
     {
-        this.enumerableReader.IsClosed
-            .Should().BeFalse();
+        this.enumerableReader.IsClosed.Should().BeFalse();
 
         this.enumerableReader.Close();
 
-        this.enumerableReader.IsClosed
-            .Should().BeTrue();
+        this.enumerableReader.IsClosed.Should().BeTrue();
     }
 
     [Fact]
     public void IsDBNull_InvalidOrdinal_ShouldThrow() =>
         Invoking(() => this.enumerableReader.IsDBNull(1))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage("The specified ordinal 1 is not supported. The only supported ordinal is zero.*");
 
     [Fact]
@@ -354,15 +350,12 @@ public class EnumerableReaderTests : UnitTestsBase
         {
             readerWithNulls.Read();
 
-            readerWithNulls.IsDBNull(0)
-                .Should().Be(value is null);
+            readerWithNulls.IsDBNull(0).Should().Be(value is null);
         }
     }
 
     [Fact]
-    public void NextResult_ShouldAlwaysReturnFalse() =>
-        this.enumerableReader.NextResult()
-            .Should().BeFalse();
+    public void NextResult_ShouldAlwaysReturnFalse() => this.enumerableReader.NextResult().Should().BeFalse();
 
     [Fact]
     public void Read_ReaderIsClosed_ShouldThrow()
@@ -370,7 +363,8 @@ public class EnumerableReaderTests : UnitTestsBase
         this.enumerableReader.Close();
 
         Invoking(() => this.enumerableReader.Read())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("Invalid attempt to call Read when reader is closed.*");
     }
 
@@ -379,18 +373,14 @@ public class EnumerableReaderTests : UnitTestsBase
     {
         foreach (var _ in this.testValues)
         {
-            this.enumerableReader.Read()
-                .Should().BeTrue();
+            this.enumerableReader.Read().Should().BeTrue();
         }
 
-        this.enumerableReader.Read()
-            .Should().BeFalse();
+        this.enumerableReader.Read().Should().BeFalse();
     }
 
     [Fact]
-    public void RecordsAffected_ShouldAlwaysReturnMinusOne() =>
-        this.enumerableReader.RecordsAffected
-            .Should().Be(-1);
+    public void RecordsAffected_ShouldAlwaysReturnMinusOne() => this.enumerableReader.RecordsAffected.Should().Be(-1);
 
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>
@@ -399,8 +389,9 @@ public class EnumerableReaderTests : UnitTestsBase
     private static void AssertSingleColumnAccessor(
         object value,
         [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-        Type valuesType,
+            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+        )]
+            Type valuesType,
         Func<EnumerableReader, object> accessor
     )
     {
@@ -408,8 +399,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         reader.Read();
 
-        accessor(reader)
-            .Should().Be(value);
+        accessor(reader).Should().Be(value);
     }
 
     private readonly EnumerableReader enumerableReader;

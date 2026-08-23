@@ -10,22 +10,15 @@ public class DbConnectionExtensions_InsertEntitiesTests : UnitTestsBase
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 
-        this.MockEntityManipulator.InsertEntities(
-            this.MockDbConnection,
-            entities,
-            transaction,
-            cancellationToken
-        ).Returns(numberOfAffectedRows);
+        this.MockEntityManipulator.InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
 
         this.MockDbConnection.InsertEntities(entities, transaction, cancellationToken)
-            .Should().Be(numberOfAffectedRows);
+            .Should()
+            .Be(numberOfAffectedRows);
 
-        this.MockEntityManipulator.Received().InsertEntities(
-            this.MockDbConnection,
-            entities,
-            transaction,
-            cancellationToken
-        );
+        this.MockEntityManipulator.Received()
+            .InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken);
     }
 
     [Fact]
@@ -36,22 +29,16 @@ public class DbConnectionExtensions_InsertEntitiesTests : UnitTestsBase
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 
-        this.MockEntityManipulator.InsertEntitiesAsync(
-            this.MockDbConnection,
-            entities,
-            transaction,
-            cancellationToken
-        ).Returns(numberOfAffectedRows);
+        this.MockEntityManipulator.InsertEntitiesAsync(this.MockDbConnection, entities, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
 
         (await this.MockDbConnection.InsertEntitiesAsync(entities, transaction, cancellationToken))
-            .Should().Be(numberOfAffectedRows);
+            .Should()
+            .Be(numberOfAffectedRows);
 
-        await this.MockEntityManipulator.Received().InsertEntitiesAsync(
-            this.MockDbConnection,
-            entities,
-            transaction,
-            cancellationToken
-        );
+        await this
+            .MockEntityManipulator.Received()
+            .InsertEntitiesAsync(this.MockDbConnection, entities, transaction, cancellationToken);
     }
 
     [Fact]
@@ -59,12 +46,8 @@ public class DbConnectionExtensions_InsertEntitiesTests : UnitTestsBase
     {
         var entities = Generate.Multiple<Entity>();
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.InsertEntities(entities)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.InsertEntities(entities));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.InsertEntitiesAsync(entities)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.InsertEntitiesAsync(entities));
     }
 }

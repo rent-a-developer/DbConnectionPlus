@@ -4,26 +4,13 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QuerySingleOrDefaultOfTTests : StatementMethodTestsBase
 {
-    public DbConnectionExtensions_QuerySingleOrDefaultOfTTests() : base(
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QuerySingleOrDefaultAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken),
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QuerySingleOrDefault<Entity>(sql, transaction, timeout, commandType, cancellationToken)
-    )
+    public DbConnectionExtensions_QuerySingleOrDefaultOfTTests()
+        : base(
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QuerySingleOrDefaultAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken),
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QuerySingleOrDefault<Entity>(sql, transaction, timeout, commandType, cancellationToken)
+        )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();
 
@@ -34,8 +21,7 @@ public class DbConnectionExtensions_QuerySingleOrDefaultOfTTests : StatementMeth
         mockDbDataReader.Read().Returns(true, false);
         mockDbDataReader.ReadAsync(TestContext.Current.CancellationToken).Returns(true, false);
 
-        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
-            .Returns(mockDbDataReader);
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(mockDbDataReader);
 
         this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
             .Returns(mockDbDataReader);

@@ -15,9 +15,7 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
     /// <inheritdoc />
-    public int DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -64,11 +62,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -78,9 +73,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -113,8 +106,9 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    var numberOfAffectedRows =
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    var numberOfAffectedRows = await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (numberOfAffectedRows != 1)
                     {
@@ -128,11 +122,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -142,9 +133,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public int DeleteEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -181,11 +170,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -193,9 +179,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> DeleteEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -232,11 +216,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -244,9 +225,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public int InsertEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -258,11 +237,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -290,9 +265,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -302,9 +276,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> InsertEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -316,11 +288,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -343,22 +311,18 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -368,9 +332,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public int InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -382,11 +344,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -404,9 +362,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -414,9 +371,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -428,11 +383,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -446,7 +397,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
 #pragma warning disable CA2007
                 await using var reader = await command
-                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                    .ConfigureAwait(false);
 #pragma warning restore CA2007
 
                 await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
@@ -454,9 +406,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -464,9 +415,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public int UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -478,11 +427,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -523,9 +468,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -535,9 +479,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -549,11 +491,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -576,15 +514,12 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
                     // returns -1 when we select database generated properties via the OUTPUT clause.
@@ -602,9 +537,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -614,9 +548,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public int UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -628,11 +560,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -663,9 +591,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -673,9 +600,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <inheritdoc />
-    public async Task<int> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -687,11 +612,7 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -727,9 +648,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -761,8 +681,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
         var parameters = new List<DbParameter>();
 
-        var whereProperties = entityTypeMetadata.KeyProperties
-            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+        var whereProperties = entityTypeMetadata
+            .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
             .Concat(entityTypeMetadata.RowVersionProperties);
 
         foreach (var property in whereProperties)
@@ -878,8 +798,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 var prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var property in whereProperties)
@@ -1067,8 +987,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
 
                 prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var property in whereProperties)
@@ -1169,8 +1089,8 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     )
     {
         if (
-            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 &&
-            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0
+            && await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
         )
         {
             for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)

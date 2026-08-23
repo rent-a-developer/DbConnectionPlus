@@ -9,7 +9,6 @@ public class MySqlDatabaseAdapterTests : IntegrationTestsBase<MySqlTestDatabaseP
     {
         var adapter = new MySqlDatabaseAdapter();
 
-        adapter.SupportsTemporaryTables(this.Connection)
-            .Should().BeTrue();
+        adapter.SupportsTemporaryTables(this.Connection).Should().BeTrue();
     }
 }

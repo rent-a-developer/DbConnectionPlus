@@ -52,8 +52,7 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
 
         this.decoratedReader.GetFieldValue<int>(ordinal).Returns(returnValue);
 
-        this.decorator.GetFieldValue<int>(ordinal)
-            .Should().Be(returnValue);
+        this.decorator.GetFieldValue<int>(ordinal).Should().Be(returnValue);
 
         this.decoratedReader.Received().GetFieldValue<int>(ordinal);
     }
@@ -67,8 +66,7 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
         this.decoratedReader.GetFieldValueAsync<int>(ordinal, CancellationToken.None)
             .Returns(Task.FromResult(returnValue));
 
-        (await this.decorator.GetFieldValueAsync<int>(ordinal, CancellationToken.None))
-            .Should().Be(returnValue);
+        (await this.decorator.GetFieldValueAsync<int>(ordinal, CancellationToken.None)).Should().Be(returnValue);
 
         await this.decoratedReader.Received().GetFieldValueAsync<int>(ordinal, CancellationToken.None);
     }
@@ -82,19 +80,14 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
             nameof(CommandDisposingDataReaderDecorator.DisposeAsync),
             nameof(CommandDisposingDataReaderDecorator.GetData),
             nameof(CommandDisposingDataReaderDecorator.GetFieldValue),
-            nameof(CommandDisposingDataReaderDecorator.GetFieldValueAsync)
+            nameof(CommandDisposingDataReaderDecorator.GetFieldValueAsync),
         };
 
         var fixture = new Fixture();
         fixture.Customize(new AutoNSubstituteCustomization());
         fixture.Register(() => new DataTable());
 
-        DecoratorAssertions.AssertDecoratorForwardsAllCalls(
-            fixture,
-            this.decorator,
-            this.decoratedReader,
-            exceptions
-        );
+        DecoratorAssertions.AssertDecoratorForwardsAllCalls(fixture, this.decorator, this.decoratedReader, exceptions);
     }
 
     [Fact]

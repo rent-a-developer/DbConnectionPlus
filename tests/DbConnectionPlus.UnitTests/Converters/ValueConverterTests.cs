@@ -75,8 +75,10 @@ public class ValueConverterTests : UnitTestsBase
 #pragma warning restore RCS1163 // Unused parameter
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
     ) =>
-        ValueConverter.CanConvert(sourceType, targetType)
-            .Should().Be(
+        ValueConverter
+            .CanConvert(sourceType, targetType)
+            .Should()
+            .Be(
                 expectedCanConvert,
                 $"{sourceType} should {(expectedCanConvert ? "" : "not ")}be convertible to {targetType}"
             );
@@ -86,42 +88,44 @@ public class ValueConverterTests : UnitTestsBase
     {
         var character = Generate.Single<char>();
 
-        ValueConverter.ConvertValueToType(character.ToString(), typeof(char))
-            .Should().Be(character);
+        ValueConverter.ConvertValueToType(character.ToString(), typeof(char)).Should().Be(character);
 
-        ValueConverter.ConvertValueToType(character.ToString(), typeof(char?))
-            .Should().Be(character);
+        ValueConverter.ConvertValueToType(character.ToString(), typeof(char?)).Should().Be(character);
     }
 
     [Fact]
     public void ConvertValueToType_CharTargetType_ValueIsStringWithLengthNotOne_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType(string.Empty, typeof(char)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType(string.Empty, typeof(char?)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType("ab", typeof(char)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType("ab", typeof(char?)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly one "
+                    + "character long."
             );
     }
 
@@ -138,14 +142,15 @@ public class ValueConverterTests : UnitTestsBase
         // into two different dates depending on the locale of the machine that runs the code.
         var expectedDate = new DateOnly(2026, 3, 4);
 
-        RunUnderCulture(cultureName, () =>
-        {
-            ValueConverter.ConvertValueToType<DateOnly>("03/04/2026")
-                .Should().Be(expectedDate);
+        RunUnderCulture(
+            cultureName,
+            () =>
+            {
+                ValueConverter.ConvertValueToType<DateOnly>("03/04/2026").Should().Be(expectedDate);
 
-            ValueConverter.ConvertValueToType("03/04/2026", typeof(DateOnly))
-                .Should().Be(expectedDate);
-        });
+                ValueConverter.ConvertValueToType("03/04/2026", typeof(DateOnly)).Should().Be(expectedDate);
+            }
+        );
     }
 
     [Theory]
@@ -162,13 +167,16 @@ public class ValueConverterTests : UnitTestsBase
         var dateOnly = new DateOnly(2026, 3, 4);
         var timeOnly = new TimeOnly(14, 30, 0);
 
-        RunUnderCulture(cultureName, () =>
-        {
-            AssertRoundTrips(timeSpan);
-            AssertRoundTrips(dateTimeOffset);
-            AssertRoundTrips(dateOnly);
-            AssertRoundTrips(timeOnly);
-        });
+        RunUnderCulture(
+            cultureName,
+            () =>
+            {
+                AssertRoundTrips(timeSpan);
+                AssertRoundTrips(dateTimeOffset);
+                AssertRoundTrips(dateOnly);
+                AssertRoundTrips(timeOnly);
+            }
+        );
 
         // Converts the value to its String representation and back, both through the converter itself, so the
         // assertion is that the writing half and the reading half agree - not that either matches a literal.
@@ -176,30 +184,35 @@ public class ValueConverterTests : UnitTestsBase
         {
             var text = ValueConverter.ConvertValueToType<string>(value);
 
-            ValueConverter.ConvertValueToType<TValue>(text)
-                .Should().Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
+            ValueConverter
+                .ConvertValueToType<TValue>(text)
+                .Should()
+                .Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
 
-            ValueConverter.ConvertValueToType(text, typeof(TValue))
-                .Should().Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
+            ValueConverter
+                .ConvertValueToType(text, typeof(TValue))
+                .Should()
+                .Be(value, $"{typeof(TValue)} written as '{text}' should read back unchanged");
         }
     }
 
     [Fact]
-    public void
-        ConvertValueToType_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
+    public void ConvertValueToType_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType(999, typeof(TestEnum)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType(999, typeof(TestEnum?)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
             );
     }
 
@@ -208,29 +221,28 @@ public class ValueConverterTests : UnitTestsBase
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        ValueConverter.ConvertValueToType((int)enumValue, typeof(TestEnum))
-            .Should().Be(enumValue);
+        ValueConverter.ConvertValueToType((int)enumValue, typeof(TestEnum)).Should().Be(enumValue);
 
-        ValueConverter.ConvertValueToType((int)enumValue, typeof(TestEnum?))
-            .Should().Be(enumValue);
+        ValueConverter.ConvertValueToType((int)enumValue, typeof(TestEnum?)).Should().Be(enumValue);
     }
 
     [Fact]
-    public void
-        ConvertValueToType_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
+    public void ConvertValueToType_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType("NonExistent", typeof(TestEnum)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                "That string does not match any of the names of the enum's members.*"
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. "
+                    + "That string does not match any of the names of the enum's members.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType("NonExistent", typeof(TestEnum?)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
-                "That string does not match any of the names of the enum's members.*"
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. "
+                    + "That string does not match any of the names of the enum's members.*"
             );
     }
 
@@ -238,17 +250,19 @@ public class ValueConverterTests : UnitTestsBase
     public void ConvertValueToType_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType(DBNull.Value, typeof(DateTime)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
-                "type is non-nullable.*"
+                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the "
+                    + "type is non-nullable.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType(null, typeof(DateTime)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
-                "non-nullable.*"
+                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is "
+                    + "non-nullable.*"
             );
     }
 
@@ -279,17 +293,13 @@ public class ValueConverterTests : UnitTestsBase
     [Fact]
     public void ConvertValueToType_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
     {
-        ValueConverter.ConvertValueToType(DBNull.Value, typeof(object))
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType(DBNull.Value, typeof(object)).Should().BeNull();
 
-        ValueConverter.ConvertValueToType(DBNull.Value, typeof(int?))
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType(DBNull.Value, typeof(int?)).Should().BeNull();
 
-        ValueConverter.ConvertValueToType(null, typeof(object))
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType(null, typeof(object)).Should().BeNull();
 
-        ValueConverter.ConvertValueToType(null, typeof(int?))
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType(null, typeof(int?)).Should().BeNull();
     }
 
     [Theory]
@@ -333,39 +343,41 @@ public class ValueConverterTests : UnitTestsBase
             if (result is byte[] resultBytes && expectedTargetValue is byte[] expectedTargetValueBytes)
             {
                 resultBytes
-                    .Should().BeEquivalentTo(
+                    .Should()
+                    .BeEquivalentTo(
                         expectedTargetValueBytes,
-                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
-                        $"{expectedTargetValue.ToDebugString()}"
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be "
+                            + $"{expectedTargetValue.ToDebugString()}"
                     );
             }
             else
             {
                 result
-                    .Should().Be(
+                    .Should()
+                    .Be(
                         expectedTargetValue,
-                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
-                        $"{expectedTargetValue.ToDebugString()}"
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be "
+                            + $"{expectedTargetValue.ToDebugString()}"
                     );
             }
         }
         else
         {
             Invoking(() => ValueConverter.ConvertValueToType(sourceValue, targetType))
-                .Should().Throw<InvalidCastException>()
-                .WithMessage(
-                    $"Could not convert the value {sourceValue.ToDebugString()} to the type {targetType}.*"
-                );
+                .Should()
+                .Throw<InvalidCastException>()
+                .WithMessage($"Could not convert the value {sourceValue.ToDebugString()} to the type {targetType}.*");
         }
     }
 
     [Fact]
     public void ConvertValueToType_ValueCannotBeConvertedToTargetType_ShouldThrow() =>
         Invoking(() => ValueConverter.ConvertValueToType("NotADate", typeof(DateTime)))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value 'NotADate' ({typeof(string)}) to the type {typeof(DateTime)}. See " +
-                "inner exception for details.*"
+                $"Could not convert the value 'NotADate' ({typeof(string)}) to the type {typeof(DateTime)}. See "
+                    + "inner exception for details.*"
             )
             .WithInnerException<FormatException>()
             .WithMessage("The string 'NotADate' was not recognized as a valid DateTime.*");
@@ -375,61 +387,64 @@ public class ValueConverterTests : UnitTestsBase
     {
         var character = Generate.Single<char>();
 
-        ValueConverter.ConvertValueToType<char>(character.ToString())
-            .Should().Be(character);
+        ValueConverter.ConvertValueToType<char>(character.ToString()).Should().Be(character);
 
-        ValueConverter.ConvertValueToType<char?>(character.ToString())
-            .Should().Be(character);
+        ValueConverter.ConvertValueToType<char?>(character.ToString()).Should().Be(character);
     }
 
     [Fact]
     public void ConvertValueToTypeOfT_CharTargetType_ValueIsStringWithLengthNotOne_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType<char>(string.Empty))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<char?>(string.Empty))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<char>("ab"))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<char?>("ab"))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly one "
+                    + "character long."
             );
     }
 
     [Fact]
-    public void
-        ConvertValueToTypeOfT_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
+    public void ConvertValueToTypeOfT_EnumTargetType_IntegerValueNotMatchingAnyEnumMemberValue_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType<TestEnum>(999))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>(999))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum?)}. That value does not match any of the values of the enum's members.*"
             );
     }
 
@@ -438,29 +453,28 @@ public class ValueConverterTests : UnitTestsBase
     {
         var enumValue = Generate.Single<TestEnum>();
 
-        ValueConverter.ConvertValueToType<TestEnum>((int)enumValue)
-            .Should().Be(enumValue);
+        ValueConverter.ConvertValueToType<TestEnum>((int)enumValue).Should().Be(enumValue);
 
-        ValueConverter.ConvertValueToType<TestEnum?>((int)enumValue)
-            .Should().Be(enumValue);
+        ValueConverter.ConvertValueToType<TestEnum?>((int)enumValue).Should().Be(enumValue);
     }
 
     [Fact]
-    public void
-        ConvertValueToTypeOfT_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
+    public void ConvertValueToTypeOfT_EnumTargetType_StringValueNotMatchingAnyEnumMemberName_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType<TestEnum>("NonExistent"))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. " +
-                "That string does not match any of the names of the enum's members.*"
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. "
+                    + "That string does not match any of the names of the enum's members.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<TestEnum?>("NonExistent"))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. " +
-                "That string does not match any of the names of the enum's members.*"
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum?)}. "
+                    + "That string does not match any of the names of the enum's members.*"
             );
     }
 
@@ -468,17 +482,19 @@ public class ValueConverterTests : UnitTestsBase
     public void ConvertValueToTypeOfT_NonNullableTargetType_NullOrDBNullValue_ShouldThrow()
     {
         Invoking(() => ValueConverter.ConvertValueToType<DateTime>(DBNull.Value))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the " +
-                "type is non-nullable.*"
+                $"Could not convert the value {{DBNull}} to the type {typeof(DateTime)}, because the "
+                    + "type is non-nullable.*"
             );
 
         Invoking(() => ValueConverter.ConvertValueToType<DateTime>(null))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is " +
-                "non-nullable.*"
+                $"Could not convert the value {{null}} to the type {typeof(DateTime)}, because the type is "
+                    + "non-nullable.*"
             );
     }
 
@@ -509,17 +525,13 @@ public class ValueConverterTests : UnitTestsBase
     [Fact]
     public void ConvertValueToTypeOfT_NullableTargetType_NullOrDBNullValue_ShouldReturnNull()
     {
-        ValueConverter.ConvertValueToType<object>(DBNull.Value)
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType<object>(DBNull.Value).Should().BeNull();
 
-        ValueConverter.ConvertValueToType<int?>(DBNull.Value)
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType<int?>(DBNull.Value).Should().BeNull();
 
-        ValueConverter.ConvertValueToType<object>(null)
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType<object>(null).Should().BeNull();
 
-        ValueConverter.ConvertValueToType<int?>(null)
-            .Should().BeNull();
+        ValueConverter.ConvertValueToType<int?>(null).Should().BeNull();
     }
 
     [Theory]
@@ -558,49 +570,53 @@ public class ValueConverterTests : UnitTestsBase
     {
         if (expectedCanConvert)
         {
-            var result = MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType)
+            var result = MaterializerFactoryHelper
+                .MakeValueConverterConvertValueToTypeMethod(targetType)
                 .Invoke(null, [sourceValue]);
 
             if (result is byte[] resultBytes && expectedTargetValue is byte[] expectedTargetValueBytes)
             {
                 resultBytes
-                    .Should().BeEquivalentTo(
+                    .Should()
+                    .BeEquivalentTo(
                         expectedTargetValueBytes,
-                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
-                        $"{expectedTargetValue.ToDebugString()}"
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be "
+                            + $"{expectedTargetValue.ToDebugString()}"
                     );
             }
             else
             {
                 result
-                    .Should().Be(
+                    .Should()
+                    .Be(
                         expectedTargetValue,
-                        $"{sourceValue.ToDebugString()} converted to {targetType} should be " +
-                        $"{expectedTargetValue.ToDebugString()}"
+                        $"{sourceValue.ToDebugString()} converted to {targetType} should be "
+                            + $"{expectedTargetValue.ToDebugString()}"
                     );
             }
         }
         else
         {
             Invoking(() =>
-                    MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType)
+                    MaterializerFactoryHelper
+                        .MakeValueConverterConvertValueToTypeMethod(targetType)
                         .Invoke(null, [sourceValue])
                 )
-                .Should().Throw<TargetInvocationException>()
+                .Should()
+                .Throw<TargetInvocationException>()
                 .WithInnerException<InvalidCastException>()
-                .WithMessage(
-                    $"Could not convert the value {sourceValue.ToDebugString()} to the type {targetType}.*"
-                );
+                .WithMessage($"Could not convert the value {sourceValue.ToDebugString()} to the type {targetType}.*");
         }
     }
 
     [Fact]
     public void ConvertValueToTypeOfT_ValueCannotBeConvertedToTargetType_ShouldThrow() =>
         Invoking(() => ValueConverter.ConvertValueToType<DateTime>("NotADate"))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value 'NotADate' ({typeof(string)}) to the type {typeof(DateTime)}. See " +
-                "inner exception for details.*"
+                $"Could not convert the value 'NotADate' ({typeof(string)}) to the type {typeof(DateTime)}. See "
+                    + "inner exception for details.*"
             )
             .WithInnerException<FormatException>()
             .WithMessage("The string 'NotADate' was not recognized as a valid DateTime.*");
@@ -631,9 +647,9 @@ public class ValueConverterTests : UnitTestsBase
         // Without ICU, every culture collapses into the invariant one and the test would pass while proving
         // nothing. de-DE and fr-FR both separate decimals with a comma; the invariant culture uses a dot.
         Assert.SkipWhen(
-            cultureName != "en-US" &&
-            culture.NumberFormat.NumberDecimalSeparator ==
-            CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator,
+            cultureName != "en-US"
+                && culture.NumberFormat.NumberDecimalSeparator
+                    == CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator,
             $"Globalization is in invariant mode, so '{cultureName}' is not a real culture here."
         );
 
@@ -652,13 +668,12 @@ public class ValueConverterTests : UnitTestsBase
     }
 
     public static IEnumerable<(
-            Type SourceType,
-            Type TargetType,
-            bool ExpectedCanConvert,
-            object SourceValue,
-            object ExpectedTargetValue
-            )>
-        GetConvertTestData()
+        Type SourceType,
+        Type TargetType,
+        bool ExpectedCanConvert,
+        object SourceValue,
+        object ExpectedTargetValue
+    )> GetConvertTestData()
     {
         var faker = new Faker();
 
@@ -735,52 +750,190 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(char), typeof(ulong), true, charValue, (ulong)charValue),
             (typeof(DateOnly), typeof(DateOnly), true, dateOnlyValue, dateOnlyValue),
             (typeof(DateOnly), typeof(object), true, dateOnlyValue, dateOnlyValue),
-            (typeof(DateOnly), typeof(string), true, dateOnlyValue, dateOnlyValue.ToString("O", CultureInfo.InvariantCulture)),
+            (
+                typeof(DateOnly),
+                typeof(string),
+                true,
+                dateOnlyValue,
+                dateOnlyValue.ToString("O", CultureInfo.InvariantCulture)
+            ),
             (typeof(DateTime), typeof(DateOnly), true, dateOnlyValue.ToDateTime(TimeOnly.MinValue), dateOnlyValue),
             (typeof(DateTime), typeof(DateTime), true, dateTimeValue, dateTimeValue),
             (typeof(DateTime), typeof(object), true, dateTimeValue, dateTimeValue),
-            (typeof(DateTime), typeof(string), true, dateTimeValue, dateTimeValue.ToString("O", CultureInfo.InvariantCulture)),
+            (
+                typeof(DateTime),
+                typeof(string),
+                true,
+                dateTimeValue,
+                dateTimeValue.ToString("O", CultureInfo.InvariantCulture)
+            ),
             (typeof(DateTimeOffset), typeof(DateTimeOffset), true, dateTimeOffsetValue, dateTimeOffsetValue),
             (typeof(DateTimeOffset), typeof(object), true, dateTimeOffsetValue, dateTimeOffsetValue),
-            (typeof(DateTimeOffset), typeof(string), true, dateTimeOffsetValue, dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture)),
+            (
+                typeof(DateTimeOffset),
+                typeof(string),
+                true,
+                dateTimeOffsetValue,
+                dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture)
+            ),
             (typeof(decimal), typeof(bool), true, 1M, true),
-            (typeof(decimal), typeof(byte), true, decimalValue, Convert.ChangeType(decimalValue, typeof(byte), CultureInfo.InvariantCulture)),
+            (
+                typeof(decimal),
+                typeof(byte),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(byte), CultureInfo.InvariantCulture)
+            ),
             (typeof(decimal), typeof(decimal), true, decimalValue, decimalValue),
-            (typeof(decimal), typeof(double), true, decimalValue, Convert.ChangeType(decimalValue, typeof(double), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(short), true, decimalValue, Convert.ChangeType(decimalValue, typeof(short), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(int), true, decimalValue, Convert.ChangeType(decimalValue, typeof(int), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(long), true, decimalValue, Convert.ChangeType(decimalValue, typeof(long), CultureInfo.InvariantCulture)),
+            (
+                typeof(decimal),
+                typeof(double),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(double), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(short),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(short), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(int),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(int), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(long),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(long), CultureInfo.InvariantCulture)
+            ),
             (typeof(decimal), typeof(object), true, decimalValue, decimalValue),
-            (typeof(decimal), typeof(sbyte), true, decimalValue, Convert.ChangeType(decimalValue, typeof(sbyte), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(float), true, decimalValue, Convert.ChangeType(decimalValue, typeof(float), CultureInfo.InvariantCulture)),
+            (
+                typeof(decimal),
+                typeof(sbyte),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(sbyte), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(float),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(float), CultureInfo.InvariantCulture)
+            ),
             (typeof(decimal), typeof(string), true, decimalValue, decimalValue.ToString(CultureInfo.InvariantCulture)),
             (typeof(decimal), typeof(TestEnum), true, (decimal)enumValue, enumValue),
-            (typeof(decimal), typeof(ushort), true, decimalValue, Convert.ChangeType(decimalValue, typeof(ushort), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(uint), true, decimalValue, Convert.ChangeType(decimalValue, typeof(uint), CultureInfo.InvariantCulture)),
-            (typeof(decimal), typeof(ulong), true, decimalValue, Convert.ChangeType(decimalValue, typeof(ulong), CultureInfo.InvariantCulture)),
+            (
+                typeof(decimal),
+                typeof(ushort),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(ushort), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(uint),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(uint), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(decimal),
+                typeof(ulong),
+                true,
+                decimalValue,
+                Convert.ChangeType(decimalValue, typeof(ulong), CultureInfo.InvariantCulture)
+            ),
             (typeof(double), typeof(bool), true, 1.0, true),
-            (typeof(double), typeof(byte), true, doubleValue, Convert.ChangeType(doubleValue, typeof(byte), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(decimal), true, doubleValue, Convert.ChangeType(doubleValue, typeof(decimal), CultureInfo.InvariantCulture)),
+            (
+                typeof(double),
+                typeof(byte),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(byte), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(decimal),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(decimal), CultureInfo.InvariantCulture)
+            ),
             (typeof(double), typeof(double), true, doubleValue, doubleValue),
-            (typeof(double), typeof(short), true, doubleValue, Convert.ChangeType(doubleValue, typeof(short), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(int), true, doubleValue, Convert.ChangeType(doubleValue, typeof(int), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(long), true, doubleValue, Convert.ChangeType(doubleValue, typeof(long), CultureInfo.InvariantCulture)),
+            (
+                typeof(double),
+                typeof(short),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(short), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(int),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(int), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(long),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(long), CultureInfo.InvariantCulture)
+            ),
             (typeof(double), typeof(object), true, doubleValue, doubleValue),
-            (typeof(double), typeof(sbyte), true, doubleValue, Convert.ChangeType(doubleValue, typeof(sbyte), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(float), true, doubleValue, Convert.ChangeType(doubleValue, typeof(float), CultureInfo.InvariantCulture)),
+            (
+                typeof(double),
+                typeof(sbyte),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(sbyte), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(float),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(float), CultureInfo.InvariantCulture)
+            ),
             (typeof(double), typeof(string), true, doubleValue, doubleValue.ToString(CultureInfo.InvariantCulture)),
             (typeof(double), typeof(TestEnum), true, (double)enumValue, enumValue),
-            (typeof(double), typeof(ushort), true, doubleValue, Convert.ChangeType(doubleValue, typeof(ushort), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(uint), true, doubleValue, Convert.ChangeType(doubleValue, typeof(uint), CultureInfo.InvariantCulture)),
-            (typeof(double), typeof(ulong), true, doubleValue, Convert.ChangeType(doubleValue, typeof(ulong), CultureInfo.InvariantCulture)),
+            (
+                typeof(double),
+                typeof(ushort),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(ushort), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(uint),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(uint), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(double),
+                typeof(ulong),
+                true,
+                doubleValue,
+                Convert.ChangeType(doubleValue, typeof(ulong), CultureInfo.InvariantCulture)
+            ),
             (typeof(Guid), typeof(byte[]), true, guidValue, guidValue.ToByteArray()),
             (typeof(Guid), typeof(Guid), true, guidValue, guidValue),
             (typeof(Guid), typeof(object), true, guidValue, guidValue),
             (typeof(Guid), typeof(string), true, guidValue, guidValue.ToString("D")),
             (typeof(short), typeof(bool), true, (short)1, true),
-            (typeof(short), typeof(byte), true, int16Value, (byte) int16Value),
-            (typeof(short), typeof(char), true, int16Value, (char) int16Value),
-            (typeof(short), typeof(decimal), true, int16Value, (decimal) int16Value),
+            (typeof(short), typeof(byte), true, int16Value, (byte)int16Value),
+            (typeof(short), typeof(char), true, int16Value, (char)int16Value),
+            (typeof(short), typeof(decimal), true, int16Value, (decimal)int16Value),
             (typeof(short), typeof(double), true, int16Value, (double)int16Value),
             (typeof(short), typeof(short), true, int16Value, int16Value),
             (typeof(short), typeof(int), true, int16Value, (int)int16Value),
@@ -795,7 +948,7 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(short), typeof(ulong), true, int16Value, (ulong)int16Value),
             (typeof(int), typeof(bool), true, 1, true),
             (typeof(int), typeof(byte), true, int32Value, (byte)int32Value),
-            (typeof(int), typeof(char), true, int32Value, (char) int32Value),
+            (typeof(int), typeof(char), true, int32Value, (char)int32Value),
             (typeof(int), typeof(decimal), true, int32Value, (decimal)int32Value),
             (typeof(int), typeof(double), true, int32Value, (double)int32Value),
             (typeof(int), typeof(short), true, int32Value, (short)int32Value),
@@ -810,9 +963,9 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(int), typeof(uint), true, int32Value, (uint)int32Value),
             (typeof(int), typeof(ulong), true, int32Value, (ulong)int32Value),
             (typeof(long), typeof(bool), true, (long)1, true),
-            (typeof(long), typeof(byte), true, int64Value, (byte) int64Value),
-            (typeof(long), typeof(char), true, int64Value, (char) int64Value),
-            (typeof(long), typeof(decimal), true, int64Value, (decimal) int64Value),
+            (typeof(long), typeof(byte), true, int64Value, (byte)int64Value),
+            (typeof(long), typeof(char), true, int64Value, (char)int64Value),
+            (typeof(long), typeof(decimal), true, int64Value, (decimal)int64Value),
             (typeof(long), typeof(double), true, int64Value, (double)int64Value),
             (typeof(long), typeof(short), true, int64Value, (short)int64Value),
             (typeof(long), typeof(int), true, int64Value, (int)int64Value),
@@ -829,7 +982,7 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(IntPtr), typeof(object), true, intPtrValue, intPtrValue),
             (typeof(sbyte), typeof(bool), true, (sbyte)1, true),
             (typeof(sbyte), typeof(byte), true, sbyteValue, (byte)sbyteValue),
-            (typeof(sbyte), typeof(char), true, sbyteValue, (char) sbyteValue),
+            (typeof(sbyte), typeof(char), true, sbyteValue, (char)sbyteValue),
             (typeof(sbyte), typeof(decimal), true, sbyteValue, (decimal)sbyteValue),
             (typeof(sbyte), typeof(double), true, sbyteValue, (double)sbyteValue),
             (typeof(sbyte), typeof(short), true, sbyteValue, (short)sbyteValue),
@@ -844,26 +997,110 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(sbyte), typeof(uint), true, sbyteValue, (uint)sbyteValue),
             (typeof(sbyte), typeof(ulong), true, sbyteValue, (ulong)sbyteValue),
             (typeof(float), typeof(bool), true, (float)1, true),
-            (typeof(float), typeof(byte), true, singleValue, Convert.ChangeType(singleValue, typeof(byte), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(decimal), true, singleValue, Convert.ChangeType(singleValue, typeof(decimal), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(double), true, singleValue, Convert.ChangeType(singleValue, typeof(double), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(short), true, singleValue, Convert.ChangeType(singleValue, typeof(short), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(int), true, singleValue, Convert.ChangeType(singleValue, typeof(int), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(long), true, singleValue, Convert.ChangeType(singleValue, typeof(long), CultureInfo.InvariantCulture)),
+            (
+                typeof(float),
+                typeof(byte),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(byte), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(decimal),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(decimal), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(double),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(double), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(short),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(short), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(int),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(int), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(long),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(long), CultureInfo.InvariantCulture)
+            ),
             (typeof(float), typeof(object), true, singleValue, singleValue),
-            (typeof(float), typeof(sbyte), true, singleValue, Convert.ChangeType(singleValue, typeof(sbyte), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(float), true, singleValue, Convert.ChangeType(singleValue, typeof(float), CultureInfo.InvariantCulture)),
+            (
+                typeof(float),
+                typeof(sbyte),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(sbyte), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(float),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(float), CultureInfo.InvariantCulture)
+            ),
             (typeof(float), typeof(string), true, singleValue, singleValue.ToString(CultureInfo.InvariantCulture)),
             (typeof(float), typeof(TestEnum), true, (float)enumValue, enumValue),
-            (typeof(float), typeof(ushort), true, singleValue, Convert.ChangeType(singleValue, typeof(ushort), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(uint), true, singleValue, Convert.ChangeType(singleValue, typeof(uint), CultureInfo.InvariantCulture)),
-            (typeof(float), typeof(ulong), true, singleValue, Convert.ChangeType(singleValue, typeof(ulong), CultureInfo.InvariantCulture)),
+            (
+                typeof(float),
+                typeof(ushort),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(ushort), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(uint),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(uint), CultureInfo.InvariantCulture)
+            ),
+            (
+                typeof(float),
+                typeof(ulong),
+                true,
+                singleValue,
+                Convert.ChangeType(singleValue, typeof(ulong), CultureInfo.InvariantCulture)
+            ),
             (typeof(string), typeof(bool), true, "True", true),
             (typeof(string), typeof(byte), true, byteValue.ToString(CultureInfo.InvariantCulture), byteValue),
             (typeof(string), typeof(char), true, charValue.ToString(CultureInfo.InvariantCulture), charValue),
-            (typeof(string), typeof(DateOnly), true, dateOnlyValue.ToString("O", CultureInfo.InvariantCulture), dateOnlyValue),
-            (typeof(string), typeof(DateTime), true, dateTimeValue.ToString("O", CultureInfo.InvariantCulture), dateTimeValue),
-            (typeof(string), typeof(DateTimeOffset), true, dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture), dateTimeOffsetValue),
+            (
+                typeof(string),
+                typeof(DateOnly),
+                true,
+                dateOnlyValue.ToString("O", CultureInfo.InvariantCulture),
+                dateOnlyValue
+            ),
+            (
+                typeof(string),
+                typeof(DateTime),
+                true,
+                dateTimeValue.ToString("O", CultureInfo.InvariantCulture),
+                dateTimeValue
+            ),
+            (
+                typeof(string),
+                typeof(DateTimeOffset),
+                true,
+                dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture),
+                dateTimeOffsetValue
+            ),
             (typeof(string), typeof(decimal), true, decimalValue.ToString(CultureInfo.InvariantCulture), decimalValue),
             (typeof(string), typeof(double), true, doubleValue.ToString(CultureInfo.InvariantCulture), doubleValue),
             (typeof(string), typeof(Guid), true, guidValue.ToString("D"), guidValue),
@@ -875,7 +1112,13 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(string), typeof(float), true, singleValue.ToString(CultureInfo.InvariantCulture), singleValue),
             (typeof(string), typeof(string), true, stringValue, stringValue),
             (typeof(string), typeof(TestEnum), true, enumValue.ToString(), enumValue),
-            (typeof(string), typeof(TimeSpan), true, timeSpanValue.ToString("g", CultureInfo.InvariantCulture), timeSpanValue),
+            (
+                typeof(string),
+                typeof(TimeSpan),
+                true,
+                timeSpanValue.ToString("g", CultureInfo.InvariantCulture),
+                timeSpanValue
+            ),
             (typeof(string), typeof(ushort), true, uint16Value.ToString(CultureInfo.InvariantCulture), uint16Value),
             (typeof(string), typeof(uint), true, uint32Value.ToString(CultureInfo.InvariantCulture), uint32Value),
             (typeof(string), typeof(ulong), true, uint64Value.ToString(CultureInfo.InvariantCulture), uint64Value),
@@ -894,16 +1137,28 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(TestEnum), typeof(uint), true, enumValue, (uint)enumValue),
             (typeof(TestEnum), typeof(ulong), true, enumValue, (ulong)enumValue),
             (typeof(TimeOnly), typeof(object), true, timeOnlyValue, timeOnlyValue),
-            (typeof(TimeOnly), typeof(string), true, timeOnlyValue, timeOnlyValue.ToString("O", CultureInfo.InvariantCulture)),
+            (
+                typeof(TimeOnly),
+                typeof(string),
+                true,
+                timeOnlyValue,
+                timeOnlyValue.ToString("O", CultureInfo.InvariantCulture)
+            ),
             (typeof(TimeOnly), typeof(TimeOnly), true, timeOnlyValue, timeOnlyValue),
             (typeof(TimeSpan), typeof(object), true, timeSpanValue, timeSpanValue),
-            (typeof(TimeSpan), typeof(string), true, timeSpanValue, timeSpanValue.ToString("g", CultureInfo.InvariantCulture)),
+            (
+                typeof(TimeSpan),
+                typeof(string),
+                true,
+                timeSpanValue,
+                timeSpanValue.ToString("g", CultureInfo.InvariantCulture)
+            ),
             (typeof(TimeSpan), typeof(TimeOnly), true, timeSpanValue, TimeOnly.FromTimeSpan(timeSpanValue)),
             (typeof(TimeSpan), typeof(TimeSpan), true, timeSpanValue, timeSpanValue),
             (typeof(ushort), typeof(bool), true, (ushort)1, true),
-            (typeof(ushort), typeof(byte), true, uint16Value, (byte) uint16Value),
-            (typeof(ushort), typeof(char), true, uint16Value, (char) uint16Value),
-            (typeof(ushort), typeof(decimal), true, uint16Value, (decimal) uint16Value),
+            (typeof(ushort), typeof(byte), true, uint16Value, (byte)uint16Value),
+            (typeof(ushort), typeof(char), true, uint16Value, (char)uint16Value),
+            (typeof(ushort), typeof(decimal), true, uint16Value, (decimal)uint16Value),
             (typeof(ushort), typeof(double), true, uint16Value, (double)uint16Value),
             (typeof(ushort), typeof(short), true, uint16Value, (short)uint16Value),
             (typeof(ushort), typeof(int), true, uint16Value, (int)uint16Value),
@@ -917,9 +1172,9 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(ushort), typeof(uint), true, uint16Value, (uint)uint16Value),
             (typeof(ushort), typeof(ulong), true, uint16Value, (ulong)uint16Value),
             (typeof(uint), typeof(bool), true, (uint)1, true),
-            (typeof(uint), typeof(byte), true, uint32Value, (byte) uint32Value),
-            (typeof(uint), typeof(char), true, uint32Value, (char) uint32Value),
-            (typeof(uint), typeof(decimal), true, uint32Value, (decimal) uint32Value),
+            (typeof(uint), typeof(byte), true, uint32Value, (byte)uint32Value),
+            (typeof(uint), typeof(char), true, uint32Value, (char)uint32Value),
+            (typeof(uint), typeof(decimal), true, uint32Value, (decimal)uint32Value),
             (typeof(uint), typeof(double), true, uint32Value, (double)uint32Value),
             (typeof(uint), typeof(int), true, uint32Value, (int)uint32Value),
             (typeof(uint), typeof(int), true, uint32Value, (int)uint32Value),
@@ -933,9 +1188,9 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(uint), typeof(uint), true, uint32Value, uint32Value),
             (typeof(uint), typeof(ulong), true, uint32Value, (ulong)uint32Value),
             (typeof(ulong), typeof(bool), true, (ulong)1, true),
-            (typeof(ulong), typeof(byte), true, uint64Value, (byte) uint64Value),
-            (typeof(ulong), typeof(char), true, uint64Value, (char) uint64Value),
-            (typeof(ulong), typeof(decimal), true, uint64Value, (decimal) uint64Value),
+            (typeof(ulong), typeof(byte), true, uint64Value, (byte)uint64Value),
+            (typeof(ulong), typeof(char), true, uint64Value, (char)uint64Value),
+            (typeof(ulong), typeof(decimal), true, uint64Value, (decimal)uint64Value),
             (typeof(ulong), typeof(double), true, uint64Value, (double)uint64Value),
             (typeof(ulong), typeof(short), true, uint64Value, (short)uint64Value),
             (typeof(ulong), typeof(int), true, uint64Value, (int)uint64Value),

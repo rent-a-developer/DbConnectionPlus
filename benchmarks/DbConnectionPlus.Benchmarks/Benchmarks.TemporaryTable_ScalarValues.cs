@@ -8,26 +8,22 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
+        Targets = [
             nameof(TemporaryTable_ScalarValues_Command),
             nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
         ]
     )]
-    public void TemporaryTable_ScalarValues__Cleanup() =>
-        this.connection.Dispose();
+    public void TemporaryTable_ScalarValues__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
+        Targets = [
             nameof(TemporaryTable_ScalarValues_Command),
             nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
         ]
     )]
-    public void TemporaryTable_ScalarValues__Setup() =>
-        this.SetupDatabase(0);
+    public void TemporaryTable_ScalarValues__Setup() => this.SetupDatabase(0);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
@@ -40,10 +36,7 @@ public partial class Benchmarks
         using var insertCommand = this.connection.CreateCommand();
         insertCommand.CommandText = "INSERT INTO temp.\"Values\" (Value) VALUES (@Value)";
 
-        var valueParameter = new SqliteParameter
-        {
-            ParameterName = "@Value"
-        };
+        var valueParameter = new SqliteParameter { ParameterName = "@Value" };
 
         insertCommand.Parameters.Add(valueParameter);
 
@@ -97,11 +90,16 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
     public List<long> TemporaryTable_ScalarValues_DbConnectionPlus() =>
-        [.. this.connection.Query<long>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")];
+        [
+            .. this.connection.Query<long>(
+                $"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}"
+            ),
+        ];
 
-    private readonly List<long> temporaryTable_ScalarValues_Values = [.. Enumerable
-        .Range(0, TemporaryTable_ScalarValues_ValuesPerOperation)
-        .Select(a => (long)a)];
+    private readonly List<long> temporaryTable_ScalarValues_Values =
+    [
+        .. Enumerable.Range(0, TemporaryTable_ScalarValues_ValuesPerOperation).Select(a => (long)a),
+    ];
 
     private const string TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
     private const int TemporaryTable_ScalarValues_ValuesPerOperation = 5000;

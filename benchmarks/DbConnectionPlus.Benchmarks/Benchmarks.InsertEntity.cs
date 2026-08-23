@@ -8,26 +8,14 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
-            nameof(InsertEntity_Command),
-            nameof(InsertEntity_Dapper),
-            nameof(InsertEntity_DbConnectionPlus)
-        ]
+        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
     )]
-    public void InsertEntity__Cleanup() =>
-        this.connection.Dispose();
+    public void InsertEntity__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
-            nameof(InsertEntity_Command),
-            nameof(InsertEntity_Dapper),
-            nameof(InsertEntity_DbConnectionPlus)
-        ]
+        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
     )]
-    public void InsertEntity__Setup() =>
-        this.SetupDatabase(0);
+    public void InsertEntity__Setup() => this.SetupDatabase(0);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(InsertEntity_Category)]
@@ -54,7 +42,7 @@ public partial class Benchmarks
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) }
+            { "StringValue", new("StringValue", null) },
         };
 
         command.Parameters.AddRange(parameters.Values);
@@ -82,8 +70,7 @@ public partial class Benchmarks
         this.connection.InsertEntity(this.insertEntity_entityToInsert);
     }
 
-    private void AssignNextInsertEntityId() =>
-        this.insertEntity_entityToInsert.Id = ++this.insertEntity_nextId;
+    private void AssignNextInsertEntityId() => this.insertEntity_entityToInsert.Id = ++this.insertEntity_nextId;
 
     private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single();
 

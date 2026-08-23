@@ -43,10 +43,7 @@ internal static class ValueConverter
         var effectiveSourceType = Nullable.GetUnderlyingType(sourceType) ?? sourceType;
         var effectiveTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
-        if (
-            effectiveSourceType == effectiveTargetType ||
-            effectiveTargetType == typeof(object)
-        )
+        if (effectiveSourceType == effectiveTargetType || effectiveTargetType == typeof(object))
         {
             // Conversion to same type or to Object is always possible.
             return true;
@@ -108,7 +105,8 @@ internal static class ValueConverter
             case null or DBNull when default(TTarget) is null:
                 return default;
 
-            case null or DBNull when default(TTarget) is not null:
+            case null
+            or DBNull when default(TTarget) is not null:
                 ThrowCouldNotConvertNullOrDbNullToNonNullableTargetTypeException(value, targetType);
                 return default; // Just to satisfy the compiler.
 
@@ -134,10 +132,7 @@ internal static class ValueConverter
             case string stringValue when effectiveTargetType == typeof(char):
                 if (stringValue.Length != 1)
                 {
-                    ThrowCouldNotConvertNonSingleCharStringToCharException(
-                        stringValue,
-                        targetType
-                    );
+                    ThrowCouldNotConvertNonSingleCharStringToCharException(stringValue, targetType);
                 }
 
                 return (TTarget)(object)stringValue[0];
@@ -204,21 +199,13 @@ internal static class ValueConverter
 
                 try
                 {
-                    return (TTarget?)Convert.ChangeType(
-                        value,
-                        effectiveTargetType,
-                        CultureInfo.InvariantCulture
-                    );
+                    return (TTarget?)Convert.ChangeType(value, effectiveTargetType, CultureInfo.InvariantCulture);
                 }
-                catch (Exception exception) when (
-                    exception is ArgumentException or InvalidCastException or FormatException or OverflowException
-                )
+                catch (Exception exception)
+                    when (exception is ArgumentException or InvalidCastException or FormatException or OverflowException
+                    )
                 {
-                    ThrowCouldNotConvertValueToTargetTypeException(
-                        value,
-                        targetType,
-                        exception
-                    );
+                    ThrowCouldNotConvertValueToTargetTypeException(value, targetType, exception);
                     return default; // Just to satisfy the compiler
                 }
         }
@@ -268,7 +255,8 @@ internal static class ValueConverter
             case null or DBNull when targetType.IsReferenceTypeOrNullableType():
                 return null;
 
-            case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
+            case null
+            or DBNull when !targetType.IsReferenceTypeOrNullableType():
                 ThrowCouldNotConvertNullOrDbNullToNonNullableTargetTypeException(value, targetType);
                 return null; // Just to satisfy the compiler.
 
@@ -294,10 +282,7 @@ internal static class ValueConverter
             case string stringValue when effectiveTargetType == typeof(char):
                 if (stringValue.Length != 1)
                 {
-                    ThrowCouldNotConvertNonSingleCharStringToCharException(
-                        stringValue,
-                        targetType
-                    );
+                    ThrowCouldNotConvertNonSingleCharStringToCharException(stringValue, targetType);
                 }
 
                 return stringValue[0];
@@ -364,15 +349,11 @@ internal static class ValueConverter
 
                 try
                 {
-                    return Convert.ChangeType(
-                        value,
-                        effectiveTargetType,
-                        CultureInfo.InvariantCulture
-                    );
+                    return Convert.ChangeType(value, effectiveTargetType, CultureInfo.InvariantCulture);
                 }
-                catch (Exception exception) when (
-                    exception is ArgumentException or InvalidCastException or FormatException or OverflowException
-                )
+                catch (Exception exception)
+                    when (exception is ArgumentException or InvalidCastException or FormatException or OverflowException
+                    )
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(value, targetType, exception);
                     return null; // Just to satisfy the compiler
@@ -390,27 +371,28 @@ internal static class ValueConverter
     /// that an enum can be converted to; otherwise, <see langword="false" />.
     /// </returns>
     private static bool IsSupportedEnumConversionType(Type type) =>
-        Type.GetTypeCode(type) is
-            // Ordered by frequency of use:
-            TypeCode.String or
-            TypeCode.Int32 or
-            TypeCode.Int16 or
-            TypeCode.Int64 or
-            TypeCode.Double or
-            TypeCode.Single or
-            TypeCode.Decimal or
-            TypeCode.Byte or
-            TypeCode.SByte or
-            TypeCode.UInt16 or
-            TypeCode.UInt32 or
-            TypeCode.UInt64;
+        Type.GetTypeCode(type)
+            is
+                // Ordered by frequency of use:
+                TypeCode.String
+                or TypeCode.Int32
+                or TypeCode.Int16
+                or TypeCode.Int64
+                or TypeCode.Double
+                or TypeCode.Single
+                or TypeCode.Decimal
+                or TypeCode.Byte
+                or TypeCode.SByte
+                or TypeCode.UInt16
+                or TypeCode.UInt32
+                or TypeCode.UInt64;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertNonSingleCharStringToCharException(string stringValue, Type targetType) =>
         throw new InvalidCastException(
-            $"Could not convert the string '{stringValue}' to the type {targetType}. The string must be exactly one " +
-            "character long."
+            $"Could not convert the string '{stringValue}' to the type {targetType}. The string must be exactly one "
+                + "character long."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -420,8 +402,8 @@ internal static class ValueConverter
         Type targetType
     ) =>
         throw new InvalidCastException(
-            $"Could not convert the value {value.ToDebugString()} to the type {targetType}, because the type is " +
-            "non-nullable."
+            $"Could not convert the value {value.ToDebugString()} to the type {targetType}, because the type is "
+                + "non-nullable."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -432,17 +414,14 @@ internal static class ValueConverter
         Exception innerException
     ) =>
         throw new InvalidCastException(
-            $"Could not convert the value {value.ToDebugString()} to the type {targetType}. See inner exception " +
-            "for details.",
+            $"Could not convert the value {value.ToDebugString()} to the type {targetType}. See inner exception "
+                + "for details.",
             innerException
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
-    private static void ThrowCouldNotConvertValueToTargetTypeException(
-        object? value,
-        Type targetType
-    ) =>
+    private static void ThrowCouldNotConvertValueToTargetTypeException(object? value, Type targetType) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to the type {targetType}. "
         );
@@ -462,7 +441,6 @@ internal static class ValueConverter
         (typeof(bool), typeof(ushort)),
         (typeof(bool), typeof(uint)),
         (typeof(bool), typeof(ulong)),
-
         (typeof(byte), typeof(bool)),
         (typeof(byte), typeof(byte)),
         (typeof(byte), typeof(char)),
@@ -477,9 +455,7 @@ internal static class ValueConverter
         (typeof(byte), typeof(ushort)),
         (typeof(byte), typeof(uint)),
         (typeof(byte), typeof(ulong)),
-
         (typeof(byte[]), typeof(Guid)),
-
         (typeof(char), typeof(byte)),
         (typeof(char), typeof(char)),
         (typeof(char), typeof(short)),
@@ -490,17 +466,13 @@ internal static class ValueConverter
         (typeof(char), typeof(ushort)),
         (typeof(char), typeof(uint)),
         (typeof(char), typeof(ulong)),
-
         (typeof(DateOnly), typeof(DateOnly)),
         (typeof(DateOnly), typeof(string)),
-
         (typeof(DateTime), typeof(DateTime)),
         (typeof(DateTime), typeof(DateOnly)),
         (typeof(DateTime), typeof(string)),
-
         (typeof(DateTimeOffset), typeof(DateTimeOffset)),
         (typeof(DateTimeOffset), typeof(string)),
-
         (typeof(decimal), typeof(bool)),
         (typeof(decimal), typeof(byte)),
         (typeof(decimal), typeof(decimal)),
@@ -514,7 +486,6 @@ internal static class ValueConverter
         (typeof(decimal), typeof(ushort)),
         (typeof(decimal), typeof(uint)),
         (typeof(decimal), typeof(ulong)),
-
         (typeof(double), typeof(bool)),
         (typeof(double), typeof(byte)),
         (typeof(double), typeof(decimal)),
@@ -528,11 +499,9 @@ internal static class ValueConverter
         (typeof(double), typeof(ushort)),
         (typeof(double), typeof(uint)),
         (typeof(double), typeof(ulong)),
-
         (typeof(Guid), typeof(byte[])),
         (typeof(Guid), typeof(Guid)),
         (typeof(Guid), typeof(string)),
-
         (typeof(short), typeof(bool)),
         (typeof(short), typeof(byte)),
         (typeof(short), typeof(char)),
@@ -547,7 +516,6 @@ internal static class ValueConverter
         (typeof(short), typeof(ushort)),
         (typeof(short), typeof(uint)),
         (typeof(short), typeof(ulong)),
-
         (typeof(int), typeof(bool)),
         (typeof(int), typeof(byte)),
         (typeof(int), typeof(char)),
@@ -562,7 +530,6 @@ internal static class ValueConverter
         (typeof(int), typeof(ushort)),
         (typeof(int), typeof(uint)),
         (typeof(int), typeof(ulong)),
-
         (typeof(long), typeof(bool)),
         (typeof(long), typeof(byte)),
         (typeof(long), typeof(char)),
@@ -577,9 +544,7 @@ internal static class ValueConverter
         (typeof(long), typeof(ushort)),
         (typeof(long), typeof(uint)),
         (typeof(long), typeof(ulong)),
-
         (typeof(IntPtr), typeof(IntPtr)),
-
         (typeof(sbyte), typeof(bool)),
         (typeof(sbyte), typeof(byte)),
         (typeof(sbyte), typeof(char)),
@@ -594,7 +559,6 @@ internal static class ValueConverter
         (typeof(sbyte), typeof(ushort)),
         (typeof(sbyte), typeof(uint)),
         (typeof(sbyte), typeof(ulong)),
-
         (typeof(float), typeof(bool)),
         (typeof(float), typeof(byte)),
         (typeof(float), typeof(decimal)),
@@ -608,7 +572,6 @@ internal static class ValueConverter
         (typeof(float), typeof(ushort)),
         (typeof(float), typeof(uint)),
         (typeof(float), typeof(ulong)),
-
         (typeof(string), typeof(bool)),
         (typeof(string), typeof(byte)),
         (typeof(string), typeof(char)),
@@ -629,14 +592,11 @@ internal static class ValueConverter
         (typeof(string), typeof(ulong)),
         (typeof(string), typeof(TimeSpan)),
         (typeof(string), typeof(TimeOnly)),
-
         (typeof(TimeOnly), typeof(TimeOnly)),
         (typeof(TimeOnly), typeof(string)),
-
         (typeof(TimeSpan), typeof(TimeOnly)),
         (typeof(TimeSpan), typeof(TimeSpan)),
         (typeof(TimeSpan), typeof(string)),
-
         (typeof(ushort), typeof(bool)),
         (typeof(ushort), typeof(byte)),
         (typeof(ushort), typeof(char)),
@@ -651,7 +611,6 @@ internal static class ValueConverter
         (typeof(ushort), typeof(ushort)),
         (typeof(ushort), typeof(uint)),
         (typeof(ushort), typeof(ulong)),
-
         (typeof(uint), typeof(bool)),
         (typeof(uint), typeof(byte)),
         (typeof(uint), typeof(char)),
@@ -666,7 +625,6 @@ internal static class ValueConverter
         (typeof(uint), typeof(ushort)),
         (typeof(uint), typeof(uint)),
         (typeof(uint), typeof(ulong)),
-
         (typeof(ulong), typeof(bool)),
         (typeof(ulong), typeof(byte)),
         (typeof(ulong), typeof(char)),
@@ -681,7 +639,6 @@ internal static class ValueConverter
         (typeof(ulong), typeof(ushort)),
         (typeof(ulong), typeof(uint)),
         (typeof(ulong), typeof(ulong)),
-
-        (typeof(UIntPtr), typeof(UIntPtr))
+        (typeof(UIntPtr), typeof(UIntPtr)),
     ];
 }

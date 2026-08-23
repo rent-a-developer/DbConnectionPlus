@@ -79,7 +79,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class User
     /// {
     ///     [Key]
@@ -87,7 +87,7 @@ public static partial class DbConnectionExtensions
     ///     public DateTime LastLoginDate { get; set; }
     ///     public UserState State { get; set; }
     /// }
-    /// 
+    ///
     /// if (user.LastLoginDate < DateTime.UtcNow.AddYears(-1))
     /// {
     ///     user.State = UserState.Inactive;
@@ -96,9 +96,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static int UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -111,12 +109,7 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.UpdateEntity(
-            connection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.UpdateEntity(connection, entity, transaction, cancellationToken);
     }
 
     /// <summary>
@@ -190,7 +183,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class User
     /// {
     ///     [Key]
@@ -198,7 +191,7 @@ public static partial class DbConnectionExtensions
     ///     public DateTime LastLoginDate { get; set; }
     ///     public UserState State { get; set; }
     /// }
-    /// 
+    ///
     /// if (user.LastLoginDate < DateTime.UtcNow.AddYears(-1))
     /// {
     ///     user.State = UserState.Inactive;
@@ -207,9 +200,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static Task<int> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -222,11 +213,6 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.UpdateEntityAsync(
-            connection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.UpdateEntityAsync(connection, entity, transaction, cancellationToken);
     }
 }

@@ -6,28 +6,16 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
 {
-    public DbConnectionExtensions_QueryTests() : base(
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QueryAsync(sql, transaction, timeout, commandType, cancellationToken)
-                .ToListAsync(cancellationToken)
-                .AsTask(),
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.Query(sql, transaction, timeout, commandType, cancellationToken).ToList()
-    )
+    public DbConnectionExtensions_QueryTests()
+        : base(
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection
+                    .QueryAsync(sql, transaction, timeout, commandType, cancellationToken)
+                    .ToListAsync(cancellationToken)
+                    .AsTask(),
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.Query(sql, transaction, timeout, commandType, cancellationToken).ToList()
+        )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();
 
@@ -35,8 +23,7 @@ public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
         mockDbDataReader.GetName(0).Returns("Id");
         mockDbDataReader.GetFieldType(0).Returns(typeof(long));
 
-        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
-            .Returns(mockDbDataReader);
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(mockDbDataReader);
 
         this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
             .Returns(mockDbDataReader);
@@ -45,12 +32,8 @@ public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.Query("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.Query("SELECT * FROM Entity"));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QueryAsync("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QueryAsync("SELECT * FROM Entity"));
     }
 }

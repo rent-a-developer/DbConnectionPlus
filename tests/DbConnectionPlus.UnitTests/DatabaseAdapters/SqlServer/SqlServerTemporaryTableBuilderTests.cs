@@ -7,15 +7,13 @@ public class SqlServerTemporaryTableBuilderTests : UnitTestsBase
     [Fact]
     public void BuildTemporaryTable_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
     {
-        Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
-            )
-            .Should().Throw<ArgumentException>();
+        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int)))
+            .Should()
+            .Throw<ArgumentException>();
 
-        Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
-            )
-            .Should().Throw<ArgumentException>();
+        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int)))
+            .Should()
+            .Throw<ArgumentException>();
     }
 
     [Fact]
@@ -24,20 +22,20 @@ public class SqlServerTemporaryTableBuilderTests : UnitTestsBase
         await Invoking(() =>
                 this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
             )
-            .Should().ThrowAsync<ArgumentException>();
+            .Should()
+            .ThrowAsync<ArgumentException>();
 
         await Invoking(() =>
                 this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
             )
-            .Should().ThrowAsync<ArgumentException>();
+            .Should()
+            .ThrowAsync<ArgumentException>();
     }
 
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            new SqlServerTemporaryTableBuilder(new())
-        );
+        ArgumentNullGuardVerifier.Verify(() => new SqlServerTemporaryTableBuilder(new()));
 
         ArgumentNullGuardVerifier.Verify(() =>
             this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))

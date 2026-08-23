@@ -31,7 +31,9 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 /// that before this constructor opens a connection to it.
 /// </remarks>
 public abstract class IntegrationTestsBase<TTestDatabaseProvider>
-    : IClassFixture<TestDatabaseFixture<TTestDatabaseProvider>>, IDisposable, IAsyncDisposable
+    : IClassFixture<TestDatabaseFixture<TTestDatabaseProvider>>,
+        IDisposable,
+        IAsyncDisposable
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     protected IntegrationTestsBase()
@@ -39,8 +41,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
         // Ensure consistent culture for tests.
         CultureInfo.CurrentCulture =
             CultureInfo.CurrentUICulture =
-                Thread.CurrentThread.CurrentCulture =
-                    Thread.CurrentThread.CurrentUICulture = new("en-US");
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                new("en-US");
 
         this.logDbCommands = false;
 
@@ -48,12 +51,14 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
         DbConnectionPlusConfiguration.Instance = new()
         {
             EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = this.InterceptDbCommand
+            InterceptDbCommand = this.InterceptDbCommand,
         };
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<MySqlConnection>(new MySqlDatabaseAdapter());
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<OracleConnection>(new OracleDatabaseAdapter());
-        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<NpgsqlConnection>(new PostgreSqlDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<NpgsqlConnection>(
+            new PostgreSqlDatabaseAdapter()
+        );
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqliteConnection>(new SqliteDatabaseAdapter());
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqlConnection>(new SqlServerDatabaseAdapter());
 
@@ -108,8 +113,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// The formatted parameter name, including the appropriate prefix, suitable for inclusion in SQL statements.
     /// </returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static string P(string parameterName) =>
-        currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
+    public static string P(string parameterName) => currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
 
     /// <summary>
     /// Returns the specified database identifier properly quoted for use in SQL statements according to the current
@@ -118,8 +122,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="identifier">The identifier to quote.</param>
     /// <returns>The quoted identifier, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static string Q(string identifier) =>
-        currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
+    public static string Q(string identifier) => currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
 
     /// <summary>
     /// Returns the specified temporary table name properly quoted for use in SQL statements according to the current
@@ -129,10 +132,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
     public static string QT(string tableName) =>
-        currentDatabaseAdapter.Value!.QuoteTemporaryTableName(
-            tableName,
-            currentTestDatabaseConnection.Value!
-        );
+        currentDatabaseAdapter.Value!.QuoteTemporaryTableName(tableName, currentTestDatabaseConnection.Value!);
 
     /// <summary>
     /// The connection to the test database.
@@ -163,25 +163,19 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     protected List<T> CreateEntitiesInDb<T>(int? numberOfEntities = null, DbTransaction? transaction = null)
         where T : class =>
         this.ExecuteWithoutDbCommandLogging(() =>
+        {
+            var entities = Generate.Multiple<T>(numberOfEntities);
+
+            this.Connection.InsertEntities(entities, transaction, TestContext.Current.CancellationToken);
+
+            foreach (var entity in entities)
             {
-                var entities = Generate.Multiple<T>(numberOfEntities);
-
-                this.Connection.InsertEntities(
-                    entities,
-                    transaction,
-                    TestContext.Current.CancellationToken
-                );
-
-                foreach (var entity in entities)
-                {
-                    // Verify that the entity has been inserted:
-                    this.ExistsEntityInDb(entity, transaction)
-                        .Should().BeTrue();
-                }
-
-                return entities;
+                // Verify that the entity has been inserted:
+                this.ExistsEntityInDb(entity, transaction).Should().BeTrue();
             }
-        );
+
+            return entities;
+        });
 
     /// <summary>
     /// Creates an entity of the type <typeparamref name="T" /> and inserts it into the test database.
@@ -190,25 +184,18 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The entity that was created and inserted.</returns>
     protected T CreateEntityInDb<T>(DbTransaction? transaction = null)
-        where T : class
-        =>
-            this.ExecuteWithoutDbCommandLogging(() =>
-                {
-                    var entity = Generate.Single<T>();
+        where T : class =>
+        this.ExecuteWithoutDbCommandLogging(() =>
+        {
+            var entity = Generate.Single<T>();
 
-                    this.Connection.InsertEntity(
-                        entity,
-                        transaction,
-                        TestContext.Current.CancellationToken
-                    );
+            this.Connection.InsertEntity(entity, transaction, TestContext.Current.CancellationToken);
 
-                    // Verify that the entity has been inserted:
-                    this.ExistsEntityInDb(entity, transaction)
-                        .Should().BeTrue();
+            // Verify that the entity has been inserted:
+            this.ExistsEntityInDb(entity, transaction).Should().BeTrue();
 
-                    return entity;
-                }
-            );
+            return entity;
+        });
 
     /// <summary>
     /// Determines whether an entity having the key(s) of the specified entity exists in the test database.
@@ -244,11 +231,8 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             keyProperties.Select(p => (p.PropertyName, p.PropertyGetter!(entity))).ToArray()!
         );
 
-        return this.ExecuteWithoutDbCommandLogging(() => this.Connection.Exists(
-                statement,
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
+        return this.ExecuteWithoutDbCommandLogging(() =>
+            this.Connection.Exists(statement, transaction, cancellationToken: TestContext.Current.CancellationToken)
         );
     }
 
@@ -263,11 +247,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// </returns>
     protected bool ExistsTemporaryTableInDb(string tableName, DbTransaction? transaction = null) =>
         this.ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.ExistsTemporaryTable(
-                tableName,
-                this.Connection,
-                transaction
-            )
+            this.TestDatabaseProvider.ExistsTemporaryTable(tableName, this.Connection, transaction)
         );
 
     /// <summary>
@@ -291,16 +271,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="temporaryTableName">The name of the temporary table that contains the specified column.</param>
     /// <param name="columnName">The name of the column of which to get the data type.</param>
     /// <returns>The data type of the specified column of the specified temporary table.</returns>
-    protected string GetDataTypeOfTemporaryTableColumn(
-        string temporaryTableName,
-        string columnName
-    ) =>
+    protected string GetDataTypeOfTemporaryTableColumn(string temporaryTableName, string columnName) =>
         this.ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(
-                temporaryTableName,
-                columnName,
-                this.Connection
-            )
+            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(temporaryTableName, columnName, this.Connection)
         );
 
     /// <summary>

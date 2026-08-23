@@ -17,17 +17,17 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<(int, int, int)>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The SQL statement returned 2 columns, but the value tuple type {typeof((int, int, int))} has " +
-                "3 fields. Make sure that the SQL statement returns the same number of columns as the number of " +
-                "fields in the value tuple type.*"
+                $"The SQL statement returned 2 columns, but the value tuple type {typeof((int, int, int))} has "
+                    + "3 fields. Make sure that the SQL statement returns the same number of columns as the number of "
+                    + "fields in the value tuple type.*"
             );
     }
 
     [Fact]
-    public void
-        GetMaterializer_DataReaderFieldTypeNotCompatibleWithValueTupleFieldType_ShouldThrow()
+    public void GetMaterializer_DataReaderFieldTypeNotCompatibleWithValueTupleFieldType_ShouldThrow()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -37,11 +37,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.GetFieldType(0).Returns(typeof(Guid));
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<DateTime>>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(Guid)} of the column 'DateTime' returned by the SQL statement is not " +
-                $"compatible with the field type {typeof(DateTime)} of the corresponding field of the value tuple " +
-                $"type {typeof(ValueTuple<DateTime>)}.*"
+                $"The data type {typeof(Guid)} of the column 'DateTime' returned by the SQL statement is not "
+                    + $"compatible with the field type {typeof(DateTime)} of the corresponding field of the value tuple "
+                    + $"type {typeof(ValueTuple<DateTime>)}.*"
             );
 
         dataReader.FieldCount.Returns(1);
@@ -50,11 +51,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.GetFieldType(0).Returns(typeof(Guid));
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<DateTime>>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(Guid)} of the 1st column returned by the SQL statement is not " +
-                $"compatible with the field type {typeof(DateTime)} of the corresponding field of the value tuple " +
-                $"type {typeof(ValueTuple<DateTime>)}.*"
+                $"The data type {typeof(Guid)} of the 1st column returned by the SQL statement is not "
+                    + $"compatible with the field type {typeof(DateTime)} of the corresponding field of the value tuple "
+                    + $"type {typeof(ValueTuple<DateTime>)}.*"
             );
     }
 
@@ -66,7 +68,8 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(0);
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<int>>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage("The SQL statement did not return any columns.*");
     }
 
@@ -81,10 +84,11 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.GetFieldType(0).Returns(typeof(BigInteger));
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<BigInteger>>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the column 'Value' returned by the SQL statement is not " +
-                "supported.*"
+                $"The data type {typeof(BigInteger)} of the column 'Value' returned by the SQL statement is not "
+                    + "supported.*"
             );
 
         dataReader.FieldCount.Returns(1);
@@ -93,7 +97,8 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.GetFieldType(0).Returns(typeof(BigInteger));
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<BigInteger>>(dataReader))
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
                 $"The data type {typeof(BigInteger)} of the 1st column returned by the SQL statement is not supported.*"
             );
@@ -105,10 +110,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var dataReader = Substitute.For<DbDataReader>();
 
         Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<NotAValueTuple>(dataReader))
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                $"The specified type {typeof(NotAValueTuple)} is not a {typeof(ValueTuple)} type.*"
-            );
+            .Should()
+            .Throw<ArgumentException>()
+            .WithMessage($"The specified type {typeof(NotAValueTuple)} is not a {typeof(ValueTuple)} type.*");
     }
 
     [Fact]
@@ -135,11 +139,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var entity = materializer(dataReader);
 
-        entity.Id
-            .Should().Be(entityId);
+        entity.Id.Should().Be(entityId);
 
-        entity.Enum
-            .Should().Be(enumValue);
+        entity.Enum.Should().Be(enumValue);
     }
 
     [Fact]
@@ -160,8 +162,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(enumValue);
+        valueTuple.Item1.Should().Be(enumValue);
     }
 
     [Fact]
@@ -176,20 +177,20 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns(999);
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<ValueTuple<TestEnum>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<TestEnum>>(dataReader);
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
     }
 
@@ -207,13 +208,11 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(enumValue.ToString());
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<ValueTuple<TestEnum>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<TestEnum>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(enumValue);
+        valueTuple.Item1.Should().Be(enumValue);
     }
 
     [Fact]
@@ -228,20 +227,20 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns("NonExistent");
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<ValueTuple<TestEnum>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<TestEnum>>(dataReader);
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. That " +
-                "string does not match any of the names of the enum's members.*"
+                $"Could not convert the string 'NonExistent' to an enum member of the type {typeof(TestEnum)}. That "
+                    + "string does not match any of the names of the enum's members.*"
             );
     }
 
@@ -260,64 +259,59 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(
-                int, int, int, int, int, int, int,
-                int, int, int, int, int, int, int,
-                int
-                )>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<(
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int
+        )>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(1);
+        valueTuple.Item1.Should().Be(1);
 
-        valueTuple.Item2
-            .Should().Be(2);
+        valueTuple.Item2.Should().Be(2);
 
-        valueTuple.Item3
-            .Should().Be(3);
+        valueTuple.Item3.Should().Be(3);
 
-        valueTuple.Item4
-            .Should().Be(4);
+        valueTuple.Item4.Should().Be(4);
 
-        valueTuple.Item5
-            .Should().Be(5);
+        valueTuple.Item5.Should().Be(5);
 
-        valueTuple.Item6
-            .Should().Be(6);
+        valueTuple.Item6.Should().Be(6);
 
-        valueTuple.Item7
-            .Should().Be(7);
+        valueTuple.Item7.Should().Be(7);
 
-        valueTuple.Rest.Item1
-            .Should().Be(8);
+        valueTuple.Rest.Item1.Should().Be(8);
 
-        valueTuple.Rest.Item2
-            .Should().Be(9);
+        valueTuple.Rest.Item2.Should().Be(9);
 
-        valueTuple.Rest.Item3
-            .Should().Be(10);
+        valueTuple.Rest.Item3.Should().Be(10);
 
-        valueTuple.Rest.Item4
-            .Should().Be(11);
+        valueTuple.Rest.Item4.Should().Be(11);
 
-        valueTuple.Rest.Item5
-            .Should().Be(12);
+        valueTuple.Rest.Item5.Should().Be(12);
 
-        valueTuple.Rest.Item6
-            .Should().Be(13);
+        valueTuple.Rest.Item6.Should().Be(13);
 
-        valueTuple.Rest.Item7
-            .Should().Be(14);
+        valueTuple.Rest.Item7.Should().Be(14);
 
-        valueTuple.Rest.Rest.Item1
-            .Should().Be(15);
+        valueTuple.Rest.Rest.Item1.Should().Be(15);
     }
 
     [Fact]
-    public void
-        Materializer_NonNullableCharValueTupleField_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
+    public void Materializer_NonNullableCharValueTupleField_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -331,37 +325,38 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char>>(dataReader);
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(char)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(char)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
 
         dataReader.GetString(0).Returns("ab");
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(char)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(char)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one "
+                    + "character long."
             );
     }
 
     [Fact]
-    public void
-        Materializer_NonNullableCharValueTupleField_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
+    public void Materializer_NonNullableCharValueTupleField_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -378,8 +373,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(character);
+        valueTuple.Item1.Should().Be(character);
     }
 
     [Fact]
@@ -396,16 +390,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<long>>(dataReader);
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable.*"
+                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field "
+                    + $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable.*"
             );
     }
 
     [Fact]
-    public void
-        Materializer_NullableCharValueTupleField_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
+    public void Materializer_NullableCharValueTupleField_DataReaderFieldContainsStringWithLengthNotOne_ShouldThrow()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -419,37 +413,38 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char?>>(dataReader);
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(char?)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(char?)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one " +
-                "character long."
+                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one "
+                    + "character long."
             );
 
         dataReader.GetString(0).Returns("ab");
 
         Invoking(() => materializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(char?)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
+                "The column 'Char' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(char?)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly " +
-                "one character long."
+                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly "
+                    + "one character long."
             );
     }
 
     [Fact]
-    public void
-        Materializer_NullableCharValueTupleField_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
+    public void Materializer_NullableCharValueTupleField_DataReaderFieldContainsStringWithLengthOne_ShouldGetFirstCharacter()
     {
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -466,8 +461,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(character);
+        valueTuple.Item1.Should().Be(character);
     }
 
     [Fact]
@@ -484,11 +478,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<long?>>(dataReader);
 
-        var valueTuple = Invoking(() => materializer(dataReader))
-            .Should().NotThrow().Subject;
+        var valueTuple = Invoking(() => materializer(dataReader)).Should().NotThrow().Subject;
 
-        valueTuple.Item1
-            .Should().BeNull();
+        valueTuple.Item1.Should().BeNull();
     }
 
     [Fact]
@@ -542,31 +534,31 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Int32Value);
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<(
+            bool,
+            char,
+            DateTime,
+            decimal?,
+            TestEnum,
+            Guid,
+            int
+        )>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(entity.BooleanValue);
+        valueTuple.Item1.Should().Be(entity.BooleanValue);
 
-        valueTuple.Item2
-            .Should().Be(entity.CharValue);
+        valueTuple.Item2.Should().Be(entity.CharValue);
 
-        valueTuple.Item3
-            .Should().Be(entity.DateTimeValue);
+        valueTuple.Item3.Should().Be(entity.DateTimeValue);
 
-        valueTuple.Item4
-            .Should().BeNull();
+        valueTuple.Item4.Should().BeNull();
 
-        valueTuple.Item5
-            .Should().Be(entity.EnumValue);
+        valueTuple.Item5.Should().Be(entity.EnumValue);
 
-        valueTuple.Item6
-            .Should().Be(entity.GuidValue);
+        valueTuple.Item6.Should().Be(entity.GuidValue);
 
-        valueTuple.Item7
-            .Should().Be(entity.Int32Value);
+        valueTuple.Item7.Should().Be(entity.Int32Value);
     }
 
     [Fact]
@@ -587,8 +579,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().BeEquivalentTo(bytes);
+        valueTuple.Item1.Should().BeEquivalentTo(bytes);
     }
 
     [Fact]
@@ -605,13 +596,11 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetBoolean(0).Returns(entity.BooleanValue);
 
-        var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<ValueTuple<bool>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<bool>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Item1
-            .Should().Be(entity.BooleanValue);
+        valueTuple.Item1.Should().Be(entity.BooleanValue);
     }
 
     [Fact]
@@ -665,16 +654,25 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Int32Value);
 
-        var expressionMaterializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<(
+            bool,
+            char,
+            DateTime,
+            decimal?,
+            TestEnum,
+            Guid,
+            int
+        )>(dataReader);
 
-        var reflectionMaterializer =
-            GetReflectionMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(
+            dataReader
+        );
 
         var valueTuple = reflectionMaterializer(dataReader);
 
         valueTuple
-            .Should().Be(
+            .Should()
+            .Be(
                 (
                     entity.BooleanValue,
                     entity.CharValue,
@@ -686,8 +684,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
                 )
             );
 
-        valueTuple
-            .Should().Be(expressionMaterializer(dataReader));
+        valueTuple.Should().Be(expressionMaterializer(dataReader));
     }
 
     [Fact]
@@ -705,30 +702,50 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
-        var expressionMaterializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(
-                int, int, int, int, int, int, int,
-                int, int, int, int, int, int, int,
-                int
-                )>(dataReader);
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<(
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int
+        )>(dataReader);
 
         var reflectionMaterializer = GetReflectionMaterializer<(
-            int, int, int, int, int, int, int,
-            int, int, int, int, int, int, int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
+            int,
             int
-            )>(dataReader);
+        )>(dataReader);
 
         var valueTuple = reflectionMaterializer(dataReader);
 
-        valueTuple
-            .Should().Be((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
+        valueTuple.Should().Be((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
 
-        valueTuple
-            .Should().Be(expressionMaterializer(dataReader));
+        valueTuple.Should().Be(expressionMaterializer(dataReader));
 
         // The innermost value tuple is the one that only carries the 15th field.
-        valueTuple.Rest.Rest.Item1
-            .Should().Be(15);
+        valueTuple.Rest.Rest.Item1.Should().Be(15);
     }
 
     [Fact]
@@ -746,11 +763,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
-        var materializer =
-            GetReflectionMaterializer<(int, int, int, int, int, int, int, int)>(dataReader);
+        var materializer = GetReflectionMaterializer<(int, int, int, int, int, int, int, int)>(dataReader);
 
-        materializer(dataReader)
-            .Should().Be((1, 2, 3, 4, 5, 6, 7, 8));
+        materializer(dataReader).Should().Be((1, 2, 3, 4, 5, 6, 7, 8));
     }
 
     [Fact]
@@ -777,11 +792,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var valueTuple = materializer(dataReader);
 
-        valueTuple.Id
-            .Should().Be(entityId);
+        valueTuple.Id.Should().Be(entityId);
 
-        valueTuple.Enum
-            .Should().Be(enumValue);
+        valueTuple.Enum.Should().Be(enumValue);
     }
 
     [Fact]
@@ -800,8 +813,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var materializer = GetReflectionMaterializer<ValueTuple<byte[]>>(dataReader);
 
-        materializer(dataReader).Item1
-            .Should().BeEquivalentTo(bytes);
+        materializer(dataReader).Item1.Should().BeEquivalentTo(bytes);
     }
 
     [Fact]
@@ -819,16 +831,19 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<long>>(dataReader);
 
         var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>().Which.Message;
+            .Should()
+            .Throw<InvalidCastException>()
+            .Which.Message;
 
         Invoking(() => reflectionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable."
+                "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field "
+                    + $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable."
             )
-            .And.Message
-            .Should().Be(expectedMessage);
+            .And.Message.Should()
+            .Be(expectedMessage);
     }
 
     [Fact]
@@ -845,9 +860,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         var materializer = GetReflectionMaterializer<ValueTuple<long?>>(dataReader);
 
-        Invoking(() => materializer(dataReader))
-            .Should().NotThrow().Subject.Item1
-            .Should().BeNull();
+        Invoking(() => materializer(dataReader)).Should().NotThrow().Subject.Item1.Should().BeNull();
     }
 
     [Fact]
@@ -866,24 +879,29 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<TestEnum>>(dataReader);
 
         var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>().Which.Message;
+            .Should()
+            .Throw<InvalidCastException>()
+            .Which.Message;
 
         Invoking(() => reflectionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
+                "The column 'Enum' returned by the SQL statement contains a value that could not be converted to "
+                    + $"the type {typeof(TestEnum)} of the corresponding field of the value tuple type "
+                    + $"{typeof(ValueTuple<TestEnum>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
-                $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type "
+                    + $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
         Invoking(() => reflectionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>().Which.Message
-            .Should().Be(expectedMessage);
+            .Should()
+            .Throw<InvalidCastException>()
+            .Which.Message.Should()
+            .Be(expectedMessage);
     }
 
     [Fact]
@@ -906,16 +924,19 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var reflectionMaterializer = GetReflectionMaterializer<(long, long)>(dataReader);
 
         var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>().Which.Message;
+            .Should()
+            .Throw<InvalidCastException>()
+            .Which.Message;
 
         Invoking(() => reflectionMaterializer(dataReader))
-            .Should().Throw<InvalidCastException>()
+            .Should()
+            .Throw<InvalidCastException>()
             .WithMessage(
-                "The 2nd column returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof((long, long))} is non-nullable."
+                "The 2nd column returned by the SQL statement contains a NULL value, but the corresponding field "
+                    + $"of the value tuple type {typeof((long, long))} is non-nullable."
             )
-            .And.Message
-            .Should().Be(expectedMessage);
+            .And.Message.Should()
+            .Be(expectedMessage);
     }
 
     [Fact]

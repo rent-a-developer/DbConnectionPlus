@@ -7,27 +7,11 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets =
-        [
-            nameof(Parameter_Command),
-            nameof(Parameter_Dapper),
-            nameof(Parameter_DbConnectionPlus)
-        ]
-    )]
-    public void Parameter__Cleanup() =>
-        this.connection.Dispose();
+    [GlobalCleanup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
+    public void Parameter__Cleanup() => this.connection.Dispose();
 
-    [GlobalSetup(
-        Targets =
-        [
-            nameof(Parameter_Command),
-            nameof(Parameter_Dapper),
-            nameof(Parameter_DbConnectionPlus)
-        ]
-    )]
-    public void Parameter__Setup() =>
-        this.SetupDatabase(0);
+    [GlobalSetup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
+    public void Parameter__Setup() => this.SetupDatabase(0);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Parameter_Category)]
@@ -57,7 +41,19 @@ public partial class Benchmarks
         SqlMapper.ExecuteScalar<long>(
             this.connection,
             "SELECT @P1 + @P2 + @P3 + @P4 + @P5 + @P6 + @P7 + @P8 + @P9 + @P10",
-            new { P1 = 1, P2 = 2, P3 = 3, P4 = 4, P5 = 5, P6 = 6, P7 = 7, P8 = 8, P9 = 9, P10 = 10 }
+            new
+            {
+                P1 = 1,
+                P2 = 2,
+                P3 = 3,
+                P4 = 4,
+                P5 = 5,
+                P6 = 6,
+                P7 = 7,
+                P8 = 8,
+                P9 = 9,
+                P10 = 10,
+            }
         );
 
     [Benchmark(Baseline = false)]
@@ -65,9 +61,9 @@ public partial class Benchmarks
     public long Parameter_DbConnectionPlus() =>
         this.connection.ExecuteScalar<long>(
             $"""
-             SELECT {Parameter(1)} + {Parameter(2)} + {Parameter(3)} + {Parameter(4)} + {Parameter(5)} + 
-                    {Parameter(6)} + {Parameter(7)} + {Parameter(8)} + {Parameter(9)} + {Parameter(10)}
-             """
+            SELECT {Parameter(1)} + {Parameter(2)} + {Parameter(3)} + {Parameter(4)} + {Parameter(5)} + 
+                   {Parameter(6)} + {Parameter(7)} + {Parameter(8)} + {Parameter(9)} + {Parameter(10)}
+            """
         );
 
     private const string Parameter_Category = "Parameter";

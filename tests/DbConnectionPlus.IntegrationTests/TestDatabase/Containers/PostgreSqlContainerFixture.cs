@@ -12,7 +12,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// Runs the PostgreSQL server the PostgreSQL integration tests use in a Docker container.
 /// </summary>
 internal sealed class PostgreSqlContainerFixture()
-    : DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
+    : DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
+        ITestDatabaseContainerFixture
 {
     /// <inheritdoc />
     public override string ConnectionString =>
@@ -21,17 +22,15 @@ internal sealed class PostgreSqlContainerFixture()
             Host = this.Container.Hostname,
             Port = this.Container.GetMappedPublicPort(PostgreSqlBuilder.PostgreSqlPort),
             Username = PostgreSqlBuilder.DefaultUsername,
-            Password = TestDatabaseContainers.Password
+            Password = TestDatabaseContainers.Password,
         }.ConnectionString;
 
     /// <inheritdoc />
-    public override DbProviderFactory DbProviderFactory =>
-        NpgsqlFactory.Instance;
+    public override DbProviderFactory DbProviderFactory => NpgsqlFactory.Instance;
 
     /// <inheritdoc />
     protected override PostgreSqlBuilder Configure() =>
-        new PostgreSqlBuilder(Image)
-            .WithPassword(TestDatabaseContainers.Password);
+        new PostgreSqlBuilder(Image).WithPassword(TestDatabaseContainers.Password);
 
     private const string Image = "postgres:latest";
 }

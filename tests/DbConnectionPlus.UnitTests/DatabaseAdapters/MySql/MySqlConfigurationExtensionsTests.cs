@@ -1,7 +1,6 @@
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 
-
 namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.MySql;
 
 public class MySqlConfigurationExtensionsTests : UnitTestsBase

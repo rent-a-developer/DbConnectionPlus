@@ -82,8 +82,7 @@ public interface ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     );
 
@@ -163,8 +162,7 @@ public interface ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     );
 }

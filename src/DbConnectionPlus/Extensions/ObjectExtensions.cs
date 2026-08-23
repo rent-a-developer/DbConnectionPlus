@@ -26,7 +26,7 @@ internal static class ObjectExtensions
         {
             null => "{null}",
             DBNull => "{DBNull}",
-            _ => $"'{FormatValue(value, 0)}' ({value.GetType()})"
+            _ => $"'{FormatValue(value, 0)}' ({value.GetType()})",
         };
 
     /// <summary>
@@ -38,88 +38,62 @@ internal static class ObjectExtensions
     private static string FormatValue(object? value, int depth) =>
         value switch
         {
-            null =>
-                "{null}",
+            null => "{null}",
 
-            DBNull =>
-                "{DBNull}",
+            DBNull => "{DBNull}",
 
-            bool booleanValue =>
-                booleanValue ? "True" : "False",
+            bool booleanValue => booleanValue ? "True" : "False",
 
-            byte byteValue =>
-                byteValue.ToString("G", CultureInfo.InvariantCulture),
+            byte byteValue => byteValue.ToString("G", CultureInfo.InvariantCulture),
 
-            byte[] bytesValue =>
-                Convert.ToBase64String(bytesValue),
+            byte[] bytesValue => Convert.ToBase64String(bytesValue),
 
-            char charValue =>
-                charValue.ToString(),
+            char charValue => charValue.ToString(),
 
-            DateTime dateTimeValue =>
-                dateTimeValue.ToString("O", CultureInfo.InvariantCulture),
+            DateTime dateTimeValue => dateTimeValue.ToString("O", CultureInfo.InvariantCulture),
 
-            DateTimeOffset dateTimeOffsetValue =>
-                dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture),
+            DateTimeOffset dateTimeOffsetValue => dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture),
 
-            decimal decimalValue =>
-                decimalValue.ToString("N", CultureInfo.InvariantCulture),
+            decimal decimalValue => decimalValue.ToString("N", CultureInfo.InvariantCulture),
 
-            double doubleValue =>
-                doubleValue.ToString("G17", CultureInfo.InvariantCulture),
+            double doubleValue => doubleValue.ToString("G17", CultureInfo.InvariantCulture),
 
-            Enum enumValue =>
-                enumValue.ToString(),
+            Enum enumValue => enumValue.ToString(),
 
-            Guid guidValue =>
-                guidValue.ToString("D", CultureInfo.InvariantCulture),
+            Guid guidValue => guidValue.ToString("D", CultureInfo.InvariantCulture),
 
-            short int16Value =>
-                int16Value.ToString("G", CultureInfo.InvariantCulture),
+            short int16Value => int16Value.ToString("G", CultureInfo.InvariantCulture),
 
-            int int32Value =>
-                int32Value.ToString("G", CultureInfo.InvariantCulture),
+            int int32Value => int32Value.ToString("G", CultureInfo.InvariantCulture),
 
-            long int64Value =>
-                int64Value.ToString("G", CultureInfo.InvariantCulture),
+            long int64Value => int64Value.ToString("G", CultureInfo.InvariantCulture),
 
-            IntPtr intPtrValue =>
-                intPtrValue.ToString("G", CultureInfo.InvariantCulture),
+            IntPtr intPtrValue => intPtrValue.ToString("G", CultureInfo.InvariantCulture),
 
-            sbyte sbyteValue =>
-                sbyteValue.ToString("G", CultureInfo.InvariantCulture),
+            sbyte sbyteValue => sbyteValue.ToString("G", CultureInfo.InvariantCulture),
 
-            float singleValue =>
-                singleValue.ToString("G9", CultureInfo.InvariantCulture),
+            float singleValue => singleValue.ToString("G9", CultureInfo.InvariantCulture),
 
-            string stringValue =>
-                stringValue,
+            string stringValue => stringValue,
 
-            TimeSpan timeSpanValue =>
-                timeSpanValue.ToString("c", CultureInfo.InvariantCulture),
+            TimeSpan timeSpanValue => timeSpanValue.ToString("c", CultureInfo.InvariantCulture),
 
-            ushort uint16Value =>
-                uint16Value.ToString("G", CultureInfo.InvariantCulture),
+            ushort uint16Value => uint16Value.ToString("G", CultureInfo.InvariantCulture),
 
-            uint uint32Value =>
-                uint32Value.ToString("G", CultureInfo.InvariantCulture),
+            uint uint32Value => uint32Value.ToString("G", CultureInfo.InvariantCulture),
 
-            ulong uint64Value =>
-                uint64Value.ToString("G", CultureInfo.InvariantCulture),
+            ulong uint64Value => uint64Value.ToString("G", CultureInfo.InvariantCulture),
 
-            UIntPtr uintPtrValue =>
-                uintPtrValue.ToString("G", CultureInfo.InvariantCulture),
+            UIntPtr uintPtrValue => uintPtrValue.ToString("G", CultureInfo.InvariantCulture),
 
             // Must stay below the Byte[] and String arms above, both of which are sequences that have
             // a more useful representation of their own.
-            IEnumerable sequenceValue =>
-                FormatSequence(sequenceValue, depth),
+            IEnumerable sequenceValue => FormatSequence(sequenceValue, depth),
 
             // Deliberately not JsonSerializer.Serialize: the reflection-based JsonSerializer overloads
             // are unavailable under Native AOT, so a conversion error would itself fail while building
             // its message. A type that renders as its own name here simply has no ToString override.
-            _ =>
-                value.ToString() ?? string.Empty
+            _ => value.ToString() ?? string.Empty,
         };
 
     /// <summary>

@@ -19,9 +19,7 @@ public class AotJobFilter : IFilter
         var benchmarkName = benchmarkCase.Descriptor.WorkloadMethod.Name;
         var isAotOnlyBenchmark = benchmarkName.EndsWith(AotOnlyBenchmarkSuffix, StringComparison.Ordinal);
 
-        return isAotJob
-            ? AotJobBenchmarks.Contains(benchmarkName)
-            : !isAotOnlyBenchmark;
+        return isAotJob ? AotJobBenchmarks.Contains(benchmarkName) : !isAotOnlyBenchmark;
     }
 
     // TemporaryTable_ComplexObjects is here because it ends in a Query<BenchmarkEntity> over the temporary
@@ -39,7 +37,7 @@ public class AotJobFilter : IFilter
         nameof(Benchmarks.Query_ValueTuples_Command),
         nameof(Benchmarks.Query_ValueTuples_DbConnectionPlus),
         nameof(Benchmarks.TemporaryTable_ComplexObjects_Command),
-        nameof(Benchmarks.TemporaryTable_ComplexObjects_DbConnectionPlus)
+        nameof(Benchmarks.TemporaryTable_ComplexObjects_DbConnectionPlus),
     ];
 
     // Marks a benchmark as Native AOT only, so that it is kept out of the JIT job.

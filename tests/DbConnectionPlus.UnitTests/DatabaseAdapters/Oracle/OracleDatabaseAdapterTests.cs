@@ -7,8 +7,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 {
     [Fact]
     public void AllowTemporaryTables_ShouldReturnFalsePerDefault() =>
-        OracleDatabaseAdapter.AllowTemporaryTables
-            .Should().BeFalse();
+        OracleDatabaseAdapter.AllowTemporaryTables.Should().BeFalse();
 
     [Fact]
     public void BindParameterValue_BytesValue_ShouldSetDbTypeAndValue()
@@ -19,11 +18,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.Binary);
+        parameter.DbType.Should().Be(DbType.Binary);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -35,11 +32,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.Date);
+        parameter.DbType.Should().Be(DbType.Date);
 
-        parameter.Value
-            .Should().Be(value.ToDateTime(TimeOnly.MinValue));
+        parameter.Value.Should().Be(value.ToDateTime(TimeOnly.MinValue));
     }
 
     [Fact]
@@ -51,11 +46,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.DateTime);
+        parameter.DbType.Should().Be(DbType.DateTime);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -69,11 +62,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, enumValue);
 
-        parameter.DbType
-            .Should().Be(DbType.Int32);
+        parameter.DbType.Should().Be(DbType.Int32);
 
-        parameter.Value
-            .Should().Be((int)enumValue);
+        parameter.Value.Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -87,11 +78,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, enumValue);
 
-        parameter.DbType
-            .Should().Be(DbType.String);
+        parameter.DbType.Should().Be(DbType.String);
 
-        parameter.Value
-            .Should().Be(enumValue.ToString());
+        parameter.Value.Should().Be(enumValue.ToString());
     }
 
     [Fact]
@@ -103,11 +92,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.Binary);
+        parameter.DbType.Should().Be(DbType.Binary);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -119,8 +106,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.Value
-            .Should().Be(value);
+        parameter.Value.Should().Be(value);
     }
 
     [Fact]
@@ -132,40 +118,34 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.BindParameterValue(parameter, value);
 
-        parameter.DbType
-            .Should().Be(DbType.Time);
+        parameter.DbType.Should().Be(DbType.Time);
 
-        (parameter as OracleParameter)?.OracleDbType
-            .Should().Be(OracleDbType.IntervalDS);
+        (parameter as OracleParameter)?.OracleDbType.Should().Be(OracleDbType.IntervalDS);
 
-        parameter.Value
-            .Should().Be(value.ToTimeSpan());
+        parameter.Value.Should().Be(value.ToTimeSpan());
     }
 
     [Fact]
     public void EntityManipulator_ShouldReturnManipulator() =>
-        this.adapter.EntityManipulator
-            .Should().BeOfType<OracleEntityManipulator>();
+        this.adapter.EntityManipulator.Should().BeOfType<OracleEntityManipulator>();
 
     [Fact]
     public void FormatParameterName_ShouldFormatParameterName() =>
-        this.adapter.FormatParameterName("Param1")
-            .Should().Be(":\"Param1\"");
+        this.adapter.FormatParameterName("Param1").Should().Be(":\"Param1\"");
 
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsInteger_ShouldReturnNumber()
     {
-        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers)
-            .Should().Be("NUMBER(10)");
+        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Integers).Should().Be("NUMBER(10)");
 
-        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Integers)
-            .Should().Be("NUMBER(10)");
+        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Integers).Should().Be("NUMBER(10)");
     }
 
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsNotSupported_ShouldThrow() =>
         Invoking(() => this.adapter.GetDataType(typeof(TestEnum), (EnumSerializationMode)999))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
                 $"The {nameof(EnumSerializationMode)} '999' ({typeof(EnumSerializationMode)}) is not supported.*"
             );
@@ -173,11 +153,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void GetDataType_EnumType_EnumSerializationModeIsString_ShouldReturnNVarchar2()
     {
-        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings)
-            .Should().Be("NVARCHAR2(200)");
+        this.adapter.GetDataType(typeof(TestEnum), EnumSerializationMode.Strings).Should().Be("NVARCHAR2(200)");
 
-        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Strings)
-            .Should().Be("NVARCHAR2(200)");
+        this.adapter.GetDataType(typeof(TestEnum?), EnumSerializationMode.Strings).Should().Be("NVARCHAR2(200)");
     }
 
     [Theory]
@@ -214,29 +192,28 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [InlineData(typeof(TimeSpan?), "INTERVAL DAY TO SECOND")]
     [InlineData(typeof(TimeSpan), "INTERVAL DAY TO SECOND")]
     public void GetDataType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, string expectedResult) =>
-        this.adapter.GetDataType(type, EnumSerializationMode.Strings)
-            .Should().Be(expectedResult);
+        this.adapter.GetDataType(type, EnumSerializationMode.Strings).Should().Be(expectedResult);
 
     [Fact]
     public void GetDataType_UnsupportedType_ShouldThrow() =>
         Invoking(() => this.adapter.GetDataType(typeof(Entity), EnumSerializationMode.Strings))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage($"Could not map the type {typeof(Entity)} to an Oracle data type.*");
 
     [Fact]
     public void GetDbType_EnumType_EnumSerializationModeIsInteger_ShouldReturnInt32()
     {
-        this.adapter.GetDbType(typeof(TestEnum), EnumSerializationMode.Integers)
-            .Should().Be(DbType.Int32);
+        this.adapter.GetDbType(typeof(TestEnum), EnumSerializationMode.Integers).Should().Be(DbType.Int32);
 
-        this.adapter.GetDbType(typeof(TestEnum?), EnumSerializationMode.Integers)
-            .Should().Be(DbType.Int32);
+        this.adapter.GetDbType(typeof(TestEnum?), EnumSerializationMode.Integers).Should().Be(DbType.Int32);
     }
 
     [Fact]
     public void GetDbType_EnumType_EnumSerializationModeIsNotSupported_ShouldThrow() =>
         Invoking(() => this.adapter.GetDbType(typeof(TestEnum), (EnumSerializationMode)999))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage(
                 $"The {nameof(EnumSerializationMode)} '999' ({typeof(EnumSerializationMode)}) is not supported.*"
             );
@@ -244,11 +221,9 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void GetDbType_EnumType_EnumSerializationModeIsString_ShouldReturnString()
     {
-        this.adapter.GetDbType(typeof(TestEnum), EnumSerializationMode.Strings)
-            .Should().Be(DbType.String);
+        this.adapter.GetDbType(typeof(TestEnum), EnumSerializationMode.Strings).Should().Be(DbType.String);
 
-        this.adapter.GetDbType(typeof(TestEnum?), EnumSerializationMode.Strings)
-            .Should().Be(DbType.String);
+        this.adapter.GetDbType(typeof(TestEnum?), EnumSerializationMode.Strings).Should().Be(DbType.String);
     }
 
     [Theory]
@@ -285,39 +260,33 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     [InlineData(typeof(TimeSpan?), DbType.Time)]
     [InlineData(typeof(TimeSpan), DbType.Time)]
     public void GetDbType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, DbType expectedResult) =>
-        this.adapter.GetDbType(type, EnumSerializationMode.Strings)
-            .Should().Be(expectedResult);
+        this.adapter.GetDbType(type, EnumSerializationMode.Strings).Should().Be(expectedResult);
 
     [Fact]
     public void GetDbType_UnsupportedType_ShouldThrow() =>
         Invoking(() => this.adapter.GetDbType(typeof(Entity), EnumSerializationMode.Strings))
-            .Should().Throw<ArgumentOutOfRangeException>()
+            .Should()
+            .Throw<ArgumentOutOfRangeException>()
             .WithMessage($"Could not map the type {typeof(Entity)} to a {typeof(DbType)} value.*");
 
     [Fact]
     public void QuoteIdentifier_ShouldQuoteIdentifier() =>
-        this.adapter.QuoteIdentifier("MyTable")
-            .Should().Be("\"MyTable\"");
+        this.adapter.QuoteIdentifier("MyTable").Should().Be("\"MyTable\"");
 
     [Fact]
     public void QuoteTemporaryTableName_ShouldQuoteTableName()
     {
         this.MockDbCommand.ExecuteScalar().Returns("MockPrefix");
 
-        this.adapter.QuoteTemporaryTableName("TempTable", this.MockDbConnection)
-            .Should().Be("\"MockPrefixTempTable\"");
+        this.adapter.QuoteTemporaryTableName("TempTable", this.MockDbConnection).Should().Be("\"MockPrefixTempTable\"");
     }
 
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.BindParameterValue(Substitute.For<DbParameter>(), null)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.adapter.BindParameterValue(Substitute.For<DbParameter>(), null));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.SupportsTemporaryTables(this.MockDbConnection)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.adapter.SupportsTemporaryTables(this.MockDbConnection));
 
         ArgumentNullGuardVerifier.Verify(() =>
             this.adapter.WasSqlStatementCancelledByCancellationToken(new(), CancellationToken.None)
@@ -331,8 +300,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
         // Oracle version is 18 or higher.
         this.MockDbDataReader.Read().Returns(true);
 
-        this.adapter.SupportsTemporaryTables(this.MockDbConnection)
-            .Should().BeTrue();
+        this.adapter.SupportsTemporaryTables(this.MockDbConnection).Should().BeTrue();
     }
 
     [Fact]
@@ -342,8 +310,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
         // the Oracle version is lower than 18.
         this.MockDbDataReader.Read().Returns(false);
 
-        this.adapter.SupportsTemporaryTables(this.MockDbConnection)
-            .Should().BeFalse();
+        this.adapter.SupportsTemporaryTables(this.MockDbConnection).Should().BeFalse();
     }
 
     [Fact]
@@ -352,12 +319,13 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
         OracleDatabaseAdapter.AllowTemporaryTables = false;
 
         Invoking(() => this.adapter.TemporaryTableBuilder)
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage(
-                "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-                $"To enable it set {typeof(OracleDatabaseAdapter)}.AllowTemporaryTables to true, but be sure to " +
-                "read the documentation first, because enabling this feature has implications for transaction " +
-                "management."
+                "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. "
+                    + $"To enable it set {typeof(OracleDatabaseAdapter)}.AllowTemporaryTables to true, but be sure to "
+                    + "read the documentation first, because enabling this feature has implications for transaction "
+                    + "management."
             );
     }
 
@@ -366,8 +334,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     {
         OracleDatabaseAdapter.AllowTemporaryTables = true;
 
-        this.adapter.TemporaryTableBuilder
-            .Should().BeOfType<OracleTemporaryTableBuilder>();
+        this.adapter.TemporaryTableBuilder.Should().BeOfType<OracleTemporaryTableBuilder>();
     }
 
     private readonly OracleDatabaseAdapter adapter = new();

@@ -56,9 +56,7 @@ public class TypeExtensionsTests : UnitTestsBase
     public void IsBuiltInTypeOrNullableBuiltInType_ShouldDetermineWhetherTypeIsBuiltInTypeOrNullableBuiltInType(
         Type type,
         bool expectedResult
-    ) =>
-        type.IsBuiltInTypeOrNullableBuiltInType()
-            .Should().Be(expectedResult);
+    ) => type.IsBuiltInTypeOrNullableBuiltInType().Should().Be(expectedResult);
 
     [Theory]
     [InlineData(typeof(char), true)]
@@ -69,9 +67,7 @@ public class TypeExtensionsTests : UnitTestsBase
     public void IsCharOrNullableCharType_ShouldDetermineWhetherTypeIsCharOrNullableCharType(
         Type type,
         bool expectedResult
-    ) =>
-        type.IsCharOrNullableCharType()
-            .Should().Be(expectedResult);
+    ) => type.IsCharOrNullableCharType().Should().Be(expectedResult);
 
     [Theory]
     [InlineData(typeof(TestEnum), true)]
@@ -84,9 +80,7 @@ public class TypeExtensionsTests : UnitTestsBase
     public void IsEnumOrNullableEnumType_ShouldDetermineWhetherTypeIsEnumTypeOrNullableEnumType(
         Type type,
         bool expectedResult
-    ) =>
-        type.IsEnumOrNullableEnumType()
-            .Should().Be(expectedResult);
+    ) => type.IsEnumOrNullableEnumType().Should().Be(expectedResult);
 
     [Theory]
     [InlineData(typeof(int?), true)]
@@ -100,9 +94,7 @@ public class TypeExtensionsTests : UnitTestsBase
     public void IsReferenceTypeOrNullableType_ShouldDetermineWhetherTypeIsReferenceTypeOrNullableType(
         Type type,
         bool expectedResult
-    ) =>
-        type.IsReferenceTypeOrNullableType()
-            .Should().Be(expectedResult);
+    ) => type.IsReferenceTypeOrNullableType().Should().Be(expectedResult);
 
     [Theory]
     [InlineData(typeof(ValueTuple<int>), true)]
@@ -117,12 +109,8 @@ public class TypeExtensionsTests : UnitTestsBase
     [InlineData(typeof(Entity), false)]
     [InlineData(typeof(Tuple<int>), false)]
     [InlineData(typeof(Tuple<int, int>), false)]
-    public void IsValueTupleType_ShouldDetermineWhetherTypeIsValueTupleType(
-        Type type,
-        bool expectedResult
-    ) =>
-        type.IsValueTupleType()
-            .Should().Be(expectedResult);
+    public void IsValueTupleType_ShouldDetermineWhetherTypeIsValueTupleType(Type type, bool expectedResult) =>
+        type.IsValueTupleType().Should().Be(expectedResult);
 
     [Fact]
     public void ShouldGuardAgainstNullArguments()

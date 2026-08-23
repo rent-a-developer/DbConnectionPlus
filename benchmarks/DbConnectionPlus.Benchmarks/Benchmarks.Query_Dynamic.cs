@@ -10,26 +10,14 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
-            nameof(Query_Dynamic_Command),
-            nameof(Query_Dynamic_Dapper),
-            nameof(Query_Dynamic_DbConnectionPlus)
-        ]
+        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
     )]
-    public void Query_Dynamic__Cleanup() =>
-        this.connection.Dispose();
+    public void Query_Dynamic__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
-            nameof(Query_Dynamic_Command),
-            nameof(Query_Dynamic_Dapper),
-            nameof(Query_Dynamic_DbConnectionPlus)
-        ]
+        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
     )]
-    public void Query_Dynamic__Setup() =>
-        this.SetupDatabase(Query_Dynamic_EntitiesPerOperation);
+    public void Query_Dynamic__Setup() => this.SetupDatabase(Query_Dynamic_EntitiesPerOperation);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Dynamic_Category)]
@@ -51,9 +39,10 @@ public partial class Benchmarks
                 ["BooleanValue"] = dataReader.GetInt64(ordinal++) == 1,
                 ["BytesValue"] = (byte[])dataReader.GetValue(ordinal++),
                 ["ByteValue"] = dataReader.GetByte(ordinal++),
-                ["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
-                    ? charBuffer[0]
-                    : throw new InvalidOperationException(),
+                ["CharValue"] =
+                    dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
+                        ? charBuffer[0]
+                        : throw new InvalidOperationException(),
                 ["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DecimalValue"] = decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DoubleValue"] = dataReader.GetDouble(ordinal++),
@@ -62,7 +51,7 @@ public partial class Benchmarks
                 ["Int32Value"] = (int)dataReader.GetInt64(ordinal++),
                 ["Int64Value"] = dataReader.GetInt64(ordinal++),
                 ["SingleValue"] = dataReader.GetFloat(ordinal++),
-                ["StringValue"] = dataReader.GetString(ordinal)
+                ["StringValue"] = dataReader.GetString(ordinal),
             };
 
             entities.Add(new DataRow(dictionary));
@@ -73,13 +62,11 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]
-    public List<dynamic> Query_Dynamic_Dapper() =>
-        [.. SqlMapper.Query(this.connection, "SELECT * FROM Entity")];
+    public List<dynamic> Query_Dynamic_Dapper() => [.. SqlMapper.Query(this.connection, "SELECT * FROM Entity")];
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Dynamic_Category)]
-    public List<DataRow> Query_Dynamic_DbConnectionPlus() =>
-        [.. this.connection.Query("SELECT * FROM Entity")];
+    public List<DataRow> Query_Dynamic_DbConnectionPlus() => [.. this.connection.Query("SELECT * FROM Entity")];
 
     private const string Query_Dynamic_Category = "Query_Dynamic";
     private const int Query_Dynamic_EntitiesPerOperation = 100;

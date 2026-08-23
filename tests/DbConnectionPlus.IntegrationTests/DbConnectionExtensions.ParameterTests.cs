@@ -1,27 +1,22 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_ParameterTests_MySql :
-    DbConnectionExtensions_ParameterTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ParameterTests_MySql
+    : DbConnectionExtensions_ParameterTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ParameterTests_Oracle :
-    DbConnectionExtensions_ParameterTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ParameterTests_Oracle
+    : DbConnectionExtensions_ParameterTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ParameterTests_PostgreSql :
-    DbConnectionExtensions_ParameterTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ParameterTests_PostgreSql
+    : DbConnectionExtensions_ParameterTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ParameterTests_Sqlite :
-    DbConnectionExtensions_ParameterTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ParameterTests_Sqlite
+    : DbConnectionExtensions_ParameterTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ParameterTests_SqlServer :
-    DbConnectionExtensions_ParameterTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ParameterTests_SqlServer
+    : DbConnectionExtensions_ParameterTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_ParameterTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_ParameterTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Fact]
@@ -35,12 +30,12 @@ public abstract class
         // parameters have different types (integer vs. string).
         var enumValue1 = Generate.Single<TestEnum>();
 
-        this.Connection
-            .ExecuteScalar<int>(
+        this.Connection.ExecuteScalar<int>(
                 $"SELECT {Parameter(enumValue1)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be((int)enumValue1);
+            .Should()
+            .Be((int)enumValue1);
     }
 
     [Fact]
@@ -54,12 +49,12 @@ public abstract class
         // parameters have different types (integer vs. string).
         var enumValue2 = Generate.Single<TestEnum>();
 
-        this.Connection
-            .ExecuteScalar<string>(
+        this.Connection.ExecuteScalar<string>(
                 $"SELECT {Parameter(enumValue2)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(enumValue2.ToString());
+            .Should()
+            .Be(enumValue2.ToString());
     }
 
     [Fact]
@@ -69,39 +64,39 @@ public abstract class
         var guid = Guid.NewGuid();
         var dateTime = new DateTime(2025, 12, 31, 23, 59, 59);
 
-        this.Connection
-            .QuerySingle<(long, Guid, DateTime)>(
+        this.Connection.QuerySingle<(long, Guid, DateTime)>(
                 $"SELECT {Parameter(int64)}, {Parameter(guid)}, {Parameter(dateTime)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be((int64, guid, dateTime));
+            .Should()
+            .Be((int64, guid, dateTime));
     }
 
     [Fact]
     public void Parameter_ShouldPassValueAsParameter()
     {
         const long int64 = 123L;
-        this.Connection
-            .ExecuteScalar<long>(
+        this.Connection.ExecuteScalar<long>(
                 $"SELECT {Parameter(int64)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(int64);
+            .Should()
+            .Be(int64);
 
         var guid = Guid.NewGuid();
-        this.Connection
-            .ExecuteScalar<Guid>(
+        this.Connection.ExecuteScalar<Guid>(
                 $"SELECT {Parameter(guid)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(guid);
+            .Should()
+            .Be(guid);
 
         var dateTime = new DateTime(2025, 12, 31, 23, 59, 59);
-        this.Connection
-            .ExecuteScalar<DateTime>(
+        this.Connection.ExecuteScalar<DateTime>(
                 $"SELECT {Parameter(dateTime)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be(dateTime);
+            .Should()
+            .Be(dateTime);
     }
 }

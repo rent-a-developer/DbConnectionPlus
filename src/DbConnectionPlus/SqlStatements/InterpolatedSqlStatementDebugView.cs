@@ -12,12 +12,10 @@ internal sealed class InterpolatedSqlStatementDebugView(InterpolatedSqlStatement
     /// <summary>
     /// The debug view of the SQL statement.
     /// </summary>
-    public string DebugView =>
-        statement.ToString();
+    public string DebugView => statement.ToString();
 
     /// <summary>
     /// The fragments that make up the SQL statement.
     /// </summary>
-    public IReadOnlyList<IInterpolatedSqlStatementFragment> Fragments =>
-        statement.Fragments;
+    public IReadOnlyList<IInterpolatedSqlStatementFragment> Fragments => statement.Fragments;
 }

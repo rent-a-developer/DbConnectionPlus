@@ -20,8 +20,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             typeof(byte[])
         );
 
-        expression.ToString()
-            .Should().Match("Convert(*DbDataReader*.GetValue(1), Byte[])");
+        expression.ToString().Should().Match("Convert(*DbDataReader*.GetValue(1), Byte[])");
     }
 
     [Fact]
@@ -37,8 +36,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             typeof(DateOnly)
         );
 
-        expression.ToString()
-            .Should().Match("Convert(*DbDataReader*.GetValue(1), DateOnly)");
+        expression.ToString().Should().Match("Convert(*DbDataReader*.GetValue(1), DateOnly)");
     }
 
     [Fact]
@@ -54,8 +52,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             typeof(DateTimeOffset)
         );
 
-        expression.ToString()
-            .Should().Match("Convert(*DbDataReader*.GetValue(1), DateTimeOffset)");
+        expression.ToString().Should().Match("Convert(*DbDataReader*.GetValue(1), DateTimeOffset)");
     }
 
     [Theory]
@@ -85,8 +82,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             fieldType
         );
 
-        expression.ToString()
-            .Should().Match(expectedExpression);
+        expression.ToString().Should().Match(expectedExpression);
     }
 
     [Fact]
@@ -102,8 +98,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             typeof(TimeOnly)
         );
 
-        expression.ToString()
-            .Should().Match("Convert(*DbDataReader*.GetValue(1), TimeOnly)");
+        expression.ToString().Should().Match("Convert(*DbDataReader*.GetValue(1), TimeOnly)");
     }
 
     [Fact]
@@ -119,8 +114,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
             typeof(TimeSpan)
         );
 
-        expression.ToString()
-            .Should().Match("Convert(*DbDataReader*.GetValue(1), TimeSpan)");
+        expression.ToString().Should().Match("Convert(*DbDataReader*.GetValue(1), TimeSpan)");
     }
 
     [Fact]
@@ -128,7 +122,8 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var dataReader = Substitute.For<DbDataReader>();
 
-        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
+        Invoking(() =>
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
                     Expression.Constant(dataReader),
                     Expression.Constant(1),
                     1,
@@ -136,13 +131,15 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
                     typeof(BigInteger)
                 )
             )
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not " +
-                "supported.*"
+                $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not "
+                    + "supported.*"
             );
 
-        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
+        Invoking(() =>
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
                     Expression.Constant(dataReader),
                     Expression.Constant(1),
                     1,
@@ -150,10 +147,11 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
                     typeof(BigInteger)
                 )
             )
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not " +
-                "supported.*"
+                $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not "
+                    + "supported.*"
             );
     }
 
@@ -181,7 +179,8 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var dataReader = Substitute.For<DbDataReader>();
 
-        MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueExpression(
+        MaterializerFactoryHelper
+            .CreateGetDbDataReaderFieldValueExpression(
                 Expression.Constant(dataReader),
                 Expression.Constant(1),
                 1,
@@ -189,39 +188,37 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
                 fieldType
             )
             .ToString()
-            .Should().Contain($".{expectedDbDataReaderMethodName}(1)");
+            .Should()
+            .Contain($".{expectedDbDataReaderMethodName}(1)");
 
         _ = MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(1, "FieldA", fieldType)(dataReader);
 
-        dataReader.ReceivedCalls().Select(call => call.GetMethodInfo().Name)
-            .Should().Equal(expectedDbDataReaderMethodName);
+        dataReader
+            .ReceivedCalls()
+            .Select(call => call.GetMethodInfo().Name)
+            .Should()
+            .Equal(expectedDbDataReaderMethodName);
     }
 
     [Fact]
     public void CreateGetDbDataReaderFieldValueFunction_UnsupportedFieldType_ShouldThrow()
     {
-        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                    1,
-                    "FieldA",
-                    typeof(BigInteger)
-                )
+        Invoking(() =>
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(1, "FieldA", typeof(BigInteger))
             )
-            .Should().Throw<ArgumentException>()
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not " +
-                "supported.*"
+                $"The data type {typeof(BigInteger)} of the column 'FieldA' returned by the SQL statement is not "
+                    + "supported.*"
             );
 
-        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                    1,
-                    "",
-                    typeof(BigInteger)
-                )
-            )
-            .Should().Throw<ArgumentException>()
+        Invoking(() => MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(1, "", typeof(BigInteger)))
+            .Should()
+            .Throw<ArgumentException>()
             .WithMessage(
-                $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not " +
-                "supported.*"
+                $"The data type {typeof(BigInteger)} of the 2nd column returned by the SQL statement is not "
+                    + "supported.*"
             );
     }
 
@@ -230,14 +227,15 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var method = MaterializerFactoryHelper.DbDataReaderGetValueMethod;
 
-        method.DeclaringType
-            .Should().Be(typeof(DbDataReader));
+        method.DeclaringType.Should().Be(typeof(DbDataReader));
 
-        method.Name
-            .Should().Be(nameof(DbDataReader.GetValue));
+        method.Name.Should().Be(nameof(DbDataReader.GetValue));
 
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().BeEquivalentTo([("ordinal", typeof(int))]);
+        method
+            .GetParameters()
+            .Select(p => (p.Name, p.ParameterType))
+            .Should()
+            .BeEquivalentTo([("ordinal", typeof(int))]);
     }
 
     [Fact]
@@ -245,14 +243,15 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var method = MaterializerFactoryHelper.DbDataReaderIsDBNullMethod;
 
-        method.DeclaringType
-            .Should().Be(typeof(DbDataReader));
+        method.DeclaringType.Should().Be(typeof(DbDataReader));
 
-        method.Name
-            .Should().Be(nameof(DbDataReader.IsDBNull));
+        method.Name.Should().Be(nameof(DbDataReader.IsDBNull));
 
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().BeEquivalentTo([("ordinal", typeof(int))]);
+        method
+            .GetParameters()
+            .Select(p => (p.Name, p.ParameterType))
+            .Should()
+            .BeEquivalentTo([("ordinal", typeof(int))]);
     }
 
     [Theory]
@@ -277,26 +276,20 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     public void IsDbDataReaderTypedGetMethodAvailable_ShouldReturnWhetherTypedGetMethodIsAvailable(
         Type fieldType,
         bool expectedResult
-    ) =>
-        MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(fieldType)
-            .Should().Be(expectedResult);
+    ) => MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(fieldType).Should().Be(expectedResult);
 
     [Fact]
     public void MakeValueConverterConvertValueToTypeMethod_ShouldReferenceValueConverterConvertValueToType()
     {
         var method = MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(typeof(int));
 
-        method.DeclaringType
-            .Should().Be(typeof(ValueConverter));
+        method.DeclaringType.Should().Be(typeof(ValueConverter));
 
-        method.Name
-            .Should().Be(nameof(ValueConverter.ConvertValueToType));
+        method.Name.Should().Be(nameof(ValueConverter.ConvertValueToType));
 
-        method.GetGenericArguments()
-            .Should().Equal(typeof(int));
+        method.GetGenericArguments().Should().Equal(typeof(int));
 
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().Equal(("value", typeof(object)));
+        method.GetParameters().Select(p => (p.Name, p.ParameterType)).Should().Equal(("value", typeof(object)));
     }
 
     [Fact]
@@ -315,17 +308,11 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                1,
-                "FieldA",
-                typeof(int)
-            )
+            MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(1, "FieldA", typeof(int))
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(
-                typeof(int)
-            )
+            MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(typeof(int))
         );
     }
 
@@ -334,14 +321,11 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var property = MaterializerFactoryHelper.StringCharsProperty;
 
-        property.DeclaringType
-            .Should().Be(typeof(string));
+        property.DeclaringType.Should().Be(typeof(string));
 
-        property.Name
-            .Should().Be("Chars");
+        property.Name.Should().Be("Chars");
 
-        property.PropertyType
-            .Should().Be(typeof(char));
+        property.PropertyType.Should().Be(typeof(char));
     }
 
     [Fact]
@@ -349,17 +333,17 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var method = MaterializerFactoryHelper.StringConcatMethod;
 
-        method.DeclaringType
-            .Should().Be(typeof(string));
+        method.DeclaringType.Should().Be(typeof(string));
 
-        method.Name
-            .Should().Be(nameof(String.Concat));
+        method.Name.Should().Be(nameof(String.Concat));
 
-        method.GetParameters().Select(p => (p.Name, p.ParameterType))
-            .Should().Equal(("str0", typeof(string)), ("str1", typeof(string)), ("str2", typeof(string)));
+        method
+            .GetParameters()
+            .Select(p => (p.Name, p.ParameterType))
+            .Should()
+            .Equal(("str0", typeof(string)), ("str1", typeof(string)), ("str2", typeof(string)));
 
-        method.ReturnType
-            .Should().Be(typeof(string));
+        method.ReturnType.Should().Be(typeof(string));
     }
 
     [Fact]
@@ -367,13 +351,10 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
     {
         var property = MaterializerFactoryHelper.StringLengthProperty;
 
-        property.DeclaringType
-            .Should().Be(typeof(string));
+        property.DeclaringType.Should().Be(typeof(string));
 
-        property.Name
-            .Should().Be(nameof(String.Length));
+        property.Name.Should().Be(nameof(String.Length));
 
-        property.PropertyType
-            .Should().Be(typeof(int));
+        property.PropertyType.Should().Be(typeof(int));
     }
 }

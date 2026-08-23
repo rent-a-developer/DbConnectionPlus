@@ -11,5 +11,4 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// This is <see langword="null" /> if no name could be inferred.
 /// </param>
 /// <param name="Value">The value of the parameter.</param>
-public record InterpolatedParameter(string? InferredName, object? Value)
-    : IInterpolatedSqlStatementFragment;
+public record InterpolatedParameter(string? InferredName, object? Value) : IInterpolatedSqlStatementFragment;

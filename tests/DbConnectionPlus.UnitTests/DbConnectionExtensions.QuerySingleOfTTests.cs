@@ -4,26 +4,13 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QuerySingleOfTTests : StatementMethodTestsBase
 {
-    public DbConnectionExtensions_QuerySingleOfTTests() : base(
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QuerySingleAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken),
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QuerySingle<Entity>(sql, transaction, timeout, commandType, cancellationToken)
-    )
+    public DbConnectionExtensions_QuerySingleOfTTests()
+        : base(
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QuerySingleAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken),
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.QuerySingle<Entity>(sql, transaction, timeout, commandType, cancellationToken)
+        )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();
 
@@ -34,8 +21,7 @@ public class DbConnectionExtensions_QuerySingleOfTTests : StatementMethodTestsBa
         mockDbDataReader.Read().Returns(true, false);
         mockDbDataReader.ReadAsync(TestContext.Current.CancellationToken).Returns(true, false);
 
-        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
-            .Returns(mockDbDataReader);
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(mockDbDataReader);
 
         this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
             .Returns(mockDbDataReader);
@@ -44,12 +30,8 @@ public class DbConnectionExtensions_QuerySingleOfTTests : StatementMethodTestsBa
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QuerySingle<Entity>("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QuerySingle<Entity>("SELECT * FROM Entity"));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QuerySingleAsync<Entity>("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QuerySingleAsync<Entity>("SELECT * FROM Entity"));
     }
 }

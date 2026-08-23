@@ -9,7 +9,6 @@ public class SqliteDatabaseAdapterTests : IntegrationTestsBase<SqliteTestDatabas
     {
         var adapter = new SqliteDatabaseAdapter();
 
-        adapter.SupportsTemporaryTables(this.Connection)
-            .Should().BeTrue();
+        adapter.SupportsTemporaryTables(this.Connection).Should().BeTrue();
     }
 }

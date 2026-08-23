@@ -81,8 +81,7 @@ public static class DecoratorAssertions
                 if (method.ReturnType != typeof(void))
                 {
                     // Make sure the decorator method returned the same value as the decorated method:
-                    decoratorMethodReturnValue
-                        .Should().Be(decoratedMethodReturnValue);
+                    decoratorMethodReturnValue.Should().Be(decoratedMethodReturnValue);
                 }
 
                 // Make sure the decorated method was called with the same arguments as the decorator method:
@@ -97,13 +96,13 @@ public static class DecoratorAssertions
 
                 throw new(
                     $"""
-                     The forward call assertion failed for the following method:
-                     Type: {decoratorType.FullName}
-                     Method: {method}
+                    The forward call assertion failed for the following method:
+                    Type: {decoratorType.FullName}
+                    Method: {method}
 
-                     Failure:
-                     {ex}
-                     """
+                    Failure:
+                    {ex}
+                    """
                 );
             }
         }
@@ -112,10 +111,9 @@ public static class DecoratorAssertions
     /// <summary>
     /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
     /// </summary>
-    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory)
-        .GetMethod(
-            nameof(SpecimenFactory.Create),
-            BindingFlags.Public | BindingFlags.Static,
-            [typeof(ISpecimenBuilder)]
-        )!;
+    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
+        nameof(SpecimenFactory.Create),
+        BindingFlags.Public | BindingFlags.Static,
+        [typeof(ISpecimenBuilder)]
+    )!;
 }

@@ -19,8 +19,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
         dataReader.GetName(1).Returns(fieldNames[1]);
         dataReader.GetName(2).Returns(fieldNames[2]);
 
-        dataReader.GetFieldNames()
-            .Should().BeEquivalentTo(fieldNames);
+        dataReader.GetFieldNames().Should().BeEquivalentTo(fieldNames);
     }
 
     [Fact]
@@ -36,8 +35,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
         dataReader.GetFieldType(1).Returns(fieldTypes[1]);
         dataReader.GetFieldType(2).Returns(fieldTypes[2]);
 
-        dataReader.GetFieldTypes()
-            .Should().BeEquivalentTo(fieldTypes);
+        dataReader.GetFieldTypes().Should().BeEquivalentTo(fieldTypes);
     }
 
     [Fact]

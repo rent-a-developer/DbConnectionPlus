@@ -2,28 +2,23 @@ using RentADeveloper.DbConnectionPlus.Readers;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.Readers;
 
-public sealed class
-    CommandDisposingDataReaderDecoratorTests_MySql :
-    CommandDisposingDataReaderDecoratorTests<MySqlTestDatabaseProvider>;
+public sealed class CommandDisposingDataReaderDecoratorTests_MySql
+    : CommandDisposingDataReaderDecoratorTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    CommandDisposingDataReaderDecoratorTests_Oracle :
-    CommandDisposingDataReaderDecoratorTests<OracleTestDatabaseProvider>;
+public sealed class CommandDisposingDataReaderDecoratorTests_Oracle
+    : CommandDisposingDataReaderDecoratorTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    CommandDisposingDataReaderDecoratorTests_PostgreSql :
-    CommandDisposingDataReaderDecoratorTests<PostgreSqlTestDatabaseProvider>;
+public sealed class CommandDisposingDataReaderDecoratorTests_PostgreSql
+    : CommandDisposingDataReaderDecoratorTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    CommandDisposingDataReaderDecoratorTests_Sqlite :
-    CommandDisposingDataReaderDecoratorTests<SqliteTestDatabaseProvider>;
+public sealed class CommandDisposingDataReaderDecoratorTests_Sqlite
+    : CommandDisposingDataReaderDecoratorTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    CommandDisposingDataReaderDecoratorTests_SqlServer :
-    CommandDisposingDataReaderDecoratorTests<SqlServerTestDatabaseProvider>;
+public sealed class CommandDisposingDataReaderDecoratorTests_SqlServer
+    : CommandDisposingDataReaderDecoratorTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    CommandDisposingDataReaderDecoratorTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class CommandDisposingDataReaderDecoratorTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Fact]
@@ -43,13 +38,12 @@ public abstract class
         var cancellationToken = cancellationTokenSource.Token;
 
         ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Thread.Sleep(100);
-                cancellationTokenSource.Cancel();
-                // ReSharper disable once AccessToDisposedClosure
-                command.Cancel();
-            }
-        );
+        {
+            Thread.Sleep(100);
+            cancellationTokenSource.Cancel();
+            // ReSharper disable once AccessToDisposedClosure
+            command.Cancel();
+        });
 
         var commandDisposer = new DbCommandDisposer(command, [], default);
 
@@ -63,13 +57,13 @@ public abstract class
         );
 
         // Read the value from before the delay:
-        decorator.Read()
-            .Should().BeTrue();
+        decorator.Read().Should().BeTrue();
 
         // The next read should be cancelled:
         // ReSharper disable once AccessToDisposedClosure
         Invoking(() => decorator.Read())
-            .Should().Throw<OperationCanceledException>()
+            .Should()
+            .Throw<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
@@ -90,13 +84,12 @@ public abstract class
         var cancellationToken = cancellationTokenSource.Token;
 
         ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Thread.Sleep(100);
-                cancellationTokenSource.Cancel();
-                // ReSharper disable once AccessToDisposedClosure
-                command.Cancel();
-            }
-        );
+        {
+            Thread.Sleep(100);
+            cancellationTokenSource.Cancel();
+            // ReSharper disable once AccessToDisposedClosure
+            command.Cancel();
+        });
 
         var commandDisposer = new DbCommandDisposer(command, [], default);
 
@@ -111,12 +104,14 @@ public abstract class
 
         // Read the value from before the delay:
         (await decorator.ReadAsync(TestContext.Current.CancellationToken))
-            .Should().BeTrue();
+            .Should()
+            .BeTrue();
 
         // The next read should be cancelled:
         // ReSharper disable once AccessToDisposedClosure
         await Invoking(() => decorator.ReadAsync(cancellationToken))
-            .Should().ThrowAsync<OperationCanceledException>()
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 }

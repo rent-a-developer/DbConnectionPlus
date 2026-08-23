@@ -17,6 +17,5 @@ public class Int32ExtensionsTests : UnitTestsBase
     [InlineData(24, "24th")]
     [InlineData(25, "25th")]
     public void OrdinalizeEnglish_ShouldOrdinalizeNumberInEnglishFormat(int number, string expectedResult) =>
-        number.OrdinalizeEnglish()
-            .Should().Be(expectedResult);
+        number.OrdinalizeEnglish().Should().Be(expectedResult);
 }

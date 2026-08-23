@@ -38,9 +38,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var lowStockProductsReader = connection.ExecuteReader(
     ///    $"""
     ///     SELECT  *
@@ -67,8 +67,7 @@ public static partial class DbConnectionExtensions
     /// </remarks>
     public static InterpolatedParameter Parameter(
         object? parameterValue,
-        [CallerArgumentExpression(nameof(parameterValue))]
-        string? parameterValueExpression = null
+        [CallerArgumentExpression(nameof(parameterValue))] string? parameterValueExpression = null
     )
     {
         string? inferredParameterName = null;

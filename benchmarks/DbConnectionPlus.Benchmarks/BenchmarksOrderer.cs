@@ -22,16 +22,11 @@ public class BenchmarksOrderer : IOrderer
     public IEnumerable<BenchmarkCase> GetExecutionOrder(
         ImmutableArray<BenchmarkCase> benchmarksCase,
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
-    ) =>
-        Sort(benchmarksCase);
+    ) => Sort(benchmarksCase);
 
-    public string? GetHighlightGroupKey(BenchmarkCase benchmarkCase) =>
-        GetLogicalGroupKey(benchmarkCase);
+    public string? GetHighlightGroupKey(BenchmarkCase benchmarkCase) => GetLogicalGroupKey(benchmarkCase);
 
-    public string? GetLogicalGroupKey(
-        ImmutableArray<BenchmarkCase> allBenchmarksCases,
-        BenchmarkCase benchmarkCase
-    ) =>
+    public string? GetLogicalGroupKey(ImmutableArray<BenchmarkCase> allBenchmarksCases, BenchmarkCase benchmarkCase) =>
         GetLogicalGroupKey(benchmarkCase);
 
     public IEnumerable<IGrouping<string, BenchmarkCase>> GetLogicalGroupOrder(
@@ -42,10 +37,7 @@ public class BenchmarksOrderer : IOrderer
             .OrderBy(it => it.First().Descriptor.Categories[0], StringComparer.Ordinal)
             .ThenBy(it => GetJobRank(it.First()));
 
-    public IEnumerable<BenchmarkCase> GetSummaryOrder(
-        ImmutableArray<BenchmarkCase> benchmarksCases,
-        Summary summary
-    ) =>
+    public IEnumerable<BenchmarkCase> GetSummaryOrder(ImmutableArray<BenchmarkCase> benchmarksCases, Summary summary) =>
         Sort(benchmarksCases);
 
     private static IEnumerable<BenchmarkCase> Sort(ImmutableArray<BenchmarkCase> benchmarkCases) =>

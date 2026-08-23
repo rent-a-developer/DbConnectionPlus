@@ -16,8 +16,7 @@ internal static class Int32Extensions
     /// </summary>
     /// <param name="value">The number to ordinalize.</param>
     /// <returns>The ordinalized number in english notation.</returns>
-    internal static string OrdinalizeEnglish(this int value) =>
-        value.Ordinalize(englishCulture);
+    internal static string OrdinalizeEnglish(this int value) => value.Ordinalize(englishCulture);
 
     private static readonly CultureInfo englishCulture = new("en-US");
 }

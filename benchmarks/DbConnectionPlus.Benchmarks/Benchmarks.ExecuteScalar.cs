@@ -8,26 +8,14 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
-            nameof(ExecuteScalar_Command),
-            nameof(ExecuteScalar_Dapper),
-            nameof(ExecuteScalar_DbConnectionPlus)
-        ]
+        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
     )]
-    public void ExecuteScalar__Cleanup() =>
-        this.connection.Dispose();
+    public void ExecuteScalar__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
-            nameof(ExecuteScalar_Command),
-            nameof(ExecuteScalar_Dapper),
-            nameof(ExecuteScalar_DbConnectionPlus)
-        ]
+        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
     )]
-    public void ExecuteScalar__Setup() =>
-        this.SetupDatabase(1);
+    public void ExecuteScalar__Setup() => this.SetupDatabase(1);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteScalar_Category)]

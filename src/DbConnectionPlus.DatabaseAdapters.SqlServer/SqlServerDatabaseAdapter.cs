@@ -23,8 +23,7 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     public IEntityManipulator EntityManipulator => this.entityManipulator;
 
     /// <inheritdoc />
-    public ITemporaryTableBuilder TemporaryTableBuilder =>
-        this.temporaryTableBuilder;
+    public ITemporaryTableBuilder TemporaryTableBuilder => this.temporaryTableBuilder;
 
     /// <inheritdoc />
     public void BindParameterValue(DbParameter parameter, object? value)
@@ -41,16 +40,13 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -71,8 +67,7 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string FormatParameterName(string parameterName) =>
-        "@" + parameterName;
+    public string FormatParameterName(string parameterName) => "@" + parameterName;
 
     /// <inheritdoc />
     public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
@@ -86,14 +81,11 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "nvarchar(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "nvarchar(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "int",
+                EnumSerializationMode.Integers => "int",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -110,22 +102,16 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string QuoteIdentifier(string identifier) =>
-        "[" + identifier + "]";
+    public string QuoteIdentifier(string identifier) => "[" + identifier + "]";
 
     /// <inheritdoc />
-    public string QuoteTemporaryTableName(string tableName, DbConnection connection) =>
-        "[#" + tableName + "]";
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) => "[#" + tableName + "]";
 
     /// <inheritdoc />
-    public bool SupportsTemporaryTables(DbConnection connection) =>
-        true;
+    public bool SupportsTemporaryTables(DbConnection connection) => true;
 
     /// <inheritdoc />
-    public bool WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    )
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -177,6 +163,6 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
         { typeof(float), "real" },
         { typeof(string), "nvarchar(max)" },
         { typeof(TimeOnly), "time" },
-        { typeof(TimeSpan), "time" }
+        { typeof(TimeSpan), "time" },
     };
 }

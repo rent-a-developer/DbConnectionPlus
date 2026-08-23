@@ -120,8 +120,5 @@ public interface IDatabaseAdapter
     /// <paramref name="cancellationToken" />; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="exception" /> is <see langword="null" />.</exception>
-    public bool WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    );
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken);
 }

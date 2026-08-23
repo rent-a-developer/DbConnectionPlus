@@ -28,8 +28,8 @@ internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
             ? this.fixture.Value.GetAwaiter().GetResult()
             : throw new InvalidOperationException(
                 $"The {databaseSystemName} container has not been started. Tests reach a database through "
-                + $"{nameof(IntegrationTestsBase<>)}, which starts the container it needs before the first test "
-                + "of a test class runs."
+                    + $"{nameof(IntegrationTestsBase<>)}, which starts the container it needs before the first test "
+                    + "of a test class runs."
             );
 
     /// <summary>
@@ -54,8 +54,7 @@ internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
     /// Starts the container and waits until the database server inside it accepts connections. Does nothing if the
     /// container is already starting or started.
     /// </summary>
-    public ValueTask StartAsync() =>
-        new(this.fixture.Value);
+    public ValueTask StartAsync() => new(this.fixture.Value);
 
     private static async Task<TFixture> CreateAndStartAsync(string databaseSystemName)
     {
@@ -75,7 +74,7 @@ internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
 
         TestContext.Current.SendDiagnosticMessage(
             $"The {databaseSystemName} container is ready after {elapsedSeconds} seconds and is using the "
-            + $"following connection string: {connectionString}"
+                + $"following connection string: {connectionString}"
         );
 
         return fixture;

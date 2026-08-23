@@ -32,10 +32,7 @@ public static class Program
     /// <returns>Zero if every assertion passed, otherwise one.</returns>
     public static Int32 Main()
     {
-        var databasePath = Path.Combine(
-            Path.GetTempPath(),
-            $"dbconnectionplus-aot-consumer-{Guid.NewGuid():N}.db"
-        );
+        var databasePath = Path.Combine(Path.GetTempPath(), $"dbconnectionplus-aot-consumer-{Guid.NewGuid():N}.db");
 
         Console.WriteLine(new String('=', 100));
         Console.WriteLine("DbConnectionPlus - Native AOT package consumer");

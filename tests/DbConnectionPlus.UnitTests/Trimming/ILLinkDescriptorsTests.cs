@@ -24,8 +24,10 @@ public class ILLinkDescriptorsTests : UnitTestsBase
 {
     [Fact]
     public void CoreAssembly_ShouldEmbedTheILLinkDescriptor() =>
-        typeof(DbConnectionExtensions).Assembly.GetManifestResourceNames()
-            .Should().Contain(ILLinkDescriptorsResourceName);
+        typeof(DbConnectionExtensions)
+            .Assembly.GetManifestResourceNames()
+            .Should()
+            .Contain(ILLinkDescriptorsResourceName);
 
     [Theory]
     [InlineData(1)]
@@ -44,14 +46,14 @@ public class ILLinkDescriptorsTests : UnitTestsBase
             .Select(a => (string?)a.Attribute("fullname"))
             .ToList();
 
-        preservedTypes
-            .Should().Contain($"System.ValueTuple`{arity}");
+        preservedTypes.Should().Contain($"System.ValueTuple`{arity}");
     }
 
     private static XDocument ReadDescriptor()
     {
-        using var stream = typeof(DbConnectionExtensions).Assembly
-            .GetManifestResourceStream(ILLinkDescriptorsResourceName)!;
+        using var stream = typeof(DbConnectionExtensions).Assembly.GetManifestResourceStream(
+            ILLinkDescriptorsResourceName
+        )!;
 
         return XDocument.Load(stream);
     }

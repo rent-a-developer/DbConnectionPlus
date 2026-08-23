@@ -116,7 +116,7 @@ internal static class TypeExtensions
         typeof(DateTimeOffset),
         typeof(TimeSpan),
         typeof(TimeOnly),
-        typeof(Guid)
+        typeof(Guid),
     ];
 
     private static readonly HashSet<Type> valueTupleTypes =
@@ -128,6 +128,6 @@ internal static class TypeExtensions
         typeof(ValueTuple<,,,,>),
         typeof(ValueTuple<,,,,,>),
         typeof(ValueTuple<,,,,,,>),
-        typeof(ValueTuple<,,,,,,,>)
+        typeof(ValueTuple<,,,,,,,>),
     ];
 }

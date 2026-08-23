@@ -4,28 +4,23 @@ using RentADeveloper.DbConnectionPlus.IntegrationTests.Assertions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_QueryTests_MySql :
-    DbConnectionExtensions_QueryTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QueryTests_MySql
+    : DbConnectionExtensions_QueryTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QueryTests_Oracle :
-    DbConnectionExtensions_QueryTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QueryTests_Oracle
+    : DbConnectionExtensions_QueryTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QueryTests_PostgreSql :
-    DbConnectionExtensions_QueryTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QueryTests_PostgreSql
+    : DbConnectionExtensions_QueryTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QueryTests_Sqlite :
-    DbConnectionExtensions_QueryTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QueryTests_Sqlite
+    : DbConnectionExtensions_QueryTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_QueryTests_SqlServer :
-    DbConnectionExtensions_QueryTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_QueryTests_SqlServer
+    : DbConnectionExtensions_QueryTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_QueryTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_QueryTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Theory]
@@ -41,13 +36,16 @@ public abstract class
 
         await Invoking(() =>
                 CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    $"SELECT * FROM {Q("Entity")}",
-                    cancellationToken: cancellationToken
-                ).ToListAsync(cancellationToken).AsTask()
+                        useAsyncApi,
+                        this.Connection,
+                        $"SELECT * FROM {Q("Entity")}",
+                        cancellationToken: cancellationToken
+                    )
+                    .ToListAsync(cancellationToken)
+                    .AsTask()
             )
-            .Should().ThrowAsync<OperationCanceledException>()
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
@@ -61,12 +59,13 @@ public abstract class
         var entities = this.CreateEntitiesInDb<Entity>();
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            "GetEntities",
-            commandType: CommandType.StoredProcedure,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                "GetEntities",
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
@@ -87,31 +86,27 @@ public abstract class
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = CallApi(
-            useAsyncApi,
-            this.Connection,
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).GetAsyncEnumerator();
+                useAsyncApi,
+                this.Connection,
+                statement,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .GetAsyncEnumerator();
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeTrue();
+        (await enumerator.MoveNextAsync()).Should().BeTrue();
 
         if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
         {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
+            this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeTrue();
         }
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeTrue();
+        (await enumerator.MoveNextAsync()).Should().BeTrue();
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeFalse();
+        (await enumerator.MoveNextAsync()).Should().BeFalse();
 
         await enumerator.DisposeAsync();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
@@ -126,11 +121,12 @@ public abstract class
         var entities = Generate.Multiple<Entity>();
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {TemporaryTable(entities)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {TemporaryTable(entities)}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
@@ -143,11 +139,12 @@ public abstract class
         var entity = this.CreateEntityInDb<Entity>();
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         EntityAssertions.AssertDataRowsMatchEntities(dataRows, [entity]);
     }
@@ -165,11 +162,12 @@ public abstract class
         );
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                statement,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         EntityAssertions.AssertDataRowsMatchEntities(dataRows, [entity]);
     }
@@ -190,31 +188,27 @@ public abstract class
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var enumerator = CallApi(
-            useAsyncApi,
-            this.Connection,
-            statement,
-            cancellationToken: TestContext.Current.CancellationToken
-        ).GetAsyncEnumerator();
+                useAsyncApi,
+                this.Connection,
+                statement,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .GetAsyncEnumerator();
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeTrue();
+        (await enumerator.MoveNextAsync()).Should().BeTrue();
 
         if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
         {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
+            this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeTrue();
         }
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeTrue();
+        (await enumerator.MoveNextAsync()).Should().BeTrue();
 
-        (await enumerator.MoveNextAsync())
-            .Should().BeFalse();
+        (await enumerator.MoveNextAsync()).Should().BeFalse();
 
         await enumerator.DisposeAsync();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
@@ -229,16 +223,16 @@ public abstract class
         var entityIds = Generate.Ids();
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                $"SELECT {Q("Value")} AS {Q("Id")} FROM {TemporaryTable(entityIds)}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         for (var i = 0; i < entityIds.Count; i++)
         {
-            ValueConverter.ConvertValueToType<long>(dataRows[i]["Id"])
-                .Should().Be(entityIds[i]);
+            ValueConverter.ConvertValueToType<long>(dataRows[i]["Id"]).Should().Be(entityIds[i]);
         }
     }
 
@@ -250,11 +244,12 @@ public abstract class
         var entities = this.CreateEntitiesInDb<Entity>();
 
         var dataRows = await CallApi(
-            useAsyncApi,
-            this.Connection,
-            $"SELECT * FROM {Q("Entity")}",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).ToListAsync(TestContext.Current.CancellationToken);
+                useAsyncApi,
+                this.Connection,
+                $"SELECT * FROM {Q("Entity")}",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .ToListAsync(TestContext.Current.CancellationToken);
 
         EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
     }
@@ -269,25 +264,30 @@ public abstract class
             var entities = this.CreateEntitiesInDb<Entity>(null, transaction);
 
             var dataRows = await CallApi(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT * FROM {Q("Entity")}",
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken);
+                    useAsyncApi,
+                    this.Connection,
+                    $"SELECT * FROM {Q("Entity")}",
+                    transaction,
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken);
 
             EntityAssertions.AssertDataRowsMatchEntities(dataRows, entities);
 
             await transaction.RollbackAsync();
         }
 
-        (await CallApi(
-                useAsyncApi,
-                this.Connection,
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEmpty();
+        (
+            await CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    $"SELECT * FROM {Q("Entity")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEmpty();
     }
 
     private static IAsyncEnumerable<DataRow> CallApi(
@@ -302,21 +302,11 @@ public abstract class
     {
         if (useAsyncApi)
         {
-            return connection.QueryAsync(
-                statement,
-                transaction,
-                commandTimeout,
-                commandType,
-                cancellationToken
-            );
+            return connection.QueryAsync(statement, transaction, commandTimeout, commandType, cancellationToken);
         }
 
-        return connection.Query(
-            statement,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ToAsyncEnumerable();
+        return connection
+            .Query(statement, transaction, commandTimeout, commandType, cancellationToken)
+            .ToAsyncEnumerable();
     }
 }

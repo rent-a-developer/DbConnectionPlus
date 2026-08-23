@@ -7,27 +7,11 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets =
-        [
-            nameof(Exists_Command),
-            nameof(Exists_Dapper),
-            nameof(Exists_DbConnectionPlus)
-        ]
-    )]
-    public void Exists__Cleanup() =>
-        this.connection.Dispose();
+    [GlobalCleanup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
+    public void Exists__Cleanup() => this.connection.Dispose();
 
-    [GlobalSetup(
-        Targets =
-        [
-            nameof(Exists_Command),
-            nameof(Exists_Dapper),
-            nameof(Exists_DbConnectionPlus)
-        ]
-    )]
-    public void Exists__Setup() =>
-        this.SetupDatabase(1);
+    [GlobalSetup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
+    public void Exists__Setup() => this.SetupDatabase(1);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Exists_Category)]

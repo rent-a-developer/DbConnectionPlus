@@ -22,7 +22,5 @@ public class NameHelperTests : UnitTestsBase
         string expression,
         int maximumLength,
         string expectedName
-    ) =>
-        NameHelper.CreateNameFromCallerArgumentExpression(expression, maximumLength)
-            .Should().Be(expectedName);
+    ) => NameHelper.CreateNameFromCallerArgumentExpression(expression, maximumLength).Should().Be(expectedName);
 }

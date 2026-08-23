@@ -27,14 +27,11 @@ internal static class EnumSerializer
 
         return serializationMode switch
         {
-            EnumSerializationMode.Strings =>
-                enumValue.ToString(),
+            EnumSerializationMode.Strings => enumValue.ToString(),
 
-            EnumSerializationMode.Integers =>
-                Convert.ToInt32(enumValue, CultureInfo.InvariantCulture),
+            EnumSerializationMode.Integers => Convert.ToInt32(enumValue, CultureInfo.InvariantCulture),
 
-            _ =>
-                ThrowHelper.ThrowInvalidEnumSerializationModeException<object>(serializationMode)
+            _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<object>(serializationMode),
         };
     }
 }

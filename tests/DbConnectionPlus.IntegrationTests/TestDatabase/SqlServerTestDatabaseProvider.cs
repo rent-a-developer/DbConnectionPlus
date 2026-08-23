@@ -70,10 +70,10 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     ) =>
         connection.ExecuteScalar<string>(
             $"""
-             SELECT	C.collation_name AS CollationName
-             FROM	tempdb.sys.columns C
-             WHERE	c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND C.name = '{columnName}'
-             """,
+            SELECT	C.collation_name AS CollationName
+            FROM	tempdb.sys.columns C
+            WHERE	c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND C.name = '{columnName}'
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
@@ -85,17 +85,16 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     ) =>
         connection.QuerySingle<string>(
             $"""
-             SELECT  t.name AS DataType
-             FROM    tempdb.sys.columns c
-             JOIN    tempdb.sys.types t ON c.user_type_id = t.user_type_id
-             WHERE   c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND c.name = '{columnName}'
-             """,
+            SELECT  t.name AS DataType
+            FROM    tempdb.sys.columns c
+            JOIN    tempdb.sys.types t ON c.user_type_id = t.user_type_id
+            WHERE   c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND c.name = '{columnName}'
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
     /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() =>
-        "CONVERT(SQL_VARIANT, 123)";
+    public string GetUnsupportedDataTypeLiteral() => "CONVERT(SQL_VARIANT, 123)";
 
     /// <inheritdoc />
     public void ResetDatabase()
@@ -107,12 +106,12 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         {
             connection.ExecuteNonQuery(
                 $"""
-                 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DatabaseName}')
-                 BEGIN
-                     ALTER DATABASE [{DatabaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                     DROP DATABASE [{DatabaseName}];
-                 END
-                 """
+                IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DatabaseName}')
+                BEGIN
+                    ALTER DATABASE [{DatabaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                    DROP DATABASE [{DatabaseName}];
+                END
+                """
             );
 
             connection.ExecuteNonQuery($"CREATE DATABASE [{DatabaseName}] COLLATE {this.DatabaseCollation}");
@@ -130,14 +129,12 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartSqlServerAsync();
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartSqlServerAsync();
 
     /// <summary>
     /// The connection string that connects to the SQL Server server running in the test container.
     /// </summary>
-    private static string ConnectionString =>
-        TestDatabaseContainers.SqlServer.ConnectionString;
+    private static string ConnectionString => TestDatabaseContainers.SqlServer.ConnectionString;
 
     private static void ExecuteScript(SqlConnection connection, string script)
     {
@@ -151,8 +148,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const string CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE Entity
         (
             Id BIGINT NOT NULL PRIMARY KEY,
@@ -257,8 +253,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 
     private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const string PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE Entity;
         GO
 

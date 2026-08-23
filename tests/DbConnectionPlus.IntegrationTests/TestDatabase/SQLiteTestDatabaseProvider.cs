@@ -33,13 +33,13 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
     /// <inheritdoc />
     public string DelayTwoSecondsStatement =>
         """
-        WITH RECURSIVE delay(x) AS (
-          SELECT 1
-          UNION ALL
-          SELECT x + 1 FROM delay WHERE x < 5000000
-        )
-        SELECT x FROM delay WHERE x = 5000000;
-        """;
+            WITH RECURSIVE delay(x) AS (
+              SELECT 1
+              UNION ALL
+              SELECT x + 1 FROM delay WHERE x < 5000000
+            )
+            SELECT x FROM delay WHERE x = 5000000;
+            """;
 
     /// <inheritdoc />
     public bool HasUnsupportedDataType => false;
@@ -63,18 +63,17 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
     public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
 
     /// <inheritdoc />
-    public DbConnection CreateConnection() =>
-        this.connection;
+    public DbConnection CreateConnection() => this.connection;
 
     /// <inheritdoc />
     public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
         this.connection.Exists(
             $"""
-             SELECT 1
-             FROM sqlite_temp_master
-             WHERE type = 'table'
-             AND name = '{tableName}'
-             """,
+            SELECT 1
+            FROM sqlite_temp_master
+            WHERE type = 'table'
+            AND name = '{tableName}'
+            """,
             transaction,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -84,8 +83,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         string temporaryTableName,
         string columnName,
         DbConnection connection
-    ) =>
-        throw new NotImplementedException();
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public string GetDataTypeOfTemporaryTableColumn(
@@ -93,11 +91,11 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         string columnName,
         DbConnection connection
     ) =>
-        this.connection
-            .Query<(int cid, string name, string Type, bool notnull, object dflt_value, int pk)>(
+        this
+            .connection.Query<(int cid, string name, string Type, bool notnull, object dflt_value, int pk)>(
                 $"""
-                 PRAGMA table_info("{temporaryTableName}");
-                 """,
+                PRAGMA table_info("{temporaryTableName}");
+                """,
                 cancellationToken: TestContext.Current.CancellationToken
             )
             .Where(a => a.name == columnName)
@@ -105,8 +103,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             .Single();
 
     /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() =>
-        throw new NotImplementedException();
+    public string GetUnsupportedDataTypeLiteral() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public void ResetDatabase()
@@ -121,15 +118,13 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
 
     /// <inheritdoc />
     /// <remarks>SQLite runs in-process, in memory, so there is no server and nothing to start.</remarks>
-    public static ValueTask StartDatabaseAsync() =>
-        default;
+    public static ValueTask StartDatabaseAsync() => default;
 
     private readonly SqliteConnection connection;
 
     private bool isDatabasePrepared;
 
-    private const string CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE Entity
         (
             Id INTEGER,

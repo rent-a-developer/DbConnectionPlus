@@ -24,8 +24,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     public IEntityManipulator EntityManipulator => this.entityManipulator;
 
     /// <inheritdoc />
-    public ITemporaryTableBuilder TemporaryTableBuilder =>
-        this.temporaryTableBuilder;
+    public ITemporaryTableBuilder TemporaryTableBuilder => this.temporaryTableBuilder;
 
     /// <inheritdoc />
     public void BindParameterValue(DbParameter parameter, object? value)
@@ -42,16 +41,13 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -72,8 +68,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string FormatParameterName(string parameterName) =>
-        "@" + parameterName;
+    public string FormatParameterName(string parameterName) => "@" + parameterName;
 
     /// <inheritdoc />
     public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
@@ -87,14 +82,11 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "character varying(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "character varying(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "integer",
+                EnumSerializationMode.Integers => "integer",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -150,14 +142,11 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    NpgsqlDbType.Varchar,
+                EnumSerializationMode.Strings => NpgsqlDbType.Varchar,
 
-                EnumSerializationMode.Integers =>
-                    NpgsqlDbType.Integer,
+                EnumSerializationMode.Integers => NpgsqlDbType.Integer,
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<NpgsqlDbType>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<NpgsqlDbType>(enumSerializationMode),
             };
         }
 
@@ -174,22 +163,16 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public string QuoteIdentifier(string identifier) =>
-        "\"" + identifier + "\"";
+    public string QuoteIdentifier(string identifier) => "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public string QuoteTemporaryTableName(string tableName, DbConnection connection) =>
-        "\"" + tableName + "\"";
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) => "\"" + tableName + "\"";
 
     /// <inheritdoc />
-    public bool SupportsTemporaryTables(DbConnection connection) =>
-        true;
+    public bool SupportsTemporaryTables(DbConnection connection) => true;
 
     /// <inheritdoc />
-    public bool WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    )
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -216,7 +199,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
         { typeof(float), NpgsqlDbType.Real },
         { typeof(string), NpgsqlDbType.Text },
         { typeof(TimeOnly), NpgsqlDbType.Time },
-        { typeof(TimeSpan), NpgsqlDbType.Interval }
+        { typeof(TimeSpan), NpgsqlDbType.Interval },
     };
 
     private static readonly Dictionary<Type, string> typeToPostgreSqlDataType = new()
@@ -236,6 +219,6 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
         { typeof(float), "real" },
         { typeof(string), "text" },
         { typeof(TimeOnly), "time" },
-        { typeof(TimeSpan), "interval" }
+        { typeof(TimeSpan), "interval" },
     };
 }

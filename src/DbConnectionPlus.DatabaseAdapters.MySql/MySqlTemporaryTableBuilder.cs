@@ -36,8 +36,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -69,8 +68,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -87,8 +88,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -100,7 +103,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         var mySqlBulkCopy = new MySqlBulkCopy(mySqlConnection, mySqlTransaction)
         {
             BulkCopyTimeout = 0,
-            DestinationTableName = $"`{name}`"
+            DestinationTableName = $"`{name}`",
         };
 
         mySqlBulkCopy.ColumnMappings.Clear();
@@ -111,7 +114,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -136,8 +141,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -173,7 +177,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
             await using var cancellationTokenRegistration =
 #pragma warning disable CA2007
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
 #pragma warning restore CA2007
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
@@ -194,9 +198,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken)
-                    .ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -210,7 +214,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         var mySqlBulkCopy = new MySqlBulkCopy(mySqlConnection, mySqlTransaction)
         {
             BulkCopyTimeout = 0,
-            DestinationTableName = $"`{name}`"
+            DestinationTableName = $"`{name}`",
         };
 
         mySqlBulkCopy.ColumnMappings.Clear();
@@ -221,7 +225,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -240,7 +246,6 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         );
     }
 
-
     /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
@@ -251,8 +256,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateMultiColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -302,8 +306,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateSingleColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -333,8 +336,8 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// </returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {

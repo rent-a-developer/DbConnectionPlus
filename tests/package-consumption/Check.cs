@@ -108,8 +108,7 @@ public static class Check
         Fail(label, $"expected {typeof(TException).Name}, but nothing was thrown");
     }
 
-    private static void Pass(String label) =>
-        Console.WriteLine($"  PASS  {label}");
+    private static void Pass(String label) => Console.WriteLine($"  PASS  {label}");
 
     private static void Fail(String label, String detail)
     {
@@ -125,6 +124,6 @@ public static class Check
             null => "null",
             Byte[] bytes => Convert.ToHexString(bytes),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-            _ => value.ToString() ?? String.Empty
+            _ => value.ToString() ?? String.Empty,
         };
 }

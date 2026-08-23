@@ -4,40 +4,32 @@ using RentADeveloper.DbConnectionPlus.Exceptions;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters;
 
-public sealed class
-    EntityManipulator_UpdateEntitiesTests_MySql :
-    EntityManipulator_UpdateEntitiesTests<MySqlTestDatabaseProvider>;
+public sealed class EntityManipulator_UpdateEntitiesTests_MySql
+    : EntityManipulator_UpdateEntitiesTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_UpdateEntitiesTests_Oracle :
-    EntityManipulator_UpdateEntitiesTests<OracleTestDatabaseProvider>;
+public sealed class EntityManipulator_UpdateEntitiesTests_Oracle
+    : EntityManipulator_UpdateEntitiesTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_UpdateEntitiesTests_PostgreSql :
-    EntityManipulator_UpdateEntitiesTests<PostgreSqlTestDatabaseProvider>;
+public sealed class EntityManipulator_UpdateEntitiesTests_PostgreSql
+    : EntityManipulator_UpdateEntitiesTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_UpdateEntitiesTests_Sqlite :
-    EntityManipulator_UpdateEntitiesTests<SqliteTestDatabaseProvider>;
+public sealed class EntityManipulator_UpdateEntitiesTests_Sqlite
+    : EntityManipulator_UpdateEntitiesTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    EntityManipulator_UpdateEntitiesTests_SqlServer :
-    EntityManipulator_UpdateEntitiesTests<SqlServerTestDatabaseProvider>;
+public sealed class EntityManipulator_UpdateEntitiesTests_SqlServer
+    : EntityManipulator_UpdateEntitiesTests<SqlServerTestDatabaseProvider>;
 
-public abstract class EntityManipulator_UpdateEntitiesTests
-    <TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class EntityManipulator_UpdateEntitiesTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    protected EntityManipulator_UpdateEntitiesTests() =>
-        this.manipulator = this.DatabaseAdapter.EntityManipulator;
+    protected EntityManipulator_UpdateEntitiesTests() => this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        bool useAsyncApi
-    )
+    public async Task UpdateEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -48,18 +40,22 @@ public abstract class EntityManipulator_UpdateEntitiesTests
 
         this.DelayNextDbCommand = true;
 
-        await Invoking(() =>
-                this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, cancellationToken)
-            )
-            .Should().ThrowAsync<OperationCanceledException>()
+        await Invoking(() => this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, cancellationToken))
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entities should not have been updated.
-        (await this.Connection.QueryAsync<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities);
+        (
+            await this
+                .Connection.QueryAsync<Entity>(
+                    $"SELECT * FROM {Q("Entity")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(entities);
     }
 
     [Theory]
@@ -73,59 +69,63 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var failingEntity = updatedEntities[^1];
         failingEntity.ConcurrencyToken_ = Generate.Single<byte[]>();
 
-        var exception = (await Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    updatedEntities,
-                    null,
-                    TestContext.Current.CancellationToken
+        var exception = (
+            await Invoking(() =>
+                    this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        updatedEntities,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
                 )
-            )
-            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+                .Should()
+                .ThrowAsync<DbUpdateConcurrencyException>()
+        ).Subject.First();
 
-        exception.Message
-            .Should().Be(
-                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                "Data in the database may have been modified or deleted since entities were loaded. See " +
-                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                "the entity that was involved in the operation."
+        exception
+            .Message.Should()
+            .Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). "
+                    + "Data in the database may have been modified or deleted since entities were loaded. See "
+                    + $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for "
+                    + "the entity that was involved in the operation."
             );
 
-        exception.Entity
-            .Should().Be(failingEntity);
+        exception.Entity.Should().Be(failingEntity);
 
         foreach (var entity in updatedEntities.Except([failingEntity]))
         {
-            (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+            (
+                await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                     $"""
-                     SELECT *
-                     FROM   {Q("MappingTestEntity")}
-                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
-                            {Q("Key2")} = {Parameter(entity.Key2_)}
-                     """,
+                    SELECT *
+                    FROM   {Q("MappingTestEntity")}
+                    WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
+                           {Q("Key2")} = {Parameter(entity.Key2_)}
+                    """,
                     cancellationToken: TestContext.Current.CancellationToken
-                ))
-                .Should().BeEquivalentTo(entity);
+                )
+            ).Should().BeEquivalentTo(entity);
         }
 
-        (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+        (
+            await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                 $"""
-                 SELECT *
-                 FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
-                        {Q("Key2")} = {Parameter(failingEntity.Key2_)}
-                 """,
+                SELECT *
+                FROM   {Q("MappingTestEntity")}
+                WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
+                       {Q("Key2")} = {Parameter(failingEntity.Key2_)}
+                """,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entities[^1]);
+            )
+        ).Should().BeEquivalentTo(entities[^1]);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task UpdateEntities_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
-        bool useAsyncApi
-    )
+    public async Task UpdateEntities_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(bool useAsyncApi)
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
@@ -139,28 +139,32 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         );
 
         // Make sure the enums are stored as integers:
-        (await this.Connection.QueryAsync<int>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities.Select(a => (int)a.Enum));
+        (
+            await this
+                .Connection.QueryAsync<int>(
+                    $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(entities.Select(a => (int)a.Enum));
 
         var updatedEntities = Generate.UpdateFor(entities);
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
         // Make sure the enums are stored as integers:
-        (await this.Connection.QueryAsync<int>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities.Select(a => (int)a.Enum));
+        (
+            await this
+                .Connection.QueryAsync<int>(
+                    $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(updatedEntities.Select(a => (int)a.Enum));
     }
 
     [Theory]
@@ -180,28 +184,32 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         );
 
         // Make sure the enums are stored as strings:
-        (await this.Connection.QueryAsync<string>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities.Select(a => a.Enum.ToString()));
+        (
+            await this
+                .Connection.QueryAsync<string>(
+                    $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(entities.Select(a => a.Enum.ToString()));
 
         var updatedEntities = Generate.UpdateFor(entities);
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
         // Make sure the enums are stored as strings:
-        (await this.Connection.QueryAsync<string>(
-                $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities.Select(a => a.Enum.ToString()));
+        (
+            await this
+                .Connection.QueryAsync<string>(
+                    $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(updatedEntities.Select(a => a.Enum.ToString()));
     }
 
     [Theory]
@@ -213,26 +221,21 @@ public abstract class EntityManipulator_UpdateEntitiesTests
 
         var updatedEntities = Generate.UpdateFor(entities);
         updatedEntities.ForEach(a =>
-            {
-                a.Computed_ = 0;
-                a.Identity_ = 0;
-                a.NotMapped = "ShouldNotBePersisted";
-            }
-        );
+        {
+            a.Computed_ = 0;
+            a.Identity_ = 0;
+            a.NotMapped = "ShouldNotBePersisted";
+        });
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
         this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}")
-            .Should().BeEquivalentTo(
+            .Should()
+            .BeEquivalentTo(
                 updatedEntities,
                 options =>
-                    options.Using<string>(context => context.Subject.Should().BeNull())
+                    options
+                        .Using<string>(context => context.Subject.Should().BeNull())
                         .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
@@ -248,26 +251,22 @@ public abstract class EntityManipulator_UpdateEntitiesTests
 
         var updatedEntities = Generate.UpdateFor(entities);
         updatedEntities.ForEach(a =>
-            {
-                a.Computed_ = 0;
-                a.Identity_ = 0;
-                a.NotMapped = "ShouldNotBePersisted";
-            }
-        );
+        {
+            a.Computed_ = 0;
+            a.Identity_ = 0;
+            a.NotMapped = "ShouldNotBePersisted";
+        });
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
         this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}")
-            .Should().BeEquivalentTo(
+            .Should()
+            .BeEquivalentTo(
                 updatedEntities,
-                options => options.Using<string>(context => context.Subject.Should().BeNull())
-                    .When(info => info.Path.EndsWith("NotMapped"))
+                options =>
+                    options
+                        .Using<string>(context => context.Subject.Should().BeNull())
+                        .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
 
@@ -278,7 +277,8 @@ public abstract class EntityManipulator_UpdateEntitiesTests
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
-        return Invoking(() => this.CallApi(
+        return Invoking(() =>
+                this.CallApi(
                     useAsyncApi,
                     this.Connection,
                     [entityWithoutKeyProperty],
@@ -286,10 +286,11 @@ public abstract class EntityManipulator_UpdateEntitiesTests
                     TestContext.Current.CancellationToken
                 )
             )
-            .Should().ThrowAsync<ArgumentException>()
+            .Should()
+            .ThrowAsync<ArgumentException>()
             .WithMessage(
-                $"No property of the type {typeof(EntityWithoutKeyProperty)} is configured as a key property. Make " +
-                "sure that at least one instance property of that type is configured as key property."
+                $"No property of the type {typeof(EntityWithoutKeyProperty)} is configured as a key property. Make "
+                    + "sure that at least one instance property of that type is configured as key property."
             );
     }
 
@@ -301,16 +302,11 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var entities = this.CreateEntitiesInDb<MappingTestEntity>();
         var updatedEntities = Generate.UpdateFor(entities);
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
         this.Connection.Query<MappingTestEntity>($"SELECT * FROM {Q("MappingTestEntity")}")
-            .Should().BeEquivalentTo(updatedEntities);
+            .Should()
+            .BeEquivalentTo(updatedEntities);
     }
 
     [Theory]
@@ -324,51 +320,57 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var failingEntity = updatedEntities[^1];
         failingEntity.RowVersion_ = Generate.Single<byte[]>();
 
-        var exception = (await Invoking(() => this.CallApi(
-                    useAsyncApi,
-                    this.Connection,
-                    updatedEntities,
-                    null,
-                    TestContext.Current.CancellationToken
+        var exception = (
+            await Invoking(() =>
+                    this.CallApi(
+                        useAsyncApi,
+                        this.Connection,
+                        updatedEntities,
+                        null,
+                        TestContext.Current.CancellationToken
+                    )
                 )
-            )
-            .Should().ThrowAsync<DbUpdateConcurrencyException>()).Subject.First();
+                .Should()
+                .ThrowAsync<DbUpdateConcurrencyException>()
+        ).Subject.First();
 
-        exception.Message
-            .Should().Be(
-                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). " +
-                "Data in the database may have been modified or deleted since entities were loaded. See " +
-                $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for " +
-                "the entity that was involved in the operation."
+        exception
+            .Message.Should()
+            .Be(
+                "The database operation was expected to affect 1 row(s), but actually affected 0 row(s). "
+                    + "Data in the database may have been modified or deleted since entities were loaded. See "
+                    + $"{nameof(DbUpdateConcurrencyException)}.{nameof(DbUpdateConcurrencyException.Entity)} for "
+                    + "the entity that was involved in the operation."
             );
 
-        exception.Entity
-            .Should().Be(failingEntity);
+        exception.Entity.Should().Be(failingEntity);
 
         foreach (var entity in updatedEntities.Except([failingEntity]))
         {
-            (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+            (
+                await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                     $"""
-                     SELECT *
-                     FROM   {Q("MappingTestEntity")}
-                     WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
-                            {Q("Key2")} = {Parameter(entity.Key2_)}
-                     """,
+                    SELECT *
+                    FROM   {Q("MappingTestEntity")}
+                    WHERE  {Q("Key1")} = {Parameter(entity.Key1_)} AND
+                           {Q("Key2")} = {Parameter(entity.Key2_)}
+                    """,
                     cancellationToken: TestContext.Current.CancellationToken
-                ))
-                .Should().BeEquivalentTo(entity);
+                )
+            ).Should().BeEquivalentTo(entity);
         }
 
-        (await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
+        (
+            await this.Connection.QueryFirstAsync<MappingTestEntityAttributes>(
                 $"""
-                 SELECT *
-                 FROM   {Q("MappingTestEntity")}
-                 WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
-                        {Q("Key2")} = {Parameter(failingEntity.Key2_)}
-                 """,
+                SELECT *
+                FROM   {Q("MappingTestEntity")}
+                WHERE  {Q("Key1")} = {Parameter(failingEntity.Key1_)} AND
+                       {Q("Key2")} = {Parameter(failingEntity.Key2_)}
+                """,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().BeEquivalentTo(entities[^1]);
+            )
+        ).Should().BeEquivalentTo(entities[^1]);
     }
 
     [Theory]
@@ -379,23 +381,21 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var entities = this.CreateEntitiesInDb<Entity>();
         var updatedEntities = Generate.UpdateFor(entities);
 
-        (await this.CallApi(
-                useAsyncApi,
-                this.Connection,
-                updatedEntities,
-                null,
-                TestContext.Current.CancellationToken
-            ))
-            .Should().Be(entities.Count);
+        (await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken))
+            .Should()
+            .Be(entities.Count);
 
-        (await this.CallApi(
+        (
+            await this.CallApi(
                 useAsyncApi,
                 this.Connection,
                 Array.Empty<Entity>(),
                 null,
                 TestContext.Current.CancellationToken
-            ))
-            .Should().Be(0);
+            )
+        )
+            .Should()
+            .Be(0);
     }
 
     [Theory]
@@ -408,19 +408,18 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var entities = this.CreateEntitiesInDb<EntityWithDateTimeOffset>();
         var updatedEntities = Generate.UpdateFor(entities);
 
-        await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            updatedEntities,
-            null,
-            TestContext.Current.CancellationToken
-        );
+        await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken);
 
-        (await this.Connection.QueryAsync<EntityWithDateTimeOffset>(
-                $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities);
+        (
+            await this
+                .Connection.QueryAsync<EntityWithDateTimeOffset>(
+                    $"SELECT * FROM {Q("EntityWithDateTimeOffset")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(updatedEntities);
     }
 
     [Theory]
@@ -431,20 +430,20 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         var entities = this.CreateEntitiesInDb<Entity>();
         var updatedEntities = Generate.UpdateFor(entities);
 
-        (await this.CallApi(
-                useAsyncApi,
-                this.Connection,
-                updatedEntities,
-                null,
-                TestContext.Current.CancellationToken
-            ))
-            .Should().Be(updatedEntities.Count);
+        (await this.CallApi(useAsyncApi, this.Connection, updatedEntities, null, TestContext.Current.CancellationToken))
+            .Should()
+            .Be(updatedEntities.Count);
 
-        (await this.Connection.QueryAsync<Entity>(
-                $"SELECT * FROM {Q("Entity")}",
-                cancellationToken: TestContext.Current.CancellationToken
-            ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(updatedEntities);
+        (
+            await this
+                .Connection.QueryAsync<Entity>(
+                    $"SELECT * FROM {Q("Entity")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(updatedEntities);
     }
 
     [Theory]
@@ -458,25 +457,36 @@ public abstract class EntityManipulator_UpdateEntitiesTests
         {
             var updatedEntities = Generate.UpdateFor(entities);
 
-            (await this.CallApi(
+            (
+                await this.CallApi(
                     useAsyncApi,
                     this.Connection,
                     updatedEntities,
                     transaction,
                     TestContext.Current.CancellationToken
-                ))
-                .Should().Be(entities.Count);
+                )
+            )
+                .Should()
+                .Be(entities.Count);
 
-            (await this.Connection.QueryAsync<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
-                    .ToListAsync(TestContext.Current.CancellationToken))
-                .Should().BeEquivalentTo(updatedEntities);
+            (
+                await this
+                    .Connection.QueryAsync<Entity>($"SELECT * FROM {Q("Entity")}", transaction)
+                    .ToListAsync(TestContext.Current.CancellationToken)
+            )
+                .Should()
+                .BeEquivalentTo(updatedEntities);
 
             await transaction.RollbackAsync();
         }
 
-        (await this.Connection.QueryAsync<Entity>($"SELECT * FROM {Q("Entity")}")
-                .ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities);
+        (
+            await this
+                .Connection.QueryAsync<Entity>($"SELECT * FROM {Q("Entity")}")
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(entities);
     }
 
     private Task<int> CallApi<TEntity>(

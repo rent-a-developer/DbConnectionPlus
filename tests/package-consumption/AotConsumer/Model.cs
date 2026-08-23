@@ -38,7 +38,7 @@ public enum SmokeStatus
     Active = 1,
 
     /// <summary>The entity is retained for reference only.</summary>
-    Archived = 2
+    Archived = 2,
 }
 
 /// <summary>
@@ -134,7 +134,7 @@ public enum FlatTupleNumericEnum
     FlatNumericChosen = 71,
 
     /// <summary>Never stored. Present so that an off-by-one bind is visible.</summary>
-    FlatNumericOther = 72
+    FlatNumericOther = 72,
 }
 
 /// <summary>
@@ -150,7 +150,7 @@ public enum NestedTupleNumericEnum
     NestedNumericChosen = 81,
 
     /// <summary>Never stored. Present so that an off-by-one bind is visible.</summary>
-    NestedNumericOther = 82
+    NestedNumericOther = 82,
 }
 
 /// <summary>
@@ -166,7 +166,7 @@ public enum FlatTupleNamedEnum
     FlatNamedChosen = 91,
 
     /// <summary>Never stored. Present so that a parse landing on the wrong member is visible.</summary>
-    FlatNamedOther = 92
+    FlatNamedOther = 92,
 }
 
 /// <summary>
@@ -184,7 +184,7 @@ public enum NestedTupleNamedEnum
     NestedNamedChosen = 101,
 
     /// <summary>Never stored. Present so that a parse landing on the wrong member is visible.</summary>
-    NestedNamedOther = 102
+    NestedNamedOther = 102,
 }
 
 /// <summary>

@@ -31,8 +31,7 @@ public class MockDbParameterCollection : DbParameterCollection
     public override bool Contains(string value) => this.IndexOf(value) != -1;
 
     /// <inheritdoc />
-    public override void CopyTo(Array array, int index) =>
-        this.parameters.CopyTo((DbParameter[])array, index);
+    public override void CopyTo(Array array, int index) => this.parameters.CopyTo((DbParameter[])array, index);
 
     /// <inheritdoc />
     public override IEnumerator GetEnumerator() => this.parameters.GetEnumerator();
@@ -55,8 +54,7 @@ public class MockDbParameterCollection : DbParameterCollection
     }
 
     /// <inheritdoc />
-    public override void Insert(int index, object value) =>
-        this.parameters.Insert(index, (DbParameter)value);
+    public override void Insert(int index, object value) => this.parameters.Insert(index, (DbParameter)value);
 
     /// <inheritdoc />
     public override void Remove(object value) => this.parameters.Remove((DbParameter)value);
@@ -65,8 +63,7 @@ public class MockDbParameterCollection : DbParameterCollection
     public override void RemoveAt(int index) => this.parameters.RemoveAt(index);
 
     /// <inheritdoc />
-    public override void RemoveAt(string parameterName) =>
-        this.RemoveAt(this.IndexOfChecked(parameterName));
+    public override void RemoveAt(string parameterName) => this.RemoveAt(this.IndexOfChecked(parameterName));
 
     /// <inheritdoc />
     protected override DbParameter GetParameter(int index) => this.parameters[index];
@@ -76,8 +73,7 @@ public class MockDbParameterCollection : DbParameterCollection
         this.GetParameter(this.IndexOfChecked(parameterName));
 
     /// <inheritdoc />
-    protected override void SetParameter(int index, DbParameter value) =>
-        this.parameters[index] = value;
+    protected override void SetParameter(int index, DbParameter value) => this.parameters[index] = value;
 
     /// <inheritdoc />
     protected override void SetParameter(string parameterName, DbParameter value) =>

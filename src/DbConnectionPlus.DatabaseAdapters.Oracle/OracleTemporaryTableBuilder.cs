@@ -38,8 +38,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -80,8 +79,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -98,8 +99,10 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -133,8 +136,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -177,8 +179,9 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -197,8 +200,9 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -236,8 +240,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateMultiColumnTemporaryTableSqlCode(
         string quotedTableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -288,8 +291,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     private string BuildCreateSingleColumnTemporaryTableSqlCode(
         string quotedTableName,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -355,8 +357,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleConnection connection,
         OracleTransaction? transaction,
         string quotedTableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -404,8 +405,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
         OracleConnection connection,
         OracleTransaction? transaction,
         string quotedTableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -449,8 +449,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
     private static (string SqlCode, OracleParameter[] Parameters) BuildInsertSqlCode(
         string quotedTableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader
     )
     {
@@ -471,14 +470,13 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
             sqlBuilder.Append("\"");
 
-            parameters[0] = new()
-            {
-                ParameterName = Constants.SingleColumnTemporaryTableColumnName
-            };
+            parameters[0] = new() { ParameterName = Constants.SingleColumnTemporaryTableColumnName };
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -494,10 +492,7 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
                 sqlBuilder.Append(property.ColumnName);
                 sqlBuilder.Append('"');
 
-                parameters[i] = new()
-                {
-                    ParameterName = property.PropertyName
-                };
+                parameters[i] = new() { ParameterName = property.PropertyName };
             }
         }
 
@@ -531,8 +526,8 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
@@ -545,7 +540,6 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             EnumerableReaderOptions.None
         );
     }
-
 
     /// <summary>
     /// Drops the temporary table with the specified name.

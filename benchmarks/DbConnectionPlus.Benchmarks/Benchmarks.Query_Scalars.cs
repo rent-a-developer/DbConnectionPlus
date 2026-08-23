@@ -8,26 +8,14 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
-            nameof(Query_Scalars_Command),
-            nameof(Query_Scalars_Dapper),
-            nameof(Query_Scalars_DbConnectionPlus)
-        ]
+        Targets = [nameof(Query_Scalars_Command), nameof(Query_Scalars_Dapper), nameof(Query_Scalars_DbConnectionPlus)]
     )]
-    public void Query_Scalars__Cleanup() =>
-        this.connection.Dispose();
+    public void Query_Scalars__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
-            nameof(Query_Scalars_Command),
-            nameof(Query_Scalars_Dapper),
-            nameof(Query_Scalars_DbConnectionPlus)
-        ]
+        Targets = [nameof(Query_Scalars_Command), nameof(Query_Scalars_Dapper), nameof(Query_Scalars_DbConnectionPlus)]
     )]
-    public void Query_Scalars__Setup() =>
-        this.SetupDatabase(Query_Scalars_EntitiesPerOperation);
+    public void Query_Scalars__Setup() => this.SetupDatabase(Query_Scalars_EntitiesPerOperation);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Scalars_Category)]
@@ -51,13 +39,11 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Scalars_Category)]
-    public List<long> Query_Scalars_Dapper() =>
-        [.. SqlMapper.Query<long>(this.connection, "SELECT Id FROM Entity")];
+    public List<long> Query_Scalars_Dapper() => [.. SqlMapper.Query<long>(this.connection, "SELECT Id FROM Entity")];
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Query_Scalars_Category)]
-    public List<long> Query_Scalars_DbConnectionPlus() =>
-        [.. this.connection.Query<long>("SELECT Id FROM Entity")];
+    public List<long> Query_Scalars_DbConnectionPlus() => [.. this.connection.Query<long>("SELECT Id FROM Entity")];
 
     private const string Query_Scalars_Category = "Query_Scalars";
     private const int Query_Scalars_EntitiesPerOperation = 600;

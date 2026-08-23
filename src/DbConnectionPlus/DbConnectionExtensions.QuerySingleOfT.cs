@@ -122,33 +122,33 @@ public static partial class DbConnectionExtensions
     ///             In this case the single row in the result set will be materialized into an instance of the entity
     ///             type, with the constructor arguments or properties of the entity being populated from the
     ///             corresponding columns of the row.
-    /// 
+    ///
     ///             All columns returned by the SQL statement must have a name.
-    /// 
+    ///
     ///             The type <typeparamref name="T" /> must either:
-    /// 
+    ///
     ///             1. Have a constructor whose parameters match the columns of the result set returned by the
     ///                statement.
     ///                The names of the parameters must match the names of the columns (case-insensitive).
     ///                The types of the parameters must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     ///                The parameters can be in any order.
-    /// 
+    ///
     ///             Or
-    /// 
+    ///
     ///             2. Have a parameterless constructor and properties (with public setters) that match the columns of
     ///                the result set returned by the statement.
-    /// 
+    ///
     ///                Per default, the names of the properties must match the names of the columns (case-insensitive).
     ///                This can be configured via <see cref="ColumnAttribute" /> or <see cref="Configure" />.
-    /// 
+    ///
     ///                The types of the properties must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
+    ///
     ///                Columns without a matching property will be ignored.
-    /// 
+    ///
     ///             If neither condition is satisfied, an <see cref="ArgumentException" /> will be thrown.
-    /// 
+    ///
     ///             If a constructor parameter or a property cannot be set to the value of the corresponding column
     ///             due to a type mismatch, an <see cref="InvalidCastException" /> will be thrown.
     ///         </description>
@@ -159,14 +159,14 @@ public static partial class DbConnectionExtensions
     ///             In this case the single row in the result set will be materialized into an instance of the value
     ///             tuple type, with the fields of the value tuple being populated from the corresponding columns of the
     ///             row.
-    /// 
+    ///
     ///             All columns returned by the SQL statement must have a name.
     ///             The SQL statement must return the same number of columns as the value tuple has fields.
     ///             The SQL statement must return the columns in the same order as the fields in the value tuple.
-    /// 
+    ///
     ///             The data types of the columns must be compatible with the field types of the value tuple.
     ///             The compatibility is determined using <see cref="ValueConverter.CanConvert(Type, Type)" />.
-    /// 
+    ///
     ///             If those conditions are not met, an <see cref="ArgumentException" /> is thrown.
     ///         </description>
     ///     </item>
@@ -177,7 +177,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// public class Order
     /// {
     ///     [Key]
@@ -185,14 +185,12 @@ public static partial class DbConnectionExtensions
     ///     public DateTime OrderDate { get; set; }
     ///     public Decimal TotalAmount { get; set; }
     /// }
-    /// 
+    ///
     /// var order = connection.QuerySingle<Order>($"SELECT * FROM [Order] WHERE Id = {Parameter(orderId)}");
     /// ]]>
     /// </code>
     /// </example>
-    public static T QuerySingle<
-        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
-    >(
+    public static T QuerySingle<[DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T>(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -224,8 +222,8 @@ public static partial class DbConnectionExtensions
 
                 using (reader)
                 {
-                    var isTBuiltInTypeOrEnumType = typeof(T).IsBuiltInTypeOrNullableBuiltInType() ||
-                                                   typeof(T).IsEnumOrNullableEnumType();
+                    var isTBuiltInTypeOrEnumType =
+                        typeof(T).IsBuiltInTypeOrNullableBuiltInType() || typeof(T).IsEnumOrNullableEnumType();
                     var isTValueTupleType = typeof(T).IsValueTupleType();
                     var isTEntityType = !isTBuiltInTypeOrEnumType && !isTValueTupleType;
 
@@ -276,9 +274,8 @@ public static partial class DbConnectionExtensions
                     return result;
                 }
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -394,33 +391,33 @@ public static partial class DbConnectionExtensions
     ///             In this case the single row in the result set will be materialized into an instance of the entity
     ///             type, with the constructor arguments or properties of the entity being populated from the
     ///             corresponding columns of the row.
-    /// 
+    ///
     ///             All columns returned by the SQL statement must have a name.
-    /// 
+    ///
     ///             The type <typeparamref name="T" /> must either:
-    /// 
+    ///
     ///             1. Have a constructor whose parameters match the columns of the result set returned by the
     ///                statement.
     ///                The names of the parameters must match the names of the columns (case-insensitive).
     ///                The types of the parameters must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
     ///                The parameters can be in any order.
-    /// 
+    ///
     ///             Or
-    /// 
+    ///
     ///             2. Have a parameterless constructor and properties (with public setters) that match the columns of
     ///                the result set returned by the statement.
-    /// 
+    ///
     ///                Per default, the names of the properties must match the names of the columns (case-insensitive).
     ///                This can be configured via <see cref="ColumnAttribute" /> or <see cref="Configure" />.
-    /// 
+    ///
     ///                The types of the properties must be compatible with the data types of the columns.
     ///                The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// 
+    ///
     ///                Columns without a matching property will be ignored.
-    /// 
+    ///
     ///             If neither condition is satisfied, an <see cref="ArgumentException" /> will be thrown.
-    /// 
+    ///
     ///             If a constructor parameter or a property cannot be set to the value of the corresponding column
     ///             due to a type mismatch, an <see cref="InvalidCastException" /> will be thrown.
     ///         </description>
@@ -431,14 +428,14 @@ public static partial class DbConnectionExtensions
     ///             In this case the single row in the result set will be materialized into an instance of the value
     ///             tuple type, with the fields of the value tuple being populated from the corresponding columns of the
     ///             row.
-    /// 
+    ///
     ///             All columns returned by the SQL statement must have a name.
     ///             The SQL statement must return the same number of columns as the value tuple has fields.
     ///             The SQL statement must return the columns in the same order as the fields in the value tuple.
-    /// 
+    ///
     ///             The data types of the columns must be compatible with the field types of the value tuple.
     ///             The compatibility is determined using <see cref="ValueConverter.CanConvert(Type, Type)" />.
-    /// 
+    ///
     ///             If those conditions are not met, an <see cref="ArgumentException" /> is thrown.
     ///         </description>
     ///     </item>
@@ -449,7 +446,7 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// public class Order
     /// {
     ///     [Key]
@@ -457,14 +454,12 @@ public static partial class DbConnectionExtensions
     ///     public DateTime OrderDate { get; set; }
     ///     public Decimal TotalAmount { get; set; }
     /// }
-    /// 
+    ///
     /// var order = await connection.QuerySingleAsync<Order>($"SELECT * FROM [Order] WHERE Id = {Parameter(orderId)}");
     /// ]]>
     /// </code>
     /// </example>
-    public static async Task<T> QuerySingleAsync<
-        [DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T
-    >(
+    public static async Task<T> QuerySingleAsync<[DynamicallyAccessedMembers(EntityHelper.QueryResultMemberTypes)] T>(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -477,28 +472,31 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         using (commandDisposer)
         {
             try
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
-                var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken)
+                var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken)
                     .ConfigureAwait(false);
 
                 await using (reader)
                 {
-                    var isTBuiltInTypeOrEnumType = typeof(T).IsBuiltInTypeOrNullableBuiltInType() ||
-                                                   typeof(T).IsEnumOrNullableEnumType();
+                    var isTBuiltInTypeOrEnumType =
+                        typeof(T).IsBuiltInTypeOrNullableBuiltInType() || typeof(T).IsEnumOrNullableEnumType();
                     var isTValueTupleType = typeof(T).IsValueTupleType();
                     var isTEntityType = !isTBuiltInTypeOrEnumType && !isTValueTupleType;
 
@@ -549,9 +547,8 @@ public static partial class DbConnectionExtensions
                     return result;
                 }
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }

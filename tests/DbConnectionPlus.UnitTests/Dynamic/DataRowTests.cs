@@ -16,37 +16,31 @@ public class DataRowTests : UnitTestsBase
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() },
-            { "ColumnC", Generate.ScalarValue() }
+            { "ColumnC", Generate.ScalarValue() },
         };
 
         var dataRow = new DataRow(dictionary);
 
-        dataRow["ColumnA"]
-            .Should().Be(dictionary["ColumnA"]);
+        dataRow["ColumnA"].Should().Be(dictionary["ColumnA"]);
 
-        dataRow["ColumnB"]
-            .Should().Be(dictionary["ColumnB"]);
+        dataRow["ColumnB"].Should().Be(dictionary["ColumnB"]);
 
-        dataRow["ColumnC"]
-            .Should().Be(dictionary["ColumnC"]);
+        dataRow["ColumnC"].Should().Be(dictionary["ColumnC"]);
 
         var newValueA = Generate.ScalarValue();
         dataRow["ColumnA"] = newValueA;
 
-        dataRow["ColumnA"]
-            .Should().Be(newValueA);
+        dataRow["ColumnA"].Should().Be(newValueA);
 
         var newValueB = Generate.ScalarValue();
         dataRow["ColumnB"] = newValueB;
 
-        dataRow["ColumnB"]
-            .Should().Be(newValueB);
+        dataRow["ColumnB"].Should().Be(newValueB);
 
         var newValueC = Generate.ScalarValue();
         dataRow["ColumnC"] = newValueC;
 
-        dataRow["ColumnC"]
-            .Should().Be(newValueC);
+        dataRow["ColumnC"].Should().Be(newValueC);
     }
 
     [Fact]
@@ -55,25 +49,20 @@ public class DataRowTests : UnitTestsBase
         var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
-            { "ColumnB", Generate.ScalarValue() }
+            { "ColumnB", Generate.ScalarValue() },
         };
 
         dynamic dataRow = new DataRow(dictionary);
 
-        ((object?)dataRow.ColumnA)
-            .Should().Be(dictionary["ColumnA"]);
+        ((object?)dataRow.ColumnA).Should().Be(dictionary["ColumnA"]);
 
-        ((object?)dataRow.ColumnB)
-            .Should().Be(dictionary["ColumnB"]);
+        ((object?)dataRow.ColumnB).Should().Be(dictionary["ColumnB"]);
     }
 
     [Fact]
     public void ShouldAllowDynamicMemberAssignment()
     {
-        var dictionary = new Dictionary<string, object?>
-        {
-            { "ColumnA", Generate.ScalarValue() }
-        };
+        var dictionary = new Dictionary<string, object?> { { "ColumnA", Generate.ScalarValue() } };
 
         var dataRow = new DataRow(dictionary);
         dynamic dynamicDataRow = dataRow;
@@ -81,11 +70,9 @@ public class DataRowTests : UnitTestsBase
         var newValue = Generate.ScalarValue();
         dynamicDataRow.ColumnA = newValue;
 
-        dataRow["ColumnA"]
-            .Should().Be(newValue);
+        dataRow["ColumnA"].Should().Be(newValue);
 
-        dictionary["ColumnA"]
-            .Should().Be(newValue);
+        dictionary["ColumnA"].Should().Be(newValue);
     }
 
     [Fact]
@@ -97,8 +84,7 @@ public class DataRowTests : UnitTestsBase
         var value = Generate.ScalarValue();
         dynamicDataRow.NewColumn = value;
 
-        dataRow["NewColumn"]
-            .Should().Be(value);
+        dataRow["NewColumn"].Should().Be(value);
     }
 
     [Fact]
@@ -107,15 +93,14 @@ public class DataRowTests : UnitTestsBase
         var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
-            { "ColumnB", Generate.ScalarValue() }
+            { "ColumnB", Generate.ScalarValue() },
         };
 
         IDynamicMetaObjectProvider dataRow = new DataRow(dictionary);
 
         var metaObject = dataRow.GetMetaObject(Expression.Constant(dataRow));
 
-        metaObject.GetDynamicMemberNames()
-            .Should().BeEquivalentTo("ColumnA", "ColumnB");
+        metaObject.GetDynamicMemberNames().Should().BeEquivalentTo("ColumnA", "ColumnB");
     }
 
     [Fact]
@@ -123,8 +108,7 @@ public class DataRowTests : UnitTestsBase
     {
         dynamic dataRow = new DataRow(new Dictionary<string, object?>());
 
-        Invoking(() => (object?)dataRow.UnknownColumn)
-            .Should().Throw<KeyNotFoundException>();
+        Invoking(() => (object?)dataRow.UnknownColumn).Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
@@ -133,13 +117,11 @@ public class DataRowTests : UnitTestsBase
         dynamic dataRow = new DataRow(new Dictionary<string, object?> { { "ColumnA", Generate.ScalarValue() } });
 
         // "Count" is a property of DataRow, but through a dynamic reference it addresses a column of that name.
-        Invoking(() => (object?)dataRow.Count)
-            .Should().Throw<KeyNotFoundException>();
+        Invoking(() => (object?)dataRow.Count).Should().Throw<KeyNotFoundException>();
 
         dynamic rowWithShadowingColumn = new DataRow(new Dictionary<string, object?> { { "Count", 42 } });
 
-        ((object?)rowWithShadowingColumn.Count)
-            .Should().Be(42);
+        ((object?)rowWithShadowingColumn.Count).Should().Be(42);
     }
 
     [Fact]
@@ -147,20 +129,15 @@ public class DataRowTests : UnitTestsBase
     {
         dynamic dataRow = new DataRow(new Dictionary<string, object?> { { "ColumnA", Generate.ScalarValue() } });
 
-        ((bool)dataRow.ContainsKey("ColumnA"))
-            .Should().BeTrue();
+        ((bool)dataRow.ContainsKey("ColumnA")).Should().BeTrue();
 
-        ((bool)dataRow.ContainsKey("ColumnB"))
-            .Should().BeFalse();
+        ((bool)dataRow.ContainsKey("ColumnB")).Should().BeFalse();
     }
 
     [Fact]
     public void ShouldForwardAllMethodCallsToDictionary()
     {
-        var exceptions = new HashSet<string>
-        {
-            nameof(IDictionary<,>.TryGetValue)
-        };
+        var exceptions = new HashSet<string> { nameof(IDictionary<,>.TryGetValue) };
 
         var fixture = new Fixture();
         fixture.Customize(new AutoNSubstituteCustomization());
@@ -169,12 +146,7 @@ public class DataRowTests : UnitTestsBase
         var dictionary = Substitute.For<IDictionary<string, object?>>();
         var dataRow = new DataRow(dictionary);
 
-        DecoratorAssertions.AssertDecoratorForwardsAllCalls(
-            fixture,
-            dataRow,
-            dictionary,
-            exceptions
-        );
+        DecoratorAssertions.AssertDecoratorForwardsAllCalls(fixture, dataRow, dictionary, exceptions);
     }
 
     [Fact]
@@ -184,19 +156,16 @@ public class DataRowTests : UnitTestsBase
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() },
-            { "ColumnC", Generate.ScalarValue() }
+            { "ColumnC", Generate.ScalarValue() },
         };
 
         var dataRow = new DataRow(dictionary);
 
-        dataRow["ColumnA"]
-            .Should().Be(dictionary["ColumnA"]);
+        dataRow["ColumnA"].Should().Be(dictionary["ColumnA"]);
 
-        dataRow["ColumnB"]
-            .Should().Be(dictionary["ColumnB"]);
+        dataRow["ColumnB"].Should().Be(dictionary["ColumnB"]);
 
-        dataRow["ColumnC"]
-            .Should().Be(dictionary["ColumnC"]);
+        dataRow["ColumnC"].Should().Be(dictionary["ColumnC"]);
     }
 
     [Fact]
@@ -207,20 +176,19 @@ public class DataRowTests : UnitTestsBase
 
         var dictionary = Substitute.For<IDictionary<string, object?>>();
 
-        dictionary.TryGetValue(key, out Arg.Any<object?>()).Returns(a =>
+        dictionary
+            .TryGetValue(key, out Arg.Any<object?>())
+            .Returns(a =>
             {
                 a[1] = value;
                 return true;
-            }
-        );
+            });
 
         var dataRow = new DataRow(dictionary);
 
-        dataRow.TryGetValue(key, out var result)
-            .Should().BeTrue();
+        dataRow.TryGetValue(key, out var result).Should().BeTrue();
 
-        result
-            .Should().Be(value);
+        result.Should().Be(value);
 
         dictionary.Received().TryGetValue(key, out Arg.Any<object?>());
     }

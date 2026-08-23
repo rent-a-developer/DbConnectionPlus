@@ -71,7 +71,10 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
         ArgumentNullException.ThrowIfNull(code);
         ArgumentNullException.ThrowIfNull(parameters);
 
-        this.fragments = new(1 /* fragment for the code */ + parameters.Length /* fragments for the parameters */);
+        this.fragments = new(
+            1 /* fragment for the code */
+                + parameters.Length /* fragments for the parameters */
+        );
         this.temporaryTables = [];
 
         this.fragments.Add(new Literal(code));
@@ -86,8 +89,8 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
             var duplicateParameterNames = duplicateParameters.SelectMany(a => a.Select(b => $"'{b.Name}'")).ToList();
 
             throw new ArgumentException(
-                "The specified parameters have the following duplicate parameter names: " +
-                $"{string.Join(", ", duplicateParameterNames)}. Make sure each parameter name is only used once.",
+                "The specified parameters have the following duplicate parameter names: "
+                    + $"{string.Join(", ", duplicateParameterNames)}. Make sure each parameter name is only used once.",
                 nameof(parameters)
             );
         }
@@ -128,14 +131,13 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                 break;
 
             default:
-                var formattedValue =
-                    value switch
-                    {
-                        string stringValue => stringValue,
-                        IFormattable formattable => formattable.ToString(format, CultureInfo.InvariantCulture),
-                        null => string.Empty,
-                        _ => value.ToString() ?? string.Empty
-                    };
+                var formattedValue = value switch
+                {
+                    string stringValue => stringValue,
+                    IFormattable formattable => formattable.ToString(format, CultureInfo.InvariantCulture),
+                    null => string.Empty,
+                    _ => value.ToString() ?? string.Empty,
+                };
 
                 if (alignment != 0)
                 {
@@ -182,15 +184,13 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public readonly bool Equals(InterpolatedSqlStatement other) =>
-        this.fragments.SequenceEqual(other.Fragments);
+    public readonly bool Equals(InterpolatedSqlStatement other) => this.fragments.SequenceEqual(other.Fragments);
 
     /// <inheritdoc />
-    public readonly override bool Equals(object? obj) =>
-        obj is InterpolatedSqlStatement other && this.Equals(other);
+    public override readonly bool Equals(object? obj) => obj is InterpolatedSqlStatement other && this.Equals(other);
 
     /// <inheritdoc />
-    public readonly override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         var hashCode = new HashCode();
 
@@ -203,7 +203,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public readonly override string ToString()
+    public override readonly string ToString()
     {
         using var stringBuilder = new ValueStringBuilder(stackalloc char[500]);
 
@@ -320,8 +320,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <see langword="true" /> if the two specified instances of <see cref="InterpolatedSqlStatement" /> are
     /// equal; otherwise, <see langword="false" />.
     /// </returns>
-    public static bool operator ==(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
-        left.Equals(right);
+    public static bool operator ==(InterpolatedSqlStatement left, InterpolatedSqlStatement right) => left.Equals(right);
 
     /// <summary>
     /// Implicitly converts a string to an instance of <see cref="InterpolatedSqlStatement" />.
@@ -344,8 +343,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <see langword="true" /> if the two the specified instances of <see cref="InterpolatedSqlStatement" /> are
     /// unequal; otherwise, <see langword="false" />.
     /// </returns>
-    public static bool operator !=(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
-        !(left == right);
+    public static bool operator !=(InterpolatedSqlStatement left, InterpolatedSqlStatement right) => !(left == right);
 
     /// <summary>
     /// The fragments that make up this SQL statement.

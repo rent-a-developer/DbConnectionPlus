@@ -15,9 +15,7 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
     /// <inheritdoc />
-    public int DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -64,11 +62,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -78,9 +73,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -113,8 +106,9 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    var numberOfAffectedRows =
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    var numberOfAffectedRows = await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (numberOfAffectedRows != 1)
                     {
@@ -128,11 +122,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -142,9 +133,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public int DeleteEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -181,11 +170,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -193,9 +179,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> DeleteEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -232,11 +216,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -244,9 +225,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public int InsertEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -258,11 +237,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -290,9 +265,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -302,9 +276,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> InsertEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -316,11 +288,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -343,22 +311,18 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -368,9 +332,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public int InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -382,11 +344,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -404,9 +362,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -414,9 +371,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -428,11 +383,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -446,7 +397,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
 #pragma warning disable CA2007
                 await using var reader = await command
-                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                    .ConfigureAwait(false);
 #pragma warning restore CA2007
 
                 await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
@@ -454,9 +406,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -464,9 +415,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public int UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -478,11 +427,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -524,9 +469,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -536,9 +480,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -550,11 +492,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -577,15 +515,12 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
                     // returns -1 when we select database generated properties via the SELECT statement after the
@@ -604,9 +539,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -616,9 +550,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public int UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -630,11 +562,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -666,9 +594,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -676,9 +603,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     }
 
     /// <inheritdoc />
-    public async Task<int> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -690,11 +615,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -731,9 +652,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -765,8 +685,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
         var parameters = new List<DbParameter>();
 
-        var whereProperties = entityTypeMetadata.KeyProperties
-            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+        var whereProperties = entityTypeMetadata
+            .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
             .Concat(entityTypeMetadata.RowVersionProperties);
 
         foreach (var property in whereProperties)
@@ -882,8 +802,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 var prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var keyProperty in whereProperties)
@@ -1092,8 +1012,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
 
                 prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties)
                     .ToList();
 
@@ -1157,7 +1077,7 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
                     whereProperties =
                     [
                         .. entityTypeMetadata.KeyProperties,
-                        .. entityTypeMetadata.ConcurrencyTokenProperties
+                        .. entityTypeMetadata.ConcurrencyTokenProperties,
                     ];
 
                     foreach (var keyProperty in whereProperties)
@@ -1259,8 +1179,8 @@ internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : 
     )
     {
         if (
-            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 &&
-            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0
+            && await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
         )
         {
             for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)

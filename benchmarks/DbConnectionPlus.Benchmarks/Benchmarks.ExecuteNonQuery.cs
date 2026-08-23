@@ -8,26 +8,22 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
+        Targets = [
             nameof(ExecuteNonQuery_Command),
             nameof(ExecuteNonQuery_Dapper),
-            nameof(ExecuteNonQuery_DbConnectionPlus)
+            nameof(ExecuteNonQuery_DbConnectionPlus),
         ]
     )]
-    public void ExecuteNonQuery__Cleanup() =>
-        this.connection.Dispose();
+    public void ExecuteNonQuery__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
+        Targets = [
             nameof(ExecuteNonQuery_Command),
             nameof(ExecuteNonQuery_Dapper),
-            nameof(ExecuteNonQuery_DbConnectionPlus)
+            nameof(ExecuteNonQuery_DbConnectionPlus),
         ]
     )]
-    public void ExecuteNonQuery__Setup() =>
-        this.SetupDatabase(0);
+    public void ExecuteNonQuery__Setup() => this.SetupDatabase(0);
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]

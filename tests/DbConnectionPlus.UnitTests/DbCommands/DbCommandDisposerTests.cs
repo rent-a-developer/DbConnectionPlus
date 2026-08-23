@@ -12,8 +12,10 @@ public class DbCommandDisposerTests : UnitTestsBase
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            this.MockDbCommand,
+            cancellationToken
+        );
 
         var dropTableFunction1 = Substitute.For<Action>();
         var dropTableAsyncFunction1 = Substitute.For<Func<ValueTask>>();
@@ -24,7 +26,7 @@ public class DbCommandDisposerTests : UnitTestsBase
         var temporaryTableDisposers = new[]
         {
             new TemporaryTableDisposer(dropTableFunction1, dropTableAsyncFunction1),
-            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2)
+            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2),
         };
 
         var disposer = new DbCommandDisposer(
@@ -47,8 +49,10 @@ public class DbCommandDisposerTests : UnitTestsBase
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            this.MockDbCommand,
+            cancellationToken
+        );
 
         var dropTableFunction1 = Substitute.For<Action>();
         var dropTableAsyncFunction1 = Substitute.For<Func<ValueTask>>();
@@ -59,7 +63,7 @@ public class DbCommandDisposerTests : UnitTestsBase
         var temporaryTableDisposers = new[]
         {
             new TemporaryTableDisposer(dropTableFunction1, dropTableAsyncFunction1),
-            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2)
+            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2),
         };
 
         var disposer = new DbCommandDisposer(
@@ -84,8 +88,10 @@ public class DbCommandDisposerTests : UnitTestsBase
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            this.MockDbCommand,
+            cancellationToken
+        );
 
         var dropTableFunction1 = Substitute.For<Action>();
         var dropTableAsyncFunction1 = Substitute.For<Func<ValueTask>>();
@@ -96,7 +102,7 @@ public class DbCommandDisposerTests : UnitTestsBase
         var temporaryTableDisposers = new[]
         {
             new TemporaryTableDisposer(dropTableFunction1, dropTableAsyncFunction1),
-            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2)
+            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2),
         };
 
         var disposer = new DbCommandDisposer(
@@ -119,8 +125,10 @@ public class DbCommandDisposerTests : UnitTestsBase
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
-        var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
+        var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            this.MockDbCommand,
+            cancellationToken
+        );
 
         var dropTableFunction1 = Substitute.For<Action>();
         var dropTableAsyncFunction1 = Substitute.For<Func<ValueTask>>();
@@ -131,7 +139,7 @@ public class DbCommandDisposerTests : UnitTestsBase
         var temporaryTableDisposers = new[]
         {
             new TemporaryTableDisposer(dropTableFunction1, dropTableAsyncFunction1),
-            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2)
+            new TemporaryTableDisposer(dropTableFunction2, dropTableAsyncFunction2),
         };
 
         var disposer = new DbCommandDisposer(
@@ -156,11 +164,8 @@ public class DbCommandDisposerTests : UnitTestsBase
     {
         TemporaryTableDisposer[] temporaryTableDisposers = [];
 
-        ArgumentNullGuardVerifier.Verify(() => new DbCommandDisposer(
-                this.MockDbCommand,
-                temporaryTableDisposers,
-                default
-            )
+        ArgumentNullGuardVerifier.Verify(() =>
+            new DbCommandDisposer(this.MockDbCommand, temporaryTableDisposers, default)
         );
     }
 }

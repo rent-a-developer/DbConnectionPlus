@@ -16,33 +16,33 @@ internal static class MaterializerFactoryHelper
     /// <summary>
     /// The <see cref="DbDataReader.GetValue(int)" /> method.
     /// </summary>
-    internal static MethodInfo DbDataReaderGetValueMethod { get; } = typeof(DbDataReader)
-        .GetMethod(nameof(DbDataReader.GetValue))!;
+    internal static MethodInfo DbDataReaderGetValueMethod { get; } =
+        typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetValue))!;
 
     /// <summary>
     /// The <see cref="DbDataReader.IsDBNull(int)" /> method.
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    internal static MethodInfo DbDataReaderIsDBNullMethod { get; } = typeof(DbDataReader)
-        .GetMethod(nameof(DbDataReader.IsDBNull))!;
+    internal static MethodInfo DbDataReaderIsDBNullMethod { get; } =
+        typeof(DbDataReader).GetMethod(nameof(DbDataReader.IsDBNull))!;
 
     /// <summary>
     /// The 'Chars' property of the <see cref="string" /> type.
     /// </summary>
-    internal static PropertyInfo StringCharsProperty { get; } = typeof(string)
-        .GetProperty("Chars", BindingFlags.Instance | BindingFlags.Public)!;
+    internal static PropertyInfo StringCharsProperty { get; } =
+        typeof(string).GetProperty("Chars", BindingFlags.Instance | BindingFlags.Public)!;
 
     /// <summary>
     /// The <see cref="string.Concat(string, string, string)" /> method.
     /// </summary>
-    internal static MethodInfo StringConcatMethod { get; } = typeof(string)
-        .GetMethod(nameof(String.Concat), [typeof(string), typeof(string), typeof(string)])!;
+    internal static MethodInfo StringConcatMethod { get; } =
+        typeof(string).GetMethod(nameof(String.Concat), [typeof(string), typeof(string), typeof(string)])!;
 
     /// <summary>
     /// The <see cref="string.Length" /> property.
     /// </summary>
-    internal static PropertyInfo StringLengthProperty { get; } = typeof(string)
-        .GetProperty(nameof(String.Length), BindingFlags.Instance | BindingFlags.Public)!;
+    internal static PropertyInfo StringLengthProperty { get; } =
+        typeof(string).GetProperty(nameof(String.Length), BindingFlags.Instance | BindingFlags.Public)!;
 
     /// <summary>
     /// Specializes <see cref="valueConverterConvertValueToTypeMethod" /> over <paramref name="targetType" />, so that
@@ -75,16 +75,15 @@ internal static class MaterializerFactoryHelper
     /// </para>
     /// </remarks>
     [RequiresDynamicCode(
-        "Specializing a generic method over a value type at run time is not supported when the application is " +
-        "published with Native AOT. Call this only from a RuntimeFeature.IsDynamicCodeSupported branch."
+        "Specializing a generic method over a value type at run time is not supported when the application is "
+            + "published with Native AOT. Call this only from a RuntimeFeature.IsDynamicCodeSupported branch."
     )]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2060:MakeGenericMethod call cannot be statically analyzed",
-        Justification =
-            "ValueConverter.ConvertValueToType<TTarget> declares no DynamicallyAccessedMembers on TTarget, so the " +
-            "specialized instantiation has no requirements that trimming could fail to preserve. Reaching this " +
-            "method at all requires a RuntimeFeature.IsDynamicCodeSupported branch."
+        Justification = "ValueConverter.ConvertValueToType<TTarget> declares no DynamicallyAccessedMembers on TTarget, so the "
+            + "specialized instantiation has no requirements that trimming could fail to preserve. Reaching this "
+            + "method at all requires a RuntimeFeature.IsDynamicCodeSupported branch."
     )]
     internal static MethodInfo MakeValueConverterConvertValueToTypeMethod(Type targetType) =>
         valueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType);
@@ -141,75 +140,50 @@ internal static class MaterializerFactoryHelper
         {
             // Special handling for byte arrays since DbDataReader does not have a GetBytes method that returns
             // a byte array directly.
-            return
-                Expression.Convert(
-                    Expression.Call(
-                        dataReaderExpression,
-                        DbDataReaderGetValueMethod,
-                        fieldOrdinalExpression
-                    ),
-                    typeof(byte[])
-                );
+            return Expression.Convert(
+                Expression.Call(dataReaderExpression, DbDataReaderGetValueMethod, fieldOrdinalExpression),
+                typeof(byte[])
+            );
         }
 
         if (fieldType == typeof(TimeSpan))
         {
             // Special handling for the type TimeSpan since DbDataReader does not have a GetTimeSpan method that
             // returns a TimeSpan directly.
-            return
-                Expression.Convert(
-                    Expression.Call(
-                        dataReaderExpression,
-                        DbDataReaderGetValueMethod,
-                        fieldOrdinalExpression
-                    ),
-                    typeof(TimeSpan)
-                );
+            return Expression.Convert(
+                Expression.Call(dataReaderExpression, DbDataReaderGetValueMethod, fieldOrdinalExpression),
+                typeof(TimeSpan)
+            );
         }
 
         if (fieldType == typeof(TimeOnly))
         {
             // Special handling for the type TimeOnly since DbDataReader does not have a GetTimeOnly method that
             // returns a TimeOnly directly.
-            return
-                Expression.Convert(
-                    Expression.Call(
-                        dataReaderExpression,
-                        DbDataReaderGetValueMethod,
-                        fieldOrdinalExpression
-                    ),
-                    typeof(TimeOnly)
-                );
+            return Expression.Convert(
+                Expression.Call(dataReaderExpression, DbDataReaderGetValueMethod, fieldOrdinalExpression),
+                typeof(TimeOnly)
+            );
         }
 
         if (fieldType == typeof(DateOnly))
         {
             // Special handling for the type DateOnly since DbDataReader does not have a GetDateOnly method
             // that returns a DateOnly directly.
-            return
-                Expression.Convert(
-                    Expression.Call(
-                        dataReaderExpression,
-                        DbDataReaderGetValueMethod,
-                        fieldOrdinalExpression
-                    ),
-                    typeof(DateOnly)
-                );
+            return Expression.Convert(
+                Expression.Call(dataReaderExpression, DbDataReaderGetValueMethod, fieldOrdinalExpression),
+                typeof(DateOnly)
+            );
         }
 
         if (fieldType == typeof(DateTimeOffset))
         {
             // Special handling for the type DateTimeOffset since DbDataReader does not have a GetDateTimeOffset method
             // that returns a DateTimeOffset directly.
-            return
-                Expression.Convert(
-                    Expression.Call(
-                        dataReaderExpression,
-                        DbDataReaderGetValueMethod,
-                        fieldOrdinalExpression
-                    ),
-                    typeof(DateTimeOffset)
-                );
+            return Expression.Convert(
+                Expression.Call(dataReaderExpression, DbDataReaderGetValueMethod, fieldOrdinalExpression),
+                typeof(DateTimeOffset)
+            );
         }
 
         if (!dbDataReaderTypedGetMethods.TryGetValue(fieldType, out var dbDataReaderGetMethod))
@@ -217,24 +191,20 @@ internal static class MaterializerFactoryHelper
             if (!string.IsNullOrWhiteSpace(fieldName))
             {
                 throw new ArgumentException(
-                    $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not " +
-                    "supported.",
+                    $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not "
+                        + "supported.",
                     nameof(fieldType)
                 );
             }
 
             throw new ArgumentException(
-                $"The data type {fieldType} of the {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the " +
-                "SQL statement is not supported.",
+                $"The data type {fieldType} of the {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the "
+                    + "SQL statement is not supported.",
                 nameof(fieldType)
             );
         }
 
-        return Expression.Call(
-            dataReaderExpression,
-            dbDataReaderGetMethod,
-            fieldOrdinalExpression
-        );
+        return Expression.Call(dataReaderExpression, dbDataReaderGetMethod, fieldOrdinalExpression);
     }
 
     /// <summary>
@@ -282,15 +252,15 @@ internal static class MaterializerFactoryHelper
             if (!string.IsNullOrWhiteSpace(fieldName))
             {
                 throw new ArgumentException(
-                    $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not " +
-                    "supported.",
+                    $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not "
+                        + "supported.",
                     nameof(fieldType)
                 );
             }
 
             throw new ArgumentException(
-                $"The data type {fieldType} of the {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the " +
-                "SQL statement is not supported.",
+                $"The data type {fieldType} of the {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the "
+                    + "SQL statement is not supported.",
                 nameof(fieldType)
             );
         }
@@ -312,8 +282,7 @@ internal static class MaterializerFactoryHelper
     {
         ArgumentNullException.ThrowIfNull(fieldType);
 
-        return dbDataReaderTypedGetMethods.ContainsKey(fieldType) ||
-               dbDataReaderUntypedFieldTypes.Contains(fieldType);
+        return dbDataReaderTypedGetMethods.ContainsKey(fieldType) || dbDataReaderUntypedFieldTypes.Contains(fieldType);
     }
 
     private static readonly Dictionary<Type, MethodInfo> dbDataReaderTypedGetMethods = new()
@@ -328,7 +297,7 @@ internal static class MaterializerFactoryHelper
         { typeof(short), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt16))! },
         { typeof(int), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt32))! },
         { typeof(long), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt64))! },
-        { typeof(string), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! }
+        { typeof(string), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! },
     };
 
     /// <summary>
@@ -352,7 +321,7 @@ internal static class MaterializerFactoryHelper
             { typeof(short), static (dataReader, fieldOrdinal) => dataReader.GetInt16(fieldOrdinal) },
             { typeof(int), static (dataReader, fieldOrdinal) => dataReader.GetInt32(fieldOrdinal) },
             { typeof(long), static (dataReader, fieldOrdinal) => dataReader.GetInt64(fieldOrdinal) },
-            { typeof(string), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) }
+            { typeof(string), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) },
         };
 
     /// <summary>
@@ -366,7 +335,7 @@ internal static class MaterializerFactoryHelper
         typeof(DateOnly),
         typeof(DateTimeOffset),
         typeof(TimeOnly),
-        typeof(TimeSpan)
+        typeof(TimeSpan),
     ];
 
     /// <summary>

@@ -84,8 +84,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         string temporaryTableName,
         string columnName,
         DbConnection connection
-    ) =>
-        throw new NotImplementedException();
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public string GetDataTypeOfTemporaryTableColumn(
@@ -93,14 +92,16 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         string columnName,
         DbConnection connection
     ) =>
-        connection.Query<(string Field, string Type, string Null, string Key, object Default, object Extra)>(
-            $"SHOW COLUMNS FROM `{temporaryTableName}` WHERE Field = '{columnName}'",
-            cancellationToken: TestContext.Current.CancellationToken
-        ).Select(a => a.Type.ToUpper()).First();
+        connection
+            .Query<(string Field, string Type, string Null, string Key, object Default, object Extra)>(
+                $"SHOW COLUMNS FROM `{temporaryTableName}` WHERE Field = '{columnName}'",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Select(a => a.Type.ToUpper())
+            .First();
 
     /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() =>
-        throw new NotImplementedException();
+    public string GetUnsupportedDataTypeLiteral() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public void ResetDatabase()
@@ -125,14 +126,12 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartMySqlAsync();
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartMySqlAsync();
 
     /// <summary>
     /// The connection string that connects to the MySQL server running in the test container.
     /// </summary>
-    private static string ConnectionString =>
-        TestDatabaseContainers.MySql.ConnectionString;
+    private static string ConnectionString => TestDatabaseContainers.MySql.ConnectionString;
 
     private static void ExecuteScript(MySqlConnection connection, string script)
     {
@@ -146,8 +145,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const string CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE `Entity`
         (
             `Id` BIGINT,
@@ -254,8 +252,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
 
     private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const string PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE `Entity`;
         GO
 

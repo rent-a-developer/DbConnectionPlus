@@ -12,7 +12,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// Runs the MySQL server the MySQL integration tests use in a Docker container.
 /// </summary>
 internal sealed class MySqlContainerFixture()
-    : DbContainerFixture<MySqlBuilder, MySqlContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
+    : DbContainerFixture<MySqlBuilder, MySqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
+        ITestDatabaseContainerFixture
 {
     /// <inheritdoc />
     public override string ConnectionString =>
@@ -25,12 +26,11 @@ internal sealed class MySqlContainerFixture()
 
             // MySqlTemporaryTableBuilder fills temporary tables with MySqlBulkCopy, which is LOAD DATA LOCAL
             // INFILE underneath and refuses to run unless the client allows it.
-            AllowLoadLocalInfile = true
+            AllowLoadLocalInfile = true,
         }.ConnectionString;
 
     /// <inheritdoc />
-    public override DbProviderFactory DbProviderFactory =>
-        MySqlConnectorFactory.Instance;
+    public override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
     /// <inheritdoc />
     protected override MySqlBuilder Configure() =>

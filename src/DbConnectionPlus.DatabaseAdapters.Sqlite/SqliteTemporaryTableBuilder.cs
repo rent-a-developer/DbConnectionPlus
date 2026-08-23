@@ -36,8 +36,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -69,8 +68,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -87,8 +88,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -111,8 +114,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -146,8 +148,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -166,8 +169,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -204,8 +208,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateMultiColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -255,8 +258,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateSingleColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -285,8 +287,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
     private static (string SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader
     )
     {
@@ -306,14 +307,13 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         {
             sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
 
-            parameters[0] = new()
-            {
-                ParameterName = Constants.SingleColumnTemporaryTableColumnName
-            };
+            parameters[0] = new() { ParameterName = Constants.SingleColumnTemporaryTableColumnName };
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -329,10 +329,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 sqlBuilder.Append(property.ColumnName);
                 sqlBuilder.Append('"');
 
-                parameters[i] = new()
-                {
-                    ParameterName = property.PropertyName
-                };
+                parameters[i] = new() { ParameterName = property.PropertyName };
             }
         }
 
@@ -367,8 +364,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
@@ -438,8 +435,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         SqliteConnection connection,
         SqliteTransaction? transaction,
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -494,8 +490,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         SqliteConnection connection,
         SqliteTransaction? transaction,
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )

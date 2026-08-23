@@ -2,6 +2,7 @@ using RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 
 #pragma warning disable IDE0130
 namespace RentADeveloper.DbConnectionPlus.Configuration;
+
 #pragma warning restore IDE0130
 
 /// <summary>

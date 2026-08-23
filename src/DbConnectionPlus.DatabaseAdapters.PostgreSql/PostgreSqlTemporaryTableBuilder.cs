@@ -37,8 +37,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -70,8 +69,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -88,8 +89,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -112,8 +115,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         DbTransaction? transaction,
         string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -147,8 +149,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -167,8 +170,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -198,8 +202,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateMultiColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -249,8 +252,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>The built SQL code.</returns>
     private string BuildCreateSingleColumnTemporaryTableSqlCode(
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
@@ -285,8 +287,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <see cref="Type" />, so reading the property types here is warning-free and yields the same values.
     /// </remarks>
     private NpgsqlDbType[] GetColumnDbTypes(
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
 
@@ -297,8 +299,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         return
         [
-            .. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => this.databaseAdapter.GetDbType(a.PropertyType, enumSerializationMode))
+            .. EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
+                .Select(a => this.databaseAdapter.GetDbType(a.PropertyType, enumSerializationMode)),
         ];
     }
 
@@ -313,8 +317,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     private void PopulateTemporaryTable(
         NpgsqlConnection connection,
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -368,8 +371,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     private async Task PopulateTemporaryTableAsync(
         NpgsqlConnection connection,
         string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -425,8 +427,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// </returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {

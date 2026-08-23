@@ -1,24 +1,14 @@
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DbCommands;
 
-public sealed class
-    DbCommandHelperTests_MySql :
-    DbCommandHelperTests<MySqlTestDatabaseProvider>;
+public sealed class DbCommandHelperTests_MySql : DbCommandHelperTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbCommandHelperTests_Oracle :
-    DbCommandHelperTests<OracleTestDatabaseProvider>;
+public sealed class DbCommandHelperTests_Oracle : DbCommandHelperTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbCommandHelperTests_PostgreSql :
-    DbCommandHelperTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbCommandHelperTests_PostgreSql : DbCommandHelperTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbCommandHelperTests_Sqlite :
-    DbCommandHelperTests<SqliteTestDatabaseProvider>;
+public sealed class DbCommandHelperTests_Sqlite : DbCommandHelperTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbCommandHelperTests_SqlServer :
-    DbCommandHelperTests<SqlServerTestDatabaseProvider>;
+public sealed class DbCommandHelperTests_SqlServer : DbCommandHelperTests<SqlServerTestDatabaseProvider>;
 
 public abstract class DbCommandHelperTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
@@ -34,17 +24,16 @@ public abstract class DbCommandHelperTests<TTestDatabaseProvider> : IntegrationT
 
         var command = this.Connection.CreateCommand();
 
-        command.CommandText =
-            this.TestDatabaseProvider.DelayTwoSecondsStatement + $"DELETE FROM {Q("Entity")}";
+        command.CommandText = this.TestDatabaseProvider.DelayTwoSecondsStatement + $"DELETE FROM {Q("Entity")}";
 
-        using var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+        using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            command,
+            cancellationToken
+        );
 
-        Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<Exception>();
+        Invoking(() => command.ExecuteNonQuery()).Should().Throw<Exception>();
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
+        this.ExistsEntityInDb(entity).Should().BeTrue();
     }
 
     [Fact]
@@ -56,16 +45,15 @@ public abstract class DbCommandHelperTests<TTestDatabaseProvider> : IntegrationT
 
         var command = this.Connection.CreateCommand();
 
-        command.CommandText =
-            this.TestDatabaseProvider.DelayTwoSecondsStatement + $"DELETE FROM {Q("Entity")}";
+        command.CommandText = this.TestDatabaseProvider.DelayTwoSecondsStatement + $"DELETE FROM {Q("Entity")}";
 
-        using var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(command, CancellationToken.None);
+        using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            command,
+            CancellationToken.None
+        );
 
-        command.ExecuteNonQuery()
-            .Should().Be(1);
+        command.ExecuteNonQuery().Should().Be(1);
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 }

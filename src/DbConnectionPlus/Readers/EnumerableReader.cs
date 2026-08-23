@@ -55,9 +55,11 @@ internal sealed class EnumerableReader : DbDataReader
     public EnumerableReader(
         IEnumerable values,
         [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-        Type valuesType,
-        string fieldName)
+            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+        )]
+            Type valuesType,
+        string fieldName
+    )
     {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentNullException.ThrowIfNull(valuesType);
@@ -104,7 +106,8 @@ internal sealed class EnumerableReader : DbDataReader
     public EnumerableReader(
         IEnumerable values,
         IReadOnlyList<EntityPropertyMetadata> properties,
-        EnumerableReaderOptions options)
+        EnumerableReaderOptions options
+    )
     {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentNullException.ThrowIfNull(properties);
@@ -169,61 +172,41 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override bool GetBoolean(int ordinal) =>
-        (bool)this.GetValue(ordinal);
+    public override bool GetBoolean(int ordinal) => (bool)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override byte GetByte(int ordinal) =>
-        (byte)this.GetValue(ordinal);
+    public override byte GetByte(int ordinal) => (byte)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="NotImplementedException">Always thrown.</exception>
-    public override long GetBytes(
-        int ordinal,
-        long dataOffset,
-        byte[]? buffer,
-        int bufferOffset,
-        int length
-    ) =>
+    public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override char GetChar(int ordinal) =>
-        (char)this.GetValue(ordinal);
+    public override char GetChar(int ordinal) => (char)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="NotImplementedException">Always thrown.</exception>
-    public override long GetChars(
-        int ordinal,
-        long dataOffset,
-        char[]? buffer,
-        int bufferOffset,
-        int length
-    ) =>
+    public override long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override string GetDataTypeName(int ordinal) =>
-        this.GetFieldType(ordinal).Name;
+    public override string GetDataTypeName(int ordinal) => this.GetFieldType(ordinal).Name;
 
     /// <inheritdoc />
-    public override DateTime GetDateTime(int ordinal) =>
-        (DateTime)this.GetValue(ordinal);
+    public override DateTime GetDateTime(int ordinal) => (DateTime)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override decimal GetDecimal(int ordinal) =>
-        (decimal)this.GetValue(ordinal);
+    public override decimal GetDecimal(int ordinal) => (decimal)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override double GetDouble(int ordinal) =>
-        (double)this.GetValue(ordinal);
+    public override double GetDouble(int ordinal) => (double)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override IEnumerator GetEnumerator() =>
-        this.enumerator;
+    public override IEnumerator GetEnumerator() => this.enumerator;
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
@@ -239,7 +222,8 @@ internal sealed class EnumerableReader : DbDataReader
     /// contract by construction.
     /// </remarks>
     [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     public override Type GetFieldType(int ordinal)
     {
         this.EnsureValidFieldOrdinal(ordinal);
@@ -248,16 +232,13 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override float GetFloat(int ordinal) =>
-        (float)this.GetValue(ordinal);
+    public override float GetFloat(int ordinal) => (float)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Guid GetGuid(int ordinal) =>
-        (Guid)this.GetValue(ordinal);
+    public override Guid GetGuid(int ordinal) => (Guid)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override short GetInt16(int ordinal) =>
-        (short)this.GetValue(ordinal);
+    public override short GetInt16(int ordinal) => (short)this.GetValue(ordinal);
 
     /// <inheritdoc />
     public override int GetInt32(int ordinal)
@@ -273,8 +254,7 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override long GetInt64(int ordinal) =>
-        (long)this.GetValue(ordinal);
+    public override long GetInt64(int ordinal) => (long)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
@@ -297,9 +277,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// bulk-copy APIs of the database providers expect - they probe for columns they may not find.
     /// </remarks>
     public override int GetOrdinal(string name) =>
-        this.IsSingleColumn
-            ? this.GetOrdinalOrThrow(name)
-            : Array.IndexOf(this.fieldNames, name);
+        this.IsSingleColumn ? this.GetOrdinalOrThrow(name) : Array.IndexOf(this.fieldNames, name);
 
     /// <inheritdoc />
     /// <exception cref="NotImplementedException">Always thrown.</exception>
@@ -310,8 +288,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// this project does not suppress. Nothing asks for it either: the bulk-copy APIs of all five providers drive
     /// this reader through <see cref="FieldCount" />, <see cref="GetName" /> and <see cref="GetValue" />.
     /// </remarks>
-    public override DataTable GetSchemaTable() =>
-        throw new NotImplementedException();
+    public override DataTable GetSchemaTable() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public override string GetString(int ordinal)
@@ -392,8 +369,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override bool IsDBNull(int ordinal) =>
-        this.GetValue(ordinal) is DBNull;
+    public override bool IsDBNull(int ordinal) => this.GetValue(ordinal) is DBNull;
 
     /// <inheritdoc />
     public override bool NextResult() => false;
@@ -442,14 +418,12 @@ internal sealed class EnumerableReader : DbDataReader
     /// <summary>
     /// Gets a value indicating whether the reader returns <see cref="char" /> values as <see cref="string" />.
     /// </summary>
-    private bool ReadsCharsAsStrings =>
-        this.options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings);
+    private bool ReadsCharsAsStrings => this.options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings);
 
     /// <summary>
     /// Gets a value indicating whether the reader serializes <see cref="Enum" /> values while reading them.
     /// </summary>
-    private bool SerializesEnums =>
-        this.options.HasFlag(EnumerableReaderOptions.SerializeEnums);
+    private bool SerializesEnums => this.options.HasFlag(EnumerableReaderOptions.SerializeEnums);
 
     /// <summary>
     /// Disposes the enumerator obtained from the enumerable.
@@ -484,8 +458,8 @@ internal sealed class EnumerableReader : DbDataReader
             ordinal,
             this.IsSingleColumn
                 ? $"The specified ordinal {ordinal} is not supported. The only supported ordinal is zero."
-                : $"The specified ordinal {ordinal} is not supported. The supported ordinals are 0 to " +
-                  $"{this.FieldCount - 1}."
+                : $"The specified ordinal {ordinal} is not supported. The supported ordinals are 0 to "
+                    + $"{this.FieldCount - 1}."
         );
     }
 
@@ -497,8 +471,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// The type passed to the constructor if the reader reads a single column; otherwise the type of the property
     /// the column is mapped to.
     /// </returns>
-    private Type GetColumnType(int ordinal) =>
-        this.valuesType ?? this.properties[ordinal].PropertyType;
+    private Type GetColumnType(int ordinal) => this.valuesType ?? this.properties[ordinal].PropertyType;
 
     /// <summary>
     /// Resolves the ordinal of the specified field name, throwing when the reader does not have such a field.
@@ -520,10 +493,10 @@ internal sealed class EnumerableReader : DbDataReader
         throw new ArgumentOutOfRangeException(
             nameof(name),
             this.IsSingleColumn
-                ? $"The specified field name '{name}' is not supported. The only supported field name is " +
-                  $"'{this.fieldNames[0]}'."
-                : $"The specified field name '{name}' is not supported. The supported field names are " +
-                  $"'{string.Join("', '", this.fieldNames)}'."
+                ? $"The specified field name '{name}' is not supported. The only supported field name is "
+                    + $"'{this.fieldNames[0]}'."
+                : $"The specified field name '{name}' is not supported. The supported field names are "
+                    + $"'{string.Join("', '", this.fieldNames)}'."
         );
     }
 
@@ -535,8 +508,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <see langword="true" /> if the column is mapped to an <see cref="Enum" /> property; otherwise,
     /// <see langword="false" />.
     /// </returns>
-    private bool IsEnumColumn(int ordinal) =>
-        this.GetColumnType(ordinal).IsEnumOrNullableEnumType();
+    private bool IsEnumColumn(int ordinal) => this.GetColumnType(ordinal).IsEnumOrNullableEnumType();
 
     /// <summary>
     /// Applies the reader's <see cref="EnumerableReaderOptions" /> to a value that was read from an entity.
@@ -584,7 +556,8 @@ internal sealed class EnumerableReader : DbDataReader
     /// field types, derives its <c>NpgsqlDbType</c> values from the entity metadata instead.
     /// </remarks>
     [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     private static Type MapReportedFieldType(Type propertyType, EnumerableReaderOptions options)
     {
         if (propertyType.IsEnumOrNullableEnumType())
@@ -598,13 +571,11 @@ internal sealed class EnumerableReader : DbDataReader
 
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    typeof(string),
+                EnumSerializationMode.Strings => typeof(string),
 
-                EnumSerializationMode.Integers =>
-                    typeof(int),
+                EnumSerializationMode.Integers => typeof(int),
 
-                _ => ThrowInvalidEnumSerializationModeException(enumSerializationMode)
+                _ => ThrowInvalidEnumSerializationModeException(enumSerializationMode),
             };
         }
 
@@ -628,7 +599,8 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">Always thrown.</exception>
     [DoesNotReturn]
     [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     private static Type ThrowInvalidEnumSerializationModeException(EnumSerializationMode enumSerializationMode) =>
         throw new ArgumentOutOfRangeException(
             nameof(enumSerializationMode),
@@ -650,7 +622,8 @@ internal sealed class EnumerableReader : DbDataReader
     /// annotation, so the trimmer reports <c>IL2073</c> for it. Only a <c>typeof</c> literal satisfies the contract.
     /// </remarks>
     [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     private static Type MapBuiltInFieldType(Type propertyType)
     {
         if (propertyType == typeof(bool))
@@ -775,8 +748,10 @@ internal sealed class EnumerableReader : DbDataReader
     private readonly string[] fieldNames;
     private readonly EnumerableReaderOptions options;
     private readonly EntityPropertyMetadata[] properties;
+
     [DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
     private readonly Type? valuesType;
     private object? current;
     private bool isClosed;

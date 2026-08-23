@@ -2,36 +2,29 @@ using System.Data.Common;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_ExecuteNonQueryTests_MySql :
-    DbConnectionExtensions_ExecuteNonQueryTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteNonQueryTests_MySql
+    : DbConnectionExtensions_ExecuteNonQueryTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteNonQueryTests_Oracle :
-    DbConnectionExtensions_ExecuteNonQueryTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteNonQueryTests_Oracle
+    : DbConnectionExtensions_ExecuteNonQueryTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteNonQueryTests_PostgreSql :
-    DbConnectionExtensions_ExecuteNonQueryTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteNonQueryTests_PostgreSql
+    : DbConnectionExtensions_ExecuteNonQueryTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteNonQueryTests_Sqlite :
-    DbConnectionExtensions_ExecuteNonQueryTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteNonQueryTests_Sqlite
+    : DbConnectionExtensions_ExecuteNonQueryTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteNonQueryTests_SqlServer :
-    DbConnectionExtensions_ExecuteNonQueryTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteNonQueryTests_SqlServer
+    : DbConnectionExtensions_ExecuteNonQueryTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_ExecuteNonQueryTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_ExecuteNonQueryTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        bool useAsyncApi
-    )
+    public async Task ExecuteNonQuery_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -41,19 +34,20 @@ public abstract class
 
         this.DelayNextDbCommand = true;
 
-        await Invoking(() => CallApi(
+        await Invoking(() =>
+                CallApi(
                     useAsyncApi,
                     this.Connection,
                     $"DELETE FROM {Q("Entity")}",
                     cancellationToken: cancellationToken
                 )
             )
-            .Should().ThrowAsync<OperationCanceledException>()
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
 
         // Since the operation was cancelled, the entity should still exist.
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
+        this.ExistsEntityInDb(entity).Should().BeTrue();
     }
 
     [Theory]
@@ -73,8 +67,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 
     [Theory]
@@ -89,39 +82,39 @@ public abstract class
         var entities = this.CreateEntitiesInDb<Entity>(5);
         var entitiesToDelete = entities.Take(2).ToList();
 
-        InterpolatedSqlStatement statement =
-            $"""
-             DELETE FROM   {Q("Entity")}
-             WHERE         EXISTS (
-                               SELECT  1
-                               FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
-                               WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
-                                       {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
-                                       {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
-                           )
-             """;
+        InterpolatedSqlStatement statement = $"""
+            DELETE FROM   {Q("Entity")}
+            WHERE         EXISTS (
+                              SELECT  1
+                              FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
+                              WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
+                                      {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
+                                      {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
+                          )
+            """;
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().Be(entitiesToDelete.Count);
+            )
+        )
+            .Should()
+            .Be(entitiesToDelete.Count);
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -132,28 +125,26 @@ public abstract class
             useAsyncApi,
             this.Connection,
             $"""
-             DELETE FROM   {Q("Entity")}
-             WHERE         EXISTS (
-                               SELECT  1
-                               FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
-                               WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
-                                       {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
-                                       {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
-                           )
-             """,
+            DELETE FROM   {Q("Entity")}
+            WHERE         EXISTS (
+                              SELECT  1
+                              FROM    {TemporaryTable(entitiesToDelete)} TEntitiesToDelete
+                              WHERE   {Q("Entity")}.{Q("Id")} = TEntitiesToDelete.{Q("Id")} AND
+                                      {Q("Entity")}.{Q("StringValue")} = TEntitiesToDelete.{Q("StringValue")} AND
+                                      {Q("Entity")}.{Q("Int32Value")} = TEntitiesToDelete.{Q("Int32Value")}
+                          )
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         foreach (var entity in entitiesToDelete)
         {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
+            this.ExistsEntityInDb(entity).Should().BeFalse();
         }
 
         foreach (var entity in entities.Except(entitiesToDelete))
         {
-            this.ExistsEntityInDb(entity)
-                .Should().BeTrue();
+            this.ExistsEntityInDb(entity).Should().BeTrue();
         }
     }
 
@@ -171,8 +162,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 
     [Theory]
@@ -194,8 +184,7 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeFalse();
+        this.ExistsEntityInDb(entity).Should().BeFalse();
     }
 
     [Theory]
@@ -211,33 +200,33 @@ public abstract class
         var entitiesToDelete = entities.Take(2).ToList();
         var idsOfEntitiesToDelete = entitiesToDelete.ConvertAll(a => a.Id);
 
-        InterpolatedSqlStatement statement =
-            $"""
-             DELETE FROM    {Q("Entity")}
-             WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
-             """;
+        InterpolatedSqlStatement statement = $"""
+            DELETE FROM    {Q("Entity")}
+            WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
+            """;
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 statement,
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().Be(idsOfEntitiesToDelete.Count);
+            )
+        )
+            .Should()
+            .Be(idsOfEntitiesToDelete.Count);
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -249,22 +238,20 @@ public abstract class
             useAsyncApi,
             this.Connection,
             $"""
-             DELETE FROM    {Q("Entity")}
-             WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
-             """,
+            DELETE FROM    {Q("Entity")}
+            WHERE          {Q("Id")} IN (SELECT {Q("Value")} FROM {TemporaryTable(idsOfEntitiesToDelete)})
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         foreach (var entity in entitiesToDelete)
         {
-            this.ExistsEntityInDb(entity)
-                .Should().BeFalse();
+            this.ExistsEntityInDb(entity).Should().BeFalse();
         }
 
         foreach (var entity in entities.Except(entitiesToDelete))
         {
-            this.ExistsEntityInDb(entity)
-                .Should().BeTrue();
+            this.ExistsEntityInDb(entity).Should().BeTrue();
         }
     }
 
@@ -275,21 +262,27 @@ public abstract class
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().Be(1);
+            )
+        )
+            .Should()
+            .Be(1);
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"DELETE FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
                 cancellationToken: TestContext.Current.CancellationToken
-            ))
-            .Should().Be(0);
+            )
+        )
+            .Should()
+            .Be(0);
     }
 
     [Theory]
@@ -309,14 +302,12 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             );
 
-            this.ExistsEntityInDb(entity, transaction)
-                .Should().BeFalse();
+            this.ExistsEntityInDb(entity, transaction).Should().BeFalse();
 
             await transaction.RollbackAsync();
         }
 
-        this.ExistsEntityInDb(entity)
-            .Should().BeTrue();
+        this.ExistsEntityInDb(entity).Should().BeTrue();
     }
 
     private static Task<int> CallApi(

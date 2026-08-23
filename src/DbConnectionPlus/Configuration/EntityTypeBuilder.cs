@@ -34,11 +34,12 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
 
         var propertyName = GetPropertyNameFromPropertyExpression(propertyExpression);
 
-        return (EntityPropertyBuilder)this.propertyBuilders.GetOrAdd(
-            propertyName,
-            static (propertyName2, self) => new EntityPropertyBuilder(self, propertyName2),
-            this
-        );
+        return (EntityPropertyBuilder)
+            this.propertyBuilders.GetOrAdd(
+                propertyName,
+                static (propertyName2, self) => new EntityPropertyBuilder(self, propertyName2),
+                this
+            );
     }
 
     /// <summary>
@@ -74,8 +75,7 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     }
 
     /// <inheritdoc />
-    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders =>
-        this.propertyBuilders;
+    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders => this.propertyBuilders;
 
     /// <inheritdoc />
     string? IEntityTypeBuilder.TableName => this.tableName;
@@ -104,8 +104,8 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
         propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }
             ? propertyInfo.Name
             : throw new ArgumentException(
-                $"The expression '{propertyExpression}' is not a valid property access expression. The expression should " +
-                "represent a simple property access: 'a => a.MyProperty'.",
+                $"The expression '{propertyExpression}' is not a valid property access expression. The expression should "
+                    + "represent a simple property access: 'a => a.MyProperty'.",
                 nameof(propertyExpression)
             );
 

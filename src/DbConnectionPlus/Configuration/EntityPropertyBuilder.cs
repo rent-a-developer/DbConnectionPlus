@@ -101,17 +101,16 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     {
         this.EnsureNotFrozen();
 
-        var otherIdentityProperty =
-            this.entityTypeBuilder.PropertyBuilders.Values.FirstOrDefault(a =>
-                a.PropertyName != this.propertyName && a.IsIdentity
-            );
+        var otherIdentityProperty = this.entityTypeBuilder.PropertyBuilders.Values.FirstOrDefault(a =>
+            a.PropertyName != this.propertyName && a.IsIdentity
+        );
 
         if (otherIdentityProperty is not null)
         {
             throw new InvalidOperationException(
-                $"There is already the property '{otherIdentityProperty.PropertyName}' marked as an identity " +
-                $"property for the entity type {this.entityTypeBuilder.EntityType}. Only one property can be marked " +
-                "as identity property per entity type."
+                $"There is already the property '{otherIdentityProperty.PropertyName}' marked as an identity "
+                    + $"property for the entity type {this.entityTypeBuilder.EntityType}. Only one property can be marked "
+                    + "as identity property per entity type."
             );
         }
 

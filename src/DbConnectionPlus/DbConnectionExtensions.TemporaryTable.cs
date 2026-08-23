@@ -51,9 +51,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var retiredSupplierIds = suppliers.Where(a => a.IsRetired).Select(a => a.Id);
-    /// 
+    ///
     /// var retiredSupplierProductsReader = connection.ExecuteReader(
     ///    $"""
     ///     SELECT  *
@@ -87,16 +87,16 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class OrderItem
     /// {
     ///     public Int64 ProductId { get; set; }
     ///     public DateTime OrderDate { get; set; }
     /// }
-    /// 
+    ///
     /// var orderItems = GetOrderItems();
     /// var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
-    /// 
+    ///
     /// var productsOrderedInPastSixMonthsReader = connection.ExecuteReader(
     ///     $"""
     ///      SELECT     *
@@ -134,11 +134,7 @@ public static partial class DbConnectionExtensions
     /// </remarks>
     public static InterpolatedTemporaryTable TemporaryTable<
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] T
-    >(
-        IEnumerable<T> values,
-        [CallerArgumentExpression(nameof(values))]
-        string? valuesExpression = null
-    )
+    >(IEnumerable<T> values, [CallerArgumentExpression(nameof(values))] string? valuesExpression = null)
     {
         ArgumentNullException.ThrowIfNull(values);
 

@@ -99,12 +99,7 @@ public static class Program
         DbConnectionPlusConfiguration? configured = null;
 
         Configure(configuration =>
-            configured = configuration
-                .UseMySql()
-                .UseOracle()
-                .UsePostgreSql()
-                .UseSqlite()
-                .UseSqlServer()
+            configured = configuration.UseMySql().UseOracle().UsePostgreSql().UseSqlite().UseSqlServer()
         );
 
         Check.True("the five UseXxx calls chain and return the configuration", configured is not null);
@@ -170,7 +165,8 @@ public static class Program
     {
         Check.Section("3. One shared DbConnectionPlus assembly, not one copy per adapter");
 
-        var libraryAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+        var libraryAssemblies = AppDomain
+            .CurrentDomain.GetAssemblies()
             .Select(assembly => assembly.GetName())
             .Where(name => name.Name == "RentADeveloper.DbConnectionPlus")
             .ToList();

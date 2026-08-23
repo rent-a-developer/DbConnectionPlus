@@ -12,7 +12,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// Runs the Oracle server the Oracle integration tests use in a Docker container.
 /// </summary>
 internal sealed class OracleContainerFixture()
-    : DbContainerFixture<OracleBuilder, OracleContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
+    : DbContainerFixture<OracleBuilder, OracleContainer>(TestDatabaseDiagnosticMessageSink.Instance),
+        ITestDatabaseContainerFixture
 {
     /// <inheritdoc />
     /// <remarks>
@@ -25,26 +26,23 @@ internal sealed class OracleContainerFixture()
         {
             DataSource = $"{this.Container.Hostname}:{this.MappedPort}/{ServiceName}",
             UserID = SystemUsername,
-            Password = TestDatabaseContainers.Password
+            Password = TestDatabaseContainers.Password,
         }.ConnectionString;
 
     /// <inheritdoc />
-    public override DbProviderFactory DbProviderFactory =>
-        OracleClientFactory.Instance;
+    public override DbProviderFactory DbProviderFactory => OracleClientFactory.Instance;
 
     /// <inheritdoc />
     protected override OracleBuilder Configure() =>
         // WithDatabase is deliberately not called: for an Oracle 18+ image the module would only pass the name
         // on to ORACLE_DATABASE if it differed from the pluggable database the image already ships, and asking
         // this one to create a second FREEPDB1 fails.
-        new OracleBuilder(Image)
-            .WithPassword(TestDatabaseContainers.Password);
+        new OracleBuilder(Image).WithPassword(TestDatabaseContainers.Password);
 
     /// <summary>
     /// The host port the container's Oracle listener is published on.
     /// </summary>
-    private ushort MappedPort =>
-        this.Container.GetMappedPublicPort(OracleBuilder.OraclePort);
+    private ushort MappedPort => this.Container.GetMappedPublicPort(OracleBuilder.OraclePort);
 
     /// <summary>
     /// The image the container runs.

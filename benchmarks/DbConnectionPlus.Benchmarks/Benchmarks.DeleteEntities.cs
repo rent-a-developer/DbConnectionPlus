@@ -8,22 +8,19 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 public partial class Benchmarks
 {
     [GlobalCleanup(
-        Targets =
-        [
+        Targets = [
             nameof(DeleteEntities_Command),
             nameof(DeleteEntities_Dapper),
-            nameof(DeleteEntities_DbConnectionPlus)
+            nameof(DeleteEntities_DbConnectionPlus),
         ]
     )]
-    public void DeleteEntities__Cleanup() =>
-        this.connection.Dispose();
+    public void DeleteEntities__Cleanup() => this.connection.Dispose();
 
     [GlobalSetup(
-        Targets =
-        [
+        Targets = [
             nameof(DeleteEntities_Command),
             nameof(DeleteEntities_Dapper),
-            nameof(DeleteEntities_DbConnectionPlus)
+            nameof(DeleteEntities_DbConnectionPlus),
         ]
     )]
     public void DeleteEntities__Setup()

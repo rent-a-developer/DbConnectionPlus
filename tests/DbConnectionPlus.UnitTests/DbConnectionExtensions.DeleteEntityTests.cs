@@ -10,22 +10,13 @@ public class DbConnectionExtensions_DeleteEntityTests : UnitTestsBase
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 
-        this.MockEntityManipulator.DeleteEntity(
-            this.MockDbConnection,
-            entity,
-            transaction,
-            cancellationToken
-        ).Returns(numberOfAffectedRows);
+        this.MockEntityManipulator.DeleteEntity(this.MockDbConnection, entity, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
 
-        this.MockDbConnection.DeleteEntity(entity, transaction, cancellationToken)
-            .Should().Be(numberOfAffectedRows);
+        this.MockDbConnection.DeleteEntity(entity, transaction, cancellationToken).Should().Be(numberOfAffectedRows);
 
-        this.MockEntityManipulator.Received().DeleteEntity(
-            this.MockDbConnection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        this.MockEntityManipulator.Received()
+            .DeleteEntity(this.MockDbConnection, entity, transaction, cancellationToken);
     }
 
     [Fact]
@@ -36,22 +27,16 @@ public class DbConnectionExtensions_DeleteEntityTests : UnitTestsBase
         var cancellationToken = TestContext.Current.CancellationToken;
         var numberOfAffectedRows = Generate.SmallNumber();
 
-        this.MockEntityManipulator.DeleteEntityAsync(
-            this.MockDbConnection,
-            entity,
-            transaction,
-            cancellationToken
-        ).Returns(numberOfAffectedRows);
+        this.MockEntityManipulator.DeleteEntityAsync(this.MockDbConnection, entity, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
 
         (await this.MockDbConnection.DeleteEntityAsync(entity, transaction, cancellationToken))
-            .Should().Be(numberOfAffectedRows);
+            .Should()
+            .Be(numberOfAffectedRows);
 
-        await this.MockEntityManipulator.Received().DeleteEntityAsync(
-            this.MockDbConnection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        await this
+            .MockEntityManipulator.Received()
+            .DeleteEntityAsync(this.MockDbConnection, entity, transaction, cancellationToken);
     }
 
     [Fact]
@@ -59,12 +44,8 @@ public class DbConnectionExtensions_DeleteEntityTests : UnitTestsBase
     {
         var entity = Generate.Single<Entity>();
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.DeleteEntity(entity)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.DeleteEntity(entity));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.DeleteEntityAsync(entity)
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.DeleteEntityAsync(entity));
     }
 }

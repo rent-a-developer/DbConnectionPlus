@@ -57,11 +57,11 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
         connection.Exists(
             $"""
-             SELECT 1
-             FROM   information_schema.tables
-             WHERE  table_type = 'LOCAL TEMPORARY' AND
-                    table_name = '{tableName}'
-             """,
+            SELECT 1
+            FROM   information_schema.tables
+            WHERE  table_type = 'LOCAL TEMPORARY' AND
+                   table_name = '{tableName}'
+            """,
             transaction,
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -71,8 +71,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         string temporaryTableName,
         string columnName,
         DbConnection connection
-    ) =>
-        throw new NotImplementedException();
+    ) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public string GetDataTypeOfTemporaryTableColumn(
@@ -82,18 +81,17 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     ) =>
         connection.QuerySingle<string>(
             $"""
-             SELECT data_type
-             FROM   information_schema.columns
-             WHERE  table_schema LIKE 'pg_temp%' AND
-                    table_name = '{temporaryTableName}' AND
-                    column_name = '{columnName}'
-             """,
+            SELECT data_type
+            FROM   information_schema.columns
+            WHERE  table_schema LIKE 'pg_temp%' AND
+                   table_name = '{temporaryTableName}' AND
+                   column_name = '{columnName}'
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
     /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() =>
-        "(1, 2)";
+    public string GetUnsupportedDataTypeLiteral() => "(1, 2)";
 
     public void ResetDatabase()
     {
@@ -117,17 +115,14 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartPostgreSqlAsync();
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartPostgreSqlAsync();
 
     /// <summary>
     /// The connection string that connects to the PostgreSQL server running in the test container.
     /// </summary>
-    private static string ConnectionString =>
-        TestDatabaseContainers.PostgreSql.ConnectionString;
+    private static string ConnectionString => TestDatabaseContainers.PostgreSql.ConnectionString;
 
-    private const string CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE EXTENSION IF NOT EXISTS pgcrypto; -- Needed for gen_random_bytes()
 
         CREATE TABLE "Entity"
@@ -230,8 +225,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 
     private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const string PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE "Entity";
         TRUNCATE TABLE "EntityWithEnumStoredAsString";
         TRUNCATE TABLE "EntityWithEnumStoredAsInteger";

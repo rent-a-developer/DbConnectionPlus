@@ -14,8 +14,7 @@ public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabas
             "SELECT VALUE FROM v$parameter WHERE NAME = 'private_temp_table_prefix'"
         );
 
-        this.adapter.QuoteTemporaryTableName("TempTable", this.Connection)
-            .Should().Be($"\"{prefix}TempTable\"");
+        this.adapter.QuoteTemporaryTableName("TempTable", this.Connection).Should().Be($"\"{prefix}TempTable\"");
     }
 
     [Fact]
@@ -26,14 +25,14 @@ public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabas
 
         var cancellationToken = CreateCancellationTokenThatIsCancelledAfter100Milliseconds();
 
-        using var cancellationTokenRegistration =
-            DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
+        using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+            command,
+            cancellationToken
+        );
 
-        var exception = Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<OracleException>().Subject.First();
+        var exception = Invoking(() => command.ExecuteNonQuery()).Should().Throw<OracleException>().Subject.First();
 
-        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            .Should().BeTrue();
+        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken).Should().BeTrue();
     }
 
     [Fact]
@@ -42,11 +41,9 @@ public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabas
         using var command = this.Connection.CreateCommand();
         command.CommandText = "InvalidStatement";
 
-        var exception = Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<OracleException>().Subject.First();
+        var exception = Invoking(() => command.ExecuteNonQuery()).Should().Throw<OracleException>().Subject.First();
 
-        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None)
-            .Should().BeFalse();
+        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None).Should().BeFalse();
     }
 
     private readonly OracleDatabaseAdapter adapter = new();

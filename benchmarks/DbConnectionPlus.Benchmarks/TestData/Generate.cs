@@ -22,8 +22,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 // three for Double and Single, and alphabetic characters only for Char.
 public static class Generate
 {
-    public static BenchmarkEntity Single() =>
-        Create(NextId());
+    public static BenchmarkEntity Single() => Create(NextId());
 
     public static List<BenchmarkEntity> Multiple(int numberOfEntities) =>
         [.. Enumerable.Range(0, numberOfEntities).Select(_ => Single())];
@@ -42,8 +41,7 @@ public static class Generate
         return updatedEntity;
     }
 
-    public static List<BenchmarkEntity> UpdatesFor(List<BenchmarkEntity> entities) =>
-        [.. entities.Select(UpdateFor)];
+    public static List<BenchmarkEntity> UpdatesFor(List<BenchmarkEntity> entities) => [.. entities.Select(UpdateFor)];
 
     private static BenchmarkEntity Create(long id)
     {
@@ -66,13 +64,12 @@ public static class Generate
                 Int32Value = random.Next(int.MinValue, int.MaxValue),
                 Int64Value = random.NextInt64(),
                 SingleValue = (float)Math.Round(random.NextDouble() * 999.0, 3),
-                StringValue = NextSentence()
+                StringValue = NextSentence(),
             };
         }
     }
 
-    private static long NextId() =>
-        Interlocked.Increment(ref nextId);
+    private static long NextId() => Interlocked.Increment(ref nextId);
 
     private static byte[] NextBytes(int count)
     {
@@ -93,10 +90,7 @@ public static class Generate
             sentence[i] = words[random.Next(0, words.Length)];
         }
 
-        sentence[0] = string.Concat(
-            sentence[0][..1].ToUpper(CultureInfo.InvariantCulture),
-            sentence[0].AsSpan(1)
-        );
+        sentence[0] = string.Concat(sentence[0][..1].ToUpper(CultureInfo.InvariantCulture), sentence[0].AsSpan(1));
 
         return string.Join(' ', sentence) + '.';
     }
@@ -114,9 +108,39 @@ public static class Generate
 
     private static readonly string[] words =
     [
-        "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "sed", "do", "eiusmod",
-        "tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "enim", "ad", "minim", "veniam",
-        "quis", "nostrud", "exercitation", "ullamco", "laboris", "nisi", "aliquip", "ex", "ea", "commodo"
+        "lorem",
+        "ipsum",
+        "dolor",
+        "sit",
+        "amet",
+        "consectetur",
+        "adipiscing",
+        "elit",
+        "sed",
+        "do",
+        "eiusmod",
+        "tempor",
+        "incididunt",
+        "ut",
+        "labore",
+        "et",
+        "dolore",
+        "magna",
+        "aliqua",
+        "enim",
+        "ad",
+        "minim",
+        "veniam",
+        "quis",
+        "nostrud",
+        "exercitation",
+        "ullamco",
+        "laboris",
+        "nisi",
+        "aliquip",
+        "ex",
+        "ea",
+        "commodo",
     ];
 
     private static readonly DateTime dateTimeBase = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Local);

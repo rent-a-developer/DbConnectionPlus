@@ -13,8 +13,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 [Config(typeof(BenchmarksConfig))]
 public partial class Benchmarks
 {
-    static Benchmarks() =>
-        DbConnectionPlusConfiguration.Instance.UseSqlite();
+    static Benchmarks() => DbConnectionPlusConfiguration.Instance.UseSqlite();
 
     public Benchmarks()
     {
@@ -77,7 +76,10 @@ public partial class Benchmarks
             BooleanValue = dataReader.GetInt64(ordinal++) == 1,
             BytesValue = (byte[])dataReader.GetValue(ordinal++),
             ByteValue = dataReader.GetByte(ordinal++),
-            CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new InvalidOperationException(),
+            CharValue =
+                dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
+                    ? charBuffer[0]
+                    : throw new InvalidOperationException(),
             DateTimeValue = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DecimalValue = decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DoubleValue = dataReader.GetDouble(ordinal++),
@@ -86,7 +88,7 @@ public partial class Benchmarks
             Int32Value = (int)dataReader.GetInt64(ordinal++),
             Int64Value = dataReader.GetInt64(ordinal++),
             SingleValue = dataReader.GetFloat(ordinal++),
-            StringValue = dataReader.GetString(ordinal)
+            StringValue = dataReader.GetString(ordinal),
         };
     }
 
@@ -99,8 +101,7 @@ public partial class Benchmarks
      * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
      * the code under test.
      */
-    private const string CreateEntityTableSql =
-        """
+    private const string CreateEntityTableSql = """
         CREATE TABLE Entity
         (
             Id INTEGER PRIMARY KEY,

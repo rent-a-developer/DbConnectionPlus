@@ -2,36 +2,29 @@ using System.Data.Common;
 
 namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 
-public sealed class
-    DbConnectionExtensions_ExecuteReaderTests_MySql :
-    DbConnectionExtensions_ExecuteReaderTests<MySqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteReaderTests_MySql
+    : DbConnectionExtensions_ExecuteReaderTests<MySqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteReaderTests_Oracle :
-    DbConnectionExtensions_ExecuteReaderTests<OracleTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteReaderTests_Oracle
+    : DbConnectionExtensions_ExecuteReaderTests<OracleTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteReaderTests_PostgreSql :
-    DbConnectionExtensions_ExecuteReaderTests<PostgreSqlTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteReaderTests_PostgreSql
+    : DbConnectionExtensions_ExecuteReaderTests<PostgreSqlTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteReaderTests_Sqlite :
-    DbConnectionExtensions_ExecuteReaderTests<SqliteTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteReaderTests_Sqlite
+    : DbConnectionExtensions_ExecuteReaderTests<SqliteTestDatabaseProvider>;
 
-public sealed class
-    DbConnectionExtensions_ExecuteReaderTests_SqlServer :
-    DbConnectionExtensions_ExecuteReaderTests<SqlServerTestDatabaseProvider>;
+public sealed class DbConnectionExtensions_ExecuteReaderTests_SqlServer
+    : DbConnectionExtensions_ExecuteReaderTests<SqlServerTestDatabaseProvider>;
 
-public abstract class
-    DbConnectionExtensions_ExecuteReaderTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
+public abstract class DbConnectionExtensions_ExecuteReaderTests<TTestDatabaseProvider>
+    : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteReader_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        bool useAsyncApi
-    )
+    public async Task ExecuteReader_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -40,16 +33,16 @@ public abstract class
         this.DelayNextDbCommand = true;
 
         await Invoking(async () =>
-                {
-                    await using var reader = await CallApi(
-                        useAsyncApi,
-                        this.Connection,
-                        $"SELECT * FROM {Q("Entity")}",
-                        cancellationToken: cancellationToken
-                    );
-                }
-            )
-            .Should().ThrowAsync<OperationCanceledException>()
+            {
+                await using var reader = await CallApi(
+                    useAsyncApi,
+                    this.Connection,
+                    $"SELECT * FROM {Q("Entity")}",
+                    cancellationToken: cancellationToken
+                );
+            })
+            .Should()
+            .ThrowAsync<OperationCanceledException>()
             .Where(a => a.CancellationToken == cancellationToken);
     }
 
@@ -68,8 +61,7 @@ public abstract class
 
         await reader.DisposeAsync();
 
-        this.Connection.State
-            .Should().Be(ConnectionState.Closed);
+        this.Connection.State.Should().Be(ConnectionState.Closed);
     }
 
     [Theory]
@@ -91,31 +83,29 @@ public abstract class
 
         foreach (var entity in entities)
         {
-            (await reader.ReadAsync(TestContext.Current.CancellationToken))
-                .Should().BeTrue();
+            (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
+            reader.GetInt64(0).Should().Be(entity.Id);
 
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
+            reader.GetString(1).Should().Be(entity.StringValue);
         }
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(bool useAsyncApi)
+    public async Task ExecuteReader_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterDataReaderDisposal(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = Generate.Multiple<Entity>();
 
         InterpolatedSqlStatement statement = $"""
-                                              SELECT     {Q("Id")}
-                                              FROM       {TemporaryTable(entities)}
-                                              """;
+            SELECT     {Q("Id")}
+            FROM       {TemporaryTable(entities)}
+            """;
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
         var reader = await CallApi(
@@ -127,23 +117,20 @@ public abstract class
 
         if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
         {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
+            this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeTrue();
         }
 
         await reader.DisposeAsync();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        ExecuteReader_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task ExecuteReader_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -153,25 +140,21 @@ public abstract class
             useAsyncApi,
             this.Connection,
             $"""
-             SELECT     {Q("Id")}, {Q("StringValue")}, {Q("DecimalValue")}
-             FROM       {TemporaryTable(entities)}
-             """,
+            SELECT     {Q("Id")}, {Q("StringValue")}, {Q("DecimalValue")}
+            FROM       {TemporaryTable(entities)}
+            """,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
         foreach (var entity in entities)
         {
-            (await reader.ReadAsync(TestContext.Current.CancellationToken))
-                .Should().BeTrue();
+            (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
+            reader.GetInt64(0).Should().Be(entity.Id);
 
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
+            reader.GetString(1).Should().Be(entity.StringValue);
 
-            reader.GetDecimal(2)
-                .Should().Be(entity.DecimalValue);
+            reader.GetDecimal(2).Should().Be(entity.DecimalValue);
         }
     }
 
@@ -189,11 +172,9 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        (await reader.ReadAsync(TestContext.Current.CancellationToken))
-            .Should().BeTrue();
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-        reader.GetString(0)
-            .Should().Be(entity.StringValue);
+        reader.GetString(0).Should().Be(entity.StringValue);
     }
 
     [Theory]
@@ -215,11 +196,9 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        (await reader.ReadAsync(TestContext.Current.CancellationToken))
-            .Should().BeTrue();
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-        reader.GetString(0)
-            .Should().Be(entity.StringValue);
+        reader.GetString(0).Should().Be(entity.StringValue);
     }
 
     [Theory]
@@ -246,23 +225,20 @@ public abstract class
 
         if (this.TestDatabaseProvider.SupportsCommandExecutionWhileDataReaderIsOpen)
         {
-            this.ExistsTemporaryTableInDb(temporaryTableName)
-                .Should().BeTrue();
+            this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeTrue();
         }
 
         await reader.DisposeAsync();
 
-        this.ExistsTemporaryTableInDb(temporaryTableName)
-            .Should().BeFalse();
+        this.ExistsTemporaryTableInDb(temporaryTableName).Should().BeFalse();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task
-        ExecuteReader_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            bool useAsyncApi
-        )
+    public async Task ExecuteReader_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
+        bool useAsyncApi
+    )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -277,11 +253,9 @@ public abstract class
 
         foreach (var entityId in entityIds)
         {
-            (await reader.ReadAsync(TestContext.Current.CancellationToken))
-                .Should().BeTrue();
+            (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-            reader.GetInt64(0)
-                .Should().Be(entityId);
+            reader.GetInt64(0).Should().Be(entityId);
         }
     }
 
@@ -301,18 +275,14 @@ public abstract class
 
         foreach (var entity in entities)
         {
-            (await reader.ReadAsync(TestContext.Current.CancellationToken))
-                .Should().BeTrue();
+            (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-            reader.GetInt64(0)
-                .Should().Be(entity.Id);
+            reader.GetInt64(0).Should().Be(entity.Id);
 
-            reader.GetString(1)
-                .Should().Be(entity.StringValue);
+            reader.GetString(1).Should().Be(entity.StringValue);
         }
 
-        (await reader.ReadAsync(TestContext.Current.CancellationToken))
-            .Should().BeFalse();
+        (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeFalse();
     }
 
     [Theory]
@@ -332,19 +302,15 @@ public abstract class
                 cancellationToken: TestContext.Current.CancellationToken
             );
 
-            reader.HasRows
-                .Should().BeTrue();
+            reader.HasRows.Should().BeTrue();
 
             foreach (var entity in entities)
             {
-                (await reader.ReadAsync(TestContext.Current.CancellationToken))
-                    .Should().BeTrue();
+                (await reader.ReadAsync(TestContext.Current.CancellationToken)).Should().BeTrue();
 
-                reader.GetInt64(0)
-                    .Should().Be(entity.Id);
+                reader.GetInt64(0).Should().Be(entity.Id);
 
-                reader.GetString(1)
-                    .Should().Be(entity.StringValue);
+                reader.GetString(1).Should().Be(entity.StringValue);
             }
 
             await reader.DisposeAsync();
@@ -352,13 +318,16 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        (await CallApi(
+        (
+            await CallApi(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT {Q("Id")}, {Q("StringValue")} FROM {Q("Entity")}",
                 cancellationToken: TestContext.Current.CancellationToken
-            )).HasRows
-            .Should().BeFalse();
+            )
+        )
+            .HasRows.Should()
+            .BeFalse();
     }
 
     private static Task<DbDataReader> CallApi(
