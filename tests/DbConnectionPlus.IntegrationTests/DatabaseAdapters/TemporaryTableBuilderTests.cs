@@ -37,7 +37,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildTemporaryTable_ComplexObjects_DateTimeOffsetProperty_ShouldSupportDateTimeOffset(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
@@ -66,7 +66,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
@@ -95,14 +95,14 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldType(0)
-            .Should().BeAnyOf(typeof(Int32), typeof(Int64));
+            .Should().BeAnyOf(typeof(int), typeof(long));
 
         foreach (var entity in entities)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
 
             reader.GetInt32(0)
-                .Should().Be((Int32)entity.Enum);
+                .Should().Be((int)entity.Enum);
         }
     }
 
@@ -111,7 +111,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
@@ -140,7 +140,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldType(0)
-            .Should().Be(typeof(String));
+            .Should().Be(typeof(string));
 
         foreach (var entity in entities)
         {
@@ -156,7 +156,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ComplexObjects_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
@@ -183,7 +183,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildTemporaryTable_ComplexObjects_Mapping_Attributes_ShouldUseAttributesMapping(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         var entities = Generate.Multiple<MappingTestEntityAttributes>();
@@ -212,7 +212,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {QT("Objects")}")
             .Should().BeEquivalentTo(
                 entities,
-                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                options => options.Using<string>(context => context.Subject.Should().BeNull())
                     .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
@@ -221,7 +221,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildTemporaryTable_ComplexObjects_Mapping_FluentApi_ShouldUseFluentApiMapping(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         MappingTestEntityFluentApi.Configure();
@@ -252,7 +252,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {QT("Objects")}")
             .Should().BeEquivalentTo(
                 entities,
-                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                options => options.Using<string>(context => context.Subject.Should().BeNull())
                     .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
@@ -261,7 +261,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildTemporaryTable_ComplexObjects_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         var entities = Generate.Multiple<MappingTestEntity>();
@@ -283,7 +283,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldCreateMultiColumnTable(bool useAsyncApi)
     {
         var items = Generate.Multiple<TemporaryTableTestItem>();
 
@@ -307,7 +307,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_ShouldUseCollationOfDatabaseForTextColumns(bool useAsyncApi)
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
@@ -330,7 +330,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ComplexObjects_WithNullables_ShouldHandleNullValues(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ComplexObjects_WithNullables_ShouldHandleNullValues(bool useAsyncApi)
     {
         var itemsWithNulls = new List<TemporaryTableTestItemWithNullableProperties> { new() };
 
@@ -355,7 +355,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
@@ -384,7 +384,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ScalarValues_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
@@ -413,14 +413,14 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldType(0)
-            .Should().BeAnyOf(typeof(Int32), typeof(Int64));
+            .Should().BeAnyOf(typeof(int), typeof(long));
 
         foreach (var value in values)
         {
             await reader.ReadAsync(TestContext.Current.CancellationToken);
 
             reader.GetInt32(0)
-                .Should().Be((Int32)value);
+                .Should().Be((int)value);
         }
     }
 
@@ -429,7 +429,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
@@ -458,7 +458,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
         );
 
         reader.GetFieldType(0)
-            .Should().Be(typeof(String));
+            .Should().Be(typeof(string));
 
         foreach (var value in values)
         {
@@ -474,7 +474,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(true)]
     public async Task
         BuildTemporaryTable_ScalarValues_EnumSerializationModeIsStrings_ShouldUseCollationOfDatabaseForEnumColumns(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
@@ -501,7 +501,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls(Boolean useAsyncApi)
+        BuildTemporaryTable_ScalarValues_NullableEnumValues_ShouldFillTableWithEnumsAndNulls(bool useAsyncApi)
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
@@ -527,9 +527,9 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ScalarValues_ShouldCreateSingleColumnTable(bool useAsyncApi)
     {
-        var values = Generate.Multiple<Int32>();
+        var values = Generate.Multiple<int>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -537,11 +537,11 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "Values",
             values,
-            typeof(Int32),
+            typeof(int),
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<Int32>(
+        (await this.Connection.QueryAsync<int>(
                 $"SELECT {Q("Value")} FROM {QT("Values")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
@@ -551,7 +551,7 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ScalarValues_ShouldUseCollationOfDatabaseForTextColumns(bool useAsyncApi)
     {
         Assert.SkipWhen(this.TestDatabaseProvider.TemporaryTableTextColumnInheritsCollationFromDatabase, "");
 
@@ -560,8 +560,8 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             this.Connection,
             null,
             "Values",
-            Generate.Multiple<String>(),
-            typeof(String),
+            Generate.Multiple<string>(),
+            typeof(string),
             TestContext.Current.CancellationToken
         );
 
@@ -574,9 +574,9 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(bool useAsyncApi)
     {
-        var values = Generate.MultipleNullable<Int32>();
+        var values = Generate.MultipleNullable<int>();
 
         await using var tableDisposer = await this.CallApi(
             useAsyncApi,
@@ -584,11 +584,11 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             null,
             "NullValues",
             values,
-            typeof(Int32?),
+            typeof(int?),
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<Int32?>(
+        (await this.Connection.QueryAsync<int?>(
                 $"SELECT {Q("Value")} FROM {QT("NullValues")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
@@ -598,15 +598,15 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ShouldReturnDisposerThatDropsTableAsync(Boolean useAsyncApi)
+    public async Task BuildTemporaryTable_ShouldReturnDisposerThatDropsTableAsync(bool useAsyncApi)
     {
         var disposer = await this.CallApi(
             useAsyncApi,
             this.Connection,
             null,
             "Values",
-            Generate.Multiple<Int32>(),
-            typeof(Int32),
+            Generate.Multiple<int>(),
+            typeof(int),
             TestContext.Current.CancellationToken
         );
 
@@ -620,10 +620,10 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     }
 
     private Task<TemporaryTableDisposer> CallApi(
-        Boolean useAsyncApi,
+        bool useAsyncApi,
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         Type valuesType,
         CancellationToken cancellationToken = default

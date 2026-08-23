@@ -105,7 +105,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static Int32 UpdateEntities<
+    public static int UpdateEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,
@@ -226,7 +226,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static Task<Int32> UpdateEntitiesAsync<
+    public static Task<int> UpdateEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,

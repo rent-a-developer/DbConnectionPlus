@@ -40,7 +40,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static Int32 ExecuteNonQuery(
+    public static int ExecuteNonQuery(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -112,7 +112,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static async Task<Int32> ExecuteNonQueryAsync(
+    public static async Task<int> ExecuteNonQueryAsync(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

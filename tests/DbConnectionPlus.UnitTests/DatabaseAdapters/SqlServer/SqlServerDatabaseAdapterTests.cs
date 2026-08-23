@@ -9,7 +9,7 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
     {
         var parameter = Substitute.For<DbParameter>();
 
-        var value = Generate.Single<Byte[]>();
+        var value = Generate.Single<byte[]>();
 
         this.adapter.BindParameterValue(parameter, value);
 
@@ -51,7 +51,7 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
             .Should().Be(DbType.Int32);
 
         parameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -124,40 +124,40 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), "bit")]
-    [InlineData(typeof(Boolean), "bit")]
-    [InlineData(typeof(Byte), "tinyint")]
-    [InlineData(typeof(Byte?), "tinyint")]
-    [InlineData(typeof(Byte[]), "varbinary(max)")]
-    [InlineData(typeof(Char?), "char(1)")]
-    [InlineData(typeof(Char), "char(1)")]
+    [InlineData(typeof(bool?), "bit")]
+    [InlineData(typeof(bool), "bit")]
+    [InlineData(typeof(byte), "tinyint")]
+    [InlineData(typeof(byte?), "tinyint")]
+    [InlineData(typeof(byte[]), "varbinary(max)")]
+    [InlineData(typeof(char?), "char(1)")]
+    [InlineData(typeof(char), "char(1)")]
     [InlineData(typeof(DateOnly?), "date")]
     [InlineData(typeof(DateOnly), "date")]
     [InlineData(typeof(DateTimeOffset?), "datetimeoffset")]
     [InlineData(typeof(DateTimeOffset), "datetimeoffset")]
     [InlineData(typeof(DateTime?), "datetime2")]
     [InlineData(typeof(DateTime), "datetime2")]
-    [InlineData(typeof(Decimal?), "decimal(28,10)")]
-    [InlineData(typeof(Decimal), "decimal(28,10)")]
-    [InlineData(typeof(Double?), "float")]
-    [InlineData(typeof(Double), "float")]
+    [InlineData(typeof(decimal?), "decimal(28,10)")]
+    [InlineData(typeof(decimal), "decimal(28,10)")]
+    [InlineData(typeof(double?), "float")]
+    [InlineData(typeof(double), "float")]
     [InlineData(typeof(Guid?), "uniqueidentifier")]
     [InlineData(typeof(Guid), "uniqueidentifier")]
-    [InlineData(typeof(Int16?), "smallint")]
-    [InlineData(typeof(Int16), "smallint")]
-    [InlineData(typeof(Int32?), "int")]
-    [InlineData(typeof(Int32), "int")]
-    [InlineData(typeof(Int64?), "bigint")]
-    [InlineData(typeof(Int64), "bigint")]
-    [InlineData(typeof(Object), "sql_variant")]
-    [InlineData(typeof(Single?), "real")]
-    [InlineData(typeof(Single), "real")]
-    [InlineData(typeof(String), "nvarchar(max)")]
+    [InlineData(typeof(short?), "smallint")]
+    [InlineData(typeof(short), "smallint")]
+    [InlineData(typeof(int?), "int")]
+    [InlineData(typeof(int), "int")]
+    [InlineData(typeof(long?), "bigint")]
+    [InlineData(typeof(long), "bigint")]
+    [InlineData(typeof(object), "sql_variant")]
+    [InlineData(typeof(float?), "real")]
+    [InlineData(typeof(float), "real")]
+    [InlineData(typeof(string), "nvarchar(max)")]
     [InlineData(typeof(TimeOnly?), "time")]
     [InlineData(typeof(TimeOnly), "time")]
     [InlineData(typeof(TimeSpan?), "time")]
     [InlineData(typeof(TimeSpan), "time")]
-    public void GetDataType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, String expectedResult) =>
+    public void GetDataType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, string expectedResult) =>
         this.adapter.GetDataType(type, EnumSerializationMode.Strings)
             .Should().Be(expectedResult);
 
@@ -189,7 +189,7 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDataType(typeof(Int32), EnumSerializationMode.Integers)
+            this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers)
         );
     }
 

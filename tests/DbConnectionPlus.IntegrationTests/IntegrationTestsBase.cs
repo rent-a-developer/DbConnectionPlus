@@ -79,7 +79,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// DbConnectionPlus. Subsequent commands will not be delayed unless this property is set to <see langword="true" />
     /// again.
     /// </summary>
-    public Boolean DelayNextDbCommand { get; set; }
+    public bool DelayNextDbCommand { get; set; }
 
     /// <inheritdoc />
     public void Dispose()
@@ -108,7 +108,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// The formatted parameter name, including the appropriate prefix, suitable for inclusion in SQL statements.
     /// </returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String P(String parameterName) =>
+    public static string P(string parameterName) =>
         currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
 
     /// <summary>
@@ -118,7 +118,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="identifier">The identifier to quote.</param>
     /// <returns>The quoted identifier, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String Q(String identifier) =>
+    public static string Q(string identifier) =>
         currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
 
     /// <summary>
@@ -128,7 +128,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="tableName">The name of the temporary table to quote.</param>
     /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
     /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String QT(String tableName) =>
+    public static string QT(string tableName) =>
         currentDatabaseAdapter.Value!.QuoteTemporaryTableName(
             tableName,
             currentTestDatabaseConnection.Value!
@@ -160,7 +160,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// </param>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The entities that were created and inserted.</returns>
-    protected List<T> CreateEntitiesInDb<T>(Int32? numberOfEntities = null, DbTransaction? transaction = null)
+    protected List<T> CreateEntitiesInDb<T>(int? numberOfEntities = null, DbTransaction? transaction = null)
         where T : class =>
         this.ExecuteWithoutDbCommandLogging(() =>
             {
@@ -221,7 +221,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <see langword="false" />.
     /// </returns>
     /// <exception cref="InvalidOperationException"></exception>
-    protected Boolean ExistsEntityInDb<T>(T entity, DbTransaction? transaction = null)
+    protected bool ExistsEntityInDb<T>(T entity, DbTransaction? transaction = null)
         where T : class
     {
         var metadata = EntityHelper.GetEntityTypeMetadata(typeof(T));
@@ -236,7 +236,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             $"""
              SELECT 1
              FROM   {Q(metadata.TableName)}
-             WHERE  {String.Join(
+             WHERE  {string.Join(
                      " AND ",
                      keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}").ToList()
                  )}
@@ -261,7 +261,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <see langword="true" /> if a temporary table with the specified name exists in the test database;
     /// otherwise, <see langword="false" />.
     /// </returns>
-    protected Boolean ExistsTemporaryTableInDb(String tableName, DbTransaction? transaction = null) =>
+    protected bool ExistsTemporaryTableInDb(string tableName, DbTransaction? transaction = null) =>
         this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.ExistsTemporaryTable(
                 tableName,
@@ -276,7 +276,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="temporaryTableName">The name of the temporary table that contains the specified column.</param>
     /// <param name="columnName">The name of the column of which to get the collation.</param>
     /// <returns>The collation of the specified column of the specified temporary table.</returns>
-    protected String GetCollationOfTemporaryTableColumn(String temporaryTableName, String columnName) =>
+    protected string GetCollationOfTemporaryTableColumn(string temporaryTableName, string columnName) =>
         this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.GetCollationOfTemporaryTableColumn(
                 temporaryTableName,
@@ -291,9 +291,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="temporaryTableName">The name of the temporary table that contains the specified column.</param>
     /// <param name="columnName">The name of the column of which to get the data type.</param>
     /// <returns>The data type of the specified column of the specified temporary table.</returns>
-    protected String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName
+    protected string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName
     ) =>
         this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(
@@ -327,7 +327,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
 
         if (this.logDbCommands)
         {
-            using var logMessageBuilder = new ValueStringBuilder(stackalloc Char[500]);
+            using var logMessageBuilder = new ValueStringBuilder(stackalloc char[500]);
 
             logMessageBuilder.AppendLine();
             logMessageBuilder.AppendLine("-----------------");
@@ -368,7 +368,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
                 {
                     logMessageBuilder.AppendLine();
                     logMessageBuilder.AppendLine(temporaryTable.Name);
-                    logMessageBuilder.AppendLine(new String('-', temporaryTable.Name.Length));
+                    logMessageBuilder.AppendLine(new string('-', temporaryTable.Name.Length));
 
                     foreach (var value in temporaryTable.Values)
                     {
@@ -394,7 +394,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
         return cancellationTokenSource.Token;
     }
 
-    private Boolean logDbCommands;
+    private bool logDbCommands;
 
     /// <summary>
     /// The connection to the test database for the currently running integration test.

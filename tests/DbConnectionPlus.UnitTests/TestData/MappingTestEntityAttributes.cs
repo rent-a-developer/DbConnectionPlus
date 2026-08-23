@@ -7,31 +7,31 @@ public record MappingTestEntityAttributes
 {
     [Column("Computed")]
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public Int32 Computed_ { get; set; }
+    public int Computed_ { get; set; }
 
     [Column("ConcurrencyToken")]
     [ConcurrencyCheck]
-    public Byte[]? ConcurrencyToken_ { get; set; }
+    public byte[]? ConcurrencyToken_ { get; set; }
 
     [Column("Identity")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Int32 Identity_ { get; set; }
+    public int Identity_ { get; set; }
 
     [Key]
     [Column("Key1")]
-    public Int64 Key1_ { get; set; }
+    public long Key1_ { get; set; }
 
     [Key]
     [Column("Key2")]
-    public Int64 Key2_ { get; set; }
+    public long Key2_ { get; set; }
 
     [NotMapped]
-    public String? NotMapped { get; set; }
+    public string? NotMapped { get; set; }
 
     [Column("RowVersion")]
     [Timestamp]
-    public Byte[]? RowVersion_ { get; set; }
+    public byte[]? RowVersion_ { get; set; }
 
     [Column("Value")]
-    public Int32 Value_ { get; set; }
+    public int Value_ { get; set; }
 }

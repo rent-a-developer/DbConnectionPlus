@@ -41,25 +41,25 @@ public partial class Benchmarks
 
         while (dataReader.Read())
         {
-            var charBuffer = new Char[1];
+            var charBuffer = new char[1];
 
             var ordinal = 0;
 
-            var dictionary = new Dictionary<String, Object?>
+            var dictionary = new Dictionary<string, object?>
             {
                 ["Id"] = dataReader.GetInt64(ordinal++),
                 ["BooleanValue"] = dataReader.GetInt64(ordinal++) == 1,
-                ["BytesValue"] = (Byte[])dataReader.GetValue(ordinal++),
+                ["BytesValue"] = (byte[])dataReader.GetValue(ordinal++),
                 ["ByteValue"] = dataReader.GetByte(ordinal++),
                 ["CharValue"] = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
                     ? charBuffer[0]
                     : throw new InvalidOperationException(),
                 ["DateTimeValue"] = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
-                ["DecimalValue"] = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
+                ["DecimalValue"] = decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
                 ["DoubleValue"] = dataReader.GetDouble(ordinal++),
                 ["EnumValue"] = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++)),
-                ["Int16Value"] = (Int16)dataReader.GetInt64(ordinal++),
-                ["Int32Value"] = (Int32)dataReader.GetInt64(ordinal++),
+                ["Int16Value"] = (short)dataReader.GetInt64(ordinal++),
+                ["Int32Value"] = (int)dataReader.GetInt64(ordinal++),
                 ["Int64Value"] = dataReader.GetInt64(ordinal++),
                 ["SingleValue"] = dataReader.GetFloat(ordinal++),
                 ["StringValue"] = dataReader.GetString(ordinal)
@@ -81,6 +81,6 @@ public partial class Benchmarks
     public List<DataRow> Query_Dynamic_DbConnectionPlus() =>
         [.. this.connection.Query("SELECT * FROM Entity")];
 
-    private const String Query_Dynamic_Category = "Query_Dynamic";
-    private const Int32 Query_Dynamic_EntitiesPerOperation = 100;
+    private const string Query_Dynamic_Category = "Query_Dynamic";
+    private const int Query_Dynamic_EntitiesPerOperation = 100;
 }

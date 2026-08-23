@@ -29,7 +29,7 @@ public static class DecoratorAssertions
         Fixture fixture,
         TDecorator decorator,
         TDecorator decorated,
-        HashSet<String> excludedMethods
+        HashSet<string> excludedMethods
     )
         where TDecorator : class
     {
@@ -45,7 +45,7 @@ public static class DecoratorAssertions
             {
                 var methodParameters = method.GetParameters();
 
-                var decoratorMethodArguments = new Object?[methodParameters.Length];
+                var decoratorMethodArguments = new object?[methodParameters.Length];
 
                 for (var i = 0; i < methodParameters.Length; i++)
                 {
@@ -64,7 +64,7 @@ public static class DecoratorAssertions
                     }
                 }
 
-                Object? decoratedMethodReturnValue = null;
+                object? decoratedMethodReturnValue = null;
 
                 if (method.ReturnType != typeof(void))
                 {

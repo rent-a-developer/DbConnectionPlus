@@ -12,8 +12,8 @@ public class EnumerableReaderTests : UnitTestsBase
     /// <inheritdoc />
     public EnumerableReaderTests()
     {
-        this.testValues = Generate.Single<Int32[]>();
-        this.enumerableReader = new(this.testValues, typeof(Int32), FieldName);
+        this.testValues = Generate.Single<int[]>();
+        this.enumerableReader = new(this.testValues, typeof(int), FieldName);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         enumerable.GetEnumerator().Returns(enumerator);
 
-        var reader = new EnumerableReader(enumerable, typeof(Int32), FieldName);
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
 
         reader.Close();
 
@@ -51,7 +51,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         enumerable.GetEnumerator().Returns(enumerator);
 
-        var reader = new EnumerableReader(enumerable, typeof(Int32), FieldName);
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
 
         await reader.CloseAsync();
 
@@ -61,10 +61,10 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void Constructor_FieldNameEmptyOrWhitespace_ShouldThrow()
     {
-        Invoking(() => new EnumerableReader(this.testValues, typeof(Int32), String.Empty))
+        Invoking(() => new EnumerableReader(this.testValues, typeof(int), string.Empty))
             .Should().Throw<ArgumentException>();
 
-        Invoking(() => new EnumerableReader(this.testValues, typeof(Int32), " "))
+        Invoking(() => new EnumerableReader(this.testValues, typeof(int), " "))
             .Should().Throw<ArgumentException>();
     }
 
@@ -81,7 +81,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         enumerable.GetEnumerator().Returns(enumerator);
 
-        var reader = new EnumerableReader(enumerable, typeof(Int32), FieldName);
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
 
         reader.Dispose();
 
@@ -96,7 +96,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         enumerable.GetEnumerator().Returns(enumerator);
 
-        var reader = new EnumerableReader(enumerable, typeof(Int32), FieldName);
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
 
         await reader.DisposeAsync();
 
@@ -128,7 +128,7 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void GetFieldType_ValidOrdinal_ShouldReturnValuesTypePassedToConstructor() =>
         this.enumerableReader.GetFieldType(0)
-            .Should().Be(typeof(Int32));
+            .Should().Be(typeof(int));
 
     [Fact]
     public void GetName_InvalidOrdinal_ShouldThrow() =>
@@ -158,18 +158,18 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void GetTypedValue_SingleColumn_ShouldReturnCurrentValue()
     {
-        AssertSingleColumnAccessor(true, typeof(Boolean), a => a.GetBoolean(0));
-        AssertSingleColumnAccessor((Byte)7, typeof(Byte), a => a.GetByte(0));
-        AssertSingleColumnAccessor('R', typeof(Char), a => a.GetChar(0));
+        AssertSingleColumnAccessor(true, typeof(bool), a => a.GetBoolean(0));
+        AssertSingleColumnAccessor((byte)7, typeof(byte), a => a.GetByte(0));
+        AssertSingleColumnAccessor('R', typeof(char), a => a.GetChar(0));
         AssertSingleColumnAccessor(new DateTime(2026, 8, 20), typeof(DateTime), a => a.GetDateTime(0));
-        AssertSingleColumnAccessor(12.34m, typeof(Decimal), a => a.GetDecimal(0));
-        AssertSingleColumnAccessor(12.34d, typeof(Double), a => a.GetDouble(0));
-        AssertSingleColumnAccessor(12.34f, typeof(Single), a => a.GetFloat(0));
+        AssertSingleColumnAccessor(12.34m, typeof(decimal), a => a.GetDecimal(0));
+        AssertSingleColumnAccessor(12.34d, typeof(double), a => a.GetDouble(0));
+        AssertSingleColumnAccessor(12.34f, typeof(float), a => a.GetFloat(0));
         AssertSingleColumnAccessor(Guid.NewGuid(), typeof(Guid), a => a.GetGuid(0));
-        AssertSingleColumnAccessor((Int16)7, typeof(Int16), a => a.GetInt16(0));
-        AssertSingleColumnAccessor(7, typeof(Int32), a => a.GetInt32(0));
-        AssertSingleColumnAccessor(7L, typeof(Int64), a => a.GetInt64(0));
-        AssertSingleColumnAccessor("value", typeof(String), a => a.GetString(0));
+        AssertSingleColumnAccessor((short)7, typeof(short), a => a.GetInt16(0));
+        AssertSingleColumnAccessor(7, typeof(int), a => a.GetInt32(0));
+        AssertSingleColumnAccessor(7L, typeof(long), a => a.GetInt64(0));
+        AssertSingleColumnAccessor("value", typeof(string), a => a.GetString(0));
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void GetValues_ShouldAlwaysReturnOne()
     {
-        var values = new Object[1];
+        var values = new object[1];
 
         foreach (var _ in this.testValues)
         {
@@ -221,7 +221,7 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void GetValues_ShouldFillBufferWithValue()
     {
-        var buffer = new Object[1];
+        var buffer = new object[1];
 
         foreach (var value in this.testValues)
         {
@@ -266,7 +266,7 @@ public class EnumerableReaderTests : UnitTestsBase
 
         reader.Read();
 
-        var values = new Object[2];
+        var values = new object[2];
 
         reader.GetValues(values)
             .Should().Be(values.Length);
@@ -347,8 +347,8 @@ public class EnumerableReaderTests : UnitTestsBase
     [Fact]
     public void IsDBNull_ValidOrdinal_ShouldReturnWhetherCurrentValueIsNull()
     {
-        var valuesWithNulls = Generate.MultipleNullable<Int32>();
-        var readerWithNulls = new EnumerableReader(valuesWithNulls, typeof(Int32), FieldName);
+        var valuesWithNulls = Generate.MultipleNullable<int>();
+        var readerWithNulls = new EnumerableReader(valuesWithNulls, typeof(int), FieldName);
 
         foreach (var value in valuesWithNulls)
         {
@@ -394,14 +394,14 @@ public class EnumerableReaderTests : UnitTestsBase
 
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>
-        ArgumentNullGuardVerifier.Verify(() => new EnumerableReader(this.testValues, typeof(Int32), FieldName));
+        ArgumentNullGuardVerifier.Verify(() => new EnumerableReader(this.testValues, typeof(int), FieldName));
 
     private static void AssertSingleColumnAccessor(
-        Object value,
+        object value,
         [DynamicallyAccessedMembers(
             DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
         Type valuesType,
-        Func<EnumerableReader, Object> accessor
+        Func<EnumerableReader, object> accessor
     )
     {
         using var reader = new EnumerableReader(new[] { value }, valuesType, FieldName);
@@ -413,6 +413,6 @@ public class EnumerableReaderTests : UnitTestsBase
     }
 
     private readonly EnumerableReader enumerableReader;
-    private readonly Int32[] testValues;
-    private const String FieldName = "Value";
+    private readonly int[] testValues;
+    private const string FieldName = "Value";
 }

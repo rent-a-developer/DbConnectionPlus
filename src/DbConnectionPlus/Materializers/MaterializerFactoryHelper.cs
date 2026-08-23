@@ -14,34 +14,34 @@ namespace RentADeveloper.DbConnectionPlus.Materializers;
 internal static class MaterializerFactoryHelper
 {
     /// <summary>
-    /// The <see cref="DbDataReader.GetValue(Int32)" /> method.
+    /// The <see cref="DbDataReader.GetValue(int)" /> method.
     /// </summary>
     internal static MethodInfo DbDataReaderGetValueMethod { get; } = typeof(DbDataReader)
         .GetMethod(nameof(DbDataReader.GetValue))!;
 
     /// <summary>
-    /// The <see cref="DbDataReader.IsDBNull(Int32)" /> method.
+    /// The <see cref="DbDataReader.IsDBNull(int)" /> method.
     /// </summary>
     // ReSharper disable once InconsistentNaming
     internal static MethodInfo DbDataReaderIsDBNullMethod { get; } = typeof(DbDataReader)
         .GetMethod(nameof(DbDataReader.IsDBNull))!;
 
     /// <summary>
-    /// The 'Chars' property of the <see cref="String" /> type.
+    /// The 'Chars' property of the <see cref="string" /> type.
     /// </summary>
-    internal static PropertyInfo StringCharsProperty { get; } = typeof(String)
+    internal static PropertyInfo StringCharsProperty { get; } = typeof(string)
         .GetProperty("Chars", BindingFlags.Instance | BindingFlags.Public)!;
 
     /// <summary>
-    /// The <see cref="String.Concat(String, String, String)" /> method.
+    /// The <see cref="string.Concat(string, string, string)" /> method.
     /// </summary>
-    internal static MethodInfo StringConcatMethod { get; } = typeof(String)
-        .GetMethod(nameof(String.Concat), [typeof(String), typeof(String), typeof(String)])!;
+    internal static MethodInfo StringConcatMethod { get; } = typeof(string)
+        .GetMethod(nameof(String.Concat), [typeof(string), typeof(string), typeof(string)])!;
 
     /// <summary>
-    /// The <see cref="String.Length" /> property.
+    /// The <see cref="string.Length" /> property.
     /// </summary>
-    internal static PropertyInfo StringLengthProperty { get; } = typeof(String)
+    internal static PropertyInfo StringLengthProperty { get; } = typeof(string)
         .GetProperty(nameof(String.Length), BindingFlags.Instance | BindingFlags.Public)!;
 
     /// <summary>
@@ -128,8 +128,8 @@ internal static class MaterializerFactoryHelper
     internal static Expression CreateGetDbDataReaderFieldValueExpression(
         Expression dataReaderExpression,
         Expression fieldOrdinalExpression,
-        Int32 fieldOrdinal,
-        String? fieldName,
+        int fieldOrdinal,
+        string? fieldName,
         Type fieldType
     )
     {
@@ -137,7 +137,7 @@ internal static class MaterializerFactoryHelper
         ArgumentNullException.ThrowIfNull(fieldOrdinalExpression);
         ArgumentNullException.ThrowIfNull(fieldType);
 
-        if (fieldType == typeof(Byte[]))
+        if (fieldType == typeof(byte[]))
         {
             // Special handling for byte arrays since DbDataReader does not have a GetBytes method that returns
             // a byte array directly.
@@ -148,7 +148,7 @@ internal static class MaterializerFactoryHelper
                         DbDataReaderGetValueMethod,
                         fieldOrdinalExpression
                     ),
-                    typeof(Byte[])
+                    typeof(byte[])
                 );
         }
 
@@ -214,7 +214,7 @@ internal static class MaterializerFactoryHelper
 
         if (!dbDataReaderTypedGetMethods.TryGetValue(fieldType, out var dbDataReaderGetMethod))
         {
-            if (!String.IsNullOrWhiteSpace(fieldName))
+            if (!string.IsNullOrWhiteSpace(fieldName))
             {
                 throw new ArgumentException(
                     $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not " +
@@ -246,7 +246,7 @@ internal static class MaterializerFactoryHelper
     /// <param name="fieldOrdinal">The field ordinal of the field to get the value from.</param>
     /// <param name="fieldName">The field name of the field to get the value from.</param>
     /// <param name="fieldType">The field type of the field to get the value from.</param>
-    /// <returns>The created function. It returns the field value boxed in an <see cref="Object" />.</returns>
+    /// <returns>The created function. It returns the field value boxed in an <see cref="object" />.</returns>
     /// <exception cref="ArgumentException">
     /// The specified type <paramref name="fieldType" /> is not supported.
     /// </exception>
@@ -262,9 +262,9 @@ internal static class MaterializerFactoryHelper
     /// counterpart, so picking a different method here would make the two materializer paths disagree.
     /// </para>
     /// </remarks>
-    internal static Func<DbDataReader, Object?> CreateGetDbDataReaderFieldValueFunction(
-        Int32 fieldOrdinal,
-        String? fieldName,
+    internal static Func<DbDataReader, object?> CreateGetDbDataReaderFieldValueFunction(
+        int fieldOrdinal,
+        string? fieldName,
         Type fieldType
     )
     {
@@ -279,7 +279,7 @@ internal static class MaterializerFactoryHelper
 
         if (!dbDataReaderTypedGetValueFunctions.TryGetValue(fieldType, out var dbDataReaderGetValueFunction))
         {
-            if (!String.IsNullOrWhiteSpace(fieldName))
+            if (!string.IsNullOrWhiteSpace(fieldName))
             {
                 throw new ArgumentException(
                     $"The data type {fieldType} of the column '{fieldName}' returned by the SQL statement is not " +
@@ -308,7 +308,7 @@ internal static class MaterializerFactoryHelper
     /// <paramref name="fieldType" />; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="fieldType" /> is <see langword="null" />.</exception>
-    internal static Boolean IsDbDataReaderTypedGetMethodAvailable(Type fieldType)
+    internal static bool IsDbDataReaderTypedGetMethodAvailable(Type fieldType)
     {
         ArgumentNullException.ThrowIfNull(fieldType);
 
@@ -318,17 +318,17 @@ internal static class MaterializerFactoryHelper
 
     private static readonly Dictionary<Type, MethodInfo> dbDataReaderTypedGetMethods = new()
     {
-        { typeof(Boolean), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetBoolean))! },
-        { typeof(Byte), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetByte))! },
+        { typeof(bool), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetBoolean))! },
+        { typeof(byte), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetByte))! },
         { typeof(DateTime), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime))! },
-        { typeof(Decimal), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDecimal))! },
-        { typeof(Double), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDouble))! },
-        { typeof(Single), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFloat))! },
+        { typeof(decimal), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDecimal))! },
+        { typeof(double), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDouble))! },
+        { typeof(float), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFloat))! },
         { typeof(Guid), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetGuid))! },
-        { typeof(Int16), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt16))! },
-        { typeof(Int32), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt32))! },
-        { typeof(Int64), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt64))! },
-        { typeof(String), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! }
+        { typeof(short), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt16))! },
+        { typeof(int), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt32))! },
+        { typeof(long), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt64))! },
+        { typeof(string), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! }
     };
 
     /// <summary>
@@ -339,20 +339,20 @@ internal static class MaterializerFactoryHelper
     /// The key set must stay identical to the key set of <see cref="dbDataReaderTypedGetMethods" />, otherwise the
     /// two materializer paths disagree on which field types are supported.
     /// </remarks>
-    private static readonly Dictionary<Type, Func<DbDataReader, Int32, Object?>> dbDataReaderTypedGetValueFunctions =
+    private static readonly Dictionary<Type, Func<DbDataReader, int, object?>> dbDataReaderTypedGetValueFunctions =
         new()
         {
-            { typeof(Boolean), static (dataReader, fieldOrdinal) => dataReader.GetBoolean(fieldOrdinal) },
-            { typeof(Byte), static (dataReader, fieldOrdinal) => dataReader.GetByte(fieldOrdinal) },
+            { typeof(bool), static (dataReader, fieldOrdinal) => dataReader.GetBoolean(fieldOrdinal) },
+            { typeof(byte), static (dataReader, fieldOrdinal) => dataReader.GetByte(fieldOrdinal) },
             { typeof(DateTime), static (dataReader, fieldOrdinal) => dataReader.GetDateTime(fieldOrdinal) },
-            { typeof(Decimal), static (dataReader, fieldOrdinal) => dataReader.GetDecimal(fieldOrdinal) },
-            { typeof(Double), static (dataReader, fieldOrdinal) => dataReader.GetDouble(fieldOrdinal) },
-            { typeof(Single), static (dataReader, fieldOrdinal) => dataReader.GetFloat(fieldOrdinal) },
+            { typeof(decimal), static (dataReader, fieldOrdinal) => dataReader.GetDecimal(fieldOrdinal) },
+            { typeof(double), static (dataReader, fieldOrdinal) => dataReader.GetDouble(fieldOrdinal) },
+            { typeof(float), static (dataReader, fieldOrdinal) => dataReader.GetFloat(fieldOrdinal) },
             { typeof(Guid), static (dataReader, fieldOrdinal) => dataReader.GetGuid(fieldOrdinal) },
-            { typeof(Int16), static (dataReader, fieldOrdinal) => dataReader.GetInt16(fieldOrdinal) },
-            { typeof(Int32), static (dataReader, fieldOrdinal) => dataReader.GetInt32(fieldOrdinal) },
-            { typeof(Int64), static (dataReader, fieldOrdinal) => dataReader.GetInt64(fieldOrdinal) },
-            { typeof(String), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) }
+            { typeof(short), static (dataReader, fieldOrdinal) => dataReader.GetInt16(fieldOrdinal) },
+            { typeof(int), static (dataReader, fieldOrdinal) => dataReader.GetInt32(fieldOrdinal) },
+            { typeof(long), static (dataReader, fieldOrdinal) => dataReader.GetInt64(fieldOrdinal) },
+            { typeof(string), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) }
         };
 
     /// <summary>
@@ -362,7 +362,7 @@ internal static class MaterializerFactoryHelper
     /// </summary>
     private static readonly HashSet<Type> dbDataReaderUntypedFieldTypes =
     [
-        typeof(Byte[]),
+        typeof(byte[]),
         typeof(DateOnly),
         typeof(DateTimeOffset),
         typeof(TimeOnly),

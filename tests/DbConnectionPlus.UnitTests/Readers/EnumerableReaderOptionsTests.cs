@@ -20,7 +20,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
         );
 
         reader.GetFieldType(reader.GetOrdinal("CharValue"))
-            .Should().Be(typeof(String));
+            .Should().Be(typeof(string));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
         );
 
         reader.GetFieldType(0)
-            .Should().Be(typeof(Int32));
+            .Should().Be(typeof(int));
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
         );
 
         reader.GetFieldType(0)
-            .Should().Be(typeof(String));
+            .Should().Be(typeof(string));
     }
 
     [Fact]
@@ -74,14 +74,14 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
                 .Should().BeTrue();
 
             reader.GetInt32(0)
-                .Should().Be((Int32)entity.Enum);
+                .Should().Be((int)entity.Enum);
         }
     }
 
     [Fact]
     public void GetString_CharPropertyReadAsString_ShouldConvertToString()
     {
-        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<char>() }];
 
         using var reader = CreateReader(
             typeof(Entity),
@@ -119,7 +119,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
     [Fact]
     public void GetValues_CharPropertyReadAsString_ShouldConvertToString()
     {
-        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<char>() }];
 
         using var reader = CreateReader(
             typeof(Entity),
@@ -129,7 +129,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
 
         reader.Read();
 
-        var values = new Object[reader.FieldCount];
+        var values = new object[reader.FieldCount];
 
         reader.GetValues(values);
 
@@ -155,13 +155,13 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
             reader.Read()
                 .Should().BeTrue();
 
-            var values = new Object[reader.FieldCount];
+            var values = new object[reader.FieldCount];
 
             reader.GetValues(values)
                 .Should().Be(reader.FieldCount);
 
             values[0]
-                .Should().Be((Int32)entity.Enum);
+                .Should().Be((int)entity.Enum);
         }
     }
 
@@ -183,7 +183,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
             reader.Read()
                 .Should().BeTrue();
 
-            var values = new Object[reader.FieldCount];
+            var values = new object[reader.FieldCount];
 
             reader.GetValues(values)
                 .Should().Be(reader.FieldCount);
@@ -199,14 +199,14 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
         var entity = new Entity
         {
             EnumValue = Generate.Single<TestEnum>(),
-            CharValue = Generate.Single<Char>()
+            CharValue = Generate.Single<char>()
         };
 
         using var reader = CreateReader(typeof(Entity), new[] { entity }, EnumerableReaderOptions.None);
 
         reader.Read();
 
-        var values = new Object[reader.FieldCount];
+        var values = new object[reader.FieldCount];
         reader.GetValues(values);
 
         values[reader.GetOrdinal("EnumValue")]

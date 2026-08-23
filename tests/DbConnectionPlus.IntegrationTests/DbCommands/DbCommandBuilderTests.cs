@@ -30,7 +30,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldCreateTemporaryTables(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldCreateTemporaryTables(bool useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -64,7 +64,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
         this.ExistsTemporaryTableInDb(temporaryTables[1].Name)
             .Should().BeTrue();
 
-        (await this.Connection.QueryAsync<Int64>($"SELECT {Q("Value")} FROM {QT(temporaryTables[0].Name)}")
+        (await this.Connection.QueryAsync<long>($"SELECT {Q("Value")} FROM {QT(temporaryTables[0].Name)}")
                 .ToListAsync(TestContext.Current.CancellationToken))
             .Should().BeEquivalentTo(entityIds);
 
@@ -76,7 +76,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldReturnDisposerForCommandWhichDisposesTemporaryTables(bool useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -115,7 +115,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldSetCommandTimeout(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldSetCommandTimeout(bool useAsyncApi)
     {
         var timeout = Generate.Single<TimeSpan>();
 
@@ -129,13 +129,13 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
         );
 
         command.CommandTimeout
-            .Should().Be((Int32)timeout.TotalSeconds);
+            .Should().Be((int)timeout.TotalSeconds);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldSetCommandType(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldSetCommandType(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
 
@@ -154,7 +154,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldSetConnection(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldSetConnection(bool useAsyncApi)
     {
         var (command, _) =
             await CallApi(useAsyncApi, "SELECT 1", this.DatabaseAdapter, this.Connection);
@@ -166,11 +166,11 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldSetParameters(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldSetParameters(bool useAsyncApi)
     {
         var entityId = Generate.Id();
         var dateTimeValue = DateTime.UtcNow;
-        var stringValue = Generate.Single<String>();
+        var stringValue = Generate.Single<string>();
 
         var (command, _) = await CallApi(
             useAsyncApi,
@@ -212,7 +212,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldSetTransaction(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldSetTransaction(bool useAsyncApi)
     {
         await using var transaction = await this.Connection.BeginTransactionAsync();
 
@@ -231,7 +231,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldUseCancellationToken(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldUseCancellationToken(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -256,7 +256,7 @@ public abstract class DbCommandBuilderTests<TTestDatabaseProvider> : Integration
     }
 
     private static Task<(DbCommand, DbCommandDisposer)> CallApi(
-        Boolean useAsyncApi,
+        bool useAsyncApi,
         InterpolatedSqlStatement statement,
         IDatabaseAdapter databaseAdapter,
         DbConnection connection,

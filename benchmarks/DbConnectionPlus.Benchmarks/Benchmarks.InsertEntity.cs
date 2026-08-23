@@ -39,7 +39,7 @@ public partial class Benchmarks
 
         command.CommandText = InsertEntitySql;
 
-        var parameters = new Dictionary<String, SqliteParameter>
+        var parameters = new Dictionary<string, SqliteParameter>
         {
             { "Id", new("Id", null) },
             { "BooleanValue", new("BooleanValue", null) },
@@ -89,7 +89,7 @@ public partial class Benchmarks
 
     // A fresh key per invocation, because Id is the primary key and the benchmarks insert the same entity over
     // and over into a table that starts out empty.
-    private Int64 insertEntity_nextId;
+    private long insertEntity_nextId;
 
-    private const String InsertEntity_Category = "InsertEntity";
+    private const string InsertEntity_Category = "InsertEntity";
 }

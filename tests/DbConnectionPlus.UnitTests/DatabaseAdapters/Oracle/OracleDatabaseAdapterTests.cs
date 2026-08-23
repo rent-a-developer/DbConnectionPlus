@@ -15,7 +15,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     {
         var parameter = Substitute.For<DbParameter>();
 
-        var value = Generate.Single<Byte[]>();
+        var value = Generate.Single<byte[]>();
 
         this.adapter.BindParameterValue(parameter, value);
 
@@ -73,7 +73,7 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
             .Should().Be(DbType.Int32);
 
         parameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -181,39 +181,39 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), "NUMBER(1)")]
-    [InlineData(typeof(Boolean), "NUMBER(1)")]
-    [InlineData(typeof(Byte), "NUMBER(3)")]
-    [InlineData(typeof(Byte?), "NUMBER(3)")]
-    [InlineData(typeof(Byte[]), "RAW(2000)")]
-    [InlineData(typeof(Char?), "CHAR(1)")]
-    [InlineData(typeof(Char), "CHAR(1)")]
+    [InlineData(typeof(bool?), "NUMBER(1)")]
+    [InlineData(typeof(bool), "NUMBER(1)")]
+    [InlineData(typeof(byte), "NUMBER(3)")]
+    [InlineData(typeof(byte?), "NUMBER(3)")]
+    [InlineData(typeof(byte[]), "RAW(2000)")]
+    [InlineData(typeof(char?), "CHAR(1)")]
+    [InlineData(typeof(char), "CHAR(1)")]
     [InlineData(typeof(DateOnly?), "DATE")]
     [InlineData(typeof(DateOnly), "DATE")]
     [InlineData(typeof(DateTimeOffset?), "TIMESTAMP WITH TIME ZONE")]
     [InlineData(typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE")]
     [InlineData(typeof(DateTime?), "TIMESTAMP")]
     [InlineData(typeof(DateTime), "TIMESTAMP")]
-    [InlineData(typeof(Decimal?), "NUMBER(28,10)")]
-    [InlineData(typeof(Decimal), "NUMBER(28,10)")]
-    [InlineData(typeof(Double?), "BINARY_DOUBLE")]
-    [InlineData(typeof(Double), "BINARY_DOUBLE")]
+    [InlineData(typeof(decimal?), "NUMBER(28,10)")]
+    [InlineData(typeof(decimal), "NUMBER(28,10)")]
+    [InlineData(typeof(double?), "BINARY_DOUBLE")]
+    [InlineData(typeof(double), "BINARY_DOUBLE")]
     [InlineData(typeof(Guid?), "RAW(16)")]
     [InlineData(typeof(Guid), "RAW(16)")]
-    [InlineData(typeof(Int16?), "NUMBER(5)")]
-    [InlineData(typeof(Int16), "NUMBER(5)")]
-    [InlineData(typeof(Int32?), "NUMBER(10)")]
-    [InlineData(typeof(Int32), "NUMBER(10)")]
-    [InlineData(typeof(Int64?), "NUMBER(19)")]
-    [InlineData(typeof(Int64), "NUMBER(19)")]
-    [InlineData(typeof(Single?), "BINARY_FLOAT")]
-    [InlineData(typeof(Single), "BINARY_FLOAT")]
-    [InlineData(typeof(String), "NVARCHAR2(2000)")]
+    [InlineData(typeof(short?), "NUMBER(5)")]
+    [InlineData(typeof(short), "NUMBER(5)")]
+    [InlineData(typeof(int?), "NUMBER(10)")]
+    [InlineData(typeof(int), "NUMBER(10)")]
+    [InlineData(typeof(long?), "NUMBER(19)")]
+    [InlineData(typeof(long), "NUMBER(19)")]
+    [InlineData(typeof(float?), "BINARY_FLOAT")]
+    [InlineData(typeof(float), "BINARY_FLOAT")]
+    [InlineData(typeof(string), "NVARCHAR2(2000)")]
     [InlineData(typeof(TimeOnly?), "INTERVAL DAY TO SECOND")]
     [InlineData(typeof(TimeOnly), "INTERVAL DAY TO SECOND")]
     [InlineData(typeof(TimeSpan?), "INTERVAL DAY TO SECOND")]
     [InlineData(typeof(TimeSpan), "INTERVAL DAY TO SECOND")]
-    public void GetDataType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, String expectedResult) =>
+    public void GetDataType_SupportedTypeType_ShouldReturnSqlServerDataType(Type type, string expectedResult) =>
         this.adapter.GetDataType(type, EnumSerializationMode.Strings)
             .Should().Be(expectedResult);
 
@@ -252,34 +252,34 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), DbType.Boolean)]
-    [InlineData(typeof(Boolean), DbType.Boolean)]
-    [InlineData(typeof(Byte), DbType.Byte)]
-    [InlineData(typeof(Byte?), DbType.Byte)]
-    [InlineData(typeof(Byte[]), DbType.Binary)]
-    [InlineData(typeof(Char?), DbType.StringFixedLength)]
-    [InlineData(typeof(Char), DbType.StringFixedLength)]
+    [InlineData(typeof(bool?), DbType.Boolean)]
+    [InlineData(typeof(bool), DbType.Boolean)]
+    [InlineData(typeof(byte), DbType.Byte)]
+    [InlineData(typeof(byte?), DbType.Byte)]
+    [InlineData(typeof(byte[]), DbType.Binary)]
+    [InlineData(typeof(char?), DbType.StringFixedLength)]
+    [InlineData(typeof(char), DbType.StringFixedLength)]
     [InlineData(typeof(DateOnly?), DbType.Date)]
     [InlineData(typeof(DateOnly), DbType.Date)]
     [InlineData(typeof(DateTimeOffset?), DbType.DateTimeOffset)]
     [InlineData(typeof(DateTimeOffset), DbType.DateTimeOffset)]
     [InlineData(typeof(DateTime?), DbType.DateTime)]
     [InlineData(typeof(DateTime), DbType.DateTime)]
-    [InlineData(typeof(Decimal?), DbType.Decimal)]
-    [InlineData(typeof(Decimal), DbType.Decimal)]
-    [InlineData(typeof(Double?), DbType.Double)]
-    [InlineData(typeof(Double), DbType.Double)]
+    [InlineData(typeof(decimal?), DbType.Decimal)]
+    [InlineData(typeof(decimal), DbType.Decimal)]
+    [InlineData(typeof(double?), DbType.Double)]
+    [InlineData(typeof(double), DbType.Double)]
     [InlineData(typeof(Guid?), DbType.Guid)]
     [InlineData(typeof(Guid), DbType.Guid)]
-    [InlineData(typeof(Int16?), DbType.Int16)]
-    [InlineData(typeof(Int16), DbType.Int16)]
-    [InlineData(typeof(Int32?), DbType.Int32)]
-    [InlineData(typeof(Int32), DbType.Int32)]
-    [InlineData(typeof(Int64?), DbType.Int64)]
-    [InlineData(typeof(Int64), DbType.Int64)]
-    [InlineData(typeof(Single?), DbType.Single)]
-    [InlineData(typeof(Single), DbType.Single)]
-    [InlineData(typeof(String), DbType.String)]
+    [InlineData(typeof(short?), DbType.Int16)]
+    [InlineData(typeof(short), DbType.Int16)]
+    [InlineData(typeof(int?), DbType.Int32)]
+    [InlineData(typeof(int), DbType.Int32)]
+    [InlineData(typeof(long?), DbType.Int64)]
+    [InlineData(typeof(long), DbType.Int64)]
+    [InlineData(typeof(float?), DbType.Single)]
+    [InlineData(typeof(float), DbType.Single)]
+    [InlineData(typeof(string), DbType.String)]
     [InlineData(typeof(TimeOnly?), DbType.Time)]
     [InlineData(typeof(TimeOnly), DbType.Time)]
     [InlineData(typeof(TimeSpan?), DbType.Time)]

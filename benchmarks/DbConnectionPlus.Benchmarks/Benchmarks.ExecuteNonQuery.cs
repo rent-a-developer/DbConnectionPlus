@@ -57,5 +57,5 @@ public partial class Benchmarks
     public void ExecuteNonQuery_DbConnectionPlus() =>
         this.connection.ExecuteNonQuery($"DELETE FROM Entity WHERE Id = {Parameter(-1)}");
 
-    private const String ExecuteNonQuery_Category = "ExecuteNonQuery";
+    private const string ExecuteNonQuery_Category = "ExecuteNonQuery";
 }

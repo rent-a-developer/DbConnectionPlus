@@ -96,7 +96,7 @@ public static partial class DbConnectionExtensions
     ///     <item>
     ///         <term>
     ///             A built-in .NET type or a nullable built-in .NET type like <see cref="DateTime" /> or
-    /// <see cref="String" />.
+    /// <see cref="string" />.
     ///         </term>
     ///         <description>
     ///             In this case only the first column of the result set will be read and converted to the type
@@ -355,7 +355,7 @@ public static partial class DbConnectionExtensions
     ///     <item>
     ///         <term>
     ///             A built-in .NET type or a nullable built-in .NET type like <see cref="DateTime" /> or
-    /// <see cref="String" />.
+    /// <see cref="string" />.
     ///         </term>
     ///         <description>
     ///             In this case only the first column of the result set will be read and converted to the type

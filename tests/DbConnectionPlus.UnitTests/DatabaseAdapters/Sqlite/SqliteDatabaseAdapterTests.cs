@@ -9,7 +9,7 @@ public class SqliteDatabaseAdapterTests : UnitTestsBase
     {
         var parameter = Substitute.For<DbParameter>();
 
-        var value = Generate.Single<Byte[]>();
+        var value = Generate.Single<byte[]>();
 
         this.adapter.BindParameterValue(parameter, value);
 
@@ -51,7 +51,7 @@ public class SqliteDatabaseAdapterTests : UnitTestsBase
             .Should().Be(DbType.Int32);
 
         parameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -124,39 +124,39 @@ public class SqliteDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), "INTEGER")]
-    [InlineData(typeof(Boolean), "INTEGER")]
-    [InlineData(typeof(Byte?), "INTEGER")]
-    [InlineData(typeof(Byte), "INTEGER")]
-    [InlineData(typeof(Byte[]), "BLOB")]
-    [InlineData(typeof(Char?), "TEXT")]
-    [InlineData(typeof(Char), "TEXT")]
+    [InlineData(typeof(bool?), "INTEGER")]
+    [InlineData(typeof(bool), "INTEGER")]
+    [InlineData(typeof(byte?), "INTEGER")]
+    [InlineData(typeof(byte), "INTEGER")]
+    [InlineData(typeof(byte[]), "BLOB")]
+    [InlineData(typeof(char?), "TEXT")]
+    [InlineData(typeof(char), "TEXT")]
     [InlineData(typeof(DateOnly?), "TEXT")]
     [InlineData(typeof(DateOnly), "TEXT")]
     [InlineData(typeof(DateTime?), "TEXT")]
     [InlineData(typeof(DateTime), "TEXT")]
     [InlineData(typeof(DateTimeOffset?), "TEXT")]
     [InlineData(typeof(DateTimeOffset), "TEXT")]
-    [InlineData(typeof(Decimal?), "TEXT")]
-    [InlineData(typeof(Decimal), "TEXT")]
-    [InlineData(typeof(Double?), "REAL")]
-    [InlineData(typeof(Double), "REAL")]
+    [InlineData(typeof(decimal?), "TEXT")]
+    [InlineData(typeof(decimal), "TEXT")]
+    [InlineData(typeof(double?), "REAL")]
+    [InlineData(typeof(double), "REAL")]
     [InlineData(typeof(Guid?), "TEXT")]
     [InlineData(typeof(Guid), "TEXT")]
-    [InlineData(typeof(Int16?), "INTEGER")]
-    [InlineData(typeof(Int16), "INTEGER")]
-    [InlineData(typeof(Int32?), "INTEGER")]
-    [InlineData(typeof(Int32), "INTEGER")]
-    [InlineData(typeof(Int64?), "INTEGER")]
-    [InlineData(typeof(Int64), "INTEGER")]
-    [InlineData(typeof(Single?), "REAL")]
-    [InlineData(typeof(Single), "REAL")]
-    [InlineData(typeof(String), "TEXT")]
+    [InlineData(typeof(short?), "INTEGER")]
+    [InlineData(typeof(short), "INTEGER")]
+    [InlineData(typeof(int?), "INTEGER")]
+    [InlineData(typeof(int), "INTEGER")]
+    [InlineData(typeof(long?), "INTEGER")]
+    [InlineData(typeof(long), "INTEGER")]
+    [InlineData(typeof(float?), "REAL")]
+    [InlineData(typeof(float), "REAL")]
+    [InlineData(typeof(string), "TEXT")]
     [InlineData(typeof(TimeOnly?), "TEXT")]
     [InlineData(typeof(TimeOnly), "TEXT")]
     [InlineData(typeof(TimeSpan?), "TEXT")]
     [InlineData(typeof(TimeSpan), "TEXT")]
-    public void GetDataType_SupportedTypeType_ShouldReturnSqliteDataType(Type type, String expectedResult) =>
+    public void GetDataType_SupportedTypeType_ShouldReturnSqliteDataType(Type type, string expectedResult) =>
         this.adapter.GetDataType(type, EnumSerializationMode.Strings)
             .Should().Be(expectedResult);
 
@@ -188,7 +188,7 @@ public class SqliteDatabaseAdapterTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDataType(typeof(Int32), EnumSerializationMode.Integers)
+            this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers)
         );
     }
 

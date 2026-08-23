@@ -20,13 +20,13 @@ public static class EntityAssertions
         // We need to use the ValueConverter here because each database provider handles the types a bit
         // differently.
 
-        ValueConverter.ConvertValueToType<Boolean>(dataRow["BooleanValue"])
+        ValueConverter.ConvertValueToType<bool>(dataRow["BooleanValue"])
             .Should().Be(entity.BooleanValue);
 
-        ValueConverter.ConvertValueToType<Byte>(dataRow["ByteValue"])
+        ValueConverter.ConvertValueToType<byte>(dataRow["ByteValue"])
             .Should().Be(entity.ByteValue);
 
-        ValueConverter.ConvertValueToType<Char>(dataRow["CharValue"])
+        ValueConverter.ConvertValueToType<char>(dataRow["CharValue"])
             .Should().Be(entity.CharValue);
 
         ValueConverter.ConvertValueToType<DateOnly>(dataRow["DateOnlyValue"])
@@ -35,10 +35,10 @@ public static class EntityAssertions
         ValueConverter.ConvertValueToType<DateTime>(dataRow["DateTimeValue"])
             .Should().Be(entity.DateTimeValue);
 
-        ValueConverter.ConvertValueToType<Decimal>(dataRow["DecimalValue"])
+        ValueConverter.ConvertValueToType<decimal>(dataRow["DecimalValue"])
             .Should().Be(entity.DecimalValue);
 
-        ValueConverter.ConvertValueToType<Double>(dataRow["DoubleValue"])
+        ValueConverter.ConvertValueToType<double>(dataRow["DoubleValue"])
             .Should().Be(entity.DoubleValue);
 
         ValueConverter.ConvertValueToType<TestEnum>(dataRow["EnumValue"])
@@ -47,22 +47,22 @@ public static class EntityAssertions
         ValueConverter.ConvertValueToType<Guid>(dataRow["GuidValue"])
             .Should().Be(entity.GuidValue);
 
-        ValueConverter.ConvertValueToType<Int64>(dataRow["Id"])
+        ValueConverter.ConvertValueToType<long>(dataRow["Id"])
             .Should().Be(entity.Id);
 
-        ValueConverter.ConvertValueToType<Int16>(dataRow["Int16Value"])
+        ValueConverter.ConvertValueToType<short>(dataRow["Int16Value"])
             .Should().Be(entity.Int16Value);
 
-        ValueConverter.ConvertValueToType<Int32>(dataRow["Int32Value"])
+        ValueConverter.ConvertValueToType<int>(dataRow["Int32Value"])
             .Should().Be(entity.Int32Value);
 
-        ValueConverter.ConvertValueToType<Int64>(dataRow["Int64Value"])
+        ValueConverter.ConvertValueToType<long>(dataRow["Int64Value"])
             .Should().Be(entity.Int64Value);
 
-        ValueConverter.ConvertValueToType<Single>(dataRow["SingleValue"])
+        ValueConverter.ConvertValueToType<float>(dataRow["SingleValue"])
             .Should().Be(entity.SingleValue);
 
-        ValueConverter.ConvertValueToType<String>(dataRow["StringValue"])
+        ValueConverter.ConvertValueToType<string>(dataRow["StringValue"])
             .Should().Be(entity.StringValue);
 
         ValueConverter.ConvertValueToType<TimeOnly>(dataRow["TimeOnlyValue"])

@@ -6,18 +6,18 @@ public class FakeConnectionA : DbConnection
 {
     /// <inheritdoc />
     [AllowNull]
-    public override String ConnectionString { get; set; }
+    public override string ConnectionString { get; set; }
 
     /// <inheritdoc />
-    public override String Database =>
+    public override string Database =>
         null!;
 
     /// <inheritdoc />
-    public override String DataSource =>
+    public override string DataSource =>
         null!;
 
     /// <inheritdoc />
-    public override String ServerVersion =>
+    public override string ServerVersion =>
         null!;
 
     /// <inheritdoc />
@@ -25,7 +25,7 @@ public class FakeConnectionA : DbConnection
         ConnectionState.Closed;
 
     /// <inheritdoc />
-    public override void ChangeDatabase(String databaseName) =>
+    public override void ChangeDatabase(string databaseName) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />

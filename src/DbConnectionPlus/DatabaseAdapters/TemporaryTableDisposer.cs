@@ -69,5 +69,5 @@ public sealed class TemporaryTableDisposer : IDisposable, IAsyncDisposable
     private readonly Func<ValueTask> dropTableAsyncFunction;
     private readonly Action dropTableFunction;
 
-    private Boolean isDisposed;
+    private bool isDisposed;
 }

@@ -36,12 +36,12 @@ public class ILLinkDescriptorsTests : UnitTestsBase
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
-    public void ILLinkDescriptor_ShouldPreserveAllMembersOfEveryValueTupleArity(Int32 arity)
+    public void ILLinkDescriptor_ShouldPreserveAllMembersOfEveryValueTupleArity(int arity)
     {
         var preservedTypes = ReadDescriptor()
             .Descendants("type")
-            .Where(a => (String?)a.Attribute("preserve") == "all")
-            .Select(a => (String?)a.Attribute("fullname"))
+            .Where(a => (string?)a.Attribute("preserve") == "all")
+            .Select(a => (string?)a.Attribute("fullname"))
             .ToList();
 
         preservedTypes
@@ -56,5 +56,5 @@ public class ILLinkDescriptorsTests : UnitTestsBase
         return XDocument.Load(stream);
     }
 
-    private const String ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
+    private const string ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
 }

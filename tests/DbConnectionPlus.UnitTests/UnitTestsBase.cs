@@ -52,7 +52,7 @@ public class UnitTestsBase
         this.MockTemporaryTableBuilder.BuildTemporaryTable(
             Arg.Any<DbConnection>(),
             Arg.Any<DbTransaction?>(),
-            Arg.Any<String>(),
+            Arg.Any<string>(),
             Arg.Any<IEnumerable>(),
             Arg.Any<Type>(),
             Arg.Any<CancellationToken>()
@@ -61,7 +61,7 @@ public class UnitTestsBase
         this.MockTemporaryTableBuilder.BuildTemporaryTableAsync(
             Arg.Any<DbConnection>(),
             Arg.Any<DbTransaction?>(),
-            Arg.Any<String>(),
+            Arg.Any<string>(),
             Arg.Any<IEnumerable>(),
             Arg.Any<Type>(),
             Arg.Any<CancellationToken>()
@@ -71,21 +71,21 @@ public class UnitTestsBase
 
         this.MockDatabaseAdapter.TemporaryTableBuilder.Returns(this.MockTemporaryTableBuilder);
 
-        this.MockDatabaseAdapter.QuoteIdentifier(Arg.Any<String>())
-            .Returns(info => $"[{info.ArgAt<String>(0)}]");
+        this.MockDatabaseAdapter.QuoteIdentifier(Arg.Any<string>())
+            .Returns(info => $"[{info.ArgAt<string>(0)}]");
 
-        this.MockDatabaseAdapter.QuoteTemporaryTableName(Arg.Any<String>(), this.MockDbConnection)
-            .Returns(info => $"[#{info.ArgAt<String>(0)}]");
+        this.MockDatabaseAdapter.QuoteTemporaryTableName(Arg.Any<string>(), this.MockDbConnection)
+            .Returns(info => $"[#{info.ArgAt<string>(0)}]");
 
-        this.MockDatabaseAdapter.FormatParameterName(Arg.Any<String>())
-            .Returns(info => $"@{info.ArgAt<String>(0)}");
+        this.MockDatabaseAdapter.FormatParameterName(Arg.Any<string>())
+            .Returns(info => $"@{info.ArgAt<string>(0)}");
 
         this.MockDatabaseAdapter
-            .When(a => a.BindParameterValue(Arg.Any<DbParameter>(), Arg.Any<Object?>()))
+            .When(a => a.BindParameterValue(Arg.Any<DbParameter>(), Arg.Any<object?>()))
             .Do(info =>
                 {
                     var parameter = info.ArgAt<DbParameter>(0);
-                    var value = info.ArgAt<Object?>(1);
+                    var value = info.ArgAt<object?>(1);
 
                     if (value is Enum enumValue)
                     {

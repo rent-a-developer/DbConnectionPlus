@@ -13,10 +13,10 @@ internal interface IEntityTypeBuilder : IFreezable
     /// <summary>
     /// The property builders associated with the entity type.
     /// </summary>
-    internal IReadOnlyDictionary<String, IEntityPropertyBuilder> PropertyBuilders { get; }
+    internal IReadOnlyDictionary<string, IEntityPropertyBuilder> PropertyBuilders { get; }
 
     /// <summary>
     /// The name of the table the entity type is mapped to.
     /// </summary>
-    internal String? TableName { get; }
+    internal string? TableName { get; }
 }

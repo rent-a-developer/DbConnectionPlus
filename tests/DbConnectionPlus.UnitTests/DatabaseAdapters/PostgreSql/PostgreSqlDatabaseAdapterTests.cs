@@ -10,7 +10,7 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     {
         var parameter = Substitute.For<DbParameter>();
 
-        var value = Generate.Single<Byte[]>();
+        var value = Generate.Single<byte[]>();
 
         this.adapter.BindParameterValue(parameter, value);
 
@@ -52,7 +52,7 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
             .Should().Be(DbType.Int32);
 
         parameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -125,37 +125,37 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), "boolean")]
-    [InlineData(typeof(Boolean), "boolean")]
-    [InlineData(typeof(Byte?), "smallint")]
-    [InlineData(typeof(Byte), "smallint")]
-    [InlineData(typeof(Byte[]), "bytea")]
-    [InlineData(typeof(Char?), "char(1)")]
-    [InlineData(typeof(Char), "char(1)")]
+    [InlineData(typeof(bool?), "boolean")]
+    [InlineData(typeof(bool), "boolean")]
+    [InlineData(typeof(byte?), "smallint")]
+    [InlineData(typeof(byte), "smallint")]
+    [InlineData(typeof(byte[]), "bytea")]
+    [InlineData(typeof(char?), "char(1)")]
+    [InlineData(typeof(char), "char(1)")]
     [InlineData(typeof(DateOnly?), "date")]
     [InlineData(typeof(DateOnly), "date")]
     [InlineData(typeof(DateTime?), "timestamp without time zone")]
     [InlineData(typeof(DateTime), "timestamp without time zone")]
-    [InlineData(typeof(Decimal?), "decimal")]
-    [InlineData(typeof(Decimal), "decimal")]
-    [InlineData(typeof(Double?), "double precision")]
-    [InlineData(typeof(Double), "double precision")]
+    [InlineData(typeof(decimal?), "decimal")]
+    [InlineData(typeof(decimal), "decimal")]
+    [InlineData(typeof(double?), "double precision")]
+    [InlineData(typeof(double), "double precision")]
     [InlineData(typeof(Guid?), "uuid")]
     [InlineData(typeof(Guid), "uuid")]
-    [InlineData(typeof(Int16?), "smallint")]
-    [InlineData(typeof(Int16), "smallint")]
-    [InlineData(typeof(Int32?), "integer")]
-    [InlineData(typeof(Int32), "integer")]
-    [InlineData(typeof(Int64?), "bigint")]
-    [InlineData(typeof(Int64), "bigint")]
-    [InlineData(typeof(Single?), "real")]
-    [InlineData(typeof(Single), "real")]
-    [InlineData(typeof(String), "text")]
+    [InlineData(typeof(short?), "smallint")]
+    [InlineData(typeof(short), "smallint")]
+    [InlineData(typeof(int?), "integer")]
+    [InlineData(typeof(int), "integer")]
+    [InlineData(typeof(long?), "bigint")]
+    [InlineData(typeof(long), "bigint")]
+    [InlineData(typeof(float?), "real")]
+    [InlineData(typeof(float), "real")]
+    [InlineData(typeof(string), "text")]
     [InlineData(typeof(TimeOnly?), "time")]
     [InlineData(typeof(TimeOnly), "time")]
     [InlineData(typeof(TimeSpan?), "interval")]
     [InlineData(typeof(TimeSpan), "interval")]
-    public void GetDataType_SupportedTypeType_ShouldReturnPostgreSqlDataType(Type type, String expectedResult) =>
+    public void GetDataType_SupportedTypeType_ShouldReturnPostgreSqlDataType(Type type, string expectedResult) =>
         this.adapter.GetDataType(type, EnumSerializationMode.Strings)
             .Should().Be(expectedResult);
 
@@ -166,32 +166,32 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
             .WithMessage($"Could not map the type {typeof(Entity)} to a PostgreSQL data type.*");
 
     [Theory]
-    [InlineData(typeof(Boolean?), NpgsqlDbType.Boolean)]
-    [InlineData(typeof(Boolean), NpgsqlDbType.Boolean)]
-    [InlineData(typeof(Byte?), NpgsqlDbType.Smallint)]
-    [InlineData(typeof(Byte), NpgsqlDbType.Smallint)]
-    [InlineData(typeof(Byte[]), NpgsqlDbType.Bytea)]
-    [InlineData(typeof(Char?), NpgsqlDbType.Char)]
-    [InlineData(typeof(Char), NpgsqlDbType.Char)]
+    [InlineData(typeof(bool?), NpgsqlDbType.Boolean)]
+    [InlineData(typeof(bool), NpgsqlDbType.Boolean)]
+    [InlineData(typeof(byte?), NpgsqlDbType.Smallint)]
+    [InlineData(typeof(byte), NpgsqlDbType.Smallint)]
+    [InlineData(typeof(byte[]), NpgsqlDbType.Bytea)]
+    [InlineData(typeof(char?), NpgsqlDbType.Char)]
+    [InlineData(typeof(char), NpgsqlDbType.Char)]
     [InlineData(typeof(DateOnly?), NpgsqlDbType.Date)]
     [InlineData(typeof(DateOnly), NpgsqlDbType.Date)]
     [InlineData(typeof(DateTime?), NpgsqlDbType.Timestamp)]
     [InlineData(typeof(DateTime), NpgsqlDbType.Timestamp)]
-    [InlineData(typeof(Decimal?), NpgsqlDbType.Numeric)]
-    [InlineData(typeof(Decimal), NpgsqlDbType.Numeric)]
-    [InlineData(typeof(Double?), NpgsqlDbType.Double)]
-    [InlineData(typeof(Double), NpgsqlDbType.Double)]
+    [InlineData(typeof(decimal?), NpgsqlDbType.Numeric)]
+    [InlineData(typeof(decimal), NpgsqlDbType.Numeric)]
+    [InlineData(typeof(double?), NpgsqlDbType.Double)]
+    [InlineData(typeof(double), NpgsqlDbType.Double)]
     [InlineData(typeof(Guid?), NpgsqlDbType.Uuid)]
     [InlineData(typeof(Guid), NpgsqlDbType.Uuid)]
-    [InlineData(typeof(Int16?), NpgsqlDbType.Smallint)]
-    [InlineData(typeof(Int16), NpgsqlDbType.Smallint)]
-    [InlineData(typeof(Int32?), NpgsqlDbType.Integer)]
-    [InlineData(typeof(Int32), NpgsqlDbType.Integer)]
-    [InlineData(typeof(Int64?), NpgsqlDbType.Bigint)]
-    [InlineData(typeof(Int64), NpgsqlDbType.Bigint)]
-    [InlineData(typeof(Single?), NpgsqlDbType.Real)]
-    [InlineData(typeof(Single), NpgsqlDbType.Real)]
-    [InlineData(typeof(String), NpgsqlDbType.Text)]
+    [InlineData(typeof(short?), NpgsqlDbType.Smallint)]
+    [InlineData(typeof(short), NpgsqlDbType.Smallint)]
+    [InlineData(typeof(int?), NpgsqlDbType.Integer)]
+    [InlineData(typeof(int), NpgsqlDbType.Integer)]
+    [InlineData(typeof(long?), NpgsqlDbType.Bigint)]
+    [InlineData(typeof(long), NpgsqlDbType.Bigint)]
+    [InlineData(typeof(float?), NpgsqlDbType.Real)]
+    [InlineData(typeof(float), NpgsqlDbType.Real)]
+    [InlineData(typeof(string), NpgsqlDbType.Text)]
     [InlineData(typeof(TimeOnly?), NpgsqlDbType.Time)]
     [InlineData(typeof(TimeOnly), NpgsqlDbType.Time)]
     [InlineData(typeof(TimeSpan?), NpgsqlDbType.Interval)]
@@ -228,11 +228,11 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDataType(typeof(Int32), EnumSerializationMode.Integers)
+            this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers)
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDbType(typeof(Int32), EnumSerializationMode.Integers)
+            this.adapter.GetDbType(typeof(int), EnumSerializationMode.Integers)
         );
     }
 

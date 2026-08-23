@@ -28,7 +28,7 @@ public partial class Benchmarks
         }
     }
 
-    private void SetupDatabase(Int32 numberOfEntities)
+    private void SetupDatabase(int numberOfEntities)
     {
         this.connection?.Dispose();
 
@@ -47,7 +47,7 @@ public partial class Benchmarks
         transaction.Commit();
     }
 
-    private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<String, SqliteParameter> parameters)
+    private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<string, SqliteParameter> parameters)
     {
         parameters["Id"].Value = entity.Id;
         parameters["BooleanValue"].Value = entity.BooleanValue ? 1 : 0;
@@ -67,7 +67,7 @@ public partial class Benchmarks
 
     private static BenchmarkEntity ReadEntity(IDataReader dataReader)
     {
-        var charBuffer = new Char[1];
+        var charBuffer = new char[1];
 
         var ordinal = 0;
 
@@ -75,15 +75,15 @@ public partial class Benchmarks
         {
             Id = dataReader.GetInt64(ordinal++),
             BooleanValue = dataReader.GetInt64(ordinal++) == 1,
-            BytesValue = (Byte[])dataReader.GetValue(ordinal++),
+            BytesValue = (byte[])dataReader.GetValue(ordinal++),
             ByteValue = dataReader.GetByte(ordinal++),
             CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new InvalidOperationException(),
             DateTimeValue = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
-            DecimalValue = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
+            DecimalValue = decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DoubleValue = dataReader.GetDouble(ordinal++),
             EnumValue = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++)),
-            Int16Value = (Int16)dataReader.GetInt64(ordinal++),
-            Int32Value = (Int32)dataReader.GetInt64(ordinal++),
+            Int16Value = (short)dataReader.GetInt64(ordinal++),
+            Int32Value = (int)dataReader.GetInt64(ordinal++),
             Int64Value = dataReader.GetInt64(ordinal++),
             SingleValue = dataReader.GetFloat(ordinal++),
             StringValue = dataReader.GetString(ordinal)
@@ -99,7 +99,7 @@ public partial class Benchmarks
      * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
      * the code under test.
      */
-    private const String CreateEntityTableSql =
+    private const string CreateEntityTableSql =
         """
         CREATE TABLE Entity
         (

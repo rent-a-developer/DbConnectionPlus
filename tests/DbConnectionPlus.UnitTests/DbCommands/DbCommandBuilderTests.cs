@@ -12,7 +12,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_CancellationToken_ShouldUseCancellationToken(Boolean useAsyncApi)
+    public async Task BuildDbCommand_CancellationToken_ShouldUseCancellationToken(bool useAsyncApi)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = cancellationTokenSource.Token;
@@ -33,7 +33,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_Code_Parameters_ShouldStoreCodeAndParameters(Boolean useAsyncApi)
+    public async Task BuildDbCommand_Code_Parameters_ShouldStoreCodeAndParameters(bool useAsyncApi)
     {
         var statement = new InterpolatedSqlStatement(
             "Code",
@@ -77,7 +77,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_CommandTimeout_ShouldUseCommandTimeout(Boolean useAsyncApi)
+    public async Task BuildDbCommand_CommandTimeout_ShouldUseCommandTimeout(bool useAsyncApi)
     {
         var timeout = Generate.Single<TimeSpan>();
 
@@ -90,13 +90,13 @@ public class DbCommandBuilderTests : UnitTestsBase
         );
 
         command.CommandTimeout
-            .Should().Be((Int32)timeout.TotalSeconds);
+            .Should().Be((int)timeout.TotalSeconds);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
+    public async Task BuildDbCommand_CommandType_ShouldUseCommandType(bool useAsyncApi)
     {
         var (command, _) = await CallApi(
             useAsyncApi,
@@ -113,7 +113,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_InterpolatedParameter_DuplicateName_ShouldAppendSuffix(Boolean useAsyncApi)
+    public async Task BuildDbCommand_InterpolatedParameter_DuplicateName_ShouldAppendSuffix(bool useAsyncApi)
     {
         var value = Generate.ScalarValue();
 
@@ -136,7 +136,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
@@ -157,7 +157,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be("EnumValue");
 
         command.Parameters[0].Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Theory]
@@ -165,7 +165,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedParameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
@@ -192,12 +192,12 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_InterpolatedParameter_ShouldHandleNullAndNonNullValues(Boolean useAsyncApi)
+    public async Task BuildDbCommand_InterpolatedParameter_ShouldHandleNullAndNonNullValues(bool useAsyncApi)
     {
-        Int64? id1 = Generate.Id();
-        Int64? id2 = null;
-        Object value1 = Generate.Single<String>();
-        Object? value2 = null;
+        long? id1 = Generate.Id();
+        long? id2 = null;
+        object value1 = Generate.Single<string>();
+        object? value2 = null;
 
         var (command, _) = await CallApi(
             useAsyncApi,
@@ -241,14 +241,14 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(false)]
     [InlineData(true)]
     public async Task BuildDbCommand_InterpolatedParameter_ShouldInferNameFromValueExpressionIfPossible(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         var productId = Generate.Id();
-        static Int64 GetProductId() => Generate.Id();
+        static long GetProductId() => Generate.Id();
 #pragma warning disable RCS1163 // Unused parameter
 #pragma warning disable IDE0060 // Remove unused parameter
-        static Int64 GetProductIdByCategory(String category) => Generate.Id();
+        static long GetProductIdByCategory(string category) => Generate.Id();
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
@@ -304,7 +304,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_InterpolatedParameter_ShouldStoreParameter(Boolean useAsyncApi)
+    public async Task BuildDbCommand_InterpolatedParameter_ShouldStoreParameter(bool useAsyncApi)
     {
         var value = Generate.ScalarValue();
 
@@ -331,9 +331,9 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_InterpolatedParameter_ShouldSupportComplexExpressions(Boolean useAsyncApi)
+    public async Task BuildDbCommand_InterpolatedParameter_ShouldSupportComplexExpressions(bool useAsyncApi)
     {
-        const Double baseDiscount = 0.1;
+        const double baseDiscount = 0.1;
         var entityIds = Generate.Ids(20);
 
         var (command, _) = await CallApi(
@@ -375,7 +375,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedTemporaryTable_DatabaseAdapterDoesNotSupportTemporaryTables_ShouldThrow(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         var entityIds = Generate.Ids();
@@ -413,15 +413,15 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_InterpolatedTemporaryTable_ShouldInferTableNameFromValuesExpressionIfPossible(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         var entityIds = Generate.Ids();
-        static List<Int64> Get() => Generate.Ids();
-        static List<Int64> GetEntityIds() => Generate.Ids();
+        static List<long> Get() => Generate.Ids();
+        static List<long> GetEntityIds() => Generate.Ids();
 #pragma warning disable RCS1163 // Unused parameter
 #pragma warning disable IDE0060 // Remove unused parameter
-        static List<Int64> GetEntityIdsByCategory(String category) => Generate.Ids();
+        static List<long> GetEntityIdsByCategory(string category) => Generate.Ids();
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter
 
@@ -484,7 +484,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_InterpolatedTemporaryTable_ShouldStoreTemporaryTable(Boolean useAsyncApi)
+    public async Task BuildDbCommand_InterpolatedTemporaryTable_ShouldStoreTemporaryTable(bool useAsyncApi)
     {
         var entities = Generate.Multiple<Entity>();
         var entityIds = Generate.Ids();
@@ -528,7 +528,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().BeEquivalentTo(entityIds);
 
         table2.ValuesType
-            .Should().Be(typeof(Int64));
+            .Should().Be(typeof(long));
 
         command.CommandText
             .Should().Be(
@@ -543,7 +543,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_MultipleInterpolatedParameters_ShouldStoreParameters(Boolean useAsyncApi)
+    public async Task BuildDbCommand_MultipleInterpolatedParameters_ShouldStoreParameters(bool useAsyncApi)
     {
         var value1 = Generate.ScalarValue();
         var value2 = Generate.ScalarValue();
@@ -587,7 +587,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_Parameter_EnumValue_EnumSerializationModeIsIntegers_ShouldSerializeEnumToInteger(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
@@ -613,7 +613,7 @@ public class DbCommandBuilderTests : UnitTestsBase
             .Should().Be("Parameter1");
 
         command.Parameters[0].Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Theory]
@@ -621,7 +621,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [InlineData(true)]
     public async Task
         BuildDbCommand_Parameter_EnumValue_EnumSerializationModeIsStrings_ShouldSerializeEnumToString(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
@@ -653,7 +653,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldFormatAndStoreLiteral(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldFormatAndStoreLiteral(bool useAsyncApi)
     {
         var (command, _) = await CallApi(
             useAsyncApi,
@@ -669,7 +669,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldReturnCommandDisposer(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldReturnCommandDisposer(bool useAsyncApi)
     {
         var (_, commandDisposer) = await CallApi(
             useAsyncApi,
@@ -685,7 +685,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_ShouldStoreLiteral(Boolean useAsyncApi)
+    public async Task BuildDbCommand_ShouldStoreLiteral(bool useAsyncApi)
     {
         var (command, _) = await CallApi(
             useAsyncApi,
@@ -701,7 +701,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildDbCommand_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task BuildDbCommand_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         await using var transaction = await this.MockDbConnection.BeginTransactionAsync();
 
@@ -718,7 +718,7 @@ public class DbCommandBuilderTests : UnitTestsBase
     }
 
     private static Task<(DbCommand, DbCommandDisposer)> CallApi(
-        Boolean useAsyncApi,
+        bool useAsyncApi,
         InterpolatedSqlStatement statement,
         IDatabaseAdapter databaseAdapter,
         DbConnection connection,
@@ -761,6 +761,6 @@ public class DbCommandBuilderTests : UnitTestsBase
         }
     }
 
-    private readonly List<Int64> testEntityIds = Generate.Ids();
-    private readonly Int64 testProductId = Generate.Id();
+    private readonly List<long> testEntityIds = Generate.Ids();
+    private readonly long testProductId = Generate.Id();
 }

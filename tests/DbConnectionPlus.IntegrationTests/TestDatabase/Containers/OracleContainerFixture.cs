@@ -20,7 +20,7 @@ internal sealed class OracleContainerFixture()
     /// command-timeout tests call <c>DBMS_LOCK.SLEEP</c>, on which that user holds no EXECUTE grant.
     /// <see cref="OracleBuilder.WithPassword" /> sets the password of both accounts.
     /// </remarks>
-    public override String ConnectionString =>
+    public override string ConnectionString =>
         new OracleConnectionStringBuilder
         {
             DataSource = $"{this.Container.Hostname}:{this.MappedPort}/{ServiceName}",
@@ -43,7 +43,7 @@ internal sealed class OracleContainerFixture()
     /// <summary>
     /// The host port the container's Oracle listener is published on.
     /// </summary>
-    private UInt16 MappedPort =>
+    private ushort MappedPort =>
         this.Container.GetMappedPublicPort(OracleBuilder.OraclePort);
 
     /// <summary>
@@ -54,9 +54,9 @@ internal sealed class OracleContainerFixture()
     /// plain image spends several minutes creating FREEPDB1 on first start. The tag has to name the major
     /// version: the module reads it to decide that this image serves FREEPDB1 rather than XEPDB1.
     /// </remarks>
-    private const String Image = "gvenzl/oracle-free:23-slim-faststart";
+    private const string Image = "gvenzl/oracle-free:23-slim-faststart";
 
-    private const String ServiceName = "FREEPDB1";
+    private const string ServiceName = "FREEPDB1";
 
-    private const String SystemUsername = "SYSTEM";
+    private const string SystemUsername = "SYSTEM";
 }

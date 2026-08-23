@@ -74,7 +74,7 @@ public partial class Benchmarks
                               WHERE     Id = @Id
                               """;
 
-        var parameters = new Dictionary<String, SqliteParameter>
+        var parameters = new Dictionary<string, SqliteParameter>
         {
             { "Id", new("Id", null) },
             { "BooleanValue", new("BooleanValue", null) },
@@ -113,9 +113,9 @@ public partial class Benchmarks
         this.connection.UpdateEntities(this.UpdateEntities_GetNextModifiedEntities());
 
     private List<List<BenchmarkEntity>> updateEntities_ModifiedEntitiesPool = null!;
-    private Int32 updateEntities_ModifiedEntitiesPoolIndex;
+    private int updateEntities_ModifiedEntitiesPoolIndex;
 
-    private const String UpdateEntities_Category = "UpdateEntities";
-    private const Int32 UpdateEntities_EntitiesPerOperation = 100;
-    private const Int32 UpdateEntities_UpdatedEntitiesPoolSize = 8;
+    private const string UpdateEntities_Category = "UpdateEntities";
+    private const int UpdateEntities_EntitiesPerOperation = 100;
+    private const int UpdateEntities_UpdatedEntitiesPoolSize = 8;
 }

@@ -33,7 +33,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -143,7 +143,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -272,15 +272,15 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
-        String collation,
+        string collation,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TABLE [#");
         sqlBuilder.Append(tableName);
@@ -309,7 +309,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
 
             if (
-                propertyType == typeof(String)
+                propertyType == typeof(string)
                 ||
                 (
                     propertyType.IsEnumOrNullableEnumType() &&
@@ -339,16 +339,16 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
-        String collation,
+        string collation,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TABLE [#");
         sqlBuilder.Append(tableName);
@@ -359,11 +359,11 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
         sqlBuilder.Append("] ");
 
-        if (valuesType == typeof(String))
+        if (valuesType == typeof(string))
         {
             var maxLength = 0;
 
-            foreach (String? value in values)
+            foreach (string? value in values)
             {
                 if (value?.Length > maxLength)
                 {
@@ -394,7 +394,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
 
         if (
-            valuesType == typeof(String)
+            valuesType == typeof(string)
             ||
             (
                 valuesType.IsEnumOrNullableEnumType() &&
@@ -440,7 +440,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, SqlConnection connection, SqlTransaction? transaction)
+    private static void DropTemporaryTable(string name, SqlConnection connection, SqlTransaction? transaction)
     {
         using var command = connection.CreateCommand();
 
@@ -460,7 +460,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async ValueTask DropTemporaryTableAsync(
-        String name,
+        string name,
         SqlConnection connection,
         SqlTransaction? transaction
     )
@@ -483,7 +483,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="connection">The connection to the database of which to get the collation.</param>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The collation of the database the specified connection is currently connected to.</returns>
-    private static String GetCurrentDatabaseCollation(
+    private static string GetCurrentDatabaseCollation(
         SqlConnection connection,
         SqlTransaction? transaction = null
     ) =>
@@ -498,7 +498,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
                 DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                return (String)command.ExecuteScalar()!;
+                return (string)command.ExecuteScalar()!;
             },
             (connection, transaction)
         );
@@ -513,7 +513,7 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <see cref="ValueTask{TResult}.Result" /> will contain the collation of the database the specified connection is
     /// currently connected to.
     /// </returns>
-    private static async ValueTask<String> GetCurrentDatabaseCollationAsync(
+    private static async ValueTask<string> GetCurrentDatabaseCollationAsync(
         SqlConnection connection,
         SqlTransaction? transaction = null
     )
@@ -532,16 +532,16 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-        collation = (String)(await command.ExecuteScalarAsync().ConfigureAwait(false))!;
+        collation = (string)(await command.ExecuteScalarAsync().ConfigureAwait(false))!;
 
         return databaseCollationPerDatabase.GetOrAdd((connection.DataSource, connection.Database), collation);
     }
 
     private readonly SqlServerDatabaseAdapter databaseAdapter;
 
-    private const String GetCurrentDatabaseCollationQuery =
+    private const string GetCurrentDatabaseCollationQuery =
         "SELECT CONVERT (VARCHAR(256), DATABASEPROPERTYEX(DB_NAME(), 'collation'))";
 
-    private static readonly ConcurrentDictionary<(String DataSource, String Database), String>
+    private static readonly ConcurrentDictionary<(string DataSource, string Database), string>
         databaseCollationPerDatabase = [];
 }

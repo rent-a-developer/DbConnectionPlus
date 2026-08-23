@@ -12,37 +12,37 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 public class MySqlTestDatabaseProvider : ITestDatabaseProvider
 {
     /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
+    public bool CanRetrieveStructureOfTemporaryTables => true;
 
     /// <inheritdoc />
     public IDatabaseAdapter DatabaseAdapter => new MySqlDatabaseAdapter();
 
     /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
+    public string DatabaseCollation => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "SELECT SLEEP(2);";
+    public string DelayTwoSecondsStatement => "SELECT SLEEP(2);";
 
     /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => false;
+    public bool HasUnsupportedDataType => false;
 
     /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => false;
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => false;
 
     /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => false;
+    public bool SupportsDateTimeOffset => false;
 
     /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => false;
+    public bool SupportsProperCommandCancellation => false;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
+    public bool SupportsStoredProcedures => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => true;
+    public bool SupportsStoredProceduresReturningResultSet => true;
 
     /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
 
     /// <inheritdoc />
     public DbConnection CreateConnection()
@@ -59,7 +59,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null)
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null)
     {
         try
         {
@@ -80,26 +80,26 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
-        connection.Query<(String Field, String Type, String Null, String Key, Object Default, Object Extra)>(
+        connection.Query<(string Field, string Type, string Null, string Key, object Default, object Extra)>(
             $"SHOW COLUMNS FROM `{temporaryTableName}` WHERE Field = '{columnName}'",
             cancellationToken: TestContext.Current.CancellationToken
         ).Select(a => a.Type.ToUpper()).First();
 
     /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
+    public string GetUnsupportedDataTypeLiteral() =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
@@ -131,14 +131,14 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
     /// <summary>
     /// The connection string that connects to the MySQL server running in the test container.
     /// </summary>
-    private static String ConnectionString =>
+    private static string ConnectionString =>
         TestDatabaseContainers.MySql.ConnectionString;
 
-    private static void ExecuteScript(MySqlConnection connection, String script)
+    private static void ExecuteScript(MySqlConnection connection, string script)
     {
         var statements = script
             .Split("GO", StringSplitOptions.RemoveEmptyEntries)
-            .Where(a => !String.IsNullOrWhiteSpace(a.Trim()));
+            .Where(a => !string.IsNullOrWhiteSpace(a.Trim()));
 
         foreach (var statement in statements)
         {
@@ -146,7 +146,7 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const String CreateDatabaseObjectsSql =
+    private const string CreateDatabaseObjectsSql =
         """
         CREATE TABLE `Entity`
         (
@@ -252,9 +252,9 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const String DatabaseName = "DbConnectionPlusTests";
+    private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const String PurgeTablesSql =
+    private const string PurgeTablesSql =
         """
         TRUNCATE TABLE `Entity`;
         GO
@@ -269,5 +269,5 @@ public class MySqlTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
 }

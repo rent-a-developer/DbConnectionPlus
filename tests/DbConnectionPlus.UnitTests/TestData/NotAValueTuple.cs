@@ -6,18 +6,18 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public struct NotAValueTuple : IStructuralEquatable, IStructuralComparable, IComparable
 {
     /// <inheritdoc />
-    public Int32 CompareTo(Object? other, IComparer comparer) =>
+    public int CompareTo(object? other, IComparer comparer) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Int32 CompareTo(Object? obj) =>
+    public int CompareTo(object? obj) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Boolean Equals(Object? other, IEqualityComparer comparer) =>
+    public bool Equals(object? other, IEqualityComparer comparer) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Int32 GetHashCode(IEqualityComparer comparer) =>
+    public int GetHashCode(IEqualityComparer comparer) =>
         throw new NotImplementedException();
 }

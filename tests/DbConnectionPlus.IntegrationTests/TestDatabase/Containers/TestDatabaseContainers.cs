@@ -17,7 +17,7 @@ internal static class TestDatabaseContainers
     /// <summary>
     /// The password of the administrative database user in every container.
     /// </summary>
-    public const String Password = "TestTest123!";
+    public const string Password = "TestTest123!";
 
     /// <summary>
     /// The container running the MySQL server.

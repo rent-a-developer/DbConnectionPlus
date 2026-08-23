@@ -80,7 +80,7 @@ public static partial class DbConnectionExtensions
     /// connection.InsertEntity(newProduct);
     /// </code>
     /// </example>
-    public static Int32 InsertEntity<
+    public static int InsertEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,
@@ -176,7 +176,7 @@ public static partial class DbConnectionExtensions
     /// await connection.InsertEntityAsync(newProduct);
     /// </code>
     /// </example>
-    public static Task<Int32> InsertEntityAsync<
+    public static Task<int> InsertEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,

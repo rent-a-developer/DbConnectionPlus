@@ -50,7 +50,7 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
     /// </exception>
     // ReSharper disable once ParameterHidesMember
-    public EntityTypeBuilder<TEntity> ToTable(String tableName)
+    public EntityTypeBuilder<TEntity> ToTable(string tableName)
     {
         this.EnsureNotFrozen();
 
@@ -74,11 +74,11 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     }
 
     /// <inheritdoc />
-    IReadOnlyDictionary<String, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders =>
+    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders =>
         this.propertyBuilders;
 
     /// <inheritdoc />
-    String? IEntityTypeBuilder.TableName => this.tableName;
+    string? IEntityTypeBuilder.TableName => this.tableName;
 
     /// <summary>
     /// Ensures this instance is not frozen.
@@ -100,7 +100,7 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// <exception cref="ArgumentException">
     /// <paramref name="propertyExpression" /> is not a valid property access expression.
     /// </exception>
-    private static String GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression) =>
+    private static string GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression) =>
         propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }
             ? propertyInfo.Name
             : throw new ArgumentException(
@@ -109,7 +109,7 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
                 nameof(propertyExpression)
             );
 
-    private readonly ConcurrentDictionary<String, IEntityPropertyBuilder> propertyBuilders = new();
-    private Boolean isFrozen;
-    private String? tableName;
+    private readonly ConcurrentDictionary<string, IEntityPropertyBuilder> propertyBuilders = new();
+    private bool isFrozen;
+    private string? tableName;
 }

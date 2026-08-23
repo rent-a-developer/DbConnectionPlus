@@ -205,7 +205,7 @@ public static partial class DbConnectionExtensions
     /// <exception cref="InvalidCastException">
     /// <paramref name="value" /> could not be converted to the type <typeparamref name="TTarget" />.
     /// </exception>
-    private static TTarget ConvertValueForExecuteScalar<TTarget>(Object? value)
+    private static TTarget ConvertValueForExecuteScalar<TTarget>(object? value)
     {
         try
         {

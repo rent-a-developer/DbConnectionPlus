@@ -26,7 +26,7 @@ public class EnumSerializerTests : UnitTestsBase
     public void SerializeEnum_ShouldSerializeEnumValueAccordingToSerializationMode(
         TestEnum enumValue,
         EnumSerializationMode enumSerializationMode,
-        Object expectedResult
+        object expectedResult
     ) =>
         EnumSerializer.SerializeEnum(enumValue, enumSerializationMode)
             .Should().Be(expectedResult);

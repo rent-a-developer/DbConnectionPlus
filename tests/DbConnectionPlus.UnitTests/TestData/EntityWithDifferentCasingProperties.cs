@@ -4,30 +4,30 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record EntityWithDifferentCasingProperties
 {
-    public Boolean BooleanVALUE { get; set; }
-    public Byte[] BytesVALUE { get; set; } = null!;
-    public Byte ByteVALUE { get; set; }
-    public Char CharVALUE { get; set; }
+    public bool BooleanVALUE { get; set; }
+    public byte[] BytesVALUE { get; set; } = null!;
+    public byte ByteVALUE { get; set; }
+    public char CharVALUE { get; set; }
     public DateOnly DateOnlyVALUE { get; set; }
     public DateTime DateTimeVALUE { get; set; }
-    public Decimal DecimalVALUE { get; set; }
-    public Double DoubleVALUE { get; set; }
+    public decimal DecimalVALUE { get; set; }
+    public double DoubleVALUE { get; set; }
     public TestEnum EnumVALUE { get; set; }
     public Guid GuidVALUE { get; set; }
 
     [Key]
-    public Int64 Id { get; set; }
+    public long Id { get; set; }
 
-    public Int16 Int16VALUE { get; set; }
-    public Int32 Int32VALUE { get; set; }
-    public Int64 Int64VALUE { get; set; }
+    public short Int16VALUE { get; set; }
+    public int Int32VALUE { get; set; }
+    public long Int64VALUE { get; set; }
 
     [NotMapped]
-    public String? NotMappedProperty { get; set; }
+    public string? NotMappedProperty { get; set; }
 
-    public Boolean? NullableBooleanVALUE { get; set; }
-    public Single SingleVALUE { get; set; }
-    public String StringVALUE { get; set; } = null!;
+    public bool? NullableBooleanVALUE { get; set; }
+    public float SingleVALUE { get; set; }
+    public string StringVALUE { get; set; } = null!;
     public TimeOnly TimeOnlyVALUE { get; set; }
     public TimeSpan TimeSpanVALUE { get; set; }
 }

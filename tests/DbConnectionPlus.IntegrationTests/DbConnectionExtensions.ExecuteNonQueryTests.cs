@@ -30,7 +30,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteNonQuery_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
@@ -59,7 +59,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_CommandType_ShouldPassUseCommandType(Boolean useAsyncApi)
+    public async Task ExecuteNonQuery_CommandType_ShouldPassUseCommandType(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProcedures, "");
 
@@ -81,7 +81,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -120,7 +120,7 @@ public abstract class
     [InlineData(true)]
     public async Task
         ExecuteNonQuery_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -160,7 +160,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
+    public async Task ExecuteNonQuery_InterpolatedParameter_ShouldPassInterpolatedParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -178,7 +178,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_Parameter_ShouldPassParameter(Boolean useAsyncApi)
+    public async Task ExecuteNonQuery_Parameter_ShouldPassParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -202,7 +202,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -236,7 +236,7 @@ public abstract class
     [InlineData(true)]
     public async Task
         ExecuteNonQuery_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -271,7 +271,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task ExecuteNonQuery_ShouldReturnNumberOfAffectedRows(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -295,7 +295,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteNonQuery_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task ExecuteNonQuery_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -319,8 +319,8 @@ public abstract class
             .Should().BeTrue();
     }
 
-    private static Task<Int32> CallApi(
-        Boolean useAsyncApi,
+    private static Task<int> CallApi(
+        bool useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -348,7 +348,7 @@ public abstract class
         }
         catch (Exception ex)
         {
-            return Task.FromException<Int32>(ex);
+            return Task.FromException<int>(ex);
         }
     }
 }

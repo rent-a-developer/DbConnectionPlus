@@ -185,9 +185,9 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc Char[512]);
+        using var codeBuilder = new ValueStringBuilder(stackalloc char[512]);
 
-        var parameterNameOccurrences = new Dictionary<String, Int16>(
+        var parameterNameOccurrences = new Dictionary<string, short>(
             statement.Fragments.Count,
             StringComparer.OrdinalIgnoreCase
         );
@@ -201,7 +201,7 @@ internal static class DbCommandBuilder
 
         if (commandTimeout is not null)
         {
-            command.CommandTimeout = (Int32)commandTimeout.Value.TotalSeconds;
+            command.CommandTimeout = (int)commandTimeout.Value.TotalSeconds;
         }
 
         var dbParameters = command.Parameters;

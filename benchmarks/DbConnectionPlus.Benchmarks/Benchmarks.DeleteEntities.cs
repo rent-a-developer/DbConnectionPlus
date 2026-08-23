@@ -95,8 +95,8 @@ public partial class Benchmarks
 
     private List<BenchmarkEntity[]> deleteEntities_batches = null!;
 
-    private const String DeleteEntities_Category = "DeleteEntities";
-    private const Int32 DeleteEntities_EntitiesPerOperation = 250;
+    private const string DeleteEntities_Category = "DeleteEntities";
+    private const int DeleteEntities_EntitiesPerOperation = 250;
 
     // Batches per invocation: one reported operation is one delete call over
     // DeleteEntities_EntitiesPerOperation entities.
@@ -105,5 +105,5 @@ public partial class Benchmarks
     // DeleteEntity_OperationsPerInvoke for why that matters and for the measurement showing a rollback costs
     // what a commit costs. Twenty batches is 5 000 seeded rows, down from 75 000, and it amortizes the
     // transaction far past the point where it could affect the ratios.
-    private const Int32 DeleteEntities_OperationsPerInvoke = 20;
+    private const int DeleteEntities_OperationsPerInvoke = 20;
 }

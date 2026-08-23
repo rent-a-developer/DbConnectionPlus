@@ -8,40 +8,40 @@ internal interface IEntityPropertyBuilder : IFreezable
     /// <summary>
     /// The name of the column the property is mapped to.
     /// </summary>
-    internal String? ColumnName { get; }
+    internal string? ColumnName { get; }
 
     /// <summary>
     /// Determines whether the property is mapped to a computed database column.
     /// </summary>
-    internal Boolean IsComputed { get; }
+    internal bool IsComputed { get; }
 
     /// <summary>
     /// Determines whether the property participates in optimistic concurrency checks.
     /// </summary>
-    internal Boolean IsConcurrencyToken { get; }
+    internal bool IsConcurrencyToken { get; }
 
     /// <summary>
     /// Determines whether the property is mapped to an identity database column.
     /// </summary>
-    internal Boolean IsIdentity { get; }
+    internal bool IsIdentity { get; }
 
     /// <summary>
     /// Determines whether the property is not mapped to a database column.
     /// </summary>
-    internal Boolean IsIgnored { get; }
+    internal bool IsIgnored { get; }
 
     /// <summary>
     /// Determines whether the property is mapped to a key database column.
     /// </summary>
-    internal Boolean IsKey { get; }
+    internal bool IsKey { get; }
 
     /// <summary>
     /// Determines whether the property is a row version used for concurrency control.
     /// </summary>
-    internal Boolean IsRowVersion { get; }
+    internal bool IsRowVersion { get; }
 
     /// <summary>
     /// The name of the property being configured.
     /// </summary>
-    internal String PropertyName { get; }
+    internal string PropertyName { get; }
 }

@@ -11,7 +11,7 @@ public interface ITestDatabaseProvider
     /// <summary>
     /// Determines whether the structure of temporary tables can be retrieved from the test database system.
     /// </summary>
-    public Boolean CanRetrieveStructureOfTemporaryTables { get; }
+    public bool CanRetrieveStructureOfTemporaryTables { get; }
 
     /// <summary>
     /// The database adapter for the test database.
@@ -21,50 +21,50 @@ public interface ITestDatabaseProvider
     /// <summary>
     /// The collation of the test database.
     /// </summary>
-    public String DatabaseCollation { get; }
+    public string DatabaseCollation { get; }
 
     /// <summary>
     /// An SQL statement that delays query execution for two seconds.
     /// </summary>
-    public String DelayTwoSecondsStatement { get; }
+    public string DelayTwoSecondsStatement { get; }
 
     /// <summary>
     /// Determines whether the test database system has data types not supported by DbConnectionPlus.
     /// </summary>
-    public Boolean HasUnsupportedDataType { get; }
+    public bool HasUnsupportedDataType { get; }
 
     /// <summary>
     /// Determines whether the test database system supports executing commands while a data reader is open.
     /// </summary>
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen { get; }
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen { get; }
 
     /// <summary>
     /// Determines whether the test database system has a data type for the type <see cref="DateTimeOffset" />.
     /// </summary>
-    public Boolean SupportsDateTimeOffset { get; }
+    public bool SupportsDateTimeOffset { get; }
 
     /// <summary>
     /// Determines whether the test database system supports proper command cancellation, meaning that cancelling a
     /// command (via <see cref="DbCommand.Cancel" />) actually stops its execution in the database and an appropriate
     /// exception is thrown.
     /// </summary>
-    public Boolean SupportsProperCommandCancellation { get; }
+    public bool SupportsProperCommandCancellation { get; }
 
     /// <summary>
     /// Determines whether the test database system supports stored procedures.
     /// </summary>
-    public Boolean SupportsStoredProcedures { get; }
+    public bool SupportsStoredProcedures { get; }
 
     /// <summary>
     /// Determines whether the test database system supports stored procedures which can return a result set.
     /// </summary>
-    public Boolean SupportsStoredProceduresReturningResultSet { get; }
+    public bool SupportsStoredProceduresReturningResultSet { get; }
 
     /// <summary>
     /// Determines whether a text column of a temporary table in the test database system inherits the collation
     /// from the current database.
     /// </summary>
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase { get; }
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase { get; }
 
     /// <summary>
     /// Creates a connection to the test database.
@@ -81,7 +81,7 @@ public interface ITestDatabaseProvider
     /// <see langword="true" /> if a temporary table with the specified name exists in the test database;
     /// otherwise, <see langword="false" />.
     /// </returns>
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null);
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null);
 
     /// <summary>
     /// Gets the collation of the specified column in the specified temporary table.
@@ -90,9 +90,9 @@ public interface ITestDatabaseProvider
     /// <param name="columnName">The name of the column whose collation to retrieve.</param>
     /// <param name="connection">The connection to the test database.</param>
     /// <returns>The collation of the specified column in the specified temporary table.</returns>
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     );
 
@@ -105,9 +105,9 @@ public interface ITestDatabaseProvider
     /// <returns>
     /// The data type of the specified column in the specified temporary table.
     /// </returns>
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     );
 
@@ -117,7 +117,7 @@ public interface ITestDatabaseProvider
     /// <returns>
     /// A literal representing a data type in the test database system that is not supported by DbConnectionPlus.
     /// </returns>
-    public String GetUnsupportedDataTypeLiteral();
+    public string GetUnsupportedDataTypeLiteral();
 
     /// <summary>
     /// Prepares the test database and resets it to a clean state.

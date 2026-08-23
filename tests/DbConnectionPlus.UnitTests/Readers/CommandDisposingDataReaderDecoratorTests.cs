@@ -50,12 +50,12 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
         var ordinal = Generate.SmallNumber();
         var returnValue = Generate.SmallNumber();
 
-        this.decoratedReader.GetFieldValue<Int32>(ordinal).Returns(returnValue);
+        this.decoratedReader.GetFieldValue<int>(ordinal).Returns(returnValue);
 
-        this.decorator.GetFieldValue<Int32>(ordinal)
+        this.decorator.GetFieldValue<int>(ordinal)
             .Should().Be(returnValue);
 
-        this.decoratedReader.Received().GetFieldValue<Int32>(ordinal);
+        this.decoratedReader.Received().GetFieldValue<int>(ordinal);
     }
 
     [Fact]
@@ -64,19 +64,19 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
         var ordinal = Generate.SmallNumber();
         var returnValue = Generate.SmallNumber();
 
-        this.decoratedReader.GetFieldValueAsync<Int32>(ordinal, CancellationToken.None)
+        this.decoratedReader.GetFieldValueAsync<int>(ordinal, CancellationToken.None)
             .Returns(Task.FromResult(returnValue));
 
-        (await this.decorator.GetFieldValueAsync<Int32>(ordinal, CancellationToken.None))
+        (await this.decorator.GetFieldValueAsync<int>(ordinal, CancellationToken.None))
             .Should().Be(returnValue);
 
-        await this.decoratedReader.Received().GetFieldValueAsync<Int32>(ordinal, CancellationToken.None);
+        await this.decoratedReader.Received().GetFieldValueAsync<int>(ordinal, CancellationToken.None);
     }
 
     [Fact]
     public void ShouldForwardAllMethodCallsToDecoratedReader()
     {
-        var exceptions = new HashSet<String>
+        var exceptions = new HashSet<string>
         {
             nameof(CommandDisposingDataReaderDecorator.Dispose),
             nameof(CommandDisposingDataReaderDecorator.DisposeAsync),

@@ -10,7 +10,7 @@ public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabas
     [Fact]
     public void QuoteTemporaryTableName_ShouldQuoteTableName()
     {
-        var prefix = this.Connection.ExecuteScalar<String>(
+        var prefix = this.Connection.ExecuteScalar<string>(
             "SELECT VALUE FROM v$parameter WHERE NAME = 'private_temp_table_prefix'"
         );
 

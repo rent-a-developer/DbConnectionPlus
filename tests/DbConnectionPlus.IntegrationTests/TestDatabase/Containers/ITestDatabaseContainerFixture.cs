@@ -15,5 +15,5 @@ internal interface ITestDatabaseContainerFixture : IAsyncLifetime
     /// The container publishes its port to a free port of the host, so this is only known once the container
     /// has been started.
     /// </remarks>
-    public String ConnectionString { get; }
+    public string ConnectionString { get; }
 }

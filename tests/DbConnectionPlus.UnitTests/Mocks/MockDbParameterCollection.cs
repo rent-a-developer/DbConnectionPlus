@@ -6,13 +6,13 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Mocks;
 public class MockDbParameterCollection : DbParameterCollection
 {
     /// <inheritdoc />
-    public override Int32 Count => this.parameters.Count;
+    public override int Count => this.parameters.Count;
 
     /// <inheritdoc />
-    public override Object SyncRoot => ((ICollection)this.parameters).SyncRoot;
+    public override object SyncRoot => ((ICollection)this.parameters).SyncRoot;
 
     /// <inheritdoc />
-    public override Int32 Add(Object value)
+    public override int Add(object value)
     {
         this.parameters.Add((DbParameter)value);
         return this.Count - 1;
@@ -25,23 +25,23 @@ public class MockDbParameterCollection : DbParameterCollection
     public override void Clear() => this.parameters.Clear();
 
     /// <inheritdoc />
-    public override Boolean Contains(Object value) => this.parameters.Contains(value);
+    public override bool Contains(object value) => this.parameters.Contains(value);
 
     /// <inheritdoc />
-    public override Boolean Contains(String value) => this.IndexOf(value) != -1;
+    public override bool Contains(string value) => this.IndexOf(value) != -1;
 
     /// <inheritdoc />
-    public override void CopyTo(Array array, Int32 index) =>
+    public override void CopyTo(Array array, int index) =>
         this.parameters.CopyTo((DbParameter[])array, index);
 
     /// <inheritdoc />
     public override IEnumerator GetEnumerator() => this.parameters.GetEnumerator();
 
     /// <inheritdoc />
-    public override Int32 IndexOf(Object value) => this.parameters.IndexOf((DbParameter)value);
+    public override int IndexOf(object value) => this.parameters.IndexOf((DbParameter)value);
 
     /// <inheritdoc />
-    public override Int32 IndexOf(String parameterName)
+    public override int IndexOf(string parameterName)
     {
         for (var index = 0; index < this.parameters.Count; ++index)
         {
@@ -55,35 +55,35 @@ public class MockDbParameterCollection : DbParameterCollection
     }
 
     /// <inheritdoc />
-    public override void Insert(Int32 index, Object value) =>
+    public override void Insert(int index, object value) =>
         this.parameters.Insert(index, (DbParameter)value);
 
     /// <inheritdoc />
-    public override void Remove(Object value) => this.parameters.Remove((DbParameter)value);
+    public override void Remove(object value) => this.parameters.Remove((DbParameter)value);
 
     /// <inheritdoc />
-    public override void RemoveAt(Int32 index) => this.parameters.RemoveAt(index);
+    public override void RemoveAt(int index) => this.parameters.RemoveAt(index);
 
     /// <inheritdoc />
-    public override void RemoveAt(String parameterName) =>
+    public override void RemoveAt(string parameterName) =>
         this.RemoveAt(this.IndexOfChecked(parameterName));
 
     /// <inheritdoc />
-    protected override DbParameter GetParameter(Int32 index) => this.parameters[index];
+    protected override DbParameter GetParameter(int index) => this.parameters[index];
 
     /// <inheritdoc />
-    protected override DbParameter GetParameter(String parameterName) =>
+    protected override DbParameter GetParameter(string parameterName) =>
         this.GetParameter(this.IndexOfChecked(parameterName));
 
     /// <inheritdoc />
-    protected override void SetParameter(Int32 index, DbParameter value) =>
+    protected override void SetParameter(int index, DbParameter value) =>
         this.parameters[index] = value;
 
     /// <inheritdoc />
-    protected override void SetParameter(String parameterName, DbParameter value) =>
+    protected override void SetParameter(string parameterName, DbParameter value) =>
         this.SetParameter(this.IndexOfChecked(parameterName), value);
 
-    private Int32 IndexOfChecked(String parameterName)
+    private int IndexOfChecked(string parameterName)
     {
         var index = this.IndexOf(parameterName);
         return index != -1 ? index : throw new IndexOutOfRangeException();

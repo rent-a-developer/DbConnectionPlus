@@ -35,7 +35,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
+    public async Task DeleteEntity_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -64,10 +64,10 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_ConcurrencyTokenMismatch_ShouldThrow(Boolean useAsyncApi)
+    public async Task DeleteEntity_ConcurrencyTokenMismatch_ShouldThrow(bool useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
-        entityToDelete.ConcurrencyToken_ = Generate.Single<Byte[]>();
+        entityToDelete.ConcurrencyToken_ = Generate.Single<byte[]>();
 
         var exception = (await Invoking(() => this.CallApi(
                     useAsyncApi,
@@ -97,7 +97,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    public async Task DeleteEntity_Mapping_Attributes_ShouldUseAttributesMapping(bool useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntityAttributes>(2);
         var entityToDelete = entities[0];
@@ -121,7 +121,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    public async Task DeleteEntity_Mapping_FluentApi_ShouldUseFluentApiMapping(bool useAsyncApi)
     {
         MappingTestEntityFluentApi.Configure();
 
@@ -147,7 +147,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task DeleteEntity_Mapping_MissingKeyProperty_ShouldThrow(Boolean useAsyncApi)
+    public Task DeleteEntity_Mapping_MissingKeyProperty_ShouldThrow(bool useAsyncApi)
     {
         var entityWithoutKeyProperty = new EntityWithoutKeyProperty();
 
@@ -169,7 +169,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    public async Task DeleteEntity_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(bool useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<MappingTestEntity>(2);
         var entityToDelete = entities[0];
@@ -193,10 +193,10 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_RowVersionMismatch_ShouldThrow(Boolean useAsyncApi)
+    public async Task DeleteEntity_RowVersionMismatch_ShouldThrow(bool useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<MappingTestEntityAttributes>();
-        entityToDelete.RowVersion_ = Generate.Single<Byte[]>();
+        entityToDelete.RowVersion_ = Generate.Single<byte[]>();
 
         var exception = (await Invoking(() => this.CallApi(
                     useAsyncApi,
@@ -226,7 +226,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task DeleteEntity_ShouldReturnNumberOfAffectedRows(bool useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
@@ -243,7 +243,7 @@ public abstract class EntityManipulator_DeleteEntityTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task DeleteEntity_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task DeleteEntity_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         var entityToDelete = this.CreateEntityInDb<Entity>();
 
@@ -267,8 +267,8 @@ public abstract class EntityManipulator_DeleteEntityTests
             .Should().BeTrue();
     }
 
-    private Task<Int32> CallApi<TEntity>(
-        Boolean useAsyncApi,
+    private Task<int> CallApi<TEntity>(
+        bool useAsyncApi,
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -289,7 +289,7 @@ public abstract class EntityManipulator_DeleteEntityTests
         }
         catch (Exception ex)
         {
-            return Task.FromException<Int32>(ex);
+            return Task.FromException<int>(ex);
         }
     }
 

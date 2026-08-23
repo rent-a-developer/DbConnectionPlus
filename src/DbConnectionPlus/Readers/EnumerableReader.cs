@@ -57,7 +57,7 @@ internal sealed class EnumerableReader : DbDataReader
         [DynamicallyAccessedMembers(
             DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
         Type valuesType,
-        String fieldName)
+        string fieldName)
     {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentNullException.ThrowIfNull(valuesType);
@@ -135,26 +135,26 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override Int32 Depth => 0;
+    public override int Depth => 0;
 
     /// <inheritdoc />
-    public override Int32 FieldCount => this.fieldNames.Length;
+    public override int FieldCount => this.fieldNames.Length;
 
     /// <inheritdoc />
-    public override Boolean HasRows => true;
+    public override bool HasRows => true;
 
     /// <inheritdoc />
     // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
-    public override Boolean IsClosed => this.isClosed;
+    public override bool IsClosed => this.isClosed;
 
     /// <inheritdoc />
-    public override Object this[Int32 ordinal] => this.GetValue(ordinal);
+    public override object this[int ordinal] => this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Object this[String name] => this.GetValue(this.GetOrdinalOrThrow(name));
+    public override object this[string name] => this.GetValue(this.GetOrdinalOrThrow(name));
 
     /// <inheritdoc />
-    public override Int32 RecordsAffected => -1;
+    public override int RecordsAffected => -1;
 
     /// <inheritdoc />
     public override void Close()
@@ -169,36 +169,36 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override Boolean GetBoolean(Int32 ordinal) =>
-        (Boolean)this.GetValue(ordinal);
+    public override bool GetBoolean(int ordinal) =>
+        (bool)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Byte GetByte(Int32 ordinal) =>
-        (Byte)this.GetValue(ordinal);
+    public override byte GetByte(int ordinal) =>
+        (byte)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="NotImplementedException">Always thrown.</exception>
-    public override Int64 GetBytes(
-        Int32 ordinal,
-        Int64 dataOffset,
-        Byte[]? buffer,
-        Int32 bufferOffset,
-        Int32 length
+    public override long GetBytes(
+        int ordinal,
+        long dataOffset,
+        byte[]? buffer,
+        int bufferOffset,
+        int length
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override Char GetChar(Int32 ordinal) =>
-        (Char)this.GetValue(ordinal);
+    public override char GetChar(int ordinal) =>
+        (char)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="NotImplementedException">Always thrown.</exception>
-    public override Int64 GetChars(
-        Int32 ordinal,
-        Int64 dataOffset,
-        Char[]? buffer,
-        Int32 bufferOffset,
-        Int32 length
+    public override long GetChars(
+        int ordinal,
+        long dataOffset,
+        char[]? buffer,
+        int bufferOffset,
+        int length
     ) =>
         throw new NotImplementedException();
 
@@ -206,20 +206,20 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override String GetDataTypeName(Int32 ordinal) =>
+    public override string GetDataTypeName(int ordinal) =>
         this.GetFieldType(ordinal).Name;
 
     /// <inheritdoc />
-    public override DateTime GetDateTime(Int32 ordinal) =>
+    public override DateTime GetDateTime(int ordinal) =>
         (DateTime)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Decimal GetDecimal(Int32 ordinal) =>
-        (Decimal)this.GetValue(ordinal);
+    public override decimal GetDecimal(int ordinal) =>
+        (decimal)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Double GetDouble(Int32 ordinal) =>
-        (Double)this.GetValue(ordinal);
+    public override double GetDouble(int ordinal) =>
+        (double)this.GetValue(ordinal);
 
     /// <inheritdoc />
     public override IEnumerator GetEnumerator() =>
@@ -240,7 +240,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// </remarks>
     [return: DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-    public override Type GetFieldType(Int32 ordinal)
+    public override Type GetFieldType(int ordinal)
     {
         this.EnsureValidFieldOrdinal(ordinal);
 
@@ -248,39 +248,39 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    public override Single GetFloat(Int32 ordinal) =>
-        (Single)this.GetValue(ordinal);
+    public override float GetFloat(int ordinal) =>
+        (float)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Guid GetGuid(Int32 ordinal) =>
+    public override Guid GetGuid(int ordinal) =>
         (Guid)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Int16 GetInt16(Int32 ordinal) =>
-        (Int16)this.GetValue(ordinal);
+    public override short GetInt16(int ordinal) =>
+        (short)this.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Int32 GetInt32(Int32 ordinal)
+    public override int GetInt32(int ordinal)
     {
         var value = this.GetValue(ordinal);
 
         if (this.SerializesEnums && this.IsEnumColumn(ordinal) && value is Enum enumValue)
         {
-            return (Int32)(Object)enumValue;
+            return (int)(object)enumValue;
         }
 
-        return (Int32)value;
+        return (int)value;
     }
 
     /// <inheritdoc />
-    public override Int64 GetInt64(Int32 ordinal) =>
-        (Int64)this.GetValue(ordinal);
+    public override long GetInt64(int ordinal) =>
+        (long)this.GetValue(ordinal);
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override String GetName(Int32 ordinal)
+    public override string GetName(int ordinal)
     {
         this.EnsureValidFieldOrdinal(ordinal);
 
@@ -296,7 +296,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// In multi-column mode an unknown name yields <c>-1</c> rather than an exception, which is what the
     /// bulk-copy APIs of the database providers expect - they probe for columns they may not find.
     /// </remarks>
-    public override Int32 GetOrdinal(String name) =>
+    public override int GetOrdinal(string name) =>
         this.IsSingleColumn
             ? this.GetOrdinalOrThrow(name)
             : Array.IndexOf(this.fieldNames, name);
@@ -314,7 +314,7 @@ internal sealed class EnumerableReader : DbDataReader
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override String GetString(Int32 ordinal)
+    public override string GetString(int ordinal)
     {
         var value = this.GetValue(ordinal);
 
@@ -329,17 +329,17 @@ internal sealed class EnumerableReader : DbDataReader
             // that GetString is called to retrieve the value. Casting a Char to a String would throw an
             // InvalidCastException, so the conversion happens here.
 
-            return (value as Char?)?.ToString() ?? String.Empty;
+            return (value as char?)?.ToString() ?? string.Empty;
         }
 
-        return (String)value;
+        return (string)value;
     }
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override Object GetValue(Int32 ordinal)
+    public override object GetValue(int ordinal)
     {
         this.EnsureValidFieldOrdinal(ordinal);
 
@@ -359,7 +359,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// In multi-column mode a buffer shorter than <see cref="FieldCount" /> is filled as far as it reaches and the
     /// number of values written is returned, as <see cref="DbDataReader.GetValues" /> specifies.
     /// </remarks>
-    public override Int32 GetValues(Object[] values)
+    public override int GetValues(object[] values)
     {
         ArgumentNullException.ThrowIfNull(values);
 
@@ -392,14 +392,14 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    public override Boolean IsDBNull(Int32 ordinal) =>
+    public override bool IsDBNull(int ordinal) =>
         this.GetValue(ordinal) is DBNull;
 
     /// <inheritdoc />
-    public override Boolean NextResult() => false;
+    public override bool NextResult() => false;
 
     /// <inheritdoc />
-    public override Boolean Read()
+    public override bool Read()
     {
         if (this.isClosed)
         {
@@ -417,7 +417,7 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <inheritdoc />
-    protected override void Dispose(Boolean disposing)
+    protected override void Dispose(bool disposing)
     {
         if (this.isDisposed)
         {
@@ -437,18 +437,18 @@ internal sealed class EnumerableReader : DbDataReader
     /// <summary>
     /// Gets a value indicating whether the reader reads a single column whose value is the sequence element itself.
     /// </summary>
-    private Boolean IsSingleColumn => this.valuesType is not null;
+    private bool IsSingleColumn => this.valuesType is not null;
 
     /// <summary>
-    /// Gets a value indicating whether the reader returns <see cref="Char" /> values as <see cref="String" />.
+    /// Gets a value indicating whether the reader returns <see cref="char" /> values as <see cref="string" />.
     /// </summary>
-    private Boolean ReadsCharsAsStrings =>
+    private bool ReadsCharsAsStrings =>
         this.options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings);
 
     /// <summary>
     /// Gets a value indicating whether the reader serializes <see cref="Enum" /> values while reading them.
     /// </summary>
-    private Boolean SerializesEnums =>
+    private bool SerializesEnums =>
         this.options.HasFlag(EnumerableReaderOptions.SerializeEnums);
 
     /// <summary>
@@ -472,7 +472,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">
     /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
     /// </exception>
-    private void EnsureValidFieldOrdinal(Int32 ordinal)
+    private void EnsureValidFieldOrdinal(int ordinal)
     {
         if (ordinal >= 0 && ordinal < this.FieldCount)
         {
@@ -497,7 +497,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// The type passed to the constructor if the reader reads a single column; otherwise the type of the property
     /// the column is mapped to.
     /// </returns>
-    private Type GetColumnType(Int32 ordinal) =>
+    private Type GetColumnType(int ordinal) =>
         this.valuesType ?? this.properties[ordinal].PropertyType;
 
     /// <summary>
@@ -508,7 +508,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <exception cref="ArgumentOutOfRangeException">
     /// The reader does not have a field with the specified name <paramref name="name" />.
     /// </exception>
-    private Int32 GetOrdinalOrThrow(String name)
+    private int GetOrdinalOrThrow(string name)
     {
         var ordinal = Array.IndexOf(this.fieldNames, name);
 
@@ -523,7 +523,7 @@ internal sealed class EnumerableReader : DbDataReader
                 ? $"The specified field name '{name}' is not supported. The only supported field name is " +
                   $"'{this.fieldNames[0]}'."
                 : $"The specified field name '{name}' is not supported. The supported field names are " +
-                  $"'{String.Join("', '", this.fieldNames)}'."
+                  $"'{string.Join("', '", this.fieldNames)}'."
         );
     }
 
@@ -535,7 +535,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <see langword="true" /> if the column is mapped to an <see cref="Enum" /> property; otherwise,
     /// <see langword="false" />.
     /// </returns>
-    private Boolean IsEnumColumn(Int32 ordinal) =>
+    private bool IsEnumColumn(int ordinal) =>
         this.GetColumnType(ordinal).IsEnumOrNullableEnumType();
 
     /// <summary>
@@ -543,7 +543,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// </summary>
     /// <param name="value">The value to serialize.</param>
     /// <returns>The serialized value.</returns>
-    private Object SerializeValue(Object value)
+    private object SerializeValue(object value)
     {
         if (this.SerializesEnums && value is Enum enumValue)
         {
@@ -553,7 +553,7 @@ internal sealed class EnumerableReader : DbDataReader
             );
         }
 
-        if (this.ReadsCharsAsStrings && value is Char charValue)
+        if (this.ReadsCharsAsStrings && value is char charValue)
         {
             // The data readers of all major database systems return the type String for CHAR columns.
             // So we mimic the same behavior for consistency.
@@ -578,7 +578,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// <see cref="DynamicallyAccessedMembersAttribute" /> the base class puts on
     /// <see cref="DbDataReader.GetFieldType" />; see the remarks there. A type that is neither a supported built-in
     /// type nor covered by <paramref name="options" /> — an <see cref="Enum" /> outside MySQL, most notably — is
-    /// reported as <see cref="Object" />. Returning the runtime property type would violate the inherited trimming
+    /// reported as <see cref="object" />. Returning the runtime property type would violate the inherited trimming
     /// contract because <c>PropertyInfo.PropertyType</c> carries no member annotation. No caller inside this library
     /// reads that fallback: <c>PostgreSqlTemporaryTableBuilder</c>, the one place that would inspect the reader's
     /// field types, derives its <c>NpgsqlDbType</c> values from the entity metadata instead.
@@ -591,7 +591,7 @@ internal sealed class EnumerableReader : DbDataReader
         {
             if (!options.HasFlag(EnumerableReaderOptions.SerializeEnums))
             {
-                return typeof(Object);
+                return typeof(object);
             }
 
             var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
@@ -599,10 +599,10 @@ internal sealed class EnumerableReader : DbDataReader
             return enumSerializationMode switch
             {
                 EnumSerializationMode.Strings =>
-                    typeof(String),
+                    typeof(string),
 
                 EnumSerializationMode.Integers =>
-                    typeof(Int32),
+                    typeof(int),
 
                 _ => ThrowInvalidEnumSerializationModeException(enumSerializationMode)
             };
@@ -613,7 +613,7 @@ internal sealed class EnumerableReader : DbDataReader
             // The data readers of all major database systems return the type String for CHAR columns.
             // So we mimic the same behavior for consistency.
 
-            return typeof(String);
+            return typeof(string);
         }
 
         return MapBuiltInFieldType(Nullable.GetUnderlyingType(propertyType) ?? propertyType);
@@ -641,7 +641,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// </summary>
     /// <param name="propertyType">The non-nullable type of the property the column is mapped to.</param>
     /// <returns>
-    /// The statically known type the column is reported as, or <see cref="Object" /> for a type this library does
+    /// The statically known type the column is reported as, or <see cref="object" /> for a type this library does
     /// not store in a temporary table.
     /// </returns>
     /// <remarks>
@@ -653,74 +653,74 @@ internal sealed class EnumerableReader : DbDataReader
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     private static Type MapBuiltInFieldType(Type propertyType)
     {
-        if (propertyType == typeof(Boolean))
+        if (propertyType == typeof(bool))
         {
-            return typeof(Boolean);
+            return typeof(bool);
         }
 
-        if (propertyType == typeof(Byte))
+        if (propertyType == typeof(byte))
         {
-            return typeof(Byte);
+            return typeof(byte);
         }
 
-        if (propertyType == typeof(Byte[]))
+        if (propertyType == typeof(byte[]))
         {
-            return typeof(Byte[]);
+            return typeof(byte[]);
         }
 
-        if (propertyType == typeof(SByte))
+        if (propertyType == typeof(sbyte))
         {
-            return typeof(SByte);
+            return typeof(sbyte);
         }
 
-        if (propertyType == typeof(Char))
+        if (propertyType == typeof(char))
         {
-            return typeof(Char);
+            return typeof(char);
         }
 
-        if (propertyType == typeof(Decimal))
+        if (propertyType == typeof(decimal))
         {
-            return typeof(Decimal);
+            return typeof(decimal);
         }
 
-        if (propertyType == typeof(Double))
+        if (propertyType == typeof(double))
         {
-            return typeof(Double);
+            return typeof(double);
         }
 
-        if (propertyType == typeof(Single))
+        if (propertyType == typeof(float))
         {
-            return typeof(Single);
+            return typeof(float);
         }
 
-        if (propertyType == typeof(Int16))
+        if (propertyType == typeof(short))
         {
-            return typeof(Int16);
+            return typeof(short);
         }
 
-        if (propertyType == typeof(UInt16))
+        if (propertyType == typeof(ushort))
         {
-            return typeof(UInt16);
+            return typeof(ushort);
         }
 
-        if (propertyType == typeof(Int32))
+        if (propertyType == typeof(int))
         {
-            return typeof(Int32);
+            return typeof(int);
         }
 
-        if (propertyType == typeof(UInt32))
+        if (propertyType == typeof(uint))
         {
-            return typeof(UInt32);
+            return typeof(uint);
         }
 
-        if (propertyType == typeof(Int64))
+        if (propertyType == typeof(long))
         {
-            return typeof(Int64);
+            return typeof(long);
         }
 
-        if (propertyType == typeof(UInt64))
+        if (propertyType == typeof(ulong))
         {
-            return typeof(UInt64);
+            return typeof(ulong);
         }
 
         if (propertyType == typeof(IntPtr))
@@ -733,9 +733,9 @@ internal sealed class EnumerableReader : DbDataReader
             return typeof(UIntPtr);
         }
 
-        if (propertyType == typeof(String))
+        if (propertyType == typeof(string))
         {
-            return typeof(String);
+            return typeof(string);
         }
 
         if (propertyType == typeof(DateTime))
@@ -768,18 +768,18 @@ internal sealed class EnumerableReader : DbDataReader
             return typeof(Guid);
         }
 
-        return typeof(Object);
+        return typeof(object);
     }
 
     private readonly IEnumerator enumerator;
-    private readonly String[] fieldNames;
+    private readonly string[] fieldNames;
     private readonly EnumerableReaderOptions options;
     private readonly EntityPropertyMetadata[] properties;
     [DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
     private readonly Type? valuesType;
-    private Object? current;
-    private Boolean isClosed;
-    private Boolean isDisposed;
-    private Boolean isEnumeratorDisposed;
+    private object? current;
+    private bool isClosed;
+    private bool isDisposed;
+    private bool isEnumeratorDisposed;
 }

@@ -82,7 +82,7 @@ internal static class EnumConverter
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static TTarget? ConvertValueToEnumMember<TTarget>(Object? value)
+    internal static TTarget? ConvertValueToEnumMember<TTarget>(object? value)
     {
         var targetType = typeof(TTarget);
 
@@ -106,11 +106,11 @@ internal static class EnumConverter
             case TTarget alreadyTargetTypeValue:
                 return alreadyTargetTypeValue;
 
-            case String stringValue when String.IsNullOrWhiteSpace(stringValue):
+            case string stringValue when string.IsNullOrWhiteSpace(stringValue):
                 ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
                 return default; // Just to satisfy the compiler.
 
-            case String stringValue:
+            case string stringValue:
                 if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
                 {
                     ThrowCouldNotConvertStringToEnumTypeException(stringValue, targetType);
@@ -118,7 +118,7 @@ internal static class EnumConverter
 
                 return (TTarget?)result;
 
-            case Byte or SByte or Int16 or UInt16 or Int32 or UInt32 or Int64 or UInt64 or Double or Single or Decimal:
+            case byte or sbyte or short or ushort or int or uint or long or ulong or double or float or decimal:
                 var enumUnderlyingType = Enum.GetUnderlyingType(effectiveTargetType);
 
                 var valueConvertedToEnumUnderlyingType = Convert.ChangeType(
@@ -218,7 +218,7 @@ internal static class EnumConverter
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Object? ConvertValueToEnumMember(Object? value, Type targetType)
+    internal static object? ConvertValueToEnumMember(object? value, Type targetType)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -242,11 +242,11 @@ internal static class EnumConverter
             case not null when value.GetType().IsAssignableTo(effectiveTargetType):
                 return value;
 
-            case String stringValue when String.IsNullOrWhiteSpace(stringValue):
+            case string stringValue when string.IsNullOrWhiteSpace(stringValue):
                 ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
                 return null; // Just to satisfy the compiler.
 
-            case String stringValue:
+            case string stringValue:
                 if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
                 {
                     ThrowCouldNotConvertStringToEnumTypeException(stringValue, targetType);
@@ -254,7 +254,7 @@ internal static class EnumConverter
 
                 return result;
 
-            case Byte or SByte or Int16 or UInt16 or Int32 or UInt32 or Int64 or UInt64 or Double or Single or Decimal:
+            case byte or sbyte or short or ushort or int or uint or long or ulong or double or float or decimal:
                 var enumUnderlyingType = Enum.GetUnderlyingType(effectiveTargetType);
 
                 var valueConvertedToEnumUnderlyingType = Convert.ChangeType(
@@ -300,7 +300,7 @@ internal static class EnumConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void
-        ThrowCouldNotConvertNumericValueToEnumType(Object value, Type enumType) =>
+        ThrowCouldNotConvertNumericValueToEnumType(object value, Type enumType) =>
         throw new InvalidCastException(
             $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}. That " +
             "value does not match any of the values of the enum's members."
@@ -309,7 +309,7 @@ internal static class EnumConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertStringToEnumTypeException(
-        String value,
+        string value,
         Type enumType
     ) =>
         throw new InvalidCastException(
@@ -319,7 +319,7 @@ internal static class EnumConverter
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
-    private static void ThrowTypeIsNeitherEnumNorNullableEnumTypeException(Object? value, Type enumType) =>
+    private static void ThrowTypeIsNeitherEnumNorNullableEnumTypeException(object? value, Type enumType) =>
         throw new ArgumentException(
             $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}, because " +
             $"the type {enumType} is not an enum type.",
@@ -329,7 +329,7 @@ internal static class EnumConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
-        Object? value,
+        object? value,
         Type originalEnumType
     ) =>
         throw new InvalidCastException(

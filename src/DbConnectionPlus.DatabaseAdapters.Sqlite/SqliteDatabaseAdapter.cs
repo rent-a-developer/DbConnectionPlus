@@ -27,7 +27,7 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
         this.temporaryTableBuilder;
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -59,7 +59,7 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -71,11 +71,11 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
+    public string FormatParameterName(string parameterName) =>
         "@" + parameterName;
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -93,7 +93,7 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
                     "INTEGER",
 
                 _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
             };
         }
 
@@ -110,19 +110,19 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
+    public string QuoteIdentifier(string identifier) =>
         "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) =>
         "temp.\"" + tableName + "\"";
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
+    public bool SupportsTemporaryTables(DbConnection connection) =>
         true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -133,23 +133,23 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     private readonly SqliteEntityManipulator entityManipulator;
     private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
 
-    private static readonly Dictionary<Type, String> typeToSqliteDataType = new()
+    private static readonly Dictionary<Type, string> typeToSqliteDataType = new()
     {
-        { typeof(Boolean), "INTEGER" },
-        { typeof(Byte), "INTEGER" },
-        { typeof(Byte[]), "BLOB" },
-        { typeof(Char), "TEXT" },
+        { typeof(bool), "INTEGER" },
+        { typeof(byte), "INTEGER" },
+        { typeof(byte[]), "BLOB" },
+        { typeof(char), "TEXT" },
         { typeof(DateOnly), "TEXT" },
         { typeof(DateTime), "TEXT" },
         { typeof(DateTimeOffset), "TEXT" },
-        { typeof(Decimal), "TEXT" },
-        { typeof(Double), "REAL" },
+        { typeof(decimal), "TEXT" },
+        { typeof(double), "REAL" },
         { typeof(Guid), "TEXT" },
-        { typeof(Int16), "INTEGER" },
-        { typeof(Int32), "INTEGER" },
-        { typeof(Int64), "INTEGER" },
-        { typeof(Single), "REAL" },
-        { typeof(String), "TEXT" },
+        { typeof(short), "INTEGER" },
+        { typeof(int), "INTEGER" },
+        { typeof(long), "INTEGER" },
+        { typeof(float), "REAL" },
+        { typeof(string), "TEXT" },
         { typeof(TimeOnly), "TEXT" },
         { typeof(TimeSpan), "TEXT" }
     };

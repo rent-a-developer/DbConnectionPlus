@@ -32,7 +32,7 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             .Should().NotBeNull();
 
         interceptedDbParameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -213,7 +213,7 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         var timeout = Generate.Single<TimeSpan>();
         var cancellationToken = Generate.Single<CancellationToken>();
 
-        _ = this.MockDbConnection.Query<Int32>(
+        _ = this.MockDbConnection.Query<int>(
             statement,
             transaction,
             timeout,
@@ -245,7 +245,7 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
             .Should().Be(CommandType.StoredProcedure);
 
         interceptedDbCommand.CommandTimeout
-            .Should().Be((Int32)timeout.TotalSeconds);
+            .Should().Be((int)timeout.TotalSeconds);
 
         interceptedDbCommand.Parameters.Count
             .Should().Be(1);

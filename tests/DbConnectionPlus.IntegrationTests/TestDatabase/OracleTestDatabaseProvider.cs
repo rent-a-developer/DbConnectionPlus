@@ -12,37 +12,37 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 public class OracleTestDatabaseProvider : ITestDatabaseProvider
 {
     /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => false;
+    public bool CanRetrieveStructureOfTemporaryTables => false;
 
     /// <inheritdoc />
     public IDatabaseAdapter DatabaseAdapter => new OracleDatabaseAdapter();
 
     /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
+    public string DatabaseCollation => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "BEGIN DBMS_LOCK.SLEEP(2); END;";
+    public string DelayTwoSecondsStatement => "BEGIN DBMS_LOCK.SLEEP(2); END;";
 
     /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => false;
+    public bool HasUnsupportedDataType => false;
 
     /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
 
     /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
+    public bool SupportsDateTimeOffset => true;
 
     /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => false;
+    public bool SupportsProperCommandCancellation => false;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
+    public bool SupportsStoredProcedures => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => false;
+    public bool SupportsStoredProceduresReturningResultSet => false;
 
     /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
 
     /// <inheritdoc />
     public DbConnection CreateConnection()
@@ -58,7 +58,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null)
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null)
     {
         var quoteTemporaryTableName = this.DatabaseAdapter.QuoteTemporaryTableName(tableName, connection);
         var unquotedTemporaryTableName = quoteTemporaryTableName[1..^1]; // Strip the quotes (").
@@ -69,23 +69,23 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
+    public string GetUnsupportedDataTypeLiteral() =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
@@ -112,14 +112,14 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
     /// <summary>
     /// The connection string that connects to the Oracle server running in the test container.
     /// </summary>
-    private static String ConnectionString =>
+    private static string ConnectionString =>
         TestDatabaseContainers.Oracle.ConnectionString;
 
-    private static void ExecuteScript(OracleConnection connection, String script)
+    private static void ExecuteScript(OracleConnection connection, string script)
     {
         var statements = script
             .Split("GO", StringSplitOptions.RemoveEmptyEntries)
-            .Where(a => !String.IsNullOrWhiteSpace(a.Trim()));
+            .Where(a => !string.IsNullOrWhiteSpace(a.Trim()));
 
         foreach (var statement in statements)
         {
@@ -127,7 +127,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const String CreateDatabaseObjectsSql =
+    private const string CreateDatabaseObjectsSql =
         """
         CREATE TABLE "Entity"
         (
@@ -204,7 +204,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
 
         """;
 
-    private const String DropDatabaseObjectsSql =
+    private const string DropDatabaseObjectsSql =
         """
         DROP TABLE IF EXISTS "Entity" PURGE;
         GO
@@ -225,7 +225,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const String PurgeTablesSql =
+    private const string PurgeTablesSql =
         """
         TRUNCATE TABLE "Entity";
         GO
@@ -243,5 +243,5 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
 }

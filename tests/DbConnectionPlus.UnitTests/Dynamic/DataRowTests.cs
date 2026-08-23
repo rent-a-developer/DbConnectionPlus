@@ -12,7 +12,7 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldBeMutable()
     {
-        var dictionary = new Dictionary<String, Object?>
+        var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() },
@@ -52,7 +52,7 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldAllowDynamicMemberAccess()
     {
-        var dictionary = new Dictionary<String, Object?>
+        var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() }
@@ -60,17 +60,17 @@ public class DataRowTests : UnitTestsBase
 
         dynamic dataRow = new DataRow(dictionary);
 
-        ((Object?)dataRow.ColumnA)
+        ((object?)dataRow.ColumnA)
             .Should().Be(dictionary["ColumnA"]);
 
-        ((Object?)dataRow.ColumnB)
+        ((object?)dataRow.ColumnB)
             .Should().Be(dictionary["ColumnB"]);
     }
 
     [Fact]
     public void ShouldAllowDynamicMemberAssignment()
     {
-        var dictionary = new Dictionary<String, Object?>
+        var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() }
         };
@@ -91,7 +91,7 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldAllowDynamicMemberAssignmentOfUnknownColumn()
     {
-        var dataRow = new DataRow(new Dictionary<String, Object?>());
+        var dataRow = new DataRow(new Dictionary<string, object?>());
         dynamic dynamicDataRow = dataRow;
 
         var value = Generate.ScalarValue();
@@ -104,7 +104,7 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldProvideDynamicMemberNames()
     {
-        var dictionary = new Dictionary<String, Object?>
+        var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() }
@@ -121,43 +121,43 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldThrowWhenDynamicallyReadingUnknownColumn()
     {
-        dynamic dataRow = new DataRow(new Dictionary<String, Object?>());
+        dynamic dataRow = new DataRow(new Dictionary<string, object?>());
 
-        Invoking(() => (Object?)dataRow.UnknownColumn)
+        Invoking(() => (object?)dataRow.UnknownColumn)
             .Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
     public void ShouldResolveDynamicPropertyAccessToColumnsAndNotToOwnProperties()
     {
-        dynamic dataRow = new DataRow(new Dictionary<String, Object?> { { "ColumnA", Generate.ScalarValue() } });
+        dynamic dataRow = new DataRow(new Dictionary<string, object?> { { "ColumnA", Generate.ScalarValue() } });
 
         // "Count" is a property of DataRow, but through a dynamic reference it addresses a column of that name.
-        Invoking(() => (Object?)dataRow.Count)
+        Invoking(() => (object?)dataRow.Count)
             .Should().Throw<KeyNotFoundException>();
 
-        dynamic rowWithShadowingColumn = new DataRow(new Dictionary<String, Object?> { { "Count", 42 } });
+        dynamic rowWithShadowingColumn = new DataRow(new Dictionary<string, object?> { { "Count", 42 } });
 
-        ((Object?)rowWithShadowingColumn.Count)
+        ((object?)rowWithShadowingColumn.Count)
             .Should().Be(42);
     }
 
     [Fact]
     public void ShouldResolveDynamicMethodCallsToOwnMembers()
     {
-        dynamic dataRow = new DataRow(new Dictionary<String, Object?> { { "ColumnA", Generate.ScalarValue() } });
+        dynamic dataRow = new DataRow(new Dictionary<string, object?> { { "ColumnA", Generate.ScalarValue() } });
 
-        ((Boolean)dataRow.ContainsKey("ColumnA"))
+        ((bool)dataRow.ContainsKey("ColumnA"))
             .Should().BeTrue();
 
-        ((Boolean)dataRow.ContainsKey("ColumnB"))
+        ((bool)dataRow.ContainsKey("ColumnB"))
             .Should().BeFalse();
     }
 
     [Fact]
     public void ShouldForwardAllMethodCallsToDictionary()
     {
-        var exceptions = new HashSet<String>
+        var exceptions = new HashSet<string>
         {
             nameof(IDictionary<,>.TryGetValue)
         };
@@ -166,7 +166,7 @@ public class DataRowTests : UnitTestsBase
         fixture.Customize(new AutoNSubstituteCustomization());
         fixture.Register(() => new DataTable());
 
-        var dictionary = Substitute.For<IDictionary<String, Object?>>();
+        var dictionary = Substitute.For<IDictionary<string, object?>>();
         var dataRow = new DataRow(dictionary);
 
         DecoratorAssertions.AssertDecoratorForwardsAllCalls(
@@ -180,7 +180,7 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void ShouldProvideRowData()
     {
-        var dictionary = new Dictionary<String, Object?>
+        var dictionary = new Dictionary<string, object?>
         {
             { "ColumnA", Generate.ScalarValue() },
             { "ColumnB", Generate.ScalarValue() },
@@ -202,12 +202,12 @@ public class DataRowTests : UnitTestsBase
     [Fact]
     public void TryGetValue_ShouldForwardCallToDictionary()
     {
-        var key = Generate.Single<String>();
+        var key = Generate.Single<string>();
         var value = Generate.ScalarValue();
 
-        var dictionary = Substitute.For<IDictionary<String, Object?>>();
+        var dictionary = Substitute.For<IDictionary<string, object?>>();
 
-        dictionary.TryGetValue(key, out Arg.Any<Object?>()).Returns(a =>
+        dictionary.TryGetValue(key, out Arg.Any<object?>()).Returns(a =>
             {
                 a[1] = value;
                 return true;
@@ -222,6 +222,6 @@ public class DataRowTests : UnitTestsBase
         result
             .Should().Be(value);
 
-        dictionary.Received().TryGetValue(key, out Arg.Any<Object?>());
+        dictionary.Received().TryGetValue(key, out Arg.Any<object?>());
     }
 }

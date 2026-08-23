@@ -31,7 +31,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Exists_Category)]
-    public Boolean Exists_Command()
+    public bool Exists_Command()
     {
         var entityId = this.entitiesInDb[0].Id;
 
@@ -51,7 +51,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Exists_Category)]
-    public Boolean Exists_Dapper()
+    public bool Exists_Dapper()
     {
         var entityId = this.entitiesInDb[0].Id;
 
@@ -66,12 +66,12 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Exists_Category)]
-    public Boolean Exists_DbConnectionPlus()
+    public bool Exists_DbConnectionPlus()
     {
         var entityId = this.entitiesInDb[0].Id;
 
         return this.connection.Exists($"SELECT 1 FROM Entity WHERE Id = {Parameter(entityId)}");
     }
 
-    private const String Exists_Category = "Exists";
+    private const string Exists_Category = "Exists";
 }

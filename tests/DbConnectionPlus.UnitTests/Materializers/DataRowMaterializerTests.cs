@@ -20,10 +20,10 @@ public class DataRowMaterializerTests : UnitTestsBase
         dataReader.GetName(2).Returns("ColumnC");
 
         dataReader
-            .GetValues(Arg.Any<Object[]>())
+            .GetValues(Arg.Any<object[]>())
             .Returns(callInfo =>
                 {
-                    var array = callInfo.Arg<Object[]>();
+                    var array = callInfo.Arg<object[]>();
                     array[0] = value1;
                     array[1] = value2;
                     array[2] = value3;

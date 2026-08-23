@@ -31,7 +31,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
+    public async Task QueryFirst_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -54,7 +54,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
+    public async Task QueryFirst_CommandType_ShouldUseCommandType(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
@@ -75,7 +75,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task QueryFirst_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -104,7 +104,7 @@ public abstract class
     [InlineData(true)]
     public async Task
         QueryFirst_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -124,7 +124,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
+    public async Task QueryFirst_InterpolatedParameter_ShouldPassInterpolatedParameter(bool useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>(2);
 
@@ -141,7 +141,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_Parameter_ShouldPassParameter(Boolean useAsyncApi)
+    public async Task QueryFirst_Parameter_ShouldPassParameter(bool useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>(2);
 
@@ -164,7 +164,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task QueryFirst_QueryReturnedNoRows_ShouldThrow(Boolean useAsyncApi) =>
+    public Task QueryFirst_QueryReturnedNoRows_ShouldThrow(bool useAsyncApi) =>
         Invoking(() => CallApi(
                     useAsyncApi,
                     this.Connection,
@@ -180,7 +180,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
+    public async Task QueryFirst_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(bool useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -212,7 +212,7 @@ public abstract class
     [InlineData(true)]
     public async Task
         QueryFirst_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -226,14 +226,14 @@ public abstract class
             cancellationToken: TestContext.Current.CancellationToken
         );
 
-        ValueConverter.ConvertValueToType<Int64>(dataRow["Id"])
+        ValueConverter.ConvertValueToType<long>(dataRow["Id"])
             .Should().Be(entityIds[0]);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_ShouldReturnDataRowForFirstRow(Boolean useAsyncApi)
+    public async Task QueryFirst_ShouldReturnDataRowForFirstRow(bool useAsyncApi)
     {
         var entities = this.CreateEntitiesInDb<Entity>(2);
 
@@ -250,7 +250,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task QueryFirst_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task QueryFirst_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
@@ -283,7 +283,7 @@ public abstract class
     }
 
     private static Task<DataRow> CallApi(
-        Boolean useAsyncApi,
+        bool useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

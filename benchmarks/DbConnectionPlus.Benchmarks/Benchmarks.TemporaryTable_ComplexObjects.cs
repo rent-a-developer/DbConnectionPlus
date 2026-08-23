@@ -43,7 +43,7 @@ public partial class Benchmarks
 
         insertCommand.CommandText = InsertIntoTempEntities;
 
-        var parameters = new Dictionary<String, SqliteParameter>
+        var parameters = new Dictionary<string, SqliteParameter>
         {
             { "Id", new("Id", null) },
             { "BooleanValue", new("BooleanValue", null) },
@@ -129,7 +129,7 @@ public partial class Benchmarks
     private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities =
         Generate.Multiple(TemporaryTable_ComplexObjects_EntitiesPerOperation);
 
-    private const String CreateTempEntitiesTableSql = """
+    private const string CreateTempEntitiesTableSql = """
                                                       CREATE TEMP TABLE Entities (
                                                           Id INTEGER,
                                                           BooleanValue INTEGER,
@@ -148,7 +148,7 @@ public partial class Benchmarks
                                                       )
                                                       """;
 
-    private const String InsertIntoTempEntities = """
+    private const string InsertIntoTempEntities = """
                                                   INSERT INTO temp.Entities (
                                                       Id,
                                                       BooleanValue,
@@ -183,6 +183,6 @@ public partial class Benchmarks
                                                   )
                                                   """;
 
-    private const String TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
-    private const Int32 TemporaryTable_ComplexObjects_EntitiesPerOperation = 250;
+    private const string TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
+    private const int TemporaryTable_ComplexObjects_EntitiesPerOperation = 250;
 }

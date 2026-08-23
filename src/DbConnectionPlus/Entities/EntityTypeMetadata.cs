@@ -44,9 +44,9 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// </param>
 public sealed record EntityTypeMetadata(
     Type EntityType,
-    String TableName,
+    string TableName,
     IReadOnlyList<EntityPropertyMetadata> AllProperties,
-    IReadOnlyDictionary<String, EntityPropertyMetadata> AllPropertiesByPropertyName,
+    IReadOnlyDictionary<string, EntityPropertyMetadata> AllPropertiesByPropertyName,
     IReadOnlyList<EntityPropertyMetadata> ComputedProperties,
     IReadOnlyList<EntityPropertyMetadata> ConcurrencyTokenProperties,
     IReadOnlyList<EntityPropertyMetadata> DatabaseGeneratedProperties,

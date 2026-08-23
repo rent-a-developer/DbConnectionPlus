@@ -14,7 +14,7 @@ internal sealed class SqlServerContainerFixture()
     : DbContainerFixture<MsSqlBuilder, MsSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
 {
     /// <inheritdoc />
-    public override String ConnectionString =>
+    public override string ConnectionString =>
         new SqlConnectionStringBuilder
         {
             DataSource = $"{this.Container.Hostname},{this.Container.GetMappedPublicPort(MsSqlBuilder.MsSqlPort)}",
@@ -38,5 +38,5 @@ internal sealed class SqlServerContainerFixture()
         new MsSqlBuilder(Image)
             .WithPassword(TestDatabaseContainers.Password);
 
-    private const String Image = "mcr.microsoft.com/mssql/server:2022-latest";
+    private const string Image = "mcr.microsoft.com/mssql/server:2022-latest";
 }

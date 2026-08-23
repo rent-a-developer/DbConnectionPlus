@@ -17,11 +17,11 @@ internal static class DbDataReaderExtensions
     /// The order of names in the array corresponds to the order of the fields in <paramref name="dataReader" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="dataReader" /> is <see langword="null" />.</exception>
-    internal static String[] GetFieldNames(this DbDataReader dataReader)
+    internal static string[] GetFieldNames(this DbDataReader dataReader)
     {
         ArgumentNullException.ThrowIfNull(dataReader);
 
-        var result = new String[dataReader.FieldCount];
+        var result = new string[dataReader.FieldCount];
 
         for (var i = 0; i < dataReader.FieldCount; i++)
         {

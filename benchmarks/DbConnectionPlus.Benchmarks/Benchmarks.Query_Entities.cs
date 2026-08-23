@@ -71,6 +71,6 @@ public partial class Benchmarks
     public List<BenchmarkEntity> Query_Entities_DbConnectionPlus() =>
         [.. this.connection.Query<BenchmarkEntity>("SELECT * FROM Entity")];
 
-    private const String Query_Entities_Category = "Query_Entities";
-    private const Int32 Query_Entities_EntitiesPerOperation = 100;
+    private const string Query_Entities_Category = "Query_Entities";
+    private const int Query_Entities_EntitiesPerOperation = 100;
 }

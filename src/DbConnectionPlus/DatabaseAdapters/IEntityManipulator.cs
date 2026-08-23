@@ -56,7 +56,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Int32 DeleteEntities<
+    public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -114,7 +114,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Task<Int32> DeleteEntitiesAsync<
+    public Task<int> DeleteEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -168,7 +168,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Int32 DeleteEntity<
+    public int DeleteEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -226,7 +226,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Task<Int32> DeleteEntityAsync<
+    public Task<int> DeleteEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -288,7 +288,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 InsertEntities<
+    public int InsertEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -353,7 +353,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> InsertEntitiesAsync<
+    public Task<int> InsertEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -414,7 +414,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 InsertEntity<
+    public int InsertEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -479,7 +479,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> InsertEntityAsync<
+    public Task<int> InsertEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -552,7 +552,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 UpdateEntities<
+    public int UpdateEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -630,7 +630,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> UpdateEntitiesAsync<
+    public Task<int> UpdateEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -703,7 +703,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 UpdateEntity<
+    public int UpdateEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -780,7 +780,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> UpdateEntityAsync<
+    public Task<int> UpdateEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,

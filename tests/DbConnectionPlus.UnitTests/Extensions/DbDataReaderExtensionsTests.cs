@@ -9,7 +9,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
     [Fact]
     public void GetFieldNames_ShouldReturnFieldNames()
     {
-        String[] fieldNames = ["FieldA", "FieldB", "FieldC"];
+        string[] fieldNames = ["FieldA", "FieldB", "FieldC"];
 
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -26,7 +26,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
     [Fact]
     public void GetFieldTypes_ShouldReturnFieldTypes()
     {
-        Type[] fieldTypes = [typeof(Int32), typeof(String), typeof(DateTime)];
+        Type[] fieldTypes = [typeof(int), typeof(string), typeof(DateTime)];
 
         var dataReader = Substitute.For<DbDataReader>();
 

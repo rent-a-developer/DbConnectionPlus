@@ -13,7 +13,7 @@ public class EntityHelperTests : UnitTestsBase
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
             typeof(ItemWithPrivateConstructor),
-            [("c", typeof(Int64)), ("b", typeof(Int32)), ("a", typeof(Int16))]
+            [("c", typeof(long)), ("b", typeof(int)), ("a", typeof(short))]
         );
 
         constructor
@@ -22,7 +22,7 @@ public class EntityHelperTests : UnitTestsBase
         constructor
             .GetParameters()
             .Select(a => (a.Name, a.ParameterType))
-            .Should().BeEquivalentTo([("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))]);
+            .Should().BeEquivalentTo([("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class EntityHelperTests : UnitTestsBase
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
             typeof(ItemWithConstructor),
-            [("c", typeof(Int64)), ("b", typeof(Int32)), ("a", typeof(Int16))]
+            [("c", typeof(long)), ("b", typeof(int)), ("a", typeof(short))]
         );
 
         constructor
@@ -39,14 +39,14 @@ public class EntityHelperTests : UnitTestsBase
         constructor
             .GetParameters()
             .Select(a => (a.Name, a.ParameterType))
-            .Should().BeEquivalentTo([("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))]);
+            .Should().BeEquivalentTo([("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]);
     }
 
     [Fact]
     public void FindCompatibleConstructor_NamesDoNotMatch_TypesMatch_ShouldReturnNull() =>
         EntityHelper.FindCompatibleConstructor(
                 typeof(ItemWithConstructor),
-                [("d", typeof(Int16)), ("e", typeof(Int32)), ("f", typeof(Int64))]
+                [("d", typeof(short)), ("e", typeof(int)), ("f", typeof(long))]
             )
             .Should().BeNull();
 
@@ -55,7 +55,7 @@ public class EntityHelperTests : UnitTestsBase
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
             typeof(ItemWithConstructor),
-            [("a", typeof(Int32)), ("b", typeof(Int32)), ("c", typeof(Int32))]
+            [("a", typeof(int)), ("b", typeof(int)), ("c", typeof(int))]
         );
 
         constructor
@@ -64,14 +64,14 @@ public class EntityHelperTests : UnitTestsBase
         constructor
             .GetParameters()
             .Select(a => (a.Name, a.ParameterType))
-            .Should().BeEquivalentTo([("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))]);
+            .Should().BeEquivalentTo([("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]);
     }
 
     [Fact]
     public void FindCompatibleConstructor_NamesMatch_TypesAreIncompatible_ShouldReturnNull() =>
         EntityHelper.FindCompatibleConstructor(
                 typeof(ItemWithConstructor),
-                [("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(TimeSpan))]
+                [("a", typeof(short)), ("b", typeof(int)), ("c", typeof(TimeSpan))]
             )
             .Should().BeNull();
 
@@ -80,7 +80,7 @@ public class EntityHelperTests : UnitTestsBase
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
             typeof(ItemWithConstructor),
-            [("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))]
+            [("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]
         );
 
         constructor
@@ -89,7 +89,7 @@ public class EntityHelperTests : UnitTestsBase
         constructor
             .GetParameters()
             .Select(a => (a.Name, a.ParameterType))
-            .Should().BeEquivalentTo([("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))]);
+            .Should().BeEquivalentTo([("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class EntityHelperTests : UnitTestsBase
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
             typeof(ItemWithConstructor),
-            [("A", typeof(Int16)), ("B", typeof(Int32)), ("C", typeof(Int64))]
+            [("A", typeof(short)), ("B", typeof(int)), ("C", typeof(long))]
         );
 
         constructor
@@ -106,14 +106,14 @@ public class EntityHelperTests : UnitTestsBase
         constructor
             .GetParameters()
             .Select(a => a.ParameterType)
-            .Should().BeEquivalentTo([typeof(Int16), typeof(Int32), typeof(Int64)]);
+            .Should().BeEquivalentTo([typeof(short), typeof(int), typeof(long)]);
     }
 
     [Fact]
     public void FindCompatibleConstructor_NoMatchingConstructor_ShouldReturnNull() =>
         EntityHelper.FindCompatibleConstructor(
                 typeof(ItemWithConstructor),
-                [("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64)), ("d", typeof(String))]
+                [("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long)), ("d", typeof(string))]
             )
             .Should().BeNull();
 
@@ -448,8 +448,8 @@ public class EntityHelperTests : UnitTestsBase
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        (String Name, Type Type)[] constructorParameters =
-            [("a", typeof(Int16)), ("b", typeof(Int32)), ("c", typeof(Int64))];
+        (string Name, Type Type)[] constructorParameters =
+            [("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))];
 
         ArgumentNullGuardVerifier.Verify(() =>
             EntityHelper.FindCompatibleConstructor(typeof(ItemWithConstructor), constructorParameters)
@@ -534,7 +534,7 @@ public class EntityHelperTests : UnitTestsBase
     /// </summary>
     private sealed class EntityWithThrowingAccessors
     {
-        public Int32 Value
+        public int Value
         {
             get => throw new InvalidOperationException("Getter was invoked.");
             set => throw new InvalidOperationException("Setter was invoked.");
@@ -546,12 +546,12 @@ public class EntityHelperTests : UnitTestsBase
     /// </summary>
     private sealed class EntityWithNonPublicSetter
     {
-        public String? Name { get; init; }
+        public string? Name { get; init; }
 
         // The private setter is the point of this entity - it exists to be written through reflection, which
         // RCS1170 cannot see, so it believes the property should be read-only.
 #pragma warning disable RCS1170
-        public Int32 Value { get; private set; }
+        public int Value { get; private set; }
 #pragma warning restore RCS1170
     }
 }

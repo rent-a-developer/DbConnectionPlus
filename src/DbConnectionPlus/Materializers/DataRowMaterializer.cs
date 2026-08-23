@@ -20,10 +20,10 @@ internal static class DataRowMaterializer
     {
         ArgumentNullException.ThrowIfNull(dataReader);
 
-        var values = new Object[dataReader.FieldCount];
+        var values = new object[dataReader.FieldCount];
         dataReader.GetValues(values);
 
-        var columns = new Dictionary<String, Object?>(dataReader.FieldCount);
+        var columns = new Dictionary<string, object?>(dataReader.FieldCount);
 
         for (var ordinal = 0; ordinal < dataReader.FieldCount; ordinal++)
         {

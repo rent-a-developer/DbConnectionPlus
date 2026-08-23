@@ -4,7 +4,7 @@
 namespace RentADeveloper.DbConnectionPlus.Extensions;
 
 /// <summary>
-/// Provides extension methods for the type <see cref="Object" />.
+/// Provides extension methods for the type <see cref="object" />.
 /// </summary>
 internal static class ObjectExtensions
 {
@@ -17,11 +17,11 @@ internal static class ObjectExtensions
     /// </returns>
     /// <remarks>
     /// Sequences are rendered element by element as <c>[a,b,c]</c>; a value of any other unhandled type is
-    /// rendered via <see cref="Object.ToString" />. Nothing here reflects over the value, so the whole path stays
+    /// rendered via <see cref="object.ToString" />. Nothing here reflects over the value, so the whole path stays
     /// usable under Native AOT and trimming — which matters, because this method builds the message of every
     /// conversion failure and must not fail while doing so.
     /// </remarks>
-    internal static String ToDebugString(this Object? value) =>
+    internal static string ToDebugString(this object? value) =>
         value switch
         {
             null => "{null}",
@@ -35,7 +35,7 @@ internal static class ObjectExtensions
     /// <param name="value">The value of which to get the string representation.</param>
     /// <param name="depth">The current nesting depth, used to bound the recursion into nested sequences.</param>
     /// <returns>A string representation of <paramref name="value" />.</returns>
-    private static String FormatValue(Object? value, Int32 depth) =>
+    private static string FormatValue(object? value, int depth) =>
         value switch
         {
             null =>
@@ -44,16 +44,16 @@ internal static class ObjectExtensions
             DBNull =>
                 "{DBNull}",
 
-            Boolean booleanValue =>
+            bool booleanValue =>
                 booleanValue ? "True" : "False",
 
-            Byte byteValue =>
+            byte byteValue =>
                 byteValue.ToString("G", CultureInfo.InvariantCulture),
 
-            Byte[] bytesValue =>
+            byte[] bytesValue =>
                 Convert.ToBase64String(bytesValue),
 
-            Char charValue =>
+            char charValue =>
                 charValue.ToString(),
 
             DateTime dateTimeValue =>
@@ -62,10 +62,10 @@ internal static class ObjectExtensions
             DateTimeOffset dateTimeOffsetValue =>
                 dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture),
 
-            Decimal decimalValue =>
+            decimal decimalValue =>
                 decimalValue.ToString("N", CultureInfo.InvariantCulture),
 
-            Double doubleValue =>
+            double doubleValue =>
                 doubleValue.ToString("G17", CultureInfo.InvariantCulture),
 
             Enum enumValue =>
@@ -74,37 +74,37 @@ internal static class ObjectExtensions
             Guid guidValue =>
                 guidValue.ToString("D", CultureInfo.InvariantCulture),
 
-            Int16 int16Value =>
+            short int16Value =>
                 int16Value.ToString("G", CultureInfo.InvariantCulture),
 
-            Int32 int32Value =>
+            int int32Value =>
                 int32Value.ToString("G", CultureInfo.InvariantCulture),
 
-            Int64 int64Value =>
+            long int64Value =>
                 int64Value.ToString("G", CultureInfo.InvariantCulture),
 
             IntPtr intPtrValue =>
                 intPtrValue.ToString("G", CultureInfo.InvariantCulture),
 
-            SByte sbyteValue =>
+            sbyte sbyteValue =>
                 sbyteValue.ToString("G", CultureInfo.InvariantCulture),
 
-            Single singleValue =>
+            float singleValue =>
                 singleValue.ToString("G9", CultureInfo.InvariantCulture),
 
-            String stringValue =>
+            string stringValue =>
                 stringValue,
 
             TimeSpan timeSpanValue =>
                 timeSpanValue.ToString("c", CultureInfo.InvariantCulture),
 
-            UInt16 uint16Value =>
+            ushort uint16Value =>
                 uint16Value.ToString("G", CultureInfo.InvariantCulture),
 
-            UInt32 uint32Value =>
+            uint uint32Value =>
                 uint32Value.ToString("G", CultureInfo.InvariantCulture),
 
-            UInt64 uint64Value =>
+            ulong uint64Value =>
                 uint64Value.ToString("G", CultureInfo.InvariantCulture),
 
             UIntPtr uintPtrValue =>
@@ -119,7 +119,7 @@ internal static class ObjectExtensions
             // are unavailable under Native AOT, so a conversion error would itself fail while building
             // its message. A type that renders as its own name here simply has no ToString override.
             _ =>
-                value.ToString() ?? String.Empty
+                value.ToString() ?? string.Empty
         };
 
     /// <summary>
@@ -128,13 +128,13 @@ internal static class ObjectExtensions
     /// <param name="values">The sequence of which to get the string representation.</param>
     /// <param name="depth">The nesting depth at which <paramref name="values" /> itself sits.</param>
     /// <returns>A string representation of <paramref name="values" />.</returns>
-    private static String FormatSequence(IEnumerable values, Int32 depth) =>
+    private static string FormatSequence(IEnumerable values, int depth) =>
         depth >= MaxSequenceDepth
             ? "[...]"
-            : "[" + String.Join(",", values.Cast<Object?>().Select(item => FormatValue(item, depth + 1))) + "]";
+            : "[" + string.Join(",", values.Cast<object?>().Select(item => FormatValue(item, depth + 1))) + "]";
 
     /// <summary>
     /// The deepest sequence nesting that is rendered before the representation is truncated.
     /// </summary>
-    private const Int32 MaxSequenceDepth = 10;
+    private const int MaxSequenceDepth = 10;
 }

@@ -32,7 +32,7 @@ public static partial class DbConnectionExtensions
     /// An instance of <see cref="InterpolatedTemporaryTable" /> indicating that the sequence
     /// <paramref name="values" /> should be passed as a temporary table to an SQL statement.
     /// </returns>
-    /// <exception cref="ArgumentException"><typeparamref name="T" /> is the type <see cref="Object" />.</exception>
+    /// <exception cref="ArgumentException"><typeparamref name="T" /> is the type <see cref="object" />.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="values" /> is <see langword="null" />.</exception>
     /// <remarks>
     /// To use this method import <see cref="DbConnectionExtensions" /> with a using directive with the static modifier:
@@ -40,7 +40,7 @@ public static partial class DbConnectionExtensions
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
     /// </code>
     /// <para>
-    /// You can pass a sequence of scalar values (e.g. <see cref="String" />, <see cref="Int32" />,
+    /// You can pass a sequence of scalar values (e.g. <see cref="string" />, <see cref="int" />,
     /// <see cref="DateTime" />, <see cref="Enum" /> and so on) or a sequence of complex objects.
     /// </para>
     /// <para>
@@ -137,19 +137,19 @@ public static partial class DbConnectionExtensions
     >(
         IEnumerable<T> values,
         [CallerArgumentExpression(nameof(values))]
-        String? valuesExpression = null
+        string? valuesExpression = null
     )
     {
         ArgumentNullException.ThrowIfNull(values);
 
-        if (typeof(T) == typeof(Object))
+        if (typeof(T) == typeof(object))
         {
-            throw new ArgumentException($"The type parameter T cannot be the type {typeof(Object)}.");
+            throw new ArgumentException($"The type parameter T cannot be the type {typeof(object)}.");
         }
 
-        String? temporaryTableName = null;
+        string? temporaryTableName = null;
 
-        if (!String.IsNullOrWhiteSpace(valuesExpression))
+        if (!string.IsNullOrWhiteSpace(valuesExpression))
         {
             var nameFromCallerArgumentExpression = NameHelper.CreateNameFromCallerArgumentExpression(
                 valuesExpression,
@@ -158,13 +158,13 @@ public static partial class DbConnectionExtensions
                 27
             );
 
-            if (!String.IsNullOrWhiteSpace(nameFromCallerArgumentExpression))
+            if (!string.IsNullOrWhiteSpace(nameFromCallerArgumentExpression))
             {
                 temporaryTableName = nameFromCallerArgumentExpression + "_" + Guid.NewGuid().ToString("N");
             }
         }
 
-        if (String.IsNullOrWhiteSpace(temporaryTableName))
+        if (string.IsNullOrWhiteSpace(temporaryTableName))
         {
             temporaryTableName = "Values_" + Guid.NewGuid().ToString("N");
         }

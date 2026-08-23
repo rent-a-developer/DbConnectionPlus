@@ -34,7 +34,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -134,7 +134,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -249,14 +249,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TEMPORARY TABLE `");
         sqlBuilder.Append(tableName);
@@ -300,14 +300,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TEMPORARY TABLE `");
         sqlBuilder.Append(tableName);
@@ -340,7 +340,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         {
             if (valuesType.IsEnumOrNullableEnumType())
             {
-                var enumValues = new List<Object>();
+                var enumValues = new List<object>();
 
                 foreach (var value in values)
                 {
@@ -368,14 +368,14 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                     case EnumSerializationMode.Integers:
                         return new EnumerableReader(
                             enumValues,
-                            typeof(Int32?),
+                            typeof(int?),
                             Constants.SingleColumnTemporaryTableColumnName
                         );
 
                     case EnumSerializationMode.Strings:
                         return new EnumerableReader(
                             enumValues,
-                            typeof(String),
+                            typeof(string),
                             Constants.SingleColumnTemporaryTableColumnName
                         );
 
@@ -402,7 +402,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, MySqlConnection connection, MySqlTransaction? transaction)
+    private static void DropTemporaryTable(string name, MySqlConnection connection, MySqlTransaction? transaction)
     {
         using var command = connection.CreateCommand();
 
@@ -422,7 +422,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async ValueTask DropTemporaryTableAsync(
-        String name,
+        string name,
         MySqlConnection connection,
         MySqlTransaction? transaction
     )

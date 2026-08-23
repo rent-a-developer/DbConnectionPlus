@@ -18,8 +18,8 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetFieldType(0).Returns(typeof(String));
-        dataReader.GetName(0).Returns(String.Empty);
+        dataReader.GetFieldType(0).Returns(typeof(string));
+        dataReader.GetName(0).Returns(string.Empty);
 
         Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
             .Should().Throw<ArgumentException>()
@@ -43,7 +43,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<ArgumentException>()
             .WithMessage(
                 $"The data type {typeof(Guid)} of the column 'CharValue' returned by the SQL statement is not " +
-                $"compatible with the property type {typeof(Char)} of the corresponding property of the type " +
+                $"compatible with the property type {typeof(char)} of the corresponding property of the type " +
                 $"{typeof(Entity)}.*"
             );
     }
@@ -68,10 +68,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("NotAPropertyOfEntity");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
 
         dataReader.GetName(1).Returns("AlsoNotAPropertyOfEntity");
-        dataReader.GetFieldType(1).Returns(typeof(Int32));
+        dataReader.GetFieldType(1).Returns(typeof(int));
 
         Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
             .Should().Throw<InvalidOperationException>()
@@ -89,10 +89,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
 
         dataReader.GetName(1).Returns("NotAPropertyOfEntity");
-        dataReader.GetFieldType(1).Returns(typeof(String));
+        dataReader.GetFieldType(1).Returns(typeof(string));
 
         Invoking(() => EntityMaterializerFactory.GetMaterializer<Entity>(dataReader))
             .Should().NotThrow();
@@ -127,9 +127,9 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(String.Empty);
+        dataReader.GetString(0).Returns(string.Empty);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
 
@@ -137,12 +137,12 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"to the type {typeof(char)} of the corresponding property of the type " +
                 $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
+                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one " +
                 "character long."
             );
 
@@ -152,12 +152,12 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"to the type {typeof(char)} of the corresponding property of the type " +
                 $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly " +
                 "one character long."
             );
     }
@@ -170,10 +170,10 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        var character = Generate.Single<Char>();
+        var character = Generate.Single<char>();
 
         dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(character.ToString());
 
@@ -227,7 +227,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("id"); // lower-case
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(789);
 
@@ -250,14 +250,14 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(String)); // EntityWithEnumStoredAsInteger.Id is of type Int64.
+        dataReader.GetFieldType(0).Returns(typeof(string)); // EntityWithEnumStoredAsInteger.Id is of type Int64.
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(entityId.ToString());
 
         dataReader.GetName(1).Returns("Enum");
-        dataReader.GetFieldType(1).Returns(typeof(Decimal)); // EntityWithEnumStoredAsInteger.Enum is of type TestEnum.
+        dataReader.GetFieldType(1).Returns(typeof(decimal)); // EntityWithEnumStoredAsInteger.Enum is of type TestEnum.
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+        dataReader.GetDecimal(1).Returns((decimal)enumValue);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
 
@@ -276,21 +276,21 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         var dataReader = Substitute.For<DbDataReader>();
 
         var id = Generate.Id();
-        var value = Generate.Single<Int32>();
+        var value = Generate.Single<int>();
 
         dataReader.FieldCount.Returns(3);
 
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.GetName(0).Returns("Id");
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(id);
 
-        dataReader.GetFieldType(1).Returns(typeof(Int32));
+        dataReader.GetFieldType(1).Returns(typeof(int));
         dataReader.GetName(1).Returns("Int32Value");
         dataReader.IsDBNull(1).Returns(false);
         dataReader.GetInt32(1).Returns(value);
 
-        dataReader.GetFieldType(2).Returns(typeof(Int32));
+        dataReader.GetFieldType(2).Returns(typeof(int));
         dataReader.GetName(2).Returns("NonExistent");
         dataReader.IsDBNull(2).Returns(false);
         dataReader.GetInt64(2).Returns(Generate.SmallNumber());
@@ -319,9 +319,9 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
         dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetInt32(0).Returns((Int32)enumValue);
+        dataReader.GetInt32(0).Returns((int)enumValue);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
 
@@ -340,7 +340,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns(999);
 
@@ -355,7 +355,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
     }
@@ -370,7 +370,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(enumValue.ToString());
 
@@ -390,7 +390,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns("NonExistent");
 
@@ -421,48 +421,48 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Computed");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Computed_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("ConcurrencyToken");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(ordinal).Returns(typeof(byte[]));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetValue(ordinal).Returns(entity.ConcurrencyToken_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Identity");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Identity_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Key1");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key1_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Key2");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
         dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
-        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(string));
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("RowVersion");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(ordinal).Returns(typeof(byte[]));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetValue(ordinal).Returns(entity.RowVersion_);
 
@@ -511,48 +511,48 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Computed");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Computed_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("ConcurrencyToken");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(ordinal).Returns(typeof(byte[]));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetValue(ordinal).Returns(entity.ConcurrencyToken_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Identity");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Identity_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Key1");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key1_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Key2");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key2_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
         dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
-        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(string));
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("RowVersion");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(ordinal).Returns(typeof(byte[]));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetValue(ordinal).Returns(entity.RowVersion_);
 
@@ -599,19 +599,19 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Key1");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key1);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Key2");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key2);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value);
 
@@ -637,7 +637,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("NonExistent");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
 
         Invoking(() => EntityMaterializerFactory.GetMaterializer<EntityWithPublicConstructor>(dataReader))
             .Should().Throw<ArgumentException>()
@@ -696,7 +696,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(true);
 
         var materializer = EntityMaterializerFactory.GetMaterializer<Entity>(dataReader);
@@ -717,7 +717,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("NullableBooleanValue");
-        dataReader.GetFieldType(0).Returns(typeof(Boolean));
+        dataReader.GetFieldType(0).Returns(typeof(bool));
         dataReader.IsDBNull(0).Returns(true);
         dataReader.GetBoolean(0).Throws(new SqlNullValueException());
 
@@ -760,7 +760,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Id");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Id);
 
@@ -810,20 +810,20 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Key1");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Key1_);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Value");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Value_);
 
         ordinal++;
         var notMappedColumnOrdinal = ordinal;
         dataReader.GetName(notMappedColumnOrdinal).Returns("NotMapped");
-        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(String));
+        dataReader.GetFieldType(notMappedColumnOrdinal).Returns(typeof(string));
 
         var materializer = GetReflectionMaterializer<MappingTestEntityAttributes>(dataReader);
 
@@ -850,7 +850,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("id"); // lower-case
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(789);
 
@@ -871,14 +871,14 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(String)); // EntityWithEnumStoredAsInteger.Id is of type Int64.
+        dataReader.GetFieldType(0).Returns(typeof(string)); // EntityWithEnumStoredAsInteger.Id is of type Int64.
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(entityId.ToString());
 
         dataReader.GetName(1).Returns("Enum");
-        dataReader.GetFieldType(1).Returns(typeof(Decimal)); // EntityWithEnumStoredAsInteger.Enum is of type TestEnum.
+        dataReader.GetFieldType(1).Returns(typeof(decimal)); // EntityWithEnumStoredAsInteger.Enum is of type TestEnum.
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+        dataReader.GetDecimal(1).Returns((decimal)enumValue);
 
         var materializer = GetReflectionMaterializer<EntityWithEnumStoredAsInteger>(dataReader);
 
@@ -899,7 +899,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("CharValue");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns("ab");
 
@@ -909,12 +909,12 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'CharValue' returned by the SQL statement contains a value that could not be converted " +
-                $"to the type {typeof(Char)} of the corresponding property of the type " +
+                $"to the type {typeof(char)} of the corresponding property of the type " +
                 $"{typeof(Entity)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly " +
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly " +
                 "one character long."
             );
     }
@@ -927,7 +927,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(true);
 
         var materializer = GetReflectionMaterializer<Entity>(dataReader);
@@ -948,7 +948,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("NullableBooleanValue");
-        dataReader.GetFieldType(0).Returns(typeof(Boolean));
+        dataReader.GetFieldType(0).Returns(typeof(bool));
         dataReader.IsDBNull(0).Returns(true);
         dataReader.GetBoolean(0).Throws(new SqlNullValueException());
 
@@ -972,7 +972,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
 
         var ordinal = 0;
         dataReader.GetName(ordinal).Returns("Id");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int64));
+        dataReader.GetFieldType(ordinal).Returns(typeof(long));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt64(ordinal).Returns(entity.Id);
 
@@ -1028,7 +1028,7 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
     public void ReflectionMaterializer_ConstructorParametersInADifferentOrderThanTheFields_ShouldMaterialize()
     {
         var enumValue = Generate.Single<TestEnum>();
-        var name = Generate.Single<String>();
+        var name = Generate.Single<string>();
         var id = Generate.Id();
 
         // Item's constructor is (Id, Name, Enum); the result set deliberately returns the columns in another order.
@@ -1037,17 +1037,17 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(3);
 
         dataReader.GetName(0).Returns("Name");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(name);
 
         dataReader.GetName(1).Returns("Enum");
-        dataReader.GetFieldType(1).Returns(typeof(Int32)); // Item.Enum is of type TestEnum.
+        dataReader.GetFieldType(1).Returns(typeof(int)); // Item.Enum is of type TestEnum.
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetInt32(1).Returns((Int32)enumValue);
+        dataReader.GetInt32(1).Returns((int)enumValue);
 
         dataReader.GetName(2).Returns("Id");
-        dataReader.GetFieldType(2).Returns(typeof(Int64));
+        dataReader.GetFieldType(2).Returns(typeof(long));
         dataReader.IsDBNull(2).Returns(false);
         dataReader.GetInt64(2).Returns(id);
 
@@ -1170,17 +1170,17 @@ public class EntityMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(3);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(Generate.Id());
 
         dataReader.GetName(1).Returns("Name");
-        dataReader.GetFieldType(1).Returns(typeof(String));
+        dataReader.GetFieldType(1).Returns(typeof(string));
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetString(1).Returns(Generate.Single<String>());
+        dataReader.GetString(1).Returns(Generate.Single<string>());
 
         dataReader.GetName(2).Returns("Enum");
-        dataReader.GetFieldType(2).Returns(typeof(String)); // Item.Enum is of type TestEnum.
+        dataReader.GetFieldType(2).Returns(typeof(string)); // Item.Enum is of type TestEnum.
         dataReader.IsDBNull(2).Returns(false);
         dataReader.GetString(2).Returns(Generate.Single<TestEnum>().ToString());
 

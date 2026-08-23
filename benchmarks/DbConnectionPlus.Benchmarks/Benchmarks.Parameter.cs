@@ -31,7 +31,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Parameter_Category)]
-    public Int64 Parameter_Command()
+    public long Parameter_Command()
     {
         using var command = this.connection.CreateCommand();
 
@@ -48,13 +48,13 @@ public partial class Benchmarks
         command.Parameters.Add(new("@P9", 9));
         command.Parameters.Add(new("@P10", 10));
 
-        return (Int64)command.ExecuteScalar()!;
+        return (long)command.ExecuteScalar()!;
     }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Parameter_Category)]
-    public Int64 Parameter_Dapper() =>
-        SqlMapper.ExecuteScalar<Int64>(
+    public long Parameter_Dapper() =>
+        SqlMapper.ExecuteScalar<long>(
             this.connection,
             "SELECT @P1 + @P2 + @P3 + @P4 + @P5 + @P6 + @P7 + @P8 + @P9 + @P10",
             new { P1 = 1, P2 = 2, P3 = 3, P4 = 4, P5 = 5, P6 = 6, P7 = 7, P8 = 8, P9 = 9, P10 = 10 }
@@ -62,13 +62,13 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(Parameter_Category)]
-    public Int64 Parameter_DbConnectionPlus() =>
-        this.connection.ExecuteScalar<Int64>(
+    public long Parameter_DbConnectionPlus() =>
+        this.connection.ExecuteScalar<long>(
             $"""
              SELECT {Parameter(1)} + {Parameter(2)} + {Parameter(3)} + {Parameter(4)} + {Parameter(5)} + 
                     {Parameter(6)} + {Parameter(7)} + {Parameter(8)} + {Parameter(9)} + {Parameter(10)}
              """
         );
 
-    private const String Parameter_Category = "Parameter";
+    private const string Parameter_Category = "Parameter";
 }

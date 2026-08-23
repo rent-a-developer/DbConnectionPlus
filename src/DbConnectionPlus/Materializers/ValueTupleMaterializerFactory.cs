@@ -25,7 +25,7 @@ internal static class ValueTupleMaterializerFactory
     /// <see cref="RuntimeFeature.IsDynamicCodeSupported" /> branch; the attribute exists so that the analyzer
     /// verifies that guard rather than so that a warning propagates.
     /// </remarks>
-    internal const String MaterializerRequiresDynamicCodeMessage =
+    internal const string MaterializerRequiresDynamicCodeMessage =
         "Materializing value tuples compiles an expression tree at run time, which is not supported when the " +
         "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported " +
         "branch.";
@@ -60,7 +60,7 @@ internal static class ValueTupleMaterializerFactory
     /// The number of fields a value tuple holds before the runtime represents the remaining ones as a nested value
     /// tuple in its <c>Rest</c> field.
     /// </summary>
-    private const Int32 ValueTupleFieldCountBeforeNesting = 7;
+    private const int ValueTupleFieldCountBeforeNesting = 7;
 
     /// <summary>
     /// Gets a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of the
@@ -232,7 +232,7 @@ internal static class ValueTupleMaterializerFactory
         [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
     >(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -326,7 +326,7 @@ internal static class ValueTupleMaterializerFactory
     >(
         Type[] valueTupleFieldTypes,
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -377,7 +377,7 @@ internal static class ValueTupleMaterializerFactory
     >(
         Type[] valueTupleFieldTypes,
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -452,7 +452,7 @@ internal static class ValueTupleMaterializerFactory
                 ? Expression.Default(targetType)
                 : Expression.Throw(
                     Expression.New(
-                        typeof(InvalidCastException).GetConstructor([typeof(String)])!,
+                        typeof(InvalidCastException).GetConstructor([typeof(string)])!,
                         Expression.Constant(
                             $"The {columnNameOrPosition} returned by the SQL statement contains a NULL " +
                             $"value, but the corresponding field of the value tuple type {valueTupleType} " +
@@ -465,7 +465,7 @@ internal static class ValueTupleMaterializerFactory
             var throwInvalidCastExceptionExpression = Expression.Throw(
                 Expression.New(
                     typeof(InvalidCastException).GetConstructor(
-                        [typeof(String), typeof(Exception)]
+                        [typeof(string), typeof(Exception)]
                     )!,
                     Expression.Constant(
                         $"The {columnNameOrPosition} returned by the SQL statement contains a " +
@@ -483,7 +483,7 @@ internal static class ValueTupleMaterializerFactory
                     Expression.Call(
                         null,
                         MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType),
-                        Expression.Convert(getFieldValueCallExpression, typeof(Object))
+                        Expression.Convert(getFieldValueCallExpression, typeof(object))
                     ),
                     targetType
                 ),
@@ -561,8 +561,8 @@ internal static class ValueTupleMaterializerFactory
     /// The name of the field, or - for a result set whose columns have no name, which a value tuple query is allowed
     /// to have because its fields are matched by position - the position of the field.
     /// </returns>
-    private static String GetColumnNameOrPosition(Int32 fieldOrdinal, String? dataReaderFieldName) =>
-        !String.IsNullOrWhiteSpace(dataReaderFieldName)
+    private static string GetColumnNameOrPosition(int fieldOrdinal, string? dataReaderFieldName) =>
+        !string.IsNullOrWhiteSpace(dataReaderFieldName)
             ? $"column '{dataReaderFieldName}'"
             : $"{(fieldOrdinal + 1).OrdinalizeEnglish()} column";
 
@@ -700,13 +700,13 @@ internal static class ValueTupleMaterializerFactory
     /// <exception cref="InvalidCastException">
     /// A field of the result set could not be assigned to the corresponding field of the value tuple.
     /// </exception>
-    private static Object?[] ReadFieldValues(
+    private static object?[] ReadFieldValues(
         DbDataReader dataReader,
         Type valueTupleType,
         ReflectionColumnBinding[] columnBindings
     )
     {
-        var fieldValues = new Object?[columnBindings.Length];
+        var fieldValues = new object?[columnBindings.Length];
 
         for (var fieldOrdinal = 0; fieldOrdinal < columnBindings.Length; fieldOrdinal++)
         {
@@ -732,7 +732,7 @@ internal static class ValueTupleMaterializerFactory
     /// This does the same as the tail of <see cref="CreateExpressionMaterializer{TValueTuple}" />, which builds the
     /// same nesting out of <see cref="Expression.New(ConstructorInfo, Expression[])" /> instead of constructing it.
     /// </remarks>
-    private static Object ConstructValueTuple(ConstructorInvoker[] valueTupleConstructors, Object?[] fieldValues)
+    private static object ConstructValueTuple(ConstructorInvoker[] valueTupleConstructors, object?[] fieldValues)
     {
         // In C# value tuples with more than 7 fields are represented as nested value tuples.
         // E.g. a ValueTuple with 15 fields is represented as:
@@ -744,7 +744,7 @@ internal static class ValueTupleMaterializerFactory
         // first constructor belong to the outermost value tuple, the last ones to the innermost value tuple.
         var fieldValueChunks = fieldValues.Chunk(ValueTupleFieldCountBeforeNesting).ToArray();
 
-        Object? valueTuple = null;
+        object? valueTuple = null;
 
         // Now we create the nested value tuples from the inside out, by walking both arrays from their last entry
         // to their first one. When we are done valueTuple contains the outermost value tuple.
@@ -790,7 +790,7 @@ internal static class ValueTupleMaterializerFactory
     ///         </item>
     ///     </list>
     /// </exception>
-    private static Object? ReadFieldValue(
+    private static object? ReadFieldValue(
         DbDataReader dataReader,
         Type valueTupleType,
         ReflectionColumnBinding columnBinding
@@ -924,7 +924,7 @@ internal static class ValueTupleMaterializerFactory
         [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType,
         Type[] valueTupleFieldTypes,
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -989,23 +989,23 @@ internal static class ValueTupleMaterializerFactory
     /// </param>
     private readonly struct MaterializerCacheKey(
         Type[] valueTupleFieldTypes,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
         : IEquatable<MaterializerCacheKey>
     {
         /// <inheritdoc />
-        public Boolean Equals(MaterializerCacheKey other) =>
+        public bool Equals(MaterializerCacheKey other) =>
             this.ValueTupleFieldTypes.SequenceEqual(other.ValueTupleFieldTypes) &&
             this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames) &&
             this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
 
         /// <inheritdoc />
-        public override Boolean Equals(Object? obj) =>
+        public override bool Equals(object? obj) =>
             obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
-        public override Int32 GetHashCode()
+        public override int GetHashCode()
         {
             var hashCode = new HashCode();
 
@@ -1028,7 +1028,7 @@ internal static class ValueTupleMaterializerFactory
             return hashCode.ToHashCode();
         }
 
-        private String[] DataReaderFieldNames { get; } = dataReaderFieldNames;
+        private string[] DataReaderFieldNames { get; } = dataReaderFieldNames;
         private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
         private Type[] ValueTupleFieldTypes { get; } = valueTupleFieldTypes;
     }
@@ -1054,10 +1054,10 @@ internal static class ValueTupleMaterializerFactory
     /// The type the field value is converted to - the type of the value tuple field it is assigned to.
     /// </param>
     private readonly record struct ReflectionColumnBinding(
-        String ColumnNameOrPosition,
-        Int32 FieldOrdinal,
-        Func<DbDataReader, Object?> GetFieldValue,
-        Boolean NeedsConversion,
+        string ColumnNameOrPosition,
+        int FieldOrdinal,
+        Func<DbDataReader, object?> GetFieldValue,
+        bool NeedsConversion,
         Type TargetType
     );
 }

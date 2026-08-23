@@ -17,7 +17,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 //     against AOT comparison is read from the Mean column of the two rows for the same method.
 public class BenchmarksOrderer : IOrderer
 {
-    public Boolean SeparateLogicalGroups => true;
+    public bool SeparateLogicalGroups => true;
 
     public IEnumerable<BenchmarkCase> GetExecutionOrder(
         ImmutableArray<BenchmarkCase> benchmarksCase,
@@ -25,17 +25,17 @@ public class BenchmarksOrderer : IOrderer
     ) =>
         Sort(benchmarksCase);
 
-    public String? GetHighlightGroupKey(BenchmarkCase benchmarkCase) =>
+    public string? GetHighlightGroupKey(BenchmarkCase benchmarkCase) =>
         GetLogicalGroupKey(benchmarkCase);
 
-    public String? GetLogicalGroupKey(
+    public string? GetLogicalGroupKey(
         ImmutableArray<BenchmarkCase> allBenchmarksCases,
         BenchmarkCase benchmarkCase
     ) =>
         GetLogicalGroupKey(benchmarkCase);
 
-    public IEnumerable<IGrouping<String, BenchmarkCase>> GetLogicalGroupOrder(
-        IEnumerable<IGrouping<String, BenchmarkCase>> logicalGroups,
+    public IEnumerable<IGrouping<string, BenchmarkCase>> GetLogicalGroupOrder(
+        IEnumerable<IGrouping<string, BenchmarkCase>> logicalGroups,
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
     ) =>
         logicalGroups
@@ -55,10 +55,10 @@ public class BenchmarksOrderer : IOrderer
             .ThenByDescending(a => a.Descriptor.Baseline)
             .ThenBy(a => a.Descriptor.WorkloadMethod.Name, StringComparer.Ordinal);
 
-    private static String GetLogicalGroupKey(BenchmarkCase benchmarkCase) =>
+    private static string GetLogicalGroupKey(BenchmarkCase benchmarkCase) =>
         $"{benchmarkCase.Descriptor.Categories.FirstOrDefault()}-{benchmarkCase.Job.Id}";
 
     // Ranked rather than sorted by name, so that JIT is reported before AOT instead of alphabetically.
-    private static Int32 GetJobRank(BenchmarkCase benchmarkCase) =>
+    private static int GetJobRank(BenchmarkCase benchmarkCase) =>
         benchmarkCase.Job.Id.Contains(BenchmarksConfig.JitJobId, StringComparison.Ordinal) ? 0 : 1;
 }

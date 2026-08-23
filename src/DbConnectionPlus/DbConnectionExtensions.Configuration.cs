@@ -47,5 +47,5 @@ public static partial class DbConnectionExtensions
     ) =>
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
 
-    private static readonly Object configurationLockObject = new();
+    private static readonly object configurationLockObject = new();
 }

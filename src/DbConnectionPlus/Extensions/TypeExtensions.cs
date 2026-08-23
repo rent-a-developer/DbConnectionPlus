@@ -10,7 +10,7 @@ internal static class TypeExtensions
 {
     /// <summary>
     /// Determines whether this type is a built-in .NET type
-    /// (e.g. <see cref="Boolean" />, <see cref="String" />, <see cref="Decimal" />, ...).
+    /// (e.g. <see cref="bool" />, <see cref="string" />, <see cref="decimal" />, ...).
     /// </summary>
     /// <param name="type">The type to inspect.</param>
     /// <returns>
@@ -18,7 +18,7 @@ internal static class TypeExtensions
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Boolean IsBuiltInTypeOrNullableBuiltInType(this Type type)
+    internal static bool IsBuiltInTypeOrNullableBuiltInType(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -26,20 +26,20 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Determines whether this type is <see cref="Char" /> or <see cref="Nullable{Char}" />.
+    /// Determines whether this type is <see cref="char" /> or <see cref="Nullable{Char}" />.
     /// </summary>
     /// <param name="type">The type to inspect.</param>
     /// <returns>
-    /// <see langword="true" /> if this type is <see cref="Char" /> or <see cref="Nullable{Char}" />; otherwise,
+    /// <see langword="true" /> if this type is <see cref="char" /> or <see cref="Nullable{Char}" />; otherwise,
     /// <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Boolean IsCharOrNullableCharType(this Type type)
+    internal static bool IsCharOrNullableCharType(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
-        return type == typeof(Char) || type == typeof(Char?);
+        return type == typeof(char) || type == typeof(char?);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ internal static class TypeExtensions
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Boolean IsEnumOrNullableEnumType(this Type type)
+    internal static bool IsEnumOrNullableEnumType(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -69,7 +69,7 @@ internal static class TypeExtensions
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Boolean IsReferenceTypeOrNullableType(this Type type)
+    internal static bool IsReferenceTypeOrNullableType(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -86,7 +86,7 @@ internal static class TypeExtensions
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="type" /> is <see langword="null" />.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Boolean IsValueTupleType(this Type type)
+    internal static bool IsValueTupleType(this Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -95,22 +95,22 @@ internal static class TypeExtensions
 
     private static readonly HashSet<Type> builtInTypes =
     [
-        typeof(Boolean),
-        typeof(Byte),
-        typeof(SByte),
-        typeof(Char),
-        typeof(Decimal),
-        typeof(Double),
-        typeof(Single),
-        typeof(Int16),
-        typeof(UInt16),
-        typeof(Int32),
-        typeof(UInt32),
-        typeof(Int64),
-        typeof(UInt64),
+        typeof(bool),
+        typeof(byte),
+        typeof(sbyte),
+        typeof(char),
+        typeof(decimal),
+        typeof(double),
+        typeof(float),
+        typeof(short),
+        typeof(ushort),
+        typeof(int),
+        typeof(uint),
+        typeof(long),
+        typeof(ulong),
         typeof(IntPtr),
         typeof(UIntPtr),
-        typeof(String),
+        typeof(string),
         typeof(DateTime),
         typeof(DateOnly),
         typeof(DateTimeOffset),

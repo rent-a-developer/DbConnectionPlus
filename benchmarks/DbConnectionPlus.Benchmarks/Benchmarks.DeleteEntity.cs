@@ -83,7 +83,7 @@ public partial class Benchmarks
         transaction.Rollback();
     }
 
-    private const String DeleteEntity_Category = "DeleteEntity";
+    private const string DeleteEntity_Category = "DeleteEntity";
 
     // Deletes per invocation, and also the number of rows seeded into the table.
     //
@@ -101,5 +101,5 @@ public partial class Benchmarks
     // 0.5 us for the marginal delete. At one delete per invocation that fixed cost would be about two thirds
     // of the measurement - not a bias, since all three implementations pay it, but it would compress the
     // ratios this benchmark exists to show. Amortized over 1 000 deletes it is well under 1 %.
-    private const Int32 DeleteEntity_OperationsPerInvoke = 1000;
+    private const int DeleteEntity_OperationsPerInvoke = 1000;
 }

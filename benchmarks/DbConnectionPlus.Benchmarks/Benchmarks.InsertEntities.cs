@@ -39,7 +39,7 @@ public partial class Benchmarks
 
         command.CommandText = InsertEntitySql;
 
-        var parameters = new Dictionary<String, SqliteParameter>
+        var parameters = new Dictionary<string, SqliteParameter>
         {
             { "Id", new("Id", null) },
             { "BooleanValue", new("BooleanValue", null) },
@@ -100,12 +100,12 @@ public partial class Benchmarks
     private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert =
         Generate.Multiple(InsertEntities_EntitiesPerOperation);
 
-    private Int64 insertEntities_nextId;
+    private long insertEntities_nextId;
 
-    private const String InsertEntities_Category = "InsertEntities";
-    private const Int32 InsertEntities_EntitiesPerOperation = 200;
+    private const string InsertEntities_Category = "InsertEntities";
+    private const int InsertEntities_EntitiesPerOperation = 200;
 
-    private const String InsertEntitySql = """
+    private const string InsertEntitySql = """
                                            INSERT INTO Entity
                                            (
                                              Id,

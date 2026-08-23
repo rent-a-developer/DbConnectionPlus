@@ -18,23 +18,23 @@ public class ObjectExtensionsTests : UnitTestsBase
     [Fact]
     public void ToDebugString_ShouldRenderSequencesElementByElement()
     {
-        new List<String> { "A", "B" }.ToDebugString()
+        new List<string> { "A", "B" }.ToDebugString()
             .Should().Be("'[A,B]' (System.Collections.Generic.List`1[System.String])");
 
-        new Object?[] { 1, null, "A", true }.ToDebugString()
+        new object?[] { 1, null, "A", true }.ToDebugString()
             .Should().Be("'[1,{null},A,True]' (System.Object[])");
 
-        new Int32[][] { [1, 2], [3] }.ToDebugString()
+        new int[][] { [1, 2], [3] }.ToDebugString()
             .Should().Be("'[[1,2],[3]]' (System.Int32[][])");
 
-        Array.Empty<Int32>().ToDebugString()
+        Array.Empty<int>().ToDebugString()
             .Should().Be("'[]' (System.Int32[])");
     }
 
     [Fact]
     public void ToDebugString_ShouldTruncateSelfReferencingSequencesInsteadOfRecursingForever()
     {
-        var values = new List<Object?> { 1 };
+        var values = new List<object?> { 1 };
 
         values.Add(values);
 
@@ -51,7 +51,7 @@ public class ObjectExtensionsTests : UnitTestsBase
     public void ToDebugString_ShouldReturnStringRepresentationOfValue()
     {
 #pragma warning disable RCS1202
-        (null as Object).ToDebugString()
+        (null as object).ToDebugString()
             .Should().Be("{null}");
 #pragma warning restore RCS1202
 
@@ -61,10 +61,10 @@ public class ObjectExtensionsTests : UnitTestsBase
         true.ToDebugString()
             .Should().Be("'True' (System.Boolean)");
 
-        ((Byte)123).ToDebugString()
+        ((byte)123).ToDebugString()
             .Should().Be("'123' (System.Byte)");
 
-        new Byte[] { 1, 2, 3 }.ToDebugString()
+        new byte[] { 1, 2, 3 }.ToDebugString()
             .Should().Be("'AQID' (System.Byte[])");
 
         'X'.ToDebugString()
@@ -88,22 +88,22 @@ public class ObjectExtensionsTests : UnitTestsBase
         new Guid("889a8be0-f0ff-4555-86d8-8490434b7def").ToDebugString()
             .Should().Be("'889a8be0-f0ff-4555-86d8-8490434b7def' (System.Guid)");
 
-        ((Int16)123).ToDebugString()
+        ((short)123).ToDebugString()
             .Should().Be("'123' (System.Int16)");
 
         123.ToDebugString()
             .Should().Be("'123' (System.Int32)");
 
-        ((Int64)123).ToDebugString()
+        ((long)123).ToDebugString()
             .Should().Be("'123' (System.Int64)");
 
         ((IntPtr)123).ToDebugString()
             .Should().Be("'123' (System.IntPtr)");
 
-        ((SByte)123).ToDebugString()
+        ((sbyte)123).ToDebugString()
             .Should().Be("'123' (System.SByte)");
 
-        ((Single)123.45).ToDebugString()
+        ((float)123.45).ToDebugString()
             .Should().Be("'123.449997' (System.Single)");
 
         "A String".ToDebugString()
@@ -112,24 +112,24 @@ public class ObjectExtensionsTests : UnitTestsBase
         new TimeSpan(1, 2, 3, 4).ToDebugString()
             .Should().Be("'1.02:03:04' (System.TimeSpan)");
 
-        ((UInt16)123).ToDebugString()
+        ((ushort)123).ToDebugString()
             .Should().Be("'123' (System.UInt16)");
 
-        ((UInt32)123).ToDebugString()
+        ((uint)123).ToDebugString()
             .Should().Be("'123' (System.UInt32)");
 
-        ((UInt64)123).ToDebugString()
+        ((ulong)123).ToDebugString()
             .Should().Be("'123' (System.UInt64)");
 
         ((UIntPtr)123).ToDebugString()
             .Should().Be("'123' (System.UIntPtr)");
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
-        new Int32[] { 1, 2, 3 }.ToDebugString()
+        new int[] { 1, 2, 3 }.ToDebugString()
             .Should().Be("'[1,2,3]' (System.Int32[])");
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
 
-        new Object().ToDebugString()
+        new object().ToDebugString()
             .Should().Be("'System.Object' (System.Object)");
 
         new EntityWithEnumStoredAsString { Enum = TestEnum.Value3, Id = 1 }.ToDebugString()
@@ -139,10 +139,10 @@ public class ObjectExtensionsTests : UnitTestsBase
             );
     }
 
-    private sealed class Item(String id)
+    private sealed class Item(string id)
     {
         /// <inheritdoc />
-        public override String ToString() =>
+        public override string ToString() =>
             $"Item {id}";
     }
 }

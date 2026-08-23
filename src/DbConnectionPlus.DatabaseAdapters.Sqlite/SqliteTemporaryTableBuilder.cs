@@ -34,7 +34,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -109,7 +109,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -202,14 +202,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -253,14 +253,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -283,14 +283,14 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which to populate the table.</param>
     /// <param name="dataReader">The data reader to read data from.</param>
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
-    private static (String SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
-        String tableName,
+    private static (string SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("INSERT INTO temp.\"");
         sqlBuilder.Append(tableName);
@@ -388,7 +388,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, SqliteConnection connection, SqliteTransaction? transaction)
+    private static void DropTemporaryTable(string name, SqliteConnection connection, SqliteTransaction? transaction)
     {
         using var command = connection.CreateCommand();
 
@@ -408,7 +408,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async ValueTask DropTemporaryTableAsync(
-        String name,
+        string name,
         SqliteConnection connection,
         SqliteTransaction? transaction
     )
@@ -437,7 +437,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     private static void PopulateTemporaryTable(
         SqliteConnection connection,
         SqliteTransaction? transaction,
-        String tableName,
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
@@ -493,7 +493,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     private static async Task PopulateTemporaryTableAsync(
         SqliteConnection connection,
         SqliteTransaction? transaction,
-        String tableName,
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,

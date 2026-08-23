@@ -23,7 +23,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 #pragma warning restore IDE0290 // Use primary constructor
 
     /// <inheritdoc />
-    public Int32 DeleteEntities<
+    public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -86,7 +86,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntitiesAsync<
+    public async Task<int> DeleteEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -150,7 +150,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 DeleteEntity<
+    public int DeleteEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -201,7 +201,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntityAsync<
+    public async Task<int> DeleteEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -252,7 +252,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntities<
+    public int InsertEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -309,7 +309,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntitiesAsync<
+    public async Task<int> InsertEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -375,7 +375,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntity<
+    public int InsertEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -421,7 +421,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntityAsync<
+    public async Task<int> InsertEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -471,7 +471,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntities<
+    public int UpdateEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -543,7 +543,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntitiesAsync<
+    public async Task<int> UpdateEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -623,7 +623,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntity<
+    public int UpdateEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -683,7 +683,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntityAsync<
+    public async Task<int> UpdateEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbConnection connection,
@@ -864,7 +864,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
     /// <returns>The SQL code to delete an entity of the specified type.</returns>
-    private String GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityDeleteSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -874,7 +874,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("DELETE FROM");
 
@@ -918,12 +918,12 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
     /// <returns>The SQL code to insert an entity of the specified type.</returns>
-    private String GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityInsertSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
             {
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.Append("INSERT INTO `");
                 sqlBuilder.Append(entityTypeMetadata.TableName);
@@ -1049,7 +1049,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
     /// <returns>The SQL code to update an entity of the specified type.</returns>
-    private String GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityUpdateSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -1059,7 +1059,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("UPDATE");
 
@@ -1194,7 +1194,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private void PopulateParametersFromEntityProperties(
         EntityTypeMetadata entityTypeMetadata,
         List<DbParameter> parameters,
-        Object entity
+        object entity
     )
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -1218,7 +1218,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private static void UpdateDatabaseGeneratedProperties(
         EntityTypeMetadata entityTypeMetadata,
         DbDataReader reader,
-        Object entity,
+        object entity,
         CancellationToken cancellationToken
     )
     {
@@ -1256,7 +1256,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private static async Task UpdateDatabaseGeneratedPropertiesAsync(
         EntityTypeMetadata entityTypeMetadata,
         DbDataReader reader,
-        Object entity,
+        object entity,
         CancellationToken cancellationToken
     )
     {
@@ -1284,7 +1284,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     private readonly MySqlDatabaseAdapter databaseAdapter;
-    private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
 }

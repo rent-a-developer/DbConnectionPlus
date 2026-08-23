@@ -32,7 +32,7 @@ public class DbConnectionExtensions_QueryOfTTests : StatementMethodTestsBase
 
         mockDbDataReader.FieldCount.Returns(1);
         mockDbDataReader.GetName(0).Returns("Id");
-        mockDbDataReader.GetFieldType(0).Returns(typeof(Int64));
+        mockDbDataReader.GetFieldType(0).Returns(typeof(long));
 
         this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
             .Returns(mockDbDataReader);

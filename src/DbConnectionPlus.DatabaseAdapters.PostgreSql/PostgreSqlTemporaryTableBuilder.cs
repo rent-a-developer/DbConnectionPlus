@@ -35,7 +35,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -110,7 +110,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
@@ -196,14 +196,14 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -247,14 +247,14 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -312,7 +312,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     private void PopulateTemporaryTable(
         NpgsqlConnection connection,
-        String tableName,
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
@@ -367,7 +367,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task PopulateTemporaryTableAsync(
         NpgsqlConnection connection,
-        String tableName,
+        string tableName,
         [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
         Type valuesType,
         DbDataReader dataReader,
@@ -446,7 +446,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, NpgsqlConnection connection, NpgsqlTransaction? transaction)
+    private static void DropTemporaryTable(string name, NpgsqlConnection connection, NpgsqlTransaction? transaction)
     {
         using var command = connection.CreateCommand();
 
@@ -466,7 +466,7 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async ValueTask DropTemporaryTableAsync(
-        String name,
+        string name,
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction
     )

@@ -24,7 +24,7 @@ internal static class EntityMaterializerFactory
     /// <see cref="RuntimeFeature.IsDynamicCodeSupported" /> branch; the attribute exists so that the analyzer
     /// verifies that guard rather than so that a warning propagates.
     /// </remarks>
-    private const String MaterializerRequiresDynamicCodeMessage =
+    private const string MaterializerRequiresDynamicCodeMessage =
         "Materializing entities compiles an expression tree at run time, which is not supported when the " +
         "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported " +
         "branch.";
@@ -185,7 +185,7 @@ internal static class EntityMaterializerFactory
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -246,7 +246,7 @@ internal static class EntityMaterializerFactory
     /// </remarks>
     private static Func<DbDataReader, TEntity> CreateReflectionConstructorMaterializer<TEntity>(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes,
         ConstructorInfo compatibleConstructor
     )
@@ -262,7 +262,7 @@ internal static class EntityMaterializerFactory
             var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
 
             var constructorParameter = constructorParameters.First(p =>
-                !String.IsNullOrWhiteSpace(p.Name) &&
+                !string.IsNullOrWhiteSpace(p.Name) &&
                 p.Name.Equals(dataReaderFieldName, StringComparison.OrdinalIgnoreCase) &&
                 ValueConverter.CanConvert(dataReaderFieldType, p.ParameterType)
             );
@@ -319,7 +319,7 @@ internal static class EntityMaterializerFactory
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -400,8 +400,8 @@ internal static class EntityMaterializerFactory
     /// </remarks>
     private static void GuardAgainstResultSetBindingNoProperties(
         Type entityType,
-        String[] dataReaderFieldNames,
-        Dictionary<String, EntityPropertyMetadata> entityPropertiesByColumnName
+        string[] dataReaderFieldNames,
+        Dictionary<string, EntityPropertyMetadata> entityPropertiesByColumnName
     )
     {
         if (dataReaderFieldNames.Length == 0)
@@ -416,7 +416,7 @@ internal static class EntityMaterializerFactory
 
         throw new InvalidOperationException(
             $"None of the {dataReaderFieldNames.Length} field(s) of the result set " +
-            $"({String.Join(", ", dataReaderFieldNames)}) could be mapped to a writable property of the entity " +
+            $"({string.Join(", ", dataReaderFieldNames)}) could be mapped to a writable property of the entity " +
             $"type {entityType}. Materializing the result set would return entities whose properties are all left " +
             "at their default values. Check that the field names of the result set match the property names, or " +
             "the mapped column names, of the entity type. If the application is trimmed or published with Native " +
@@ -500,7 +500,7 @@ internal static class EntityMaterializerFactory
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -564,7 +564,7 @@ internal static class EntityMaterializerFactory
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -580,8 +580,8 @@ internal static class EntityMaterializerFactory
         var dataReaderParameterExpression = Expression.Parameter(typeof(DbDataReader), "dataReader");
         var dataReaderFieldValueExpressions = new Expression[dataReader.FieldCount];
 
-        var fieldOrdinalToTargetType = new Dictionary<Int32, Type>(dataReader.FieldCount);
-        var fieldOrdinalToConstructorParameterIndex = new Dictionary<Int32, Int32>(dataReader.FieldCount);
+        var fieldOrdinalToTargetType = new Dictionary<int, Type>(dataReader.FieldCount);
+        var fieldOrdinalToConstructorParameterIndex = new Dictionary<int, int>(dataReader.FieldCount);
 
         var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
             entityType,
@@ -599,7 +599,7 @@ internal static class EntityMaterializerFactory
             for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
             {
                 var constructorParameter = constructorParameters.First(p =>
-                    !String.IsNullOrWhiteSpace(p.Name) &&
+                    !string.IsNullOrWhiteSpace(p.Name) &&
                     p.Name.Equals(dataReaderFieldNames[fieldOrdinal], StringComparison.OrdinalIgnoreCase) &&
                     ValueConverter.CanConvert(dataReaderFieldTypes[fieldOrdinal], p.ParameterType)
                 );
@@ -701,7 +701,7 @@ internal static class EntityMaterializerFactory
                 ? Expression.Default(targetType)
                 : Expression.Throw(
                     Expression.New(
-                        typeof(InvalidCastException).GetConstructor([typeof(String)])!,
+                        typeof(InvalidCastException).GetConstructor([typeof(string)])!,
                         Expression.Constant(
                             $"The column '{dataReaderFieldName}' returned by the SQL statement contains a " +
                             $"NULL value, but the corresponding property of the type {entityType} is " +
@@ -714,7 +714,7 @@ internal static class EntityMaterializerFactory
             var throwInvalidCastExceptionExpression = Expression.Throw(
                 Expression.New(
                     typeof(InvalidCastException).GetConstructor(
-                        [typeof(String), typeof(Exception)]
+                        [typeof(string), typeof(Exception)]
                     )!,
                     Expression.Constant(
                         $"The column '{dataReaderFieldName}' returned by the SQL statement " +
@@ -732,7 +732,7 @@ internal static class EntityMaterializerFactory
                     Expression.Call(
                         null,
                         MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType),
-                        Expression.Convert(getFieldValueCallExpression, typeof(Object))
+                        Expression.Convert(getFieldValueCallExpression, typeof(object))
                     ),
                     targetType
                 ),
@@ -827,7 +827,7 @@ internal static class EntityMaterializerFactory
         ReflectionColumnBinding[] constructorArgumentBindings
     )
     {
-        var constructorArguments = new Object?[constructorArgumentBindings.Length];
+        var constructorArguments = new object?[constructorArgumentBindings.Length];
 
         for (var argumentIndex = 0; argumentIndex < constructorArgumentBindings.Length; argumentIndex++)
         {
@@ -890,7 +890,7 @@ internal static class EntityMaterializerFactory
     ///         </item>
     ///     </list>
     /// </exception>
-    private static Object? ReadFieldValue(
+    private static object? ReadFieldValue(
         DbDataReader dataReader,
         Type entityType,
         ReflectionColumnBinding columnBinding
@@ -973,7 +973,7 @@ internal static class EntityMaterializerFactory
     private static void ValidateDataReader(
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] Type entityType,
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -987,7 +987,7 @@ internal static class EntityMaterializerFactory
             var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
             var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
 
-            if (String.IsNullOrWhiteSpace(dataReaderFieldName))
+            if (string.IsNullOrWhiteSpace(dataReaderFieldName))
             {
                 throw new ArgumentException(
                     $"The {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the SQL statement does not " +
@@ -1024,7 +1024,7 @@ internal static class EntityMaterializerFactory
         {
             var exampleConstructorSignature =
                 "(" +
-                String.Join(
+                string.Join(
                     ", ",
                     dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => $"{type.Name} {name}")
                 ) +
@@ -1083,7 +1083,7 @@ internal static class EntityMaterializerFactory
     /// </param>
     private readonly struct MaterializerCacheKey(
         Type entityType,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
         : IEquatable<MaterializerCacheKey>
@@ -1094,17 +1094,17 @@ internal static class EntityMaterializerFactory
         public Type EntityType { get; } = entityType;
 
         /// <inheritdoc />
-        public Boolean Equals(MaterializerCacheKey other) =>
+        public bool Equals(MaterializerCacheKey other) =>
             this.EntityType == other.EntityType &&
             this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames) &&
             this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
 
         /// <inheritdoc />
-        public override Boolean Equals(Object? obj) =>
+        public override bool Equals(object? obj) =>
             obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
-        public override Int32 GetHashCode()
+        public override int GetHashCode()
         {
             var hashCode = new HashCode();
 
@@ -1123,7 +1123,7 @@ internal static class EntityMaterializerFactory
             return hashCode.ToHashCode();
         }
 
-        private String[] DataReaderFieldNames { get; } = dataReaderFieldNames;
+        private string[] DataReaderFieldNames { get; } = dataReaderFieldNames;
         private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
     }
 
@@ -1146,10 +1146,10 @@ internal static class EntityMaterializerFactory
     /// constructor parameter it is passed to.
     /// </param>
     private readonly record struct ReflectionColumnBinding(
-        String FieldName,
-        Int32 FieldOrdinal,
-        Func<DbDataReader, Object?> GetFieldValue,
-        Boolean NeedsConversion,
+        string FieldName,
+        int FieldOrdinal,
+        Func<DbDataReader, object?> GetFieldValue,
+        bool NeedsConversion,
         Type TargetType
     );
 
@@ -1163,6 +1163,6 @@ internal static class EntityMaterializerFactory
     /// </param>
     private readonly record struct ReflectionPropertyBinding(
         ReflectionColumnBinding Column,
-        Action<Object, Object?> PropertySetter
+        Action<object, object?> PropertySetter
     );
 }

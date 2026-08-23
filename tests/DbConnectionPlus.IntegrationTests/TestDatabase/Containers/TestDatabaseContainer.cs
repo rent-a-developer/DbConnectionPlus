@@ -16,7 +16,7 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// and SQL Server never starts the MySQL, Oracle or PostgreSQL containers. Sharing is what keeps it to one
 /// container per database system - every test class asks for the same instance.
 /// </remarks>
-internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
+internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
     where TFixture : class, ITestDatabaseContainerFixture, new()
 {
     /// <summary>
@@ -57,7 +57,7 @@ internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
     public ValueTask StartAsync() =>
         new(this.fixture.Value);
 
-    private static async Task<TFixture> CreateAndStartAsync(String databaseSystemName)
+    private static async Task<TFixture> CreateAndStartAsync(string databaseSystemName)
     {
         TestContext.Current.SendDiagnosticMessage($"Starting the {databaseSystemName} container ...");
 

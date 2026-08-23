@@ -92,7 +92,7 @@ public static partial class DbConnectionExtensions
     ///     <item>
     ///         <term>
     ///             A built-in .NET type or a nullable built-in .NET type like <see cref="DateTime" /> or
-    /// <see cref="String" />.
+    /// <see cref="string" />.
     ///         </term>
     ///         <description>
     ///             In this case only the first column of the result set will be read and converted to the type
@@ -356,7 +356,7 @@ public static partial class DbConnectionExtensions
     ///     <item>
     ///         <term>
     ///             A built-in .NET type or a nullable built-in .NET type like <see cref="DateTime" /> or
-    /// <see cref="String" />.
+    /// <see cref="string" />.
     ///         </term>
     ///         <description>
     ///             In this case only the first column of the result set will be read and converted to the type
@@ -555,7 +555,7 @@ public static partial class DbConnectionExtensions
     /// <exception cref="InvalidCastException">
     /// <paramref name="value" /> could not be converted to the type <typeparamref name="TTarget" />.
     /// </exception>
-    private static TTarget ConvertValueForQuery<TTarget>(Object? value)
+    private static TTarget ConvertValueForQuery<TTarget>(object? value)
     {
         try
         {

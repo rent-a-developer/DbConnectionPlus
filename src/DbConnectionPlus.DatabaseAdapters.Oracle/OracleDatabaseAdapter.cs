@@ -38,7 +38,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -75,7 +75,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -98,11 +98,11 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
+    public string FormatParameterName(string parameterName) =>
         ":\"" + parameterName + "\"";
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -120,7 +120,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
                     "NUMBER(10)",
 
                 _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
             };
         }
 
@@ -198,13 +198,13 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
+    public string QuoteIdentifier(string identifier) =>
         "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection)
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection)
     {
-        var prefix = connection.ExecuteScalar<String>(
+        var prefix = connection.ExecuteScalar<string>(
             "SELECT VALUE FROM v$parameter WHERE NAME = 'private_temp_table_prefix'"
         );
 
@@ -212,7 +212,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection)
+    public bool SupportsTemporaryTables(DbConnection connection)
     {
         ArgumentNullException.ThrowIfNull(connection);
 
@@ -224,7 +224,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(
+    public bool WasSqlStatementCancelledByCancellationToken(
         Exception exception,
         CancellationToken cancellationToken
     )
@@ -278,7 +278,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     /// <remarks>
     /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
     /// </remarks>
-    public static Boolean AllowTemporaryTables { get; set; }
+    public static bool AllowTemporaryTables { get; set; }
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException" /> indicating that the temporary tables feature of
@@ -294,47 +294,47 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         );
 
     private readonly OracleEntityManipulator entityManipulator;
-    private readonly ConcurrentDictionary<String, Boolean> supportsTemporaryTablesPerConnectionString = [];
+    private readonly ConcurrentDictionary<string, bool> supportsTemporaryTablesPerConnectionString = [];
     private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
 
     private static readonly Dictionary<Type, DbType> typeToDbType = new()
     {
-        { typeof(Boolean), DbType.Boolean },
-        { typeof(Byte), DbType.Byte },
-        { typeof(Byte[]), DbType.Binary },
-        { typeof(Char), DbType.StringFixedLength },
+        { typeof(bool), DbType.Boolean },
+        { typeof(byte), DbType.Byte },
+        { typeof(byte[]), DbType.Binary },
+        { typeof(char), DbType.StringFixedLength },
         { typeof(DateOnly), DbType.Date },
         { typeof(DateTime), DbType.DateTime },
         { typeof(DateTimeOffset), DbType.DateTimeOffset },
-        { typeof(Decimal), DbType.Decimal },
-        { typeof(Double), DbType.Double },
+        { typeof(decimal), DbType.Decimal },
+        { typeof(double), DbType.Double },
         { typeof(Guid), DbType.Guid },
-        { typeof(Int16), DbType.Int16 },
-        { typeof(Int32), DbType.Int32 },
-        { typeof(Int64), DbType.Int64 },
-        { typeof(Single), DbType.Single },
-        { typeof(String), DbType.String },
+        { typeof(short), DbType.Int16 },
+        { typeof(int), DbType.Int32 },
+        { typeof(long), DbType.Int64 },
+        { typeof(float), DbType.Single },
+        { typeof(string), DbType.String },
         { typeof(TimeOnly), DbType.Time },
         { typeof(TimeSpan), DbType.Time }
     };
 
-    private static readonly Dictionary<Type, String> typeToOracleDataType = new()
+    private static readonly Dictionary<Type, string> typeToOracleDataType = new()
     {
-        { typeof(Boolean), "NUMBER(1)" },
-        { typeof(Byte), "NUMBER(3)" },
-        { typeof(Byte[]), "RAW(2000)" },
-        { typeof(Char), "CHAR(1)" },
+        { typeof(bool), "NUMBER(1)" },
+        { typeof(byte), "NUMBER(3)" },
+        { typeof(byte[]), "RAW(2000)" },
+        { typeof(char), "CHAR(1)" },
         { typeof(DateOnly), "DATE" },
         { typeof(DateTime), "TIMESTAMP" },
         { typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE" },
-        { typeof(Decimal), "NUMBER(28,10)" },
-        { typeof(Double), "BINARY_DOUBLE" },
+        { typeof(decimal), "NUMBER(28,10)" },
+        { typeof(double), "BINARY_DOUBLE" },
         { typeof(Guid), "RAW(16)" },
-        { typeof(Int16), "NUMBER(5)" },
-        { typeof(Int32), "NUMBER(10)" },
-        { typeof(Int64), "NUMBER(19)" },
-        { typeof(Single), "BINARY_FLOAT" },
-        { typeof(String), "NVARCHAR2(2000)" },
+        { typeof(short), "NUMBER(5)" },
+        { typeof(int), "NUMBER(10)" },
+        { typeof(long), "NUMBER(19)" },
+        { typeof(float), "BINARY_FLOAT" },
+        { typeof(string), "NVARCHAR2(2000)" },
         { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
         { typeof(TimeSpan), "INTERVAL DAY TO SECOND" }
     };

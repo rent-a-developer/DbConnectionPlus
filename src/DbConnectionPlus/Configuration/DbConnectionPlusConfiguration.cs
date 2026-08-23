@@ -186,5 +186,5 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
 
     private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
     private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = [];
-    private Boolean isFrozen;
+    private bool isFrozen;
 }

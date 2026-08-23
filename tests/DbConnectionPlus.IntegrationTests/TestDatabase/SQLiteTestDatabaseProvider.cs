@@ -22,16 +22,16 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
+    public bool CanRetrieveStructureOfTemporaryTables => true;
 
     /// <inheritdoc />
     public IDatabaseAdapter DatabaseAdapter => new SqliteDatabaseAdapter();
 
     /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
+    public string DatabaseCollation => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String DelayTwoSecondsStatement =>
+    public string DelayTwoSecondsStatement =>
         """
         WITH RECURSIVE delay(x) AS (
           SELECT 1
@@ -42,32 +42,32 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         """;
 
     /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => false;
+    public bool HasUnsupportedDataType => false;
 
     /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
 
     /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
+    public bool SupportsDateTimeOffset => true;
 
     /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => false;
+    public bool SupportsProperCommandCancellation => false;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => false;
+    public bool SupportsStoredProcedures => false;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => false;
+    public bool SupportsStoredProceduresReturningResultSet => false;
 
     /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
 
     /// <inheritdoc />
     public DbConnection CreateConnection() =>
         this.connection;
 
     /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null) =>
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
         this.connection.Exists(
             $"""
              SELECT 1
@@ -80,21 +80,21 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         );
 
     /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         this.connection
-            .Query<(Int32 cid, String name, String Type, Boolean notnull, Object dflt_value, Int32 pk)>(
+            .Query<(int cid, string name, string Type, bool notnull, object dflt_value, int pk)>(
                 $"""
                  PRAGMA table_info("{temporaryTableName}");
                  """,
@@ -105,7 +105,7 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
             .Single();
 
     /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
+    public string GetUnsupportedDataTypeLiteral() =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
@@ -126,9 +126,9 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
 
     private readonly SqliteConnection connection;
 
-    private Boolean isDatabasePrepared;
+    private bool isDatabasePrepared;
 
-    private const String CreateDatabaseObjectsSql =
+    private const string CreateDatabaseObjectsSql =
         """
         CREATE TABLE Entity
         (

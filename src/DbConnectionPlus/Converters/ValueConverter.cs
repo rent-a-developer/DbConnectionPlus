@@ -35,7 +35,7 @@ internal static class ValueConverter
     ///         </item>
     ///     </list>
     /// </exception>
-    internal static Boolean CanConvert(Type sourceType, Type targetType)
+    internal static bool CanConvert(Type sourceType, Type targetType)
     {
         ArgumentNullException.ThrowIfNull(sourceType);
         ArgumentNullException.ThrowIfNull(targetType);
@@ -45,7 +45,7 @@ internal static class ValueConverter
 
         if (
             effectiveSourceType == effectiveTargetType ||
-            effectiveTargetType == typeof(Object)
+            effectiveTargetType == typeof(object)
         )
         {
             // Conversion to same type or to Object is always possible.
@@ -87,14 +87,14 @@ internal static class ValueConverter
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <typeparamref name="TTarget" /> is <see cref="Char" /> or <see cref="Nullable{Char}" /> and
+    ///                 <typeparamref name="TTarget" /> is <see cref="char" /> or <see cref="Nullable{Char}" /> and
     /// <paramref name="value" /> is a string that has a length other than 1.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static TTarget? ConvertValueToType<TTarget>(Object? value)
+    internal static TTarget? ConvertValueToType<TTarget>(object? value)
     {
         var targetType = typeof(TTarget);
 
@@ -115,23 +115,23 @@ internal static class ValueConverter
             case TTarget alreadyTargetTypeValue:
                 return alreadyTargetTypeValue;
 
-            case String stringValue when effectiveTargetType == typeof(Guid):
+            case string stringValue when effectiveTargetType == typeof(Guid):
                 if (!Guid.TryParse(stringValue, out var guidResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
 
-                return (TTarget)(Object)guidResult;
+                return (TTarget)(object)guidResult;
 
-            case String stringValue when effectiveTargetType == typeof(TimeSpan):
+            case string stringValue when effectiveTargetType == typeof(TimeSpan):
                 if (!TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
 
-                return (TTarget)(Object)timeSpanResult;
+                return (TTarget)(object)timeSpanResult;
 
-            case String stringValue when effectiveTargetType == typeof(Char):
+            case string stringValue when effectiveTargetType == typeof(char):
                 if (stringValue.Length != 1)
                 {
                     ThrowCouldNotConvertNonSingleCharStringToCharException(
@@ -140,61 +140,61 @@ internal static class ValueConverter
                     );
                 }
 
-                return (TTarget)(Object)stringValue[0];
+                return (TTarget)(object)stringValue[0];
 
-            case String stringValue when effectiveTargetType == typeof(DateTimeOffset):
+            case string stringValue when effectiveTargetType == typeof(DateTimeOffset):
                 if (!DateTimeOffset.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateTimeOffsetResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
 
-                return (TTarget)(Object)dateTimeOffsetResult;
+                return (TTarget)(object)dateTimeOffsetResult;
 
-            case String stringValue when effectiveTargetType == typeof(DateOnly):
+            case string stringValue when effectiveTargetType == typeof(DateOnly):
                 if (!DateOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
 
-                return (TTarget)(Object)dateOnlyResult;
+                return (TTarget)(object)dateOnlyResult;
 
-            case String stringValue when effectiveTargetType == typeof(TimeOnly):
+            case string stringValue when effectiveTargetType == typeof(TimeOnly):
                 if (!TimeOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
                 }
 
-                return (TTarget)(Object)timeOnlyResult;
+                return (TTarget)(object)timeOnlyResult;
 
-            case Guid guid when targetType == typeof(String):
-                return (TTarget)(Object)guid.ToString("D");
+            case Guid guid when targetType == typeof(string):
+                return (TTarget)(object)guid.ToString("D");
 
-            case Guid guid when targetType == typeof(Byte[]):
-                return (TTarget)(Object)guid.ToByteArray();
+            case Guid guid when targetType == typeof(byte[]):
+                return (TTarget)(object)guid.ToByteArray();
 
-            case DateTime dateTime when targetType == typeof(String):
-                return (TTarget)(Object)dateTime.ToString("O", CultureInfo.InvariantCulture);
+            case DateTime dateTime when targetType == typeof(string):
+                return (TTarget)(object)dateTime.ToString("O", CultureInfo.InvariantCulture);
 
             case DateTime dateTime when effectiveTargetType == typeof(DateOnly):
-                return (TTarget)(Object)DateOnly.FromDateTime(dateTime);
+                return (TTarget)(object)DateOnly.FromDateTime(dateTime);
 
-            case TimeSpan timeSpan when targetType == typeof(String):
-                return (TTarget)(Object)timeSpan.ToString("g", CultureInfo.InvariantCulture);
+            case TimeSpan timeSpan when targetType == typeof(string):
+                return (TTarget)(object)timeSpan.ToString("g", CultureInfo.InvariantCulture);
 
             case TimeSpan timeSpan when effectiveTargetType == typeof(TimeOnly):
-                return (TTarget)(Object)TimeOnly.FromTimeSpan(timeSpan);
+                return (TTarget)(object)TimeOnly.FromTimeSpan(timeSpan);
 
-            case Byte[] bytes when effectiveTargetType == typeof(Guid):
-                return (TTarget)(Object)new Guid(bytes);
+            case byte[] bytes when effectiveTargetType == typeof(Guid):
+                return (TTarget)(object)new Guid(bytes);
 
-            case DateTimeOffset dateTimeOffset when targetType == typeof(String):
-                return (TTarget)(Object)dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);
+            case DateTimeOffset dateTimeOffset when targetType == typeof(string):
+                return (TTarget)(object)dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);
 
-            case DateOnly dateOnly when targetType == typeof(String):
-                return (TTarget)(Object)dateOnly.ToString("O", CultureInfo.InvariantCulture);
+            case DateOnly dateOnly when targetType == typeof(string):
+                return (TTarget)(object)dateOnly.ToString("O", CultureInfo.InvariantCulture);
 
-            case TimeOnly timeOnly when targetType == typeof(String):
-                return (TTarget)(Object)timeOnly.ToString("O", CultureInfo.InvariantCulture);
+            case TimeOnly timeOnly when targetType == typeof(string):
+                return (TTarget)(object)timeOnly.ToString("O", CultureInfo.InvariantCulture);
 
             default:
                 if (effectiveTargetType.IsEnum)
@@ -247,14 +247,14 @@ internal static class ValueConverter
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <paramref name="targetType" /> is <see cref="Char" /> or <see cref="Nullable{Char}" /> and
+    ///                 <paramref name="targetType" /> is <see cref="char" /> or <see cref="Nullable{Char}" /> and
     /// <paramref name="value" /> is a string that has a length other than 1.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Object? ConvertValueToType(Object? value, Type targetType)
+    internal static object? ConvertValueToType(object? value, Type targetType)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -275,7 +275,7 @@ internal static class ValueConverter
             case not null when value.GetType().IsAssignableTo(effectiveTargetType):
                 return value;
 
-            case String stringValue when effectiveTargetType == typeof(Guid):
+            case string stringValue when effectiveTargetType == typeof(Guid):
                 if (!Guid.TryParse(stringValue, out var guidResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
@@ -283,7 +283,7 @@ internal static class ValueConverter
 
                 return guidResult;
 
-            case String stringValue when effectiveTargetType == typeof(TimeSpan):
+            case string stringValue when effectiveTargetType == typeof(TimeSpan):
                 if (!TimeSpan.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeSpanResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
@@ -291,7 +291,7 @@ internal static class ValueConverter
 
                 return timeSpanResult;
 
-            case String stringValue when effectiveTargetType == typeof(Char):
+            case string stringValue when effectiveTargetType == typeof(char):
                 if (stringValue.Length != 1)
                 {
                     ThrowCouldNotConvertNonSingleCharStringToCharException(
@@ -302,7 +302,7 @@ internal static class ValueConverter
 
                 return stringValue[0];
 
-            case String stringValue when effectiveTargetType == typeof(DateTimeOffset):
+            case string stringValue when effectiveTargetType == typeof(DateTimeOffset):
                 if (!DateTimeOffset.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateTimeOffsetResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
@@ -310,7 +310,7 @@ internal static class ValueConverter
 
                 return dateTimeOffsetResult;
 
-            case String stringValue when effectiveTargetType == typeof(DateOnly):
+            case string stringValue when effectiveTargetType == typeof(DateOnly):
                 if (!DateOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var dateOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
@@ -318,7 +318,7 @@ internal static class ValueConverter
 
                 return dateOnlyResult;
 
-            case String stringValue when effectiveTargetType == typeof(TimeOnly):
+            case string stringValue when effectiveTargetType == typeof(TimeOnly):
                 if (!TimeOnly.TryParse(stringValue, CultureInfo.InvariantCulture, out var timeOnlyResult))
                 {
                     ThrowCouldNotConvertValueToTargetTypeException(stringValue, targetType);
@@ -326,34 +326,34 @@ internal static class ValueConverter
 
                 return timeOnlyResult;
 
-            case Guid guid when targetType == typeof(String):
+            case Guid guid when targetType == typeof(string):
                 return guid.ToString("D");
 
-            case Guid guid when targetType == typeof(Byte[]):
+            case Guid guid when targetType == typeof(byte[]):
                 return guid.ToByteArray();
 
-            case DateTime dateTime when targetType == typeof(String):
+            case DateTime dateTime when targetType == typeof(string):
                 return dateTime.ToString("O", CultureInfo.InvariantCulture);
 
             case DateTime dateTime when effectiveTargetType == typeof(DateOnly):
                 return DateOnly.FromDateTime(dateTime);
 
-            case TimeSpan timeSpan when targetType == typeof(String):
+            case TimeSpan timeSpan when targetType == typeof(string):
                 return timeSpan.ToString("g", CultureInfo.InvariantCulture);
 
             case TimeSpan timeSpan when effectiveTargetType == typeof(TimeOnly):
                 return TimeOnly.FromTimeSpan(timeSpan);
 
-            case Byte[] bytes when effectiveTargetType == typeof(Guid):
+            case byte[] bytes when effectiveTargetType == typeof(Guid):
                 return new Guid(bytes);
 
-            case DateTimeOffset dateTimeOffset when targetType == typeof(String):
+            case DateTimeOffset dateTimeOffset when targetType == typeof(string):
                 return dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);
 
-            case DateOnly dateOnly when targetType == typeof(String):
+            case DateOnly dateOnly when targetType == typeof(string):
                 return dateOnly.ToString("O", CultureInfo.InvariantCulture);
 
-            case TimeOnly timeOnly when targetType == typeof(String):
+            case TimeOnly timeOnly when targetType == typeof(string):
                 return timeOnly.ToString("O", CultureInfo.InvariantCulture);
 
             default:
@@ -389,7 +389,7 @@ internal static class ValueConverter
     /// <see langword="true" /> if <paramref name="type" /> is a type that can be converted to an enum type or a type
     /// that an enum can be converted to; otherwise, <see langword="false" />.
     /// </returns>
-    private static Boolean IsSupportedEnumConversionType(Type type) =>
+    private static bool IsSupportedEnumConversionType(Type type) =>
         Type.GetTypeCode(type) is
             // Ordered by frequency of use:
             TypeCode.String or
@@ -407,7 +407,7 @@ internal static class ValueConverter
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
-    private static void ThrowCouldNotConvertNonSingleCharStringToCharException(String stringValue, Type targetType) =>
+    private static void ThrowCouldNotConvertNonSingleCharStringToCharException(string stringValue, Type targetType) =>
         throw new InvalidCastException(
             $"Could not convert the string '{stringValue}' to the type {targetType}. The string must be exactly one " +
             "character long."
@@ -416,7 +416,7 @@ internal static class ValueConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertNullOrDbNullToNonNullableTargetTypeException(
-        Object? value,
+        object? value,
         Type targetType
     ) =>
         throw new InvalidCastException(
@@ -427,7 +427,7 @@ internal static class ValueConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertValueToTargetTypeException(
-        Object? value,
+        object? value,
         Type targetType,
         Exception innerException
     ) =>
@@ -440,7 +440,7 @@ internal static class ValueConverter
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertValueToTargetTypeException(
-        Object? value,
+        object? value,
         Type targetType
     ) =>
         throw new InvalidCastException(
@@ -449,238 +449,238 @@ internal static class ValueConverter
 
     private static readonly HashSet<(Type SourceType, Type TargetType)> supportedConversions =
     [
-        (typeof(Boolean), typeof(Boolean)),
-        (typeof(Boolean), typeof(Byte)),
-        (typeof(Boolean), typeof(Decimal)),
-        (typeof(Boolean), typeof(Double)),
-        (typeof(Boolean), typeof(Int16)),
-        (typeof(Boolean), typeof(Int32)),
-        (typeof(Boolean), typeof(Int64)),
-        (typeof(Boolean), typeof(SByte)),
-        (typeof(Boolean), typeof(Single)),
-        (typeof(Boolean), typeof(String)),
-        (typeof(Boolean), typeof(UInt16)),
-        (typeof(Boolean), typeof(UInt32)),
-        (typeof(Boolean), typeof(UInt64)),
+        (typeof(bool), typeof(bool)),
+        (typeof(bool), typeof(byte)),
+        (typeof(bool), typeof(decimal)),
+        (typeof(bool), typeof(double)),
+        (typeof(bool), typeof(short)),
+        (typeof(bool), typeof(int)),
+        (typeof(bool), typeof(long)),
+        (typeof(bool), typeof(sbyte)),
+        (typeof(bool), typeof(float)),
+        (typeof(bool), typeof(string)),
+        (typeof(bool), typeof(ushort)),
+        (typeof(bool), typeof(uint)),
+        (typeof(bool), typeof(ulong)),
 
-        (typeof(Byte), typeof(Boolean)),
-        (typeof(Byte), typeof(Byte)),
-        (typeof(Byte), typeof(Char)),
-        (typeof(Byte), typeof(Decimal)),
-        (typeof(Byte), typeof(Double)),
-        (typeof(Byte), typeof(Int16)),
-        (typeof(Byte), typeof(Int32)),
-        (typeof(Byte), typeof(Int64)),
-        (typeof(Byte), typeof(SByte)),
-        (typeof(Byte), typeof(Single)),
-        (typeof(Byte), typeof(String)),
-        (typeof(Byte), typeof(UInt16)),
-        (typeof(Byte), typeof(UInt32)),
-        (typeof(Byte), typeof(UInt64)),
+        (typeof(byte), typeof(bool)),
+        (typeof(byte), typeof(byte)),
+        (typeof(byte), typeof(char)),
+        (typeof(byte), typeof(decimal)),
+        (typeof(byte), typeof(double)),
+        (typeof(byte), typeof(short)),
+        (typeof(byte), typeof(int)),
+        (typeof(byte), typeof(long)),
+        (typeof(byte), typeof(sbyte)),
+        (typeof(byte), typeof(float)),
+        (typeof(byte), typeof(string)),
+        (typeof(byte), typeof(ushort)),
+        (typeof(byte), typeof(uint)),
+        (typeof(byte), typeof(ulong)),
 
-        (typeof(Byte[]), typeof(Guid)),
+        (typeof(byte[]), typeof(Guid)),
 
-        (typeof(Char), typeof(Byte)),
-        (typeof(Char), typeof(Char)),
-        (typeof(Char), typeof(Int16)),
-        (typeof(Char), typeof(Int32)),
-        (typeof(Char), typeof(Int64)),
-        (typeof(Char), typeof(SByte)),
-        (typeof(Char), typeof(String)),
-        (typeof(Char), typeof(UInt16)),
-        (typeof(Char), typeof(UInt32)),
-        (typeof(Char), typeof(UInt64)),
+        (typeof(char), typeof(byte)),
+        (typeof(char), typeof(char)),
+        (typeof(char), typeof(short)),
+        (typeof(char), typeof(int)),
+        (typeof(char), typeof(long)),
+        (typeof(char), typeof(sbyte)),
+        (typeof(char), typeof(string)),
+        (typeof(char), typeof(ushort)),
+        (typeof(char), typeof(uint)),
+        (typeof(char), typeof(ulong)),
 
         (typeof(DateOnly), typeof(DateOnly)),
-        (typeof(DateOnly), typeof(String)),
+        (typeof(DateOnly), typeof(string)),
 
         (typeof(DateTime), typeof(DateTime)),
         (typeof(DateTime), typeof(DateOnly)),
-        (typeof(DateTime), typeof(String)),
+        (typeof(DateTime), typeof(string)),
 
         (typeof(DateTimeOffset), typeof(DateTimeOffset)),
-        (typeof(DateTimeOffset), typeof(String)),
+        (typeof(DateTimeOffset), typeof(string)),
 
-        (typeof(Decimal), typeof(Boolean)),
-        (typeof(Decimal), typeof(Byte)),
-        (typeof(Decimal), typeof(Decimal)),
-        (typeof(Decimal), typeof(Double)),
-        (typeof(Decimal), typeof(Int16)),
-        (typeof(Decimal), typeof(Int32)),
-        (typeof(Decimal), typeof(Int64)),
-        (typeof(Decimal), typeof(SByte)),
-        (typeof(Decimal), typeof(Single)),
-        (typeof(Decimal), typeof(String)),
-        (typeof(Decimal), typeof(UInt16)),
-        (typeof(Decimal), typeof(UInt32)),
-        (typeof(Decimal), typeof(UInt64)),
+        (typeof(decimal), typeof(bool)),
+        (typeof(decimal), typeof(byte)),
+        (typeof(decimal), typeof(decimal)),
+        (typeof(decimal), typeof(double)),
+        (typeof(decimal), typeof(short)),
+        (typeof(decimal), typeof(int)),
+        (typeof(decimal), typeof(long)),
+        (typeof(decimal), typeof(sbyte)),
+        (typeof(decimal), typeof(float)),
+        (typeof(decimal), typeof(string)),
+        (typeof(decimal), typeof(ushort)),
+        (typeof(decimal), typeof(uint)),
+        (typeof(decimal), typeof(ulong)),
 
-        (typeof(Double), typeof(Boolean)),
-        (typeof(Double), typeof(Byte)),
-        (typeof(Double), typeof(Decimal)),
-        (typeof(Double), typeof(Double)),
-        (typeof(Double), typeof(Int16)),
-        (typeof(Double), typeof(Int32)),
-        (typeof(Double), typeof(Int64)),
-        (typeof(Double), typeof(SByte)),
-        (typeof(Double), typeof(Single)),
-        (typeof(Double), typeof(String)),
-        (typeof(Double), typeof(UInt16)),
-        (typeof(Double), typeof(UInt32)),
-        (typeof(Double), typeof(UInt64)),
+        (typeof(double), typeof(bool)),
+        (typeof(double), typeof(byte)),
+        (typeof(double), typeof(decimal)),
+        (typeof(double), typeof(double)),
+        (typeof(double), typeof(short)),
+        (typeof(double), typeof(int)),
+        (typeof(double), typeof(long)),
+        (typeof(double), typeof(sbyte)),
+        (typeof(double), typeof(float)),
+        (typeof(double), typeof(string)),
+        (typeof(double), typeof(ushort)),
+        (typeof(double), typeof(uint)),
+        (typeof(double), typeof(ulong)),
 
-        (typeof(Guid), typeof(Byte[])),
+        (typeof(Guid), typeof(byte[])),
         (typeof(Guid), typeof(Guid)),
-        (typeof(Guid), typeof(String)),
+        (typeof(Guid), typeof(string)),
 
-        (typeof(Int16), typeof(Boolean)),
-        (typeof(Int16), typeof(Byte)),
-        (typeof(Int16), typeof(Char)),
-        (typeof(Int16), typeof(Decimal)),
-        (typeof(Int16), typeof(Double)),
-        (typeof(Int16), typeof(Int16)),
-        (typeof(Int16), typeof(Int32)),
-        (typeof(Int16), typeof(Int64)),
-        (typeof(Int16), typeof(SByte)),
-        (typeof(Int16), typeof(Single)),
-        (typeof(Int16), typeof(String)),
-        (typeof(Int16), typeof(UInt16)),
-        (typeof(Int16), typeof(UInt32)),
-        (typeof(Int16), typeof(UInt64)),
+        (typeof(short), typeof(bool)),
+        (typeof(short), typeof(byte)),
+        (typeof(short), typeof(char)),
+        (typeof(short), typeof(decimal)),
+        (typeof(short), typeof(double)),
+        (typeof(short), typeof(short)),
+        (typeof(short), typeof(int)),
+        (typeof(short), typeof(long)),
+        (typeof(short), typeof(sbyte)),
+        (typeof(short), typeof(float)),
+        (typeof(short), typeof(string)),
+        (typeof(short), typeof(ushort)),
+        (typeof(short), typeof(uint)),
+        (typeof(short), typeof(ulong)),
 
-        (typeof(Int32), typeof(Boolean)),
-        (typeof(Int32), typeof(Byte)),
-        (typeof(Int32), typeof(Char)),
-        (typeof(Int32), typeof(Decimal)),
-        (typeof(Int32), typeof(Double)),
-        (typeof(Int32), typeof(Int16)),
-        (typeof(Int32), typeof(Int32)),
-        (typeof(Int32), typeof(Int64)),
-        (typeof(Int32), typeof(SByte)),
-        (typeof(Int32), typeof(Single)),
-        (typeof(Int32), typeof(String)),
-        (typeof(Int32), typeof(UInt16)),
-        (typeof(Int32), typeof(UInt32)),
-        (typeof(Int32), typeof(UInt64)),
+        (typeof(int), typeof(bool)),
+        (typeof(int), typeof(byte)),
+        (typeof(int), typeof(char)),
+        (typeof(int), typeof(decimal)),
+        (typeof(int), typeof(double)),
+        (typeof(int), typeof(short)),
+        (typeof(int), typeof(int)),
+        (typeof(int), typeof(long)),
+        (typeof(int), typeof(sbyte)),
+        (typeof(int), typeof(float)),
+        (typeof(int), typeof(string)),
+        (typeof(int), typeof(ushort)),
+        (typeof(int), typeof(uint)),
+        (typeof(int), typeof(ulong)),
 
-        (typeof(Int64), typeof(Boolean)),
-        (typeof(Int64), typeof(Byte)),
-        (typeof(Int64), typeof(Char)),
-        (typeof(Int64), typeof(Decimal)),
-        (typeof(Int64), typeof(Double)),
-        (typeof(Int64), typeof(Int16)),
-        (typeof(Int64), typeof(Int32)),
-        (typeof(Int64), typeof(Int64)),
-        (typeof(Int64), typeof(SByte)),
-        (typeof(Int64), typeof(Single)),
-        (typeof(Int64), typeof(String)),
-        (typeof(Int64), typeof(UInt16)),
-        (typeof(Int64), typeof(UInt32)),
-        (typeof(Int64), typeof(UInt64)),
+        (typeof(long), typeof(bool)),
+        (typeof(long), typeof(byte)),
+        (typeof(long), typeof(char)),
+        (typeof(long), typeof(decimal)),
+        (typeof(long), typeof(double)),
+        (typeof(long), typeof(short)),
+        (typeof(long), typeof(int)),
+        (typeof(long), typeof(long)),
+        (typeof(long), typeof(sbyte)),
+        (typeof(long), typeof(float)),
+        (typeof(long), typeof(string)),
+        (typeof(long), typeof(ushort)),
+        (typeof(long), typeof(uint)),
+        (typeof(long), typeof(ulong)),
 
         (typeof(IntPtr), typeof(IntPtr)),
 
-        (typeof(SByte), typeof(Boolean)),
-        (typeof(SByte), typeof(Byte)),
-        (typeof(SByte), typeof(Char)),
-        (typeof(SByte), typeof(Decimal)),
-        (typeof(SByte), typeof(Double)),
-        (typeof(SByte), typeof(Int16)),
-        (typeof(SByte), typeof(Int32)),
-        (typeof(SByte), typeof(Int64)),
-        (typeof(SByte), typeof(SByte)),
-        (typeof(SByte), typeof(Single)),
-        (typeof(SByte), typeof(String)),
-        (typeof(SByte), typeof(UInt16)),
-        (typeof(SByte), typeof(UInt32)),
-        (typeof(SByte), typeof(UInt64)),
+        (typeof(sbyte), typeof(bool)),
+        (typeof(sbyte), typeof(byte)),
+        (typeof(sbyte), typeof(char)),
+        (typeof(sbyte), typeof(decimal)),
+        (typeof(sbyte), typeof(double)),
+        (typeof(sbyte), typeof(short)),
+        (typeof(sbyte), typeof(int)),
+        (typeof(sbyte), typeof(long)),
+        (typeof(sbyte), typeof(sbyte)),
+        (typeof(sbyte), typeof(float)),
+        (typeof(sbyte), typeof(string)),
+        (typeof(sbyte), typeof(ushort)),
+        (typeof(sbyte), typeof(uint)),
+        (typeof(sbyte), typeof(ulong)),
 
-        (typeof(Single), typeof(Boolean)),
-        (typeof(Single), typeof(Byte)),
-        (typeof(Single), typeof(Decimal)),
-        (typeof(Single), typeof(Double)),
-        (typeof(Single), typeof(Int16)),
-        (typeof(Single), typeof(Int32)),
-        (typeof(Single), typeof(Int64)),
-        (typeof(Single), typeof(SByte)),
-        (typeof(Single), typeof(Single)),
-        (typeof(Single), typeof(String)),
-        (typeof(Single), typeof(UInt16)),
-        (typeof(Single), typeof(UInt32)),
-        (typeof(Single), typeof(UInt64)),
+        (typeof(float), typeof(bool)),
+        (typeof(float), typeof(byte)),
+        (typeof(float), typeof(decimal)),
+        (typeof(float), typeof(double)),
+        (typeof(float), typeof(short)),
+        (typeof(float), typeof(int)),
+        (typeof(float), typeof(long)),
+        (typeof(float), typeof(sbyte)),
+        (typeof(float), typeof(float)),
+        (typeof(float), typeof(string)),
+        (typeof(float), typeof(ushort)),
+        (typeof(float), typeof(uint)),
+        (typeof(float), typeof(ulong)),
 
-        (typeof(String), typeof(Boolean)),
-        (typeof(String), typeof(Byte)),
-        (typeof(String), typeof(Char)),
-        (typeof(String), typeof(DateTime)),
-        (typeof(String), typeof(DateTimeOffset)),
-        (typeof(String), typeof(DateOnly)),
-        (typeof(String), typeof(Decimal)),
-        (typeof(String), typeof(Double)),
-        (typeof(String), typeof(Guid)),
-        (typeof(String), typeof(Int16)),
-        (typeof(String), typeof(Int32)),
-        (typeof(String), typeof(Int64)),
-        (typeof(String), typeof(SByte)),
-        (typeof(String), typeof(Single)),
-        (typeof(String), typeof(String)),
-        (typeof(String), typeof(UInt16)),
-        (typeof(String), typeof(UInt32)),
-        (typeof(String), typeof(UInt64)),
-        (typeof(String), typeof(TimeSpan)),
-        (typeof(String), typeof(TimeOnly)),
+        (typeof(string), typeof(bool)),
+        (typeof(string), typeof(byte)),
+        (typeof(string), typeof(char)),
+        (typeof(string), typeof(DateTime)),
+        (typeof(string), typeof(DateTimeOffset)),
+        (typeof(string), typeof(DateOnly)),
+        (typeof(string), typeof(decimal)),
+        (typeof(string), typeof(double)),
+        (typeof(string), typeof(Guid)),
+        (typeof(string), typeof(short)),
+        (typeof(string), typeof(int)),
+        (typeof(string), typeof(long)),
+        (typeof(string), typeof(sbyte)),
+        (typeof(string), typeof(float)),
+        (typeof(string), typeof(string)),
+        (typeof(string), typeof(ushort)),
+        (typeof(string), typeof(uint)),
+        (typeof(string), typeof(ulong)),
+        (typeof(string), typeof(TimeSpan)),
+        (typeof(string), typeof(TimeOnly)),
 
         (typeof(TimeOnly), typeof(TimeOnly)),
-        (typeof(TimeOnly), typeof(String)),
+        (typeof(TimeOnly), typeof(string)),
 
         (typeof(TimeSpan), typeof(TimeOnly)),
         (typeof(TimeSpan), typeof(TimeSpan)),
-        (typeof(TimeSpan), typeof(String)),
+        (typeof(TimeSpan), typeof(string)),
 
-        (typeof(UInt16), typeof(Boolean)),
-        (typeof(UInt16), typeof(Byte)),
-        (typeof(UInt16), typeof(Char)),
-        (typeof(UInt16), typeof(Decimal)),
-        (typeof(UInt16), typeof(Double)),
-        (typeof(UInt16), typeof(Int16)),
-        (typeof(UInt16), typeof(Int32)),
-        (typeof(UInt16), typeof(Int64)),
-        (typeof(UInt16), typeof(SByte)),
-        (typeof(UInt16), typeof(Single)),
-        (typeof(UInt16), typeof(String)),
-        (typeof(UInt16), typeof(UInt16)),
-        (typeof(UInt16), typeof(UInt32)),
-        (typeof(UInt16), typeof(UInt64)),
+        (typeof(ushort), typeof(bool)),
+        (typeof(ushort), typeof(byte)),
+        (typeof(ushort), typeof(char)),
+        (typeof(ushort), typeof(decimal)),
+        (typeof(ushort), typeof(double)),
+        (typeof(ushort), typeof(short)),
+        (typeof(ushort), typeof(int)),
+        (typeof(ushort), typeof(long)),
+        (typeof(ushort), typeof(sbyte)),
+        (typeof(ushort), typeof(float)),
+        (typeof(ushort), typeof(string)),
+        (typeof(ushort), typeof(ushort)),
+        (typeof(ushort), typeof(uint)),
+        (typeof(ushort), typeof(ulong)),
 
-        (typeof(UInt32), typeof(Boolean)),
-        (typeof(UInt32), typeof(Byte)),
-        (typeof(UInt32), typeof(Char)),
-        (typeof(UInt32), typeof(Decimal)),
-        (typeof(UInt32), typeof(Double)),
-        (typeof(UInt32), typeof(Int16)),
-        (typeof(UInt32), typeof(Int32)),
-        (typeof(UInt32), typeof(Int64)),
-        (typeof(UInt32), typeof(SByte)),
-        (typeof(UInt32), typeof(Single)),
-        (typeof(UInt32), typeof(String)),
-        (typeof(UInt32), typeof(UInt16)),
-        (typeof(UInt32), typeof(UInt32)),
-        (typeof(UInt32), typeof(UInt64)),
+        (typeof(uint), typeof(bool)),
+        (typeof(uint), typeof(byte)),
+        (typeof(uint), typeof(char)),
+        (typeof(uint), typeof(decimal)),
+        (typeof(uint), typeof(double)),
+        (typeof(uint), typeof(short)),
+        (typeof(uint), typeof(int)),
+        (typeof(uint), typeof(long)),
+        (typeof(uint), typeof(sbyte)),
+        (typeof(uint), typeof(float)),
+        (typeof(uint), typeof(string)),
+        (typeof(uint), typeof(ushort)),
+        (typeof(uint), typeof(uint)),
+        (typeof(uint), typeof(ulong)),
 
-        (typeof(UInt64), typeof(Boolean)),
-        (typeof(UInt64), typeof(Byte)),
-        (typeof(UInt64), typeof(Char)),
-        (typeof(UInt64), typeof(Decimal)),
-        (typeof(UInt64), typeof(Double)),
-        (typeof(UInt64), typeof(Int16)),
-        (typeof(UInt64), typeof(Int32)),
-        (typeof(UInt64), typeof(Int64)),
-        (typeof(UInt64), typeof(SByte)),
-        (typeof(UInt64), typeof(Single)),
-        (typeof(UInt64), typeof(String)),
-        (typeof(UInt64), typeof(UInt16)),
-        (typeof(UInt64), typeof(UInt32)),
-        (typeof(UInt64), typeof(UInt64)),
+        (typeof(ulong), typeof(bool)),
+        (typeof(ulong), typeof(byte)),
+        (typeof(ulong), typeof(char)),
+        (typeof(ulong), typeof(decimal)),
+        (typeof(ulong), typeof(double)),
+        (typeof(ulong), typeof(short)),
+        (typeof(ulong), typeof(int)),
+        (typeof(ulong), typeof(long)),
+        (typeof(ulong), typeof(sbyte)),
+        (typeof(ulong), typeof(float)),
+        (typeof(ulong), typeof(string)),
+        (typeof(ulong), typeof(ushort)),
+        (typeof(ulong), typeof(uint)),
+        (typeof(ulong), typeof(ulong)),
 
         (typeof(UIntPtr), typeof(UIntPtr))
     ];

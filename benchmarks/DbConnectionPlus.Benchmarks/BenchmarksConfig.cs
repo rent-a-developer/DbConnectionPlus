@@ -37,7 +37,7 @@ public class BenchmarksConfig : ManualConfig
     }
 
     // The settings both jobs share, so that the only difference between them is the toolchain.
-    private static Job CreateJob(String id) =>
+    private static Job CreateJob(string id) =>
         Job.Default
             .WithId(id)
             // The default adaptive warmup runs ~9 iterations, but every iteration already executes tens of
@@ -54,6 +54,6 @@ public class BenchmarksConfig : ManualConfig
             .WithGcServer(true);
 
     // The Job column of the summary shows these.
-    public const String JitJobId = "JIT";
-    public const String AotJobId = "AOT";
+    public const string JitJobId = "JIT";
+    public const string AotJobId = "AOT";
 }

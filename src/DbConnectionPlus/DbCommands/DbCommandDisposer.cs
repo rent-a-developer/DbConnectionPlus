@@ -95,5 +95,5 @@ internal class DbCommandDisposer : IDisposable, IAsyncDisposable
     private readonly DbCommand command;
     private readonly TemporaryTableDisposer[] temporaryTableDisposers;
 
-    private Boolean isDisposed;
+    private bool isDisposed;
 }

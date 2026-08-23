@@ -11,37 +11,37 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 {
     /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
+    public bool CanRetrieveStructureOfTemporaryTables => true;
 
     /// <inheritdoc />
     public IDatabaseAdapter DatabaseAdapter => new SqlServerDatabaseAdapter();
 
     /// <inheritdoc />
-    public String DatabaseCollation => "Latin1_General_CI_AS";
+    public string DatabaseCollation => "Latin1_General_CI_AS";
 
     /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "WAITFOR DELAY '00:00:02';";
+    public string DelayTwoSecondsStatement => "WAITFOR DELAY '00:00:02';";
 
     /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => true;
+    public bool HasUnsupportedDataType => true;
 
     /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
 
     /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
+    public bool SupportsDateTimeOffset => true;
 
     /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => true;
+    public bool SupportsProperCommandCancellation => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
+    public bool SupportsStoredProcedures => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => true;
+    public bool SupportsStoredProceduresReturningResultSet => true;
 
     /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => false;
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => false;
 
     /// <inheritdoc />
     public DbConnection CreateConnection()
@@ -55,20 +55,20 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null) =>
-        connection.ExecuteScalar<Boolean>(
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
+        connection.ExecuteScalar<bool>(
             $"IF OBJECT_ID('tempdb..#{tableName}', 'U') IS NOT NULL SELECT 1 ELSE SELECT 0",
             transaction,
             cancellationToken: TestContext.Current.CancellationToken
         );
 
     /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
-        connection.ExecuteScalar<String>(
+        connection.ExecuteScalar<string>(
             $"""
              SELECT	C.collation_name AS CollationName
              FROM	tempdb.sys.columns C
@@ -78,12 +78,12 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
 
     /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
-        connection.QuerySingle<String>(
+        connection.QuerySingle<string>(
             $"""
              SELECT  t.name AS DataType
              FROM    tempdb.sys.columns c
@@ -94,7 +94,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         );
 
     /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
+    public string GetUnsupportedDataTypeLiteral() =>
         "CONVERT(SQL_VARIANT, 123)";
 
     /// <inheritdoc />
@@ -136,14 +136,14 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
     /// <summary>
     /// The connection string that connects to the SQL Server server running in the test container.
     /// </summary>
-    private static String ConnectionString =>
+    private static string ConnectionString =>
         TestDatabaseContainers.SqlServer.ConnectionString;
 
-    private static void ExecuteScript(SqlConnection connection, String script)
+    private static void ExecuteScript(SqlConnection connection, string script)
     {
         var statements = script
             .Split("GO", StringSplitOptions.RemoveEmptyEntries)
-            .Where(a => !String.IsNullOrWhiteSpace(a.Trim()));
+            .Where(a => !string.IsNullOrWhiteSpace(a.Trim()));
 
         foreach (var statement in statements)
         {
@@ -151,7 +151,7 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         }
     }
 
-    private const String CreateDatabaseObjectsSql =
+    private const string CreateDatabaseObjectsSql =
         """
         CREATE TABLE Entity
         (
@@ -255,9 +255,9 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const String DatabaseName = "DbConnectionPlusTests";
+    private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const String PurgeTablesSql =
+    private const string PurgeTablesSql =
         """
         TRUNCATE TABLE Entity;
         GO
@@ -275,5 +275,5 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
 }

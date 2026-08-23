@@ -83,7 +83,7 @@ public static class Generate
         fixture.Register<Single>(() =>
             {
                 // We limit to 3 fractional digits because not all database systems support a higher precision.
-                return (Single)Math.Round(faker.Random.Float(0, 999), 3);
+                return (float)Math.Round(faker.Random.Float(0, 999), 3);
             }
         );
         fixture.Register<String>(() => faker.Lorem.Sentence());
@@ -119,7 +119,7 @@ public static class Generate
     /// Generates an ID.
     /// </summary>
     /// <returns>An ID.</returns>
-    public static Int64 Id() =>
+    public static long Id() =>
         Interlocked.Increment(ref entityId);
 
     /// <summary>
@@ -130,7 +130,7 @@ public static class Generate
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
     /// </param>
     /// <returns>A list of IDs.</returns>
-    public static List<Int64> Ids(Int32? numberOfIds = null) =>
+    public static List<long> Ids(int? numberOfIds = null) =>
         [.. Enumerable.Range(0, numberOfIds ?? SmallNumber()).Select(_ => Interlocked.Increment(ref entityId))];
 
     /// <summary>
@@ -141,7 +141,7 @@ public static class Generate
     /// <returns>
     /// A list of <typeparamref name="TTarget" /> objects containing the same data as <paramref name="objects" />.
     /// </returns>
-    public static List<TTarget> MapTo<TTarget>(IEnumerable<Object> objects) =>
+    public static List<TTarget> MapTo<TTarget>(IEnumerable<object> objects) =>
         objects.Adapt<List<TTarget>>();
 
     /// <summary>
@@ -152,7 +152,7 @@ public static class Generate
     /// <returns>
     /// An instance of <typeparamref name="TTarget" /> containing the same data as <paramref name="obj" />.
     /// </returns>
-    public static TTarget MapTo<TTarget>(Object obj) =>
+    public static TTarget MapTo<TTarget>(object obj) =>
         obj.Adapt<TTarget>();
 
     /// <summary>
@@ -164,7 +164,7 @@ public static class Generate
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
     /// </param>
     /// <returns>A list of instances of the type <typeparamref name="T" /> populated with test data.</returns>
-    public static List<T> Multiple<T>(Int32? numberOfObjects = null)
+    public static List<T> Multiple<T>(int? numberOfObjects = null)
     {
         fixture.RepeatCount = numberOfObjects ?? SmallNumber();
         return fixture.Create<List<T>>();
@@ -183,7 +183,7 @@ public static class Generate
     /// A list of random values of the type <typeparamref name="T" /> and <see langword="null" /> values.
     /// The list is guaranteed to have at least 50% of its values set to <see langword="null" />.
     /// </returns>
-    public static List<T?> MultipleNullable<T>(Int32? numberOfValues = null)
+    public static List<T?> MultipleNullable<T>(int? numberOfValues = null)
         where T : struct
     {
         fixture.RepeatCount = numberOfValues ?? SmallNumber();
@@ -212,24 +212,24 @@ public static class Generate
     /// or TimeSpan.
     /// </summary>
     /// <returns>A random scalar value.</returns>
-    public static Object ScalarValue() =>
+    public static object ScalarValue() =>
         faker.Random.Int(0, 14) switch
         {
-            0 => fixture.Create<Boolean>(),
-            1 => fixture.Create<Byte>(),
-            2 => fixture.Create<Char>(),
+            0 => fixture.Create<bool>(),
+            1 => fixture.Create<byte>(),
+            2 => fixture.Create<char>(),
             3 => fixture.Create<DateTimeOffset>(),
             4 => fixture.Create<DateTime>(),
-            5 => fixture.Create<Decimal>(),
-            6 => fixture.Create<Double>(),
+            5 => fixture.Create<decimal>(),
+            6 => fixture.Create<double>(),
             7 => fixture.Create<Guid>(),
-            8 => fixture.Create<Int16>(),
-            9 => fixture.Create<Int32>(),
-            10 => fixture.Create<Int64>(),
-            11 => fixture.Create<Single>(),
-            12 => fixture.Create<String>(),
+            8 => fixture.Create<short>(),
+            9 => fixture.Create<int>(),
+            10 => fixture.Create<long>(),
+            11 => fixture.Create<float>(),
+            12 => fixture.Create<string>(),
             13 => fixture.Create<TimeSpan>(),
-            _ => fixture.Create<Int32>()
+            _ => fixture.Create<int>()
         };
 
     /// <summary>
@@ -247,7 +247,7 @@ public static class Generate
     /// Generates a random number between 5 and 15.
     /// </summary>
     /// <returns>A random number between 5 and 15.</returns>
-    public static Int32 SmallNumber() =>
+    public static int SmallNumber() =>
         faker.Random.Int(5, 15);
 
     /// <summary>
@@ -316,11 +316,11 @@ public static class Generate
     /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
     /// certain characters.
     /// </summary>
-    private static readonly Char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
 
     private static readonly Faker faker;
     private static readonly Fixture fixture;
-    private static Int64 entityId = 1;
+    private static long entityId = 1;
 
     /// <summary>
     /// An AutoFixture customization that excludes properties that are ignored in the entity model from being populated
@@ -333,7 +333,7 @@ public static class Generate
 
         private class OmitNotMappedPropertySpecimenBuilder : ISpecimenBuilder
         {
-            public Object Create(Object request, ISpecimenContext context)
+            public object Create(object request, ISpecimenContext context)
             {
                 if (request is PropertyInfo propertyInfo)
                 {

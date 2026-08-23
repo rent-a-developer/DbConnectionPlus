@@ -36,11 +36,11 @@ public abstract class
         var enumValue1 = Generate.Single<TestEnum>();
 
         this.Connection
-            .ExecuteScalar<Int32>(
+            .ExecuteScalar<int>(
                 $"SELECT {Parameter(enumValue1)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().Be((Int32)enumValue1);
+            .Should().Be((int)enumValue1);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public abstract class
         var enumValue2 = Generate.Single<TestEnum>();
 
         this.Connection
-            .ExecuteScalar<String>(
+            .ExecuteScalar<string>(
                 $"SELECT {Parameter(enumValue2)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -65,12 +65,12 @@ public abstract class
     [Fact]
     public void Parameter_MultipleParameters_ShouldPassValuesAsParameters()
     {
-        const Int64 int64 = 123L;
+        const long int64 = 123L;
         var guid = Guid.NewGuid();
         var dateTime = new DateTime(2025, 12, 31, 23, 59, 59);
 
         this.Connection
-            .QuerySingle<(Int64, Guid, DateTime)>(
+            .QuerySingle<(long, Guid, DateTime)>(
                 $"SELECT {Parameter(int64)}, {Parameter(guid)}, {Parameter(dateTime)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -80,9 +80,9 @@ public abstract class
     [Fact]
     public void Parameter_ShouldPassValueAsParameter()
     {
-        const Int64 int64 = 123L;
+        const long int64 = 123L;
         this.Connection
-            .ExecuteScalar<Int64>(
+            .ExecuteScalar<long>(
                 $"SELECT {Parameter(int64)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )

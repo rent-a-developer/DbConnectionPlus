@@ -55,9 +55,9 @@ public static class ThrowHelper
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     public static void ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
-        Int32 expectedNumberOfAffectedRows,
-        Int32 actualNumberOfAffectedRows,
-        Object entity
+        int expectedNumberOfAffectedRows,
+        int actualNumberOfAffectedRows,
+        object entity
     ) =>
         throw new DbUpdateConcurrencyException(
             $"The database operation was expected to affect {expectedNumberOfAffectedRows} row(s), but actually " +

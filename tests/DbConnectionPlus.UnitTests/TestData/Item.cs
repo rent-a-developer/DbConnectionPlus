@@ -1,3 +1,3 @@
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
-public record Item(Int64 Id, String Name, TestEnum Enum);
+public record Item(long Id, string Name, TestEnum Enum);

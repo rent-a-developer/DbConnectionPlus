@@ -8,12 +8,12 @@ public class PostgreSqlTemporaryTableBuilderTests : UnitTestsBase
     public void BuildTemporaryTable_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
     {
         Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
             )
             .Should().Throw<ArgumentException>();
 
         Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
             )
             .Should().Throw<ArgumentException>();
     }
@@ -22,12 +22,12 @@ public class PostgreSqlTemporaryTableBuilderTests : UnitTestsBase
     public async Task BuildTemporaryTableAsync_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
     {
         await Invoking(() =>
-                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
             )
             .Should().ThrowAsync<ArgumentException>();
 
         await Invoking(() =>
-                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, " ", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
             )
             .Should().ThrowAsync<ArgumentException>();
     }
@@ -40,11 +40,11 @@ public class PostgreSqlTemporaryTableBuilderTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(Int32))
+            this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(Int32))
+            this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
         );
     }
 

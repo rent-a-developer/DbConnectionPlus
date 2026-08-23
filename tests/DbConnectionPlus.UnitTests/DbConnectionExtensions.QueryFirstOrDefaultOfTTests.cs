@@ -29,7 +29,7 @@ public class DbConnectionExtensions_QueryFirstOrDefaultOfTTests : StatementMetho
 
         mockDbDataReader.FieldCount.Returns(1);
         mockDbDataReader.GetName(0).Returns("Id");
-        mockDbDataReader.GetFieldType(0).Returns(typeof(Int64));
+        mockDbDataReader.GetFieldType(0).Returns(typeof(long));
 
         mockDbDataReader.Read().Returns(true);
         mockDbDataReader.ReadAsync(TestContext.Current.CancellationToken).Returns(true);

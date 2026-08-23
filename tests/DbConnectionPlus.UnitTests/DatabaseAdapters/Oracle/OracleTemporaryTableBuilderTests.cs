@@ -9,7 +9,7 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
     {
         OracleDatabaseAdapter.AllowTemporaryTables = false;
 
-        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(Int32))
+        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
             )
             .Should().Throw<InvalidOperationException>()
             .WithMessage(
@@ -24,12 +24,12 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
     public void BuildTemporaryTable_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
     {
         Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
             )
             .Should().Throw<ArgumentException>();
 
         Invoking(() =>
-                this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
             )
             .Should().Throw<ArgumentException>();
     }
@@ -44,7 +44,7 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
                     null,
                     "Name",
                     new[] { 1 },
-                    typeof(Int32)
+                    typeof(int)
                 )
             )
             .Should().ThrowAsync<InvalidOperationException>()
@@ -60,12 +60,12 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
     public async Task BuildTemporaryTableAsync_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
     {
         await Invoking(() =>
-                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "", new[] { 1 }, typeof(int))
             )
             .Should().ThrowAsync<ArgumentException>();
 
         await Invoking(() =>
-                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, " ", new[] { 1 }, typeof(Int32))
+                this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int))
             )
             .Should().ThrowAsync<ArgumentException>();
     }
@@ -78,11 +78,11 @@ public class OracleTemporaryTableBuilderTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(Int32))
+            this.builder.BuildTemporaryTable(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(Int32))
+            this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
         );
     }
 

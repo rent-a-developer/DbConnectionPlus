@@ -72,7 +72,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static Int32 DeleteEntity<
+    public static int DeleteEntity<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,
@@ -160,7 +160,7 @@ public static partial class DbConnectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static Task<Int32> DeleteEntityAsync<
+    public static Task<int> DeleteEntityAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,

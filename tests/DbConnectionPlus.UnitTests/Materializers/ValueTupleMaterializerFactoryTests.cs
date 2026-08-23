@@ -16,10 +16,10 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(2);
 
-        Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<(Int32, Int32, Int32)>(dataReader))
+        Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<(int, int, int)>(dataReader))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"The SQL statement returned 2 columns, but the value tuple type {typeof((Int32, Int32, Int32))} has " +
+                $"The SQL statement returned 2 columns, but the value tuple type {typeof((int, int, int))} has " +
                 "3 fields. Make sure that the SQL statement returns the same number of columns as the number of " +
                 "fields in the value tuple type.*"
             );
@@ -65,7 +65,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(0);
 
-        Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int32>>(dataReader))
+        Invoking(() => ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<int>>(dataReader))
             .Should().Throw<ArgumentException>()
             .WithMessage("The SQL statement did not return any columns.*");
     }
@@ -122,16 +122,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(entityId.ToString());
 
         dataReader.GetName(1).Returns("Enum");
-        dataReader.GetFieldType(1).Returns(typeof(Decimal));
+        dataReader.GetFieldType(1).Returns(typeof(decimal));
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+        dataReader.GetDecimal(1).Returns((decimal)enumValue);
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<(Int64 Id, TestEnum Enum)>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<(long Id, TestEnum Enum)>(dataReader);
 
         var entity = materializer(dataReader);
 
@@ -152,9 +152,9 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
         dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetInt32(0).Returns((Int32)enumValue);
+        dataReader.GetInt32(0).Returns((int)enumValue);
 
         var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<TestEnum>>(dataReader);
 
@@ -172,7 +172,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns(999);
 
@@ -188,7 +188,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
     }
@@ -203,7 +203,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(enumValue.ToString());
 
@@ -224,7 +224,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns("NonExistent");
 
@@ -255,16 +255,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         for (var i = 0; i < 15; i++)
         {
             dataReader.GetName(i).Returns($"Value{i + 1}");
-            dataReader.GetFieldType(i).Returns(typeof(Int32));
+            dataReader.GetFieldType(i).Returns(typeof(int));
             dataReader.IsDBNull(i).Returns(false);
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
         var materializer = ValueTupleMaterializerFactory
             .GetMaterializer<(
-                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-                Int32
+                int, int, int, int, int, int, int,
+                int, int, int, int, int, int, int,
+                int
                 )>(dataReader);
 
         var valueTuple = materializer(dataReader);
@@ -324,22 +324,22 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(String.Empty);
+        dataReader.GetString(0).Returns(string.Empty);
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Char>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char>>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
+                $"the type {typeof(char)} of the corresponding field of the value tuple type " +
+                $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char)}. The string must be exactly one " +
+                $"Could not convert the string '' to the type {typeof(char)}. The string must be exactly one " +
                 "character long."
             );
 
@@ -349,12 +349,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<Char>)}. See inner exception for details.*"
+                $"the type {typeof(char)} of the corresponding field of the value tuple type " +
+                $"{typeof(ValueTuple<char>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be exactly one " +
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be exactly one " +
                 "character long."
             );
     }
@@ -367,14 +367,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        var character = Generate.Single<Char>();
+        var character = Generate.Single<char>();
 
         dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(character.ToString());
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Char>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -390,16 +390,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(true);
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int64>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<long>>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof(ValueTuple<Int64>)} is non-nullable.*"
+                $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable.*"
             );
     }
 
@@ -412,22 +412,22 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
-        dataReader.GetString(0).Returns(String.Empty);
+        dataReader.GetString(0).Returns(string.Empty);
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Char?>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char?>>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char?)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<Char?>)}. See inner exception for details.*"
+                $"the type {typeof(char?)} of the corresponding field of the value tuple type " +
+                $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string '' to the type {typeof(Char?)}. The string must be exactly one " +
+                $"Could not convert the string '' to the type {typeof(char?)}. The string must be exactly one " +
                 "character long."
             );
 
@@ -437,12 +437,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Char' returned by the SQL statement contains a value that could not be converted to " +
-                $"the type {typeof(Char?)} of the corresponding field of the value tuple type " +
-                $"{typeof(ValueTuple<Char?>)}. See inner exception for details.*"
+                $"the type {typeof(char?)} of the corresponding field of the value tuple type " +
+                $"{typeof(ValueTuple<char?>)}. See inner exception for details.*"
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char?)}. The string must be exactly " +
+                $"Could not convert the string 'ab' to the type {typeof(char?)}. The string must be exactly " +
                 "one character long."
             );
     }
@@ -455,14 +455,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        var character = Generate.Single<Char>();
+        var character = Generate.Single<char>();
 
         dataReader.GetName(0).Returns("Char");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(character.ToString());
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Char?>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<char?>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -477,12 +477,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.GetName(0).Returns("Id");
         dataReader.IsDBNull(0).Returns(true);
         dataReader.GetInt64(0).Throws(new SqlNullValueException());
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int64?>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<long?>>(dataReader);
 
         var valueTuple = Invoking(() => materializer(dataReader))
             .Should().NotThrow().Subject;
@@ -503,13 +503,13 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var ordinal = 0;
 
         dataReader.GetName(ordinal).Returns("Boolean");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Boolean));
+        dataReader.GetFieldType(ordinal).Returns(typeof(bool));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetBoolean(ordinal).Returns(entity.BooleanValue);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Char");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(string));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetString(ordinal).Returns(entity.CharValue.ToString());
 
@@ -521,12 +521,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Nullable");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Decimal));
+        dataReader.GetFieldType(ordinal).Returns(typeof(decimal));
         dataReader.IsDBNull(ordinal).Returns(true);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Enum");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(string));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetString(ordinal).Returns(entity.EnumValue.ToString());
 
@@ -538,12 +538,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Int32");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Int32Value);
 
         var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(Boolean, Char, DateTime, Decimal?, TestEnum, Guid, Int32)>(dataReader);
+            .GetMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -576,14 +576,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        var bytes = Generate.Single<Byte[]>();
+        var bytes = Generate.Single<byte[]>();
 
         dataReader.GetName(0).Returns("Data");
-        dataReader.GetFieldType(0).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(0).Returns(typeof(byte[]));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetValue(0).Returns(bytes);
 
-        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Byte[]>>(dataReader);
+        var materializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<byte[]>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -601,12 +601,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Boolean");
-        dataReader.GetFieldType(0).Returns(typeof(Boolean));
+        dataReader.GetFieldType(0).Returns(typeof(bool));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetBoolean(0).Returns(entity.BooleanValue);
 
         var materializer = ValueTupleMaterializerFactory
-            .GetMaterializer<ValueTuple<Boolean>>(dataReader);
+            .GetMaterializer<ValueTuple<bool>>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -626,13 +626,13 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         var ordinal = 0;
 
         dataReader.GetName(ordinal).Returns("Boolean");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Boolean));
+        dataReader.GetFieldType(ordinal).Returns(typeof(bool));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetBoolean(ordinal).Returns(entity.BooleanValue);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Char");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(string));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetString(ordinal).Returns(entity.CharValue.ToString());
 
@@ -644,12 +644,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Nullable");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Decimal));
+        dataReader.GetFieldType(ordinal).Returns(typeof(decimal));
         dataReader.IsDBNull(ordinal).Returns(true);
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Enum");
-        dataReader.GetFieldType(ordinal).Returns(typeof(String));
+        dataReader.GetFieldType(ordinal).Returns(typeof(string));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetString(ordinal).Returns(entity.EnumValue.ToString());
 
@@ -661,15 +661,15 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         ordinal++;
         dataReader.GetName(ordinal).Returns("Int32");
-        dataReader.GetFieldType(ordinal).Returns(typeof(Int32));
+        dataReader.GetFieldType(ordinal).Returns(typeof(int));
         dataReader.IsDBNull(ordinal).Returns(false);
         dataReader.GetInt32(ordinal).Returns(entity.Int32Value);
 
         var expressionMaterializer = ValueTupleMaterializerFactory
-            .GetMaterializer<(Boolean, Char, DateTime, Decimal?, TestEnum, Guid, Int32)>(dataReader);
+            .GetMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
 
         var reflectionMaterializer =
-            GetReflectionMaterializer<(Boolean, Char, DateTime, Decimal?, TestEnum, Guid, Int32)>(dataReader);
+            GetReflectionMaterializer<(bool, char, DateTime, decimal?, TestEnum, Guid, int)>(dataReader);
 
         var valueTuple = reflectionMaterializer(dataReader);
 
@@ -679,7 +679,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
                     entity.BooleanValue,
                     entity.CharValue,
                     entity.DateTimeValue,
-                    (Decimal?)null,
+                    (decimal?)null,
                     entity.EnumValue,
                     entity.GuidValue,
                     entity.Int32Value
@@ -700,22 +700,22 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         for (var i = 0; i < 15; i++)
         {
             dataReader.GetName(i).Returns($"Value{i + 1}");
-            dataReader.GetFieldType(i).Returns(typeof(Int32));
+            dataReader.GetFieldType(i).Returns(typeof(int));
             dataReader.IsDBNull(i).Returns(false);
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
         var expressionMaterializer = ValueTupleMaterializerFactory
             .GetMaterializer<(
-                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-                Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-                Int32
+                int, int, int, int, int, int, int,
+                int, int, int, int, int, int, int,
+                int
                 )>(dataReader);
 
         var reflectionMaterializer = GetReflectionMaterializer<(
-            Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-            Int32, Int32, Int32, Int32, Int32, Int32, Int32,
-            Int32
+            int, int, int, int, int, int, int,
+            int, int, int, int, int, int, int,
+            int
             )>(dataReader);
 
         var valueTuple = reflectionMaterializer(dataReader);
@@ -741,13 +741,13 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         for (var i = 0; i < 8; i++)
         {
             dataReader.GetName(i).Returns($"Value{i + 1}");
-            dataReader.GetFieldType(i).Returns(typeof(Int32));
+            dataReader.GetFieldType(i).Returns(typeof(int));
             dataReader.IsDBNull(i).Returns(false);
             dataReader.GetInt32(i).Returns(i + 1);
         }
 
         var materializer =
-            GetReflectionMaterializer<(Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32)>(dataReader);
+            GetReflectionMaterializer<(int, int, int, int, int, int, int, int)>(dataReader);
 
         materializer(dataReader)
             .Should().Be((1, 2, 3, 4, 5, 6, 7, 8));
@@ -764,16 +764,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(String));
+        dataReader.GetFieldType(0).Returns(typeof(string));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetString(0).Returns(entityId.ToString());
 
         dataReader.GetName(1).Returns("Enum");
-        dataReader.GetFieldType(1).Returns(typeof(Decimal));
+        dataReader.GetFieldType(1).Returns(typeof(decimal));
         dataReader.IsDBNull(1).Returns(false);
-        dataReader.GetDecimal(1).Returns((Decimal)enumValue);
+        dataReader.GetDecimal(1).Returns((decimal)enumValue);
 
-        var materializer = GetReflectionMaterializer<(Int64 Id, TestEnum Enum)>(dataReader);
+        var materializer = GetReflectionMaterializer<(long Id, TestEnum Enum)>(dataReader);
 
         var valueTuple = materializer(dataReader);
 
@@ -791,14 +791,14 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        var bytes = Generate.Single<Byte[]>();
+        var bytes = Generate.Single<byte[]>();
 
         dataReader.GetName(0).Returns("Data");
-        dataReader.GetFieldType(0).Returns(typeof(Byte[]));
+        dataReader.GetFieldType(0).Returns(typeof(byte[]));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetValue(0).Returns(bytes);
 
-        var materializer = GetReflectionMaterializer<ValueTuple<Byte[]>>(dataReader);
+        var materializer = GetReflectionMaterializer<ValueTuple<byte[]>>(dataReader);
 
         materializer(dataReader).Item1
             .Should().BeEquivalentTo(bytes);
@@ -812,11 +812,11 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Id");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(true);
 
-        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int64>>(dataReader);
-        var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<Int64>>(dataReader);
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<long>>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<ValueTuple<long>>(dataReader);
 
         var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
             .Should().Throw<InvalidCastException>().Which.Message;
@@ -825,7 +825,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The column 'Id' returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof(ValueTuple<Int64>)} is non-nullable."
+                $"of the value tuple type {typeof(ValueTuple<long>)} is non-nullable."
             )
             .And.Message
             .Should().Be(expectedMessage);
@@ -838,12 +838,12 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
 
         dataReader.FieldCount.Returns(1);
 
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.GetName(0).Returns("Id");
         dataReader.IsDBNull(0).Returns(true);
         dataReader.GetInt64(0).Throws(new SqlNullValueException());
 
-        var materializer = GetReflectionMaterializer<ValueTuple<Int64?>>(dataReader);
+        var materializer = GetReflectionMaterializer<ValueTuple<long?>>(dataReader);
 
         Invoking(() => materializer(dataReader))
             .Should().NotThrow().Subject.Item1
@@ -858,7 +858,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(1);
 
         dataReader.GetName(0).Returns("Enum");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt32(0).Returns(999);
 
@@ -877,7 +877,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             )
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members.*"
             );
 
@@ -894,16 +894,16 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
         dataReader.FieldCount.Returns(2);
 
         dataReader.GetName(0).Returns("");
-        dataReader.GetFieldType(0).Returns(typeof(Int64));
+        dataReader.GetFieldType(0).Returns(typeof(long));
         dataReader.IsDBNull(0).Returns(false);
         dataReader.GetInt64(0).Returns(Generate.Id());
 
         dataReader.GetName(1).Returns("");
-        dataReader.GetFieldType(1).Returns(typeof(Int64));
+        dataReader.GetFieldType(1).Returns(typeof(long));
         dataReader.IsDBNull(1).Returns(true);
 
-        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<(Int64, Int64)>(dataReader);
-        var reflectionMaterializer = GetReflectionMaterializer<(Int64, Int64)>(dataReader);
+        var expressionMaterializer = ValueTupleMaterializerFactory.GetMaterializer<(long, long)>(dataReader);
+        var reflectionMaterializer = GetReflectionMaterializer<(long, long)>(dataReader);
 
         var expectedMessage = Invoking(() => expressionMaterializer(dataReader))
             .Should().Throw<InvalidCastException>().Which.Message;
@@ -912,7 +912,7 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "The 2nd column returned by the SQL statement contains a NULL value, but the corresponding field " +
-                $"of the value tuple type {typeof((Int64, Int64))} is non-nullable."
+                $"of the value tuple type {typeof((long, long))} is non-nullable."
             )
             .And.Message
             .Should().Be(expectedMessage);
@@ -922,17 +922,17 @@ public class ValueTupleMaterializerFactoryTests : UnitTestsBase
     public void ShouldGuardAgainstNullArguments()
     {
         ArgumentNullGuardVerifier.Verify(() =>
-            ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<Int32>>(Substitute.For<DbDataReader>())
+            ValueTupleMaterializerFactory.GetMaterializer<ValueTuple<int>>(Substitute.For<DbDataReader>())
         );
 
         var dataReader = Substitute.For<DbDataReader>();
 
         dataReader.FieldCount.Returns(1);
         dataReader.GetName(0).Returns("Value");
-        dataReader.GetFieldType(0).Returns(typeof(Int32));
+        dataReader.GetFieldType(0).Returns(typeof(int));
 
         ArgumentNullGuardVerifier.Verify(() =>
-            ValueTupleMaterializerFactory.CreateReflectionMaterializer<ValueTuple<Int32>>(
+            ValueTupleMaterializerFactory.CreateReflectionMaterializer<ValueTuple<int>>(
                 dataReader,
                 dataReader.GetFieldNames(),
                 dataReader.GetFieldTypes()

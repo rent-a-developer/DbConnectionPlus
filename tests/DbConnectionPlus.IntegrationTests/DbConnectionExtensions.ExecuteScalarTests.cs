@@ -30,7 +30,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteScalar_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
@@ -40,7 +40,7 @@ public abstract class
         this.DelayNextDbCommand = true;
 
         await Invoking(() =>
-                CallApi<Int32>(
+                CallApi<int>(
                     useAsyncApi,
                     this.Connection,
                     "SELECT 1",
@@ -54,9 +54,9 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task ExecuteScalar_ColumnValueCannotBeConvertedToTargetType_ShouldThrow(Boolean useAsyncApi) =>
+    public Task ExecuteScalar_ColumnValueCannotBeConvertedToTargetType_ShouldThrow(bool useAsyncApi) =>
         Invoking(() =>
-                CallApi<Int32>(
+                CallApi<int>(
                     useAsyncApi,
                     this.Connection,
                     "SELECT 'A'",
@@ -66,19 +66,19 @@ public abstract class
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
                 "The first column of the first row in the result set returned by the SQL statement contains the " +
-                $"value 'A' ({typeof(String)}), which could not be converted to the type {typeof(Int32)}.*"
+                $"value 'A' ({typeof(string)}), which could not be converted to the type {typeof(int)}.*"
             );
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
+    public async Task ExecuteScalar_CommandType_ShouldUseCommandType(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await CallApi<Int64>(
+        (await CallApi<long>(
                 useAsyncApi,
                 this.Connection,
                 "GetFirstEntityId",
@@ -92,7 +92,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteScalar_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -106,7 +106,7 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi<String>(
+        (await CallApi<string>(
                 useAsyncApi,
                 this.Connection,
                 statement,
@@ -123,14 +123,14 @@ public abstract class
     [InlineData(true)]
     public async Task
         ExecuteScalar_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entities = Generate.Multiple<Entity>(1);
 
-        (await CallApi<String>(
+        (await CallApi<string>(
                 useAsyncApi,
                 this.Connection,
                 $"""
@@ -145,11 +145,11 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
+    public async Task ExecuteScalar_InterpolatedParameter_ShouldPassInterpolatedParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
-        (await CallApi<String>(
+        (await CallApi<string>(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT {Q("StringValue")} FROM {Q("Entity")} WHERE {Q("Id")} = {Parameter(entity.Id)}",
@@ -161,9 +161,9 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_NoResultSet_ShouldReturnDefault(Boolean useAsyncApi)
+    public async Task ExecuteScalar_NoResultSet_ShouldReturnDefault(bool useAsyncApi)
     {
-        (await CallApi<Object>(
+        (await CallApi<object>(
                 useAsyncApi,
                 this.Connection,
                 "SELECT 1 WHERE 0 = 1",
@@ -171,7 +171,7 @@ public abstract class
             ))
             .Should().BeNull();
 
-        (await CallApi<Int32>(
+        (await CallApi<int>(
                 useAsyncApi,
                 this.Connection,
                 "SELECT 1 WHERE 0 = 1",
@@ -183,7 +183,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_Parameter_ShouldPassParameter(Boolean useAsyncApi)
+    public async Task ExecuteScalar_Parameter_ShouldPassParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -192,7 +192,7 @@ public abstract class
             ("Id", entity.Id)
         );
 
-        (await CallApi<String>(
+        (await CallApi<string>(
                 useAsyncApi,
                 this.Connection,
                 statement,
@@ -205,7 +205,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteScalar_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -216,7 +216,7 @@ public abstract class
 
         var temporaryTableName = statement.TemporaryTables[0].Name;
 
-        (await CallApi<Int64>(
+        (await CallApi<long>(
                 useAsyncApi,
                 this.Connection,
                 statement,
@@ -233,14 +233,14 @@ public abstract class
     [InlineData(true)]
     public async Task
         ExecuteScalar_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
         var entityIds = Generate.Ids(1);
 
-        (await CallApi<Int64>(
+        (await CallApi<long>(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}",
@@ -252,7 +252,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
+    public async Task ExecuteScalar_ShouldSupportDateTimeOffsetValues(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
@@ -274,7 +274,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteScalar_TargetTypeIsChar_ColumnValueIsStringWithLengthNotOne_ShouldThrow(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         if (this.TestDatabaseProvider is not OracleTestDatabaseProvider)
@@ -282,7 +282,7 @@ public abstract class
             // Oracle doesn't allow to return an empty string, because it treats empty strings as NULLs.
 
             (await Invoking(() =>
-                        CallApi<Char>(
+                        CallApi<char>(
                             useAsyncApi,
                             this.Connection,
                             "SELECT ''",
@@ -292,18 +292,18 @@ public abstract class
                     .Should().ThrowAsync<InvalidCastException>()
                     .WithMessage(
                         "The first column of the first row in the result set returned by the SQL statement contains " +
-                        $"the value '' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. " +
+                        $"the value '' ({typeof(string)}), which could not be converted to the type {typeof(char)}. " +
                         "See inner exception for details.*"
                     ))
                 .WithInnerException<InvalidCastException>()
                 .WithMessage(
-                    $"Could not convert the string '' to the type {typeof(Char)}. The string must be " +
+                    $"Could not convert the string '' to the type {typeof(char)}. The string must be " +
                     "exactly one character long."
                 );
         }
 
         (await Invoking(() =>
-                    CallApi<Char>(
+                    CallApi<char>(
                         useAsyncApi,
                         this.Connection,
                         "SELECT 'ab'",
@@ -313,12 +313,12 @@ public abstract class
                 .Should().ThrowAsync<InvalidCastException>()
                 .WithMessage(
                     "The first column of the first row in the result set returned by the SQL statement contains the " +
-                    $"value 'ab' ({typeof(String)}), which could not be converted to the type {typeof(Char)}. See " +
+                    $"value 'ab' ({typeof(string)}), which could not be converted to the type {typeof(char)}. See " +
                     "inner exception for details.*"
                 ))
             .WithInnerException<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the string 'ab' to the type {typeof(Char)}. The string must be " +
+                $"Could not convert the string 'ab' to the type {typeof(char)}. The string must be " +
                 "exactly one character long."
             );
     }
@@ -327,11 +327,11 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task
-        ExecuteScalar_TargetTypeIsChar_ColumnValueIsStringWithLengthOne_ShouldGetFirstCharacter(Boolean useAsyncApi)
+        ExecuteScalar_TargetTypeIsChar_ColumnValueIsStringWithLengthOne_ShouldGetFirstCharacter(bool useAsyncApi)
     {
-        var character = Generate.Single<Char>();
+        var character = Generate.Single<char>();
 
-        (await CallApi<Char>(
+        (await CallApi<char>(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT '{character}'",
@@ -344,7 +344,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsInteger_ShouldConvertIntegerToEnum(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         var enumValue = Generate.Single<TestEnum>();
@@ -352,7 +352,7 @@ public abstract class
         (await CallApi<TestEnum>(
                 useAsyncApi,
                 this.Connection,
-                $"SELECT {(Int32)enumValue}",
+                $"SELECT {(int)enumValue}",
                 cancellationToken: TestContext.Current.CancellationToken
             ))
             .Should().Be(enumValue);
@@ -361,7 +361,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsInvalidInteger_ShouldThrow(Boolean useAsyncApi) =>
+    public Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsInvalidInteger_ShouldThrow(bool useAsyncApi) =>
         Invoking(() =>
                 CallApi<TestEnum>(
                     useAsyncApi,
@@ -379,7 +379,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsInvalidString_ShouldThrow(Boolean useAsyncApi) =>
+    public Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsInvalidString_ShouldThrow(bool useAsyncApi) =>
         Invoking(() =>
                 CallApi<TestEnum>(
                     useAsyncApi,
@@ -391,14 +391,14 @@ public abstract class
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
                 "The first column of the first row in the result set returned by the SQL statement contains the " +
-                $"value 'NonExistent' ({typeof(String)}), which could not be converted to the type " +
+                $"value 'NonExistent' ({typeof(string)}), which could not be converted to the type " +
                 $"{typeof(TestEnum)}.*"
             );
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsString_ShouldConvertStringToEnum(Boolean useAsyncApi)
+    public async Task ExecuteScalar_TargetTypeIsEnum_ColumnValueIsString_ShouldConvertStringToEnum(bool useAsyncApi)
     {
         var enumValue = Generate.Single<TestEnum>();
 
@@ -414,9 +414,9 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public Task ExecuteScalar_TargetTypeIsNonNullable_ColumnValueIsNull_ShouldThrow(Boolean useAsyncApi) =>
+    public Task ExecuteScalar_TargetTypeIsNonNullable_ColumnValueIsNull_ShouldThrow(bool useAsyncApi) =>
         Invoking(() =>
-                CallApi<Int32>(
+                CallApi<int>(
                     useAsyncApi,
                     this.Connection,
                     "SELECT NULL",
@@ -426,14 +426,14 @@ public abstract class
             .Should().ThrowAsync<InvalidCastException>()
             .WithMessage(
                 "The first column of the first row in the result set returned by the SQL statement contains a NULL " +
-                $"value, which could not be converted to the type {typeof(Int32)}.*"
+                $"value, which could not be converted to the type {typeof(int)}.*"
             );
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_TargetTypeIsNullable_ColumnValueIsNull_ShouldReturnNull(Boolean useAsyncApi) =>
-        (await CallApi<Int32?>(
+    public async Task ExecuteScalar_TargetTypeIsNullable_ColumnValueIsNull_ShouldReturnNull(bool useAsyncApi) =>
+        (await CallApi<int?>(
             useAsyncApi,
             this.Connection,
             "SELECT NULL",
@@ -444,13 +444,13 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ExecuteScalar_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task ExecuteScalar_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
             var entity = this.CreateEntityInDb<Entity>(transaction);
 
-            (await CallApi<String>(
+            (await CallApi<string>(
                     useAsyncApi,
                     this.Connection,
                     $"SELECT {Q("StringValue")} FROM {Q("Entity")}",
@@ -462,7 +462,7 @@ public abstract class
             await transaction.RollbackAsync();
         }
 
-        (await CallApi<String>(
+        (await CallApi<string>(
                 useAsyncApi,
                 this.Connection,
                 $"SELECT {Q("StringValue")} FROM {Q("Entity")}",
@@ -472,7 +472,7 @@ public abstract class
     }
 
     private static Task<TTarget> CallApi<TTarget>(
-        Boolean useAsyncApi,
+        bool useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

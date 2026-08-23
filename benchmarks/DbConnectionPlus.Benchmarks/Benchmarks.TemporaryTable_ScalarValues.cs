@@ -31,7 +31,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_Command()
+    public List<long> TemporaryTable_ScalarValues_Command()
     {
         using var createTableCommand = this.connection.CreateCommand();
         createTableCommand.CommandText = "CREATE TEMP TABLE \"Values\" (Value INTEGER)";
@@ -60,7 +60,7 @@ public partial class Benchmarks
 
         using var dataReader = selectCommand.ExecuteReader();
 
-        var result = new List<Int64>();
+        var result = new List<long>();
 
         while (dataReader.Read())
         {
@@ -76,7 +76,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_Dapper()
+    public List<long> TemporaryTable_ScalarValues_Dapper()
     {
         SqlMapper.Execute(this.connection, "CREATE TEMP TABLE \"Values\" (Value INTEGER)");
 
@@ -87,7 +87,7 @@ public partial class Benchmarks
             this.temporaryTable_ScalarValues_Values.Select(a => new { Value = a })
         );
 
-        var result = SqlMapper.Query<Int64>(this.connection, "SELECT Value FROM temp.\"Values\"").ToList();
+        var result = SqlMapper.Query<long>(this.connection, "SELECT Value FROM temp.\"Values\"").ToList();
 
         SqlMapper.Execute(this.connection, "DROP TABLE temp.\"Values\"");
 
@@ -96,13 +96,13 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_DbConnectionPlus() =>
-        [.. this.connection.Query<Int64>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")];
+    public List<long> TemporaryTable_ScalarValues_DbConnectionPlus() =>
+        [.. this.connection.Query<long>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")];
 
-    private readonly List<Int64> temporaryTable_ScalarValues_Values = [.. Enumerable
+    private readonly List<long> temporaryTable_ScalarValues_Values = [.. Enumerable
         .Range(0, TemporaryTable_ScalarValues_ValuesPerOperation)
-        .Select(a => (Int64)a)];
+        .Select(a => (long)a)];
 
-    private const String TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
-    private const Int32 TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
+    private const string TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
+    private const int TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
 }

@@ -9,7 +9,7 @@ public class MySqlDatabaseAdapterTests : UnitTestsBase
     {
         var parameter = Substitute.For<DbParameter>();
 
-        var value = Generate.Single<Byte[]>();
+        var value = Generate.Single<byte[]>();
 
         this.adapter.BindParameterValue(parameter, value);
 
@@ -51,7 +51,7 @@ public class MySqlDatabaseAdapterTests : UnitTestsBase
             .Should().Be(DbType.Int32);
 
         parameter.Value
-            .Should().Be((Int32)enumValue);
+            .Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -124,37 +124,37 @@ public class MySqlDatabaseAdapterTests : UnitTestsBase
     }
 
     [Theory]
-    [InlineData(typeof(Boolean?), "TINYINT(1)")]
-    [InlineData(typeof(Boolean), "TINYINT(1)")]
-    [InlineData(typeof(Byte?), "TINYINT UNSIGNED")]
-    [InlineData(typeof(Byte), "TINYINT UNSIGNED")]
-    [InlineData(typeof(Byte[]), "BLOB")]
-    [InlineData(typeof(Char?), "CHAR(1)")]
-    [InlineData(typeof(Char), "CHAR(1)")]
+    [InlineData(typeof(bool?), "TINYINT(1)")]
+    [InlineData(typeof(bool), "TINYINT(1)")]
+    [InlineData(typeof(byte?), "TINYINT UNSIGNED")]
+    [InlineData(typeof(byte), "TINYINT UNSIGNED")]
+    [InlineData(typeof(byte[]), "BLOB")]
+    [InlineData(typeof(char?), "CHAR(1)")]
+    [InlineData(typeof(char), "CHAR(1)")]
     [InlineData(typeof(DateOnly?), "DATE")]
     [InlineData(typeof(DateOnly), "DATE")]
     [InlineData(typeof(DateTime?), "DATETIME")]
     [InlineData(typeof(DateTime), "DATETIME")]
-    [InlineData(typeof(Decimal?), "DECIMAL(65,30)")]
-    [InlineData(typeof(Decimal), "DECIMAL(65,30)")]
-    [InlineData(typeof(Double?), "DOUBLE")]
-    [InlineData(typeof(Double), "DOUBLE")]
+    [InlineData(typeof(decimal?), "DECIMAL(65,30)")]
+    [InlineData(typeof(decimal), "DECIMAL(65,30)")]
+    [InlineData(typeof(double?), "DOUBLE")]
+    [InlineData(typeof(double), "DOUBLE")]
     [InlineData(typeof(Guid?), "CHAR(36)")]
     [InlineData(typeof(Guid), "CHAR(36)")]
-    [InlineData(typeof(Int16?), "SMALLINT")]
-    [InlineData(typeof(Int16), "SMALLINT")]
-    [InlineData(typeof(Int32?), "INT")]
-    [InlineData(typeof(Int32), "INT")]
-    [InlineData(typeof(Int64?), "BIGINT")]
-    [InlineData(typeof(Int64), "BIGINT")]
-    [InlineData(typeof(Single?), "FLOAT")]
-    [InlineData(typeof(Single), "FLOAT")]
-    [InlineData(typeof(String), "TEXT")]
+    [InlineData(typeof(short?), "SMALLINT")]
+    [InlineData(typeof(short), "SMALLINT")]
+    [InlineData(typeof(int?), "INT")]
+    [InlineData(typeof(int), "INT")]
+    [InlineData(typeof(long?), "BIGINT")]
+    [InlineData(typeof(long), "BIGINT")]
+    [InlineData(typeof(float?), "FLOAT")]
+    [InlineData(typeof(float), "FLOAT")]
+    [InlineData(typeof(string), "TEXT")]
     [InlineData(typeof(TimeOnly?), "TIME")]
     [InlineData(typeof(TimeOnly), "TIME")]
     [InlineData(typeof(TimeSpan?), "TIME")]
     [InlineData(typeof(TimeSpan), "TIME")]
-    public void GetDataType_SupportedTypeType_ShouldReturnMySqlDataType(Type type, String expectedResult) =>
+    public void GetDataType_SupportedTypeType_ShouldReturnMySqlDataType(Type type, string expectedResult) =>
         this.adapter.GetDataType(type, EnumSerializationMode.Strings)
             .Should().Be(expectedResult);
 
@@ -186,7 +186,7 @@ public class MySqlDatabaseAdapterTests : UnitTestsBase
         );
 
         ArgumentNullGuardVerifier.Verify(() =>
-            this.adapter.GetDataType(typeof(Int32), EnumSerializationMode.Integers)
+            this.adapter.GetDataType(typeof(int), EnumSerializationMode.Integers)
         );
     }
 

@@ -30,11 +30,11 @@ public abstract class
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
-        this.Connection.Query<Int32>(
+        this.Connection.Query<int>(
                 $"SELECT {Q("Enum")} FROM {TemporaryTable(entities)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(entities.Select(a => (Int32)a.Enum));
+            .Should().BeEquivalentTo(entities.Select(a => (int)a.Enum));
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public abstract class
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
-        this.Connection.Query<String>(
+        this.Connection.Query<string>(
                 $"SELECT {Q("Enum")} FROM {TemporaryTable(entities)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -77,11 +77,11 @@ public abstract class
         var enumValues = Generate.Multiple<TestEnum>();
 
         this.Connection
-            .Query<Int32>(
+            .Query<int>(
                 $"SELECT {Q("Value")} FROM {TemporaryTable(enumValues)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
-            .Should().BeEquivalentTo(enumValues.Select(a => (Int32)a));
+            .Should().BeEquivalentTo(enumValues.Select(a => (int)a));
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public abstract class
         var enumValues = Generate.Multiple<TestEnum>();
 
         this.Connection
-            .Query<String>(
+            .Query<string>(
                 $"SELECT {Q("Value")} FROM {TemporaryTable(enumValues)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -109,7 +109,7 @@ public abstract class
         var entityIds = Generate.Ids();
 
         this.Connection
-            .Query<Int32>(
+            .Query<int>(
                 $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}",
                 cancellationToken: TestContext.Current.CancellationToken
             )
@@ -126,11 +126,11 @@ public abstract class
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsInteger>();
 
-        (await this.Connection.QueryAsync<Int32>(
+        (await this.Connection.QueryAsync<int>(
                 $"SELECT {Q("Enum")} FROM {TemporaryTable(entities)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities.Select(a => (Int32)a.Enum));
+            .Should().BeEquivalentTo(entities.Select(a => (int)a.Enum));
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public abstract class
 
         var entities = Generate.Multiple<EntityWithEnumStoredAsString>();
 
-        (await this.Connection.QueryAsync<String>(
+        (await this.Connection.QueryAsync<string>(
                 $"SELECT {Q("Enum")} FROM {TemporaryTable(entities)}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
@@ -175,11 +175,11 @@ public abstract class
         var enumValues = Generate.Multiple<TestEnum>();
 
         (await this.Connection
-                .QueryAsync<Int32>(
+                .QueryAsync<int>(
                     $"SELECT {Q("Value")} FROM {TemporaryTable(enumValues)}",
                     cancellationToken: TestContext.Current.CancellationToken
                 ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(enumValues.Select(a => (Int32)a));
+            .Should().BeEquivalentTo(enumValues.Select(a => (int)a));
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public abstract class
         var enumValues = Generate.Multiple<TestEnum>();
 
         (await this.Connection
-                .QueryAsync<String>(
+                .QueryAsync<string>(
                     $"SELECT {Q("Value")} FROM {TemporaryTable(enumValues)}",
                     cancellationToken: TestContext.Current.CancellationToken
                 ).ToListAsync(TestContext.Current.CancellationToken))
@@ -208,7 +208,7 @@ public abstract class
         var entityIds = Generate.Ids();
 
         (await this.Connection
-                .QueryAsync<Int32>(
+                .QueryAsync<int>(
                     $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}",
                     cancellationToken: TestContext.Current.CancellationToken
                 ).ToListAsync(TestContext.Current.CancellationToken))

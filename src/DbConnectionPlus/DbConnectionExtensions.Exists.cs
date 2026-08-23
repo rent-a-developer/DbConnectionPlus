@@ -12,7 +12,7 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
-    /// Executes the specified SQL statement and returns a <see cref="Boolean" /> value indicating whether the result
+    /// Executes the specified SQL statement and returns a <see cref="bool" /> value indicating whether the result
     /// set returned by the statement contains at least one row.
     /// This method is intended to check for the existence of rows matching certain criteria, e.g. checking whether a
     /// Product with a specific Id exists.
@@ -47,7 +47,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static Boolean Exists(
+    public static bool Exists(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -88,7 +88,7 @@ public static partial class DbConnectionExtensions
     }
 
     /// <summary>
-    /// Asynchronously executes the specified SQL statement and returns a <see cref="Boolean" /> value indicating
+    /// Asynchronously executes the specified SQL statement and returns a <see cref="bool" /> value indicating
     /// whether the result set returned by the statement contains at least one row.
     /// This method is intended to check for the existence of rows matching certain criteria, e.g. checking whether a
     /// Product with a specific Id exists.
@@ -125,7 +125,7 @@ public static partial class DbConnectionExtensions
     /// ]]>
     /// </code>
     /// </example>
-    public static async Task<Boolean> ExistsAsync(
+    public static async Task<bool> ExistsAsync(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,

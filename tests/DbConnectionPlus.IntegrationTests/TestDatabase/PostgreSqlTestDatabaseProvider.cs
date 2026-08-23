@@ -12,37 +12,37 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 {
     /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
+    public bool CanRetrieveStructureOfTemporaryTables => true;
 
     /// <inheritdoc />
     public IDatabaseAdapter DatabaseAdapter => new PostgreSqlDatabaseAdapter();
 
     /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
+    public string DatabaseCollation => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "SELECT pg_sleep(2);";
+    public string DelayTwoSecondsStatement => "SELECT pg_sleep(2);";
 
     /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => true;
+    public bool HasUnsupportedDataType => true;
 
     /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => false;
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => false;
 
     /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => false;
+    public bool SupportsDateTimeOffset => false;
 
     /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => true;
+    public bool SupportsProperCommandCancellation => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
+    public bool SupportsStoredProcedures => true;
 
     /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => false;
+    public bool SupportsStoredProceduresReturningResultSet => false;
 
     /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
 
     /// <inheritdoc />
     public DbConnection CreateConnection()
@@ -54,7 +54,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     }
 
     /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null) =>
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
         connection.Exists(
             $"""
              SELECT 1
@@ -67,20 +67,20 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         );
 
     /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
         DbConnection connection
     ) =>
-        connection.QuerySingle<String>(
+        connection.QuerySingle<string>(
             $"""
              SELECT data_type
              FROM   information_schema.columns
@@ -92,7 +92,7 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         );
 
     /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
+    public string GetUnsupportedDataTypeLiteral() =>
         "(1, 2)";
 
     public void ResetDatabase()
@@ -123,10 +123,10 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
     /// <summary>
     /// The connection string that connects to the PostgreSQL server running in the test container.
     /// </summary>
-    private static String ConnectionString =>
+    private static string ConnectionString =>
         TestDatabaseContainers.PostgreSql.ConnectionString;
 
-    private const String CreateDatabaseObjectsSql =
+    private const string CreateDatabaseObjectsSql =
         """
         CREATE EXTENSION IF NOT EXISTS pgcrypto; -- Needed for gen_random_bytes()
 
@@ -228,9 +228,9 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         $$;
         """;
 
-    private const String DatabaseName = "DbConnectionPlusTests";
+    private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const String PurgeTablesSql =
+    private const string PurgeTablesSql =
         """
         TRUNCATE TABLE "Entity";
         TRUNCATE TABLE "EntityWithEnumStoredAsString";
@@ -238,5 +238,5 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         TRUNCATE TABLE "MappingTestEntity";
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
 }

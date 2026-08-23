@@ -6,7 +6,7 @@ using Humanizer;
 namespace RentADeveloper.DbConnectionPlus.Extensions;
 
 /// <summary>
-/// Provides extension methods for the type <see cref="Int32" />.
+/// Provides extension methods for the type <see cref="int" />.
 /// </summary>
 internal static class Int32Extensions
 {
@@ -16,7 +16,7 @@ internal static class Int32Extensions
     /// </summary>
     /// <param name="value">The number to ordinalize.</param>
     /// <returns>The ordinalized number in english notation.</returns>
-    internal static String OrdinalizeEnglish(this Int32 value) =>
+    internal static string OrdinalizeEnglish(this int value) =>
         value.Ordinalize(englishCulture);
 
     private static readonly CultureInfo englishCulture = new("en-US");

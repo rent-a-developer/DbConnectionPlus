@@ -28,7 +28,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
         this.temporaryTableBuilder;
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -60,7 +60,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -72,11 +72,11 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
+    public string FormatParameterName(string parameterName) =>
         "@" + parameterName;
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -94,7 +94,7 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
                     "integer",
 
                 _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                    ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode)
             };
         }
 
@@ -174,19 +174,19 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
+    public string QuoteIdentifier(string identifier) =>
         "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) =>
         "\"" + tableName + "\"";
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
+    public bool SupportsTemporaryTables(DbConnection connection) =>
         true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(
+    public bool WasSqlStatementCancelledByCancellationToken(
         Exception exception,
         CancellationToken cancellationToken
     )
@@ -201,40 +201,40 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
 
     private static readonly Dictionary<Type, NpgsqlDbType> typeToNpgsqlDbType = new()
     {
-        { typeof(Boolean), NpgsqlDbType.Boolean },
-        { typeof(Byte), NpgsqlDbType.Smallint },
-        { typeof(Byte[]), NpgsqlDbType.Bytea },
-        { typeof(Char), NpgsqlDbType.Char },
+        { typeof(bool), NpgsqlDbType.Boolean },
+        { typeof(byte), NpgsqlDbType.Smallint },
+        { typeof(byte[]), NpgsqlDbType.Bytea },
+        { typeof(char), NpgsqlDbType.Char },
         { typeof(DateOnly), NpgsqlDbType.Date },
         { typeof(DateTime), NpgsqlDbType.Timestamp },
-        { typeof(Decimal), NpgsqlDbType.Numeric },
-        { typeof(Double), NpgsqlDbType.Double },
+        { typeof(decimal), NpgsqlDbType.Numeric },
+        { typeof(double), NpgsqlDbType.Double },
         { typeof(Guid), NpgsqlDbType.Uuid },
-        { typeof(Int16), NpgsqlDbType.Smallint },
-        { typeof(Int32), NpgsqlDbType.Integer },
-        { typeof(Int64), NpgsqlDbType.Bigint },
-        { typeof(Single), NpgsqlDbType.Real },
-        { typeof(String), NpgsqlDbType.Text },
+        { typeof(short), NpgsqlDbType.Smallint },
+        { typeof(int), NpgsqlDbType.Integer },
+        { typeof(long), NpgsqlDbType.Bigint },
+        { typeof(float), NpgsqlDbType.Real },
+        { typeof(string), NpgsqlDbType.Text },
         { typeof(TimeOnly), NpgsqlDbType.Time },
         { typeof(TimeSpan), NpgsqlDbType.Interval }
     };
 
-    private static readonly Dictionary<Type, String> typeToPostgreSqlDataType = new()
+    private static readonly Dictionary<Type, string> typeToPostgreSqlDataType = new()
     {
-        { typeof(Boolean), "boolean" },
-        { typeof(Byte), "smallint" },
-        { typeof(Byte[]), "bytea" },
-        { typeof(Char), "char(1)" },
+        { typeof(bool), "boolean" },
+        { typeof(byte), "smallint" },
+        { typeof(byte[]), "bytea" },
+        { typeof(char), "char(1)" },
         { typeof(DateOnly), "date" },
         { typeof(DateTime), "timestamp without time zone" },
-        { typeof(Decimal), "decimal" },
-        { typeof(Double), "double precision" },
+        { typeof(decimal), "decimal" },
+        { typeof(double), "double precision" },
         { typeof(Guid), "uuid" },
-        { typeof(Int16), "smallint" },
-        { typeof(Int32), "integer" },
-        { typeof(Int64), "bigint" },
-        { typeof(Single), "real" },
-        { typeof(String), "text" },
+        { typeof(short), "smallint" },
+        { typeof(int), "integer" },
+        { typeof(long), "bigint" },
+        { typeof(float), "real" },
+        { typeof(string), "text" },
         { typeof(TimeOnly), "time" },
         { typeof(TimeSpan), "interval" }
     };

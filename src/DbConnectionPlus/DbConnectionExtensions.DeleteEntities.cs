@@ -69,7 +69,7 @@ public static partial class DbConnectionExtensions
     /// connection.DeleteEntities(products.Where(a => a.IsDiscontinued));
     /// </code>
     /// </example>
-    public static Int32 DeleteEntities<
+    public static int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,
@@ -154,7 +154,7 @@ public static partial class DbConnectionExtensions
     /// await connection.DeleteEntitiesAsync(products.Where(a => a.IsDiscontinued));
     /// </code>
     /// </example>
-    public static Task<Int32> DeleteEntitiesAsync<
+    public static Task<int> DeleteEntitiesAsync<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
     >(
         this DbConnection connection,

@@ -29,7 +29,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(Boolean useAsyncApi)
+    public async Task Exists_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
 
@@ -45,7 +45,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_CommandType_ShouldUseCommandType(Boolean useAsyncApi)
+    public async Task Exists_CommandType_ShouldUseCommandType(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsStoredProceduresReturningResultSet, "");
 
@@ -64,7 +64,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
+    public async Task Exists_ComplexObjectsTemporaryTable_ShouldDropTemporaryTableAfterExecution(bool useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -95,7 +95,7 @@ public abstract class
     [InlineData(true)]
     public async Task
         Exists_ComplexObjectsTemporaryTable_ShouldPassInterpolatedObjectsAsMultiColumnTemporaryTable(
-            Boolean useAsyncApi
+            bool useAsyncApi
         )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -118,7 +118,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_InterpolatedParameter_ShouldPassInterpolatedParameter(Boolean useAsyncApi)
+    public async Task Exists_InterpolatedParameter_ShouldPassInterpolatedParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -134,7 +134,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_Parameter_ShouldPassParameter(Boolean useAsyncApi)
+    public async Task Exists_Parameter_ShouldPassParameter(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -155,7 +155,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(Boolean useAsyncApi)
+    public async Task Exists_ScalarValuesTemporaryTable_ShouldDropTemporaryTableAfterExecution(bool useAsyncApi)
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
 
@@ -182,7 +182,7 @@ public abstract class
     [InlineData(false)]
     [InlineData(true)]
     public async Task Exists_ScalarValuesTemporaryTable_ShouldPassInterpolatedValuesAsSingleColumnTemporaryTable(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -201,7 +201,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_ShouldReturnBooleanIndicatingWhetherQueryReturnedAtLeastOneRow(Boolean useAsyncApi)
+    public async Task Exists_ShouldReturnBooleanIndicatingWhetherQueryReturnedAtLeastOneRow(bool useAsyncApi)
     {
         var entity = this.CreateEntityInDb<Entity>();
 
@@ -225,7 +225,7 @@ public abstract class
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Exists_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task Exists_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         await using (var transaction = await this.Connection.BeginTransactionAsync())
         {
@@ -252,8 +252,8 @@ public abstract class
             .Should().BeFalse();
     }
 
-    private static Task<Boolean> CallApi(
-        Boolean useAsyncApi,
+    private static Task<bool> CallApi(
+        bool useAsyncApi,
         DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -281,7 +281,7 @@ public abstract class
         }
         catch (Exception ex)
         {
-            return Task.FromException<Boolean>(ex);
+            return Task.FromException<bool>(ex);
         }
     }
 }

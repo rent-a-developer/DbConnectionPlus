@@ -2,14 +2,14 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public sealed class ItemWithPrivateConstructor
 {
-    private ItemWithPrivateConstructor(Int16 a, Int32 b, Int64 c)
+    private ItemWithPrivateConstructor(short a, int b, long c)
     {
         this.A = a;
         this.B = b;
         this.C = c;
     }
 
-    public Int16 A { get; init; }
-    public Int32 B { get; init; }
-    public Int64 C { get; init; }
+    public short A { get; init; }
+    public int B { get; init; }
+    public long C { get; init; }
 }

@@ -33,18 +33,18 @@ namespace RentADeveloper.DbConnectionPlus.Entities;
 /// </param>
 /// <param name="PropertyType">The property type of the property.</param>
 public sealed record EntityPropertyMetadata(
-    Boolean CanRead,
-    Boolean CanWrite,
-    String ColumnName,
-    Boolean IsComputed,
-    Boolean IsConcurrencyToken,
-    Boolean IsIdentity,
-    Boolean IsIgnored,
-    Boolean IsKey,
-    Boolean IsRowVersion,
-    Func<Object, Object?>? PropertyGetter,
+    bool CanRead,
+    bool CanWrite,
+    string ColumnName,
+    bool IsComputed,
+    bool IsConcurrencyToken,
+    bool IsIdentity,
+    bool IsIgnored,
+    bool IsKey,
+    bool IsRowVersion,
+    Func<object, object?>? PropertyGetter,
     PropertyInfo PropertyInfo,
-    String PropertyName,
-    Action<Object, Object?>? PropertySetter,
+    string PropertyName,
+    Action<object, object?>? PropertySetter,
     Type PropertyType
 );

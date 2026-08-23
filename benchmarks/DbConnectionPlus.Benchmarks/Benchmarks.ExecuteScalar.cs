@@ -31,7 +31,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteScalar_Category)]
-    public String ExecuteScalar_Command()
+    public string ExecuteScalar_Command()
     {
         var entity = this.entitiesInDb[0];
 
@@ -45,16 +45,16 @@ public partial class Benchmarks
 
         command.Parameters.Add(idParameter);
 
-        return (String)command.ExecuteScalar()!;
+        return (string)command.ExecuteScalar()!;
     }
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteScalar_Category)]
-    public String ExecuteScalar_Dapper()
+    public string ExecuteScalar_Dapper()
     {
         var entity = this.entitiesInDb[0];
 
-        return SqlMapper.ExecuteScalar<String>(
+        return SqlMapper.ExecuteScalar<string>(
             this.connection,
             "SELECT StringValue FROM Entity WHERE Id = @Id",
             new { entity.Id }
@@ -63,14 +63,14 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(ExecuteScalar_Category)]
-    public String ExecuteScalar_DbConnectionPlus()
+    public string ExecuteScalar_DbConnectionPlus()
     {
         var entity = this.entitiesInDb[0];
 
-        return this.connection.ExecuteScalar<String>(
+        return this.connection.ExecuteScalar<string>(
             $"SELECT StringValue FROM Entity WHERE Id = {Parameter(entity.Id)}"
         );
     }
 
-    private const String ExecuteScalar_Category = "ExecuteScalar";
+    private const string ExecuteScalar_Category = "ExecuteScalar";
 }

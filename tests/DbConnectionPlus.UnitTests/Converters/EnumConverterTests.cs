@@ -6,7 +6,7 @@ public class EnumConverterTests : UnitTestsBase
 {
     [Fact]
     public void ConvertValueToEnumMember_EmptyStringValue_ShouldThrow() =>
-        Invoking(() => EnumConverter.ConvertValueToEnumMember(String.Empty, typeof(TestEnum)))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember(string.Empty, typeof(TestEnum)))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "Could not convert an empty string or a string that consists only of white-space characters to an " +
@@ -16,18 +16,18 @@ public class EnumConverterTests : UnitTestsBase
     [Fact]
     public void ConvertValueToEnumMember_NonEnumTargetType_ShouldThrow()
     {
-        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(Int32)))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(int)))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
-                $"{typeof(Int32)}, because the type {typeof(Int32)} is not an enum type.*"
+                $"Could not convert the value 'ValueA' ({typeof(string)}) to an enum member of the type " +
+                $"{typeof(int)}, because the type {typeof(int)} is not an enum type.*"
             );
 
-        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(Int32?)))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember("ValueA", typeof(int?)))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
-                $"{typeof(Int32?)}, because the type {typeof(Int32?)} is not an enum type.*"
+                $"Could not convert the value 'ValueA' ({typeof(string)}) to an enum member of the type " +
+                $"{typeof(int?)}, because the type {typeof(int?)} is not an enum type.*"
             );
     }
 
@@ -62,14 +62,14 @@ public class EnumConverterTests : UnitTestsBase
         Invoking(() => EnumConverter.ConvertValueToEnumMember(999, typeof(TestEnum)))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members."
             );
 
     [Theory]
     [MemberData(nameof(GetConvertValueToEnumMemberTestData))]
     public void
-        ConvertValueToEnumMember_ShouldConvertValueToEnumMember(Object value, TestEnum expectedResult)
+        ConvertValueToEnumMember_ShouldConvertValueToEnumMember(object value, TestEnum expectedResult)
     {
         EnumConverter.ConvertValueToEnumMember(value, typeof(TestEnum))
             .Should().Be(expectedResult);
@@ -118,7 +118,7 @@ public class EnumConverterTests : UnitTestsBase
 
     [Fact]
     public void ConvertValueToEnumMemberOfT_EmptyStringValue_ShouldThrow() =>
-        Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(String.Empty))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(string.Empty))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
                 "Could not convert an empty string or a string that consists only of white-space characters to an " +
@@ -128,18 +128,18 @@ public class EnumConverterTests : UnitTestsBase
     [Fact]
     public void ConvertValueToEnumMemberOfT_NonEnumTargetType_ShouldThrow()
     {
-        Invoking(() => EnumConverter.ConvertValueToEnumMember<Int32>("ValueA"))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember<int>("ValueA"))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
-                $"{typeof(Int32)}, because the type {typeof(Int32)} is not an enum type.*"
+                $"Could not convert the value 'ValueA' ({typeof(string)}) to an enum member of the type " +
+                $"{typeof(int)}, because the type {typeof(int)} is not an enum type.*"
             );
 
-        Invoking(() => EnumConverter.ConvertValueToEnumMember<Int32?>("ValueA"))
+        Invoking(() => EnumConverter.ConvertValueToEnumMember<int?>("ValueA"))
             .Should().Throw<ArgumentException>()
             .WithMessage(
-                $"Could not convert the value 'ValueA' ({typeof(String)}) to an enum member of the type " +
-                $"{typeof(Int32?)}, because the type {typeof(Int32?)} is not an enum type.*"
+                $"Could not convert the value 'ValueA' ({typeof(string)}) to an enum member of the type " +
+                $"{typeof(int?)}, because the type {typeof(int?)} is not an enum type.*"
             );
     }
 
@@ -174,14 +174,14 @@ public class EnumConverterTests : UnitTestsBase
         Invoking(() => EnumConverter.ConvertValueToEnumMember<TestEnum>(999))
             .Should().Throw<InvalidCastException>()
             .WithMessage(
-                $"Could not convert the value '999' ({typeof(Int32)}) to an enum member of the type " +
+                $"Could not convert the value '999' ({typeof(int)}) to an enum member of the type " +
                 $"{typeof(TestEnum)}. That value does not match any of the values of the enum's members."
             );
 
     [Theory]
     [MemberData(nameof(GetConvertValueToEnumMemberTestData))]
     public void
-        ConvertValueToEnumMemberOfT_ShouldConvertValueToEnumMember(Object value, TestEnum expectedResult)
+        ConvertValueToEnumMemberOfT_ShouldConvertValueToEnumMember(object value, TestEnum expectedResult)
     {
         EnumConverter.ConvertValueToEnumMember<TestEnum>(value)
             .Should().Be(expectedResult);
@@ -228,13 +228,13 @@ public class EnumConverterTests : UnitTestsBase
                 $"enum member of the type {typeof(TestEnum)}."
             );
 
-    public static IEnumerable<(Object value, TestEnum expectedResult)> GetConvertValueToEnumMemberTestData() =>
+    public static IEnumerable<(object value, TestEnum expectedResult)> GetConvertValueToEnumMemberTestData() =>
     [
-        ((Int16)1, TestEnum.Value1),
-        ((Int16)2, TestEnum.Value2),
-        ((Int16)3, TestEnum.Value3),
-        ((Int16)4, TestEnum.Value4),
-        ((Int16)5, TestEnum.Value5),
+        ((short)1, TestEnum.Value1),
+        ((short)2, TestEnum.Value2),
+        ((short)3, TestEnum.Value3),
+        ((short)4, TestEnum.Value4),
+        ((short)5, TestEnum.Value5),
         (1, TestEnum.Value1),
         (2, TestEnum.Value2),
         (3, TestEnum.Value3),
@@ -245,26 +245,26 @@ public class EnumConverterTests : UnitTestsBase
         (3L, TestEnum.Value3),
         (4L, TestEnum.Value4),
         (5L, TestEnum.Value5),
-        ((Byte)1, TestEnum.Value1),
-        ((Byte)2, TestEnum.Value2),
-        ((Byte)3, TestEnum.Value3),
-        ((Byte)4, TestEnum.Value4),
-        ((Byte)5, TestEnum.Value5),
-        ((Single)1.0, TestEnum.Value1),
-        ((Single)2.0, TestEnum.Value2),
-        ((Single)3.0, TestEnum.Value3),
-        ((Single)4.0, TestEnum.Value4),
-        ((Single)5.0, TestEnum.Value5),
+        ((byte)1, TestEnum.Value1),
+        ((byte)2, TestEnum.Value2),
+        ((byte)3, TestEnum.Value3),
+        ((byte)4, TestEnum.Value4),
+        ((byte)5, TestEnum.Value5),
+        ((float)1.0, TestEnum.Value1),
+        ((float)2.0, TestEnum.Value2),
+        ((float)3.0, TestEnum.Value3),
+        ((float)4.0, TestEnum.Value4),
+        ((float)5.0, TestEnum.Value5),
         (1.0, TestEnum.Value1),
         (2.0, TestEnum.Value2),
         (3.0, TestEnum.Value3),
         (4.0, TestEnum.Value4),
         (5.0, TestEnum.Value5),
-        ((Decimal)1.0, TestEnum.Value1),
-        ((Decimal)2.0, TestEnum.Value2),
-        ((Decimal)3.0, TestEnum.Value3),
-        ((Decimal)4.0, TestEnum.Value4),
-        ((Decimal)5.0, TestEnum.Value5),
+        ((decimal)1.0, TestEnum.Value1),
+        ((decimal)2.0, TestEnum.Value2),
+        ((decimal)3.0, TestEnum.Value3),
+        ((decimal)4.0, TestEnum.Value4),
+        ((decimal)5.0, TestEnum.Value5),
         ("Value1", TestEnum.Value1),
         ("Value2", TestEnum.Value2),
         ("Value3", TestEnum.Value3),

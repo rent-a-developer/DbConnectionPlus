@@ -12,7 +12,7 @@ public class DbUpdateConcurrencyException : Exception
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="entity">The entity that was involved in the concurrency violation.</param>
-    public DbUpdateConcurrencyException(String message, Object entity) : base(message) =>
+    public DbUpdateConcurrencyException(string message, object entity) : base(message) =>
         this.Entity = entity;
 
     /// <summary>
@@ -26,7 +26,7 @@ public class DbUpdateConcurrencyException : Exception
     /// Initializes a new instance of the <see cref="DbUpdateConcurrencyException" /> class.
     /// </summary>
     /// <param name="message">The error message.</param>
-    public DbUpdateConcurrencyException(String message) : base(message)
+    public DbUpdateConcurrencyException(string message) : base(message)
     {
     }
 
@@ -35,12 +35,12 @@ public class DbUpdateConcurrencyException : Exception
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="innerException">The inner exception.</param>
-    public DbUpdateConcurrencyException(String message, Exception innerException) : base(message, innerException)
+    public DbUpdateConcurrencyException(string message, Exception innerException) : base(message, innerException)
     {
     }
 
     /// <summary>
     /// The entity that was involved in the concurrency violation.
     /// </summary>
-    public Object? Entity { get; set; }
+    public object? Entity { get; set; }
 }

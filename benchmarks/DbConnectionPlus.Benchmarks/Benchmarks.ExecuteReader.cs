@@ -81,5 +81,5 @@ public partial class Benchmarks
         return result;
     }
 
-    private const String ExecuteReader_Category = "ExecuteReader";
+    private const string ExecuteReader_Category = "ExecuteReader";
 }

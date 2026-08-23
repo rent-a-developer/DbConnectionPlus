@@ -8,9 +8,9 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
     public void Parameter_ShouldInferParameterNameFromValueExpressionIfPossible()
     {
         var productId = Generate.Id();
-        static Int64 GetProductId() => Generate.Id();
+        static long GetProductId() => Generate.Id();
 #pragma warning disable RCS1163 // Unused parameter
-        static Int64 GetProductIdByCategory(String category) => Generate.Id();
+        static long GetProductIdByCategory(string category) => Generate.Id();
 #pragma warning restore RCS1163 // Unused parameter
         var productIds = Generate.Ids().ToArray();
 
@@ -51,12 +51,12 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
     public void Parameter_ShouldTruncateInferredParameterName()
     {
         // ReSharper disable once InconsistentNaming
-        const Int32 longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890 = 1;
+        const int longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890 = 1;
 
         Parameter(longname_1234567890_1234567890_1234567890_1234567890_1234567890_1234567890).InferredName
             .Should().HaveLength(60)
             .And.Be("Longname_1234567890_1234567890_1234567890_1234567890_1234567");
     }
 
-    private const Int64 TestProductId = 106L;
+    private const long TestProductId = 106L;
 }

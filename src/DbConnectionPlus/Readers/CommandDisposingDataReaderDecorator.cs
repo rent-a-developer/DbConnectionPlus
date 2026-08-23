@@ -58,28 +58,28 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     }
 
     /// <inheritdoc />
-    public override Int32 Depth => this.dataReader.Depth;
+    public override int Depth => this.dataReader.Depth;
 
     /// <inheritdoc />
-    public override Int32 FieldCount => this.dataReader.FieldCount;
+    public override int FieldCount => this.dataReader.FieldCount;
 
     /// <inheritdoc />
-    public override Boolean HasRows => this.dataReader.HasRows;
+    public override bool HasRows => this.dataReader.HasRows;
 
     /// <inheritdoc />
-    public override Boolean IsClosed => this.dataReader.IsClosed;
+    public override bool IsClosed => this.dataReader.IsClosed;
 
     /// <inheritdoc />
-    public override Object this[Int32 ordinal] => this.dataReader[ordinal];
+    public override object this[int ordinal] => this.dataReader[ordinal];
 
     /// <inheritdoc />
-    public override Object this[String name] => this.dataReader[name];
+    public override object this[string name] => this.dataReader[name];
 
     /// <inheritdoc />
-    public override Int32 RecordsAffected => this.dataReader.RecordsAffected;
+    public override int RecordsAffected => this.dataReader.RecordsAffected;
 
     /// <inheritdoc />
-    public override Int32 VisibleFieldCount => this.dataReader.VisibleFieldCount;
+    public override int VisibleFieldCount => this.dataReader.VisibleFieldCount;
 
     /// <inheritdoc />
     public override void Close() =>
@@ -105,34 +105,34 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     }
 
     /// <inheritdoc />
-    public override Boolean GetBoolean(Int32 ordinal) =>
+    public override bool GetBoolean(int ordinal) =>
         this.dataReader.GetBoolean(ordinal);
 
     /// <inheritdoc />
-    public override Byte GetByte(Int32 ordinal) =>
+    public override byte GetByte(int ordinal) =>
         this.dataReader.GetByte(ordinal);
 
     /// <inheritdoc />
-    public override Int64 GetBytes(
-        Int32 ordinal,
-        Int64 dataOffset,
-        Byte[]? buffer,
-        Int32 bufferOffset,
-        Int32 length
+    public override long GetBytes(
+        int ordinal,
+        long dataOffset,
+        byte[]? buffer,
+        int bufferOffset,
+        int length
     ) =>
         this.dataReader.GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 
     /// <inheritdoc />
-    public override Char GetChar(Int32 ordinal) =>
+    public override char GetChar(int ordinal) =>
         this.dataReader.GetChar(ordinal);
 
     /// <inheritdoc />
-    public override Int64 GetChars(
-        Int32 ordinal,
-        Int64 dataOffset,
-        Char[]? buffer,
-        Int32 bufferOffset,
-        Int32 length
+    public override long GetChars(
+        int ordinal,
+        long dataOffset,
+        char[]? buffer,
+        int bufferOffset,
+        int length
     ) =>
         this.dataReader.GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
 
@@ -143,19 +143,19 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
         this.dataReader.GetColumnSchemaAsync(cancellationToken);
 
     /// <inheritdoc />
-    public override String GetDataTypeName(Int32 ordinal) =>
+    public override string GetDataTypeName(int ordinal) =>
         this.dataReader.GetDataTypeName(ordinal);
 
     /// <inheritdoc />
-    public override DateTime GetDateTime(Int32 ordinal) =>
+    public override DateTime GetDateTime(int ordinal) =>
         this.dataReader.GetDateTime(ordinal);
 
     /// <inheritdoc />
-    public override Decimal GetDecimal(Int32 ordinal) =>
+    public override decimal GetDecimal(int ordinal) =>
         this.dataReader.GetDecimal(ordinal);
 
     /// <inheritdoc />
-    public override Double GetDouble(Int32 ordinal) =>
+    public override double GetDouble(int ordinal) =>
         this.dataReader.GetDouble(ordinal);
 
     /// <inheritdoc />
@@ -165,57 +165,57 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     /// <inheritdoc />
     [return: DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-    public override Type GetFieldType(Int32 ordinal) =>
+    public override Type GetFieldType(int ordinal) =>
         this.dataReader.GetFieldType(ordinal);
 
     /// <inheritdoc />
-    public override T GetFieldValue<T>(Int32 ordinal) =>
+    public override T GetFieldValue<T>(int ordinal) =>
         this.dataReader.GetFieldValue<T>(ordinal);
 
     /// <inheritdoc />
-    public override Task<T> GetFieldValueAsync<T>(Int32 ordinal, CancellationToken cancellationToken) =>
+    public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken) =>
         this.dataReader.GetFieldValueAsync<T>(ordinal, cancellationToken);
 
     /// <inheritdoc />
-    public override Single GetFloat(Int32 ordinal) =>
+    public override float GetFloat(int ordinal) =>
         this.dataReader.GetFloat(ordinal);
 
     /// <inheritdoc />
-    public override Guid GetGuid(Int32 ordinal) =>
+    public override Guid GetGuid(int ordinal) =>
         this.dataReader.GetGuid(ordinal);
 
     /// <inheritdoc />
-    public override Int16 GetInt16(Int32 ordinal) =>
+    public override short GetInt16(int ordinal) =>
         this.dataReader.GetInt16(ordinal);
 
     /// <inheritdoc />
-    public override Int32 GetInt32(Int32 ordinal) =>
+    public override int GetInt32(int ordinal) =>
         this.dataReader.GetInt32(ordinal);
 
     /// <inheritdoc />
-    public override Int64 GetInt64(Int32 ordinal) =>
+    public override long GetInt64(int ordinal) =>
         this.dataReader.GetInt64(ordinal);
 
     /// <inheritdoc />
-    public override String GetName(Int32 ordinal) =>
+    public override string GetName(int ordinal) =>
         this.dataReader.GetName(ordinal);
 
     /// <inheritdoc />
-    public override Int32 GetOrdinal(String name) =>
+    public override int GetOrdinal(string name) =>
         this.dataReader.GetOrdinal(name);
 
     /// <inheritdoc />
     [return: DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-    public override Type GetProviderSpecificFieldType(Int32 ordinal) =>
+    public override Type GetProviderSpecificFieldType(int ordinal) =>
         this.dataReader.GetProviderSpecificFieldType(ordinal);
 
     /// <inheritdoc />
-    public override Object GetProviderSpecificValue(Int32 ordinal) =>
+    public override object GetProviderSpecificValue(int ordinal) =>
         this.dataReader.GetProviderSpecificValue(ordinal);
 
     /// <inheritdoc />
-    public override Int32 GetProviderSpecificValues(Object[] values) =>
+    public override int GetProviderSpecificValues(object[] values) =>
         this.dataReader.GetProviderSpecificValues(values);
 
     /// <inheritdoc />
@@ -227,46 +227,46 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
         this.dataReader.GetSchemaTableAsync(cancellationToken);
 
     /// <inheritdoc />
-    public override Stream GetStream(Int32 ordinal) =>
+    public override Stream GetStream(int ordinal) =>
         this.dataReader.GetStream(ordinal);
 
     /// <inheritdoc />
-    public override String GetString(Int32 ordinal) =>
+    public override string GetString(int ordinal) =>
         this.dataReader.GetString(ordinal);
 
     /// <inheritdoc />
-    public override TextReader GetTextReader(Int32 ordinal) =>
+    public override TextReader GetTextReader(int ordinal) =>
         this.dataReader.GetTextReader(ordinal);
 
     /// <inheritdoc />
-    public override Object GetValue(Int32 ordinal) =>
+    public override object GetValue(int ordinal) =>
         this.dataReader.GetValue(ordinal);
 
     /// <inheritdoc />
-    public override Int32 GetValues(Object[] values) =>
+    public override int GetValues(object[] values) =>
         this.dataReader.GetValues(values);
 
     /// <inheritdoc />
-    public override Boolean IsDBNull(Int32 ordinal) =>
+    public override bool IsDBNull(int ordinal) =>
         this.dataReader.IsDBNull(ordinal);
 
     /// <inheritdoc />
-    public override Task<Boolean> IsDBNullAsync(Int32 ordinal, CancellationToken cancellationToken) =>
+    public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) =>
         this.dataReader.IsDBNullAsync(ordinal, cancellationToken);
 
     /// <inheritdoc />
-    public override Boolean NextResult() =>
+    public override bool NextResult() =>
         this.dataReader.NextResult();
 
     /// <inheritdoc />
-    public override Task<Boolean> NextResultAsync(CancellationToken cancellationToken) =>
+    public override Task<bool> NextResultAsync(CancellationToken cancellationToken) =>
         this.dataReader.NextResultAsync(cancellationToken);
 
     /// <inheritdoc />
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled via a <see cref="CancellationToken" />.
     /// </exception>
-    public override Boolean Read()
+    public override bool Read()
     {
         try
         {
@@ -288,7 +288,7 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled via a <see cref="CancellationToken" />.
     /// </exception>
-    public override async Task<Boolean> ReadAsync(CancellationToken cancellationToken)
+    public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -318,11 +318,11 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     }
 
     /// <inheritdoc />
-    public override String? ToString() =>
+    public override string? ToString() =>
         this.dataReader.ToString();
 
     /// <inheritdoc />
-    protected override void Dispose(Boolean disposing)
+    protected override void Dispose(bool disposing)
     {
         if (this.isDisposed)
         {
@@ -344,5 +344,5 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     private readonly DbCommandDisposer commandDisposer;
     private readonly IDatabaseAdapter databaseAdapter;
     private readonly DbDataReader dataReader;
-    private Boolean isDisposed;
+    private bool isDisposed;
 }

@@ -66,12 +66,12 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// </remarks>
     public static InterpolatedParameter Parameter(
-        Object? parameterValue,
+        object? parameterValue,
         [CallerArgumentExpression(nameof(parameterValue))]
-        String? parameterValueExpression = null
+        string? parameterValueExpression = null
     )
     {
-        String? inferredParameterName = null;
+        string? inferredParameterName = null;
 
         if (parameterValueExpression?.Length > 0)
         {
@@ -92,5 +92,5 @@ public static partial class DbConnectionExtensions
     /// <summary>
     /// The maximum length for inferred parameter names. This length is supported by all major database systems.
     /// </summary>
-    private const Int32 MaximumParameterNameLength = 60;
+    private const int MaximumParameterNameLength = 60;
 }

@@ -34,7 +34,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     [EditorBrowsable(EditorBrowsableState.Never)]
     // ReSharper disable once UnusedParameter.Local
 #pragma warning disable RCS1163 // Unused parameter
-    public InterpolatedSqlStatement(Int32 literalLength, Int32 formattedCount)
+    public InterpolatedSqlStatement(int literalLength, int formattedCount)
 #pragma warning restore RCS1163 // Unused parameter
     {
         this.fragments = new(formattedCount);
@@ -66,7 +66,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// If a parameter value is an <see cref="Enum" />, it is serialized according to
     /// <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" />.
     /// </remarks>
-    public InterpolatedSqlStatement(String code, params (String Name, Object? Value)[] parameters)
+    public InterpolatedSqlStatement(string code, params (string Name, object? Value)[] parameters)
     {
         ArgumentNullException.ThrowIfNull(code);
         ArgumentNullException.ThrowIfNull(parameters);
@@ -87,7 +87,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
 
             throw new ArgumentException(
                 "The specified parameters have the following duplicate parameter names: " +
-                $"{String.Join(", ", duplicateParameterNames)}. Make sure each parameter name is only used once.",
+                $"{string.Join(", ", duplicateParameterNames)}. Make sure each parameter name is only used once.",
                 nameof(parameters)
             );
         }
@@ -114,7 +114,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// It is not intended to be called by user code.
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AppendFormatted<T>(T? value, Int32 alignment = 0, String? format = null)
+    public void AppendFormatted<T>(T? value, int alignment = 0, string? format = null)
     {
         switch (value)
         {
@@ -131,10 +131,10 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                 var formattedValue =
                     value switch
                     {
-                        String stringValue => stringValue,
+                        string stringValue => stringValue,
                         IFormattable formattable => formattable.ToString(format, CultureInfo.InvariantCulture),
-                        null => String.Empty,
-                        _ => value.ToString() ?? String.Empty
+                        null => string.Empty,
+                        _ => value.ToString() ?? string.Empty
                     };
 
                 if (alignment != 0)
@@ -147,12 +147,12 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                         if (alignment > 0)
                         {
                             // Right-align:
-                            this.fragments.Add(new Literal(new String(' ', padding) + formattedValue));
+                            this.fragments.Add(new Literal(new string(' ', padding) + formattedValue));
                         }
                         else
                         {
                             // Left-align:
-                            this.fragments.Add(new Literal(formattedValue + new String(' ', padding)));
+                            this.fragments.Add(new Literal(formattedValue + new string(' ', padding)));
                         }
 
                         break;
@@ -173,7 +173,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// It is not intended to be called by user code.
     /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void AppendLiteral(String? value)
+    public void AppendLiteral(string? value)
     {
         if (value is not null)
         {
@@ -182,15 +182,15 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public readonly Boolean Equals(InterpolatedSqlStatement other) =>
+    public readonly bool Equals(InterpolatedSqlStatement other) =>
         this.fragments.SequenceEqual(other.Fragments);
 
     /// <inheritdoc />
-    public readonly override Boolean Equals(Object? obj) =>
+    public readonly override bool Equals(object? obj) =>
         obj is InterpolatedSqlStatement other && this.Equals(other);
 
     /// <inheritdoc />
-    public readonly override Int32 GetHashCode()
+    public readonly override int GetHashCode()
     {
         var hashCode = new HashCode();
 
@@ -203,9 +203,9 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public readonly override String ToString()
+    public readonly override string ToString()
     {
-        using var stringBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var stringBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         stringBuilder.AppendLine("SQL Statement");
         stringBuilder.AppendLine("");
@@ -213,7 +213,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
         stringBuilder.AppendLine("Statement Code");
         stringBuilder.AppendLine("--------------");
 
-        var parameters = new Dictionary<String, Object?>(StringComparer.Ordinal);
+        var parameters = new Dictionary<string, object?>(StringComparer.Ordinal);
         var interpolatedTemporaryTables = new List<InterpolatedTemporaryTable>();
 
         foreach (var fragment in this.fragments)
@@ -227,7 +227,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
                 case InterpolatedParameter interpolatedParameter:
                     var parameterName = interpolatedParameter.InferredName;
 
-                    if (String.IsNullOrWhiteSpace(parameterName))
+                    if (string.IsNullOrWhiteSpace(parameterName))
                     {
                         parameterName = "Parameter_" + (parameters.Count + 1).ToString(CultureInfo.InvariantCulture);
                     }
@@ -286,7 +286,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
         {
             stringBuilder.AppendLine();
             stringBuilder.AppendLine(temporaryTable.Name);
-            stringBuilder.AppendLine(new String('-', temporaryTable.Name.Length));
+            stringBuilder.AppendLine(new string('-', temporaryTable.Name.Length));
 
             foreach (var value in temporaryTable.Values)
             {
@@ -304,7 +304,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// The string from which to create an instance of <see cref="InterpolatedSqlStatement" />.
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
-    public static InterpolatedSqlStatement FromString(String value)
+    public static InterpolatedSqlStatement FromString(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -320,7 +320,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <see langword="true" /> if the two specified instances of <see cref="InterpolatedSqlStatement" /> are
     /// equal; otherwise, <see langword="false" />.
     /// </returns>
-    public static Boolean operator ==(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
+    public static bool operator ==(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
         left.Equals(right);
 
     /// <summary>
@@ -328,7 +328,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// </summary>
     /// <param name="value">The string to convert to an instance of <see cref="InterpolatedSqlStatement" />.</param>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
-    public static implicit operator InterpolatedSqlStatement(String value)
+    public static implicit operator InterpolatedSqlStatement(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -344,7 +344,7 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     /// <see langword="true" /> if the two the specified instances of <see cref="InterpolatedSqlStatement" /> are
     /// unequal; otherwise, <see langword="false" />.
     /// </returns>
-    public static Boolean operator !=(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
+    public static bool operator !=(InterpolatedSqlStatement left, InterpolatedSqlStatement right) =>
         !(left == right);
 
     /// <summary>

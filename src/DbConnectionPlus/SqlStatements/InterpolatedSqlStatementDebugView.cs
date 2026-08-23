@@ -12,7 +12,7 @@ internal sealed class InterpolatedSqlStatementDebugView(InterpolatedSqlStatement
     /// <summary>
     /// The debug view of the SQL statement.
     /// </summary>
-    public String DebugView =>
+    public string DebugView =>
         statement.ToString();
 
     /// <summary>

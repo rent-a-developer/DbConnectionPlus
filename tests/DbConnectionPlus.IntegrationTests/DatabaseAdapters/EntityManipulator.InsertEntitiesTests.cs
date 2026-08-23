@@ -35,7 +35,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [InlineData(false)]
     [InlineData(true)]
     public async Task InsertEntities_CancellationToken_ShouldCancelOperationIfCancellationIsRequested(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsProperCommandCancellation, "");
@@ -64,7 +64,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [InlineData(false)]
     [InlineData(true)]
     public async Task InsertEntities_EnumSerializationModeIsIntegers_ShouldStoreEnumValuesAsIntegers(
-        Boolean useAsyncApi
+        bool useAsyncApi
     )
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
@@ -79,17 +79,17 @@ public abstract class EntityManipulator_InsertEntitiesTests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<Int32>(
+        (await this.Connection.QueryAsync<int>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsInteger")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
-            .Should().BeEquivalentTo(entities.Select(a => (Int32)a.Enum));
+            .Should().BeEquivalentTo(entities.Select(a => (int)a.Enum));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(Boolean useAsyncApi)
+    public async Task InsertEntities_EnumSerializationModeIsStrings_ShouldStoreEnumValuesAsStrings(bool useAsyncApi)
     {
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
@@ -103,7 +103,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
             TestContext.Current.CancellationToken
         );
 
-        (await this.Connection.QueryAsync<String>(
+        (await this.Connection.QueryAsync<string>(
                 $"SELECT {Q("Enum")} FROM {Q("EntityWithEnumStoredAsString")}",
                 cancellationToken: TestContext.Current.CancellationToken
             ).ToListAsync(TestContext.Current.CancellationToken))
@@ -113,7 +113,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_Mapping_Attributes_ShouldUseAttributesMapping(Boolean useAsyncApi)
+    public async Task InsertEntities_Mapping_Attributes_ShouldUseAttributesMapping(bool useAsyncApi)
     {
         var entities = Generate.Multiple<MappingTestEntityAttributes>();
         entities.ForEach(a =>
@@ -135,7 +135,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
         this.Connection.Query<MappingTestEntityAttributes>($"SELECT * FROM {Q("MappingTestEntity")}")
             .Should().BeEquivalentTo(
                 entities,
-                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                options => options.Using<string>(context => context.Subject.Should().BeNull())
                     .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
@@ -143,7 +143,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(Boolean useAsyncApi)
+    public async Task InsertEntities_Mapping_FluentApi_ShouldUseFluentApiMapping(bool useAsyncApi)
     {
         MappingTestEntityFluentApi.Configure();
 
@@ -167,7 +167,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
         this.Connection.Query<MappingTestEntityFluentApi>($"SELECT * FROM {Q("MappingTestEntity")}")
             .Should().BeEquivalentTo(
                 entities,
-                options => options.Using<String>(context => context.Subject.Should().BeNull())
+                options => options.Using<string>(context => context.Subject.Should().BeNull())
                     .When(info => info.Path.EndsWith("NotMapped"))
             );
     }
@@ -175,7 +175,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(Boolean useAsyncApi)
+    public async Task InsertEntities_Mapping_NoMapping_ShouldUseEntityTypeNameAndPropertyNames(bool useAsyncApi)
     {
         var entities = Generate.Multiple<MappingTestEntity>();
 
@@ -194,7 +194,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_ShouldInsertEntities(Boolean useAsyncApi)
+    public async Task InsertEntities_ShouldInsertEntities(bool useAsyncApi)
     {
         var entities = Generate.Multiple<Entity>();
 
@@ -217,7 +217,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_ShouldReturnNumberOfAffectedRows(Boolean useAsyncApi)
+    public async Task InsertEntities_ShouldReturnNumberOfAffectedRows(bool useAsyncApi)
     {
         var entities = Generate.Multiple<Entity>();
 
@@ -243,7 +243,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_ShouldSupportDateTimeOffsetValues(Boolean useAsyncApi)
+    public async Task InsertEntities_ShouldSupportDateTimeOffsetValues(bool useAsyncApi)
     {
         Assert.SkipUnless(this.TestDatabaseProvider.SupportsDateTimeOffset, "");
 
@@ -267,7 +267,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task InsertEntities_Transaction_ShouldUseTransaction(Boolean useAsyncApi)
+    public async Task InsertEntities_Transaction_ShouldUseTransaction(bool useAsyncApi)
     {
         var entities = Generate.Multiple<Entity>();
 
@@ -298,8 +298,8 @@ public abstract class EntityManipulator_InsertEntitiesTests
         }
     }
 
-    private Task<Int32> CallApi<TEntity>(
-        Boolean useAsyncApi,
+    private Task<int> CallApi<TEntity>(
+        bool useAsyncApi,
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction = null,
@@ -320,7 +320,7 @@ public abstract class EntityManipulator_InsertEntitiesTests
         }
         catch (Exception ex)
         {
-            return Task.FromException<Int32>(ex);
+            return Task.FromException<int>(ex);
         }
     }
 

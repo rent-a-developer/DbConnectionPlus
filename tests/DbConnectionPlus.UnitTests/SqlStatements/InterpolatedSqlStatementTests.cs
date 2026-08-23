@@ -24,7 +24,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     [Fact]
     public void AppendFormatted_InterpolatedParameter_ShouldSupportComplexExpressions()
     {
-        const Double baseDiscount = 0.1;
+        const double baseDiscount = 0.1;
         var entityIds = Generate.Ids(20);
 
         InterpolatedSqlStatement statement =
@@ -79,7 +79,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             .Should().BeEquivalentTo(entityIds);
 
         table1.ValuesType
-            .Should().Be(typeof(Int64));
+            .Should().Be(typeof(long));
 
         statement.Fragments[2]
             .Should().Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Id FROM "));
@@ -318,7 +318,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             .Should().BeEquivalentTo(entityIds);
 
         table1.ValuesType
-            .Should().Be(typeof(Int64));
+            .Should().Be(typeof(long));
 
         statement.Fragments[8]
             .Should().Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Id FROM "));
@@ -339,13 +339,13 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     [Fact]
     public void FromString_EmptyString_ShouldCreateEmptyStatement()
     {
-        var statement = InterpolatedSqlStatement.FromString(String.Empty);
+        var statement = InterpolatedSqlStatement.FromString(string.Empty);
 
         statement.Fragments
             .Should().HaveCount(1);
 
         statement.Fragments[0]
-            .Should().Be(new Literal(String.Empty));
+            .Should().Be(new Literal(string.Empty));
     }
 
     [Fact]
@@ -364,7 +364,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     public void ImplicitConversion_NullValue_ShouldThrow() =>
         Invoking(() =>
                 {
-                    const String? sql = null;
+                    const string? sql = null;
 #pragma warning disable RCS1124 // Inline local variable
                     InterpolatedSqlStatement statement = sql!;
 #pragma warning restore RCS1124 // Inline local variable
@@ -388,7 +388,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        (String, Object?)[] parameters = [("Parameter1", "Value1")];
+        (string, object?)[] parameters = [("Parameter1", "Value1")];
 
         ArgumentNullGuardVerifier.Verify(() => new InterpolatedSqlStatement("SELECT 1", parameters));
         ArgumentNullGuardVerifier.Verify(() => InterpolatedSqlStatement.FromString("SELECT 1"));
@@ -420,7 +420,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             .Should().BeEquivalentTo(entityIds);
 
         table1.ValuesType
-            .Should().Be(typeof(Int64));
+            .Should().Be(typeof(long));
     }
 
     [Fact]
@@ -433,9 +433,9 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             new(3, "C", TestEnum.Value3)
         };
 
-        List<Int32> ids = [1, 2, 3];
+        List<int> ids = [1, 2, 3];
 
-        const String name = "B";
+        const string name = "B";
         const TestEnum enumValue = TestEnum.Value2;
 
         InterpolatedSqlStatement statement = $"""
@@ -475,7 +475,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
             .Should().Be(ids);
 
         idsTable.ValuesType
-            .Should().Be(typeof(Int32));
+            .Should().Be(typeof(int));
 
         statement.ToString()
             .Should().Be(

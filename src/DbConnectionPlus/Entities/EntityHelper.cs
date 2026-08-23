@@ -85,7 +85,7 @@ public static class EntityHelper
     /// </exception>
     public static ConstructorInfo? FindCompatibleConstructor(
         [DynamicallyAccessedMembers(EntityMemberTypes)] Type type,
-        (String Name, Type Type)[] expectedParameters)
+        (string Name, Type Type)[] expectedParameters)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(expectedParameters);
@@ -109,7 +109,7 @@ public static class EntityHelper
                 expectedParameters
                     .All(expectedParameter =>
                         parameters.Any(parameter =>
-                            !String.IsNullOrWhiteSpace(parameter.Name) &&
+                            !string.IsNullOrWhiteSpace(parameter.Name) &&
                             parameter.Name.Equals(expectedParameter.Name, StringComparison.OrdinalIgnoreCase) &&
                             ValueConverter.CanConvert(expectedParameter.Type, parameter.ParameterType)
                         )
@@ -194,7 +194,7 @@ public static class EntityHelper
     /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
     /// one is correct.
     /// </remarks>
-    private static Func<Object, Object?> CreatePropertyGetter(PropertyInfo property)
+    private static Func<object, object?> CreatePropertyGetter(PropertyInfo property)
     {
         MethodInvoker? getMethodInvoker = null;
 
@@ -217,7 +217,7 @@ public static class EntityHelper
     /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
     /// one is correct.
     /// </remarks>
-    private static Action<Object, Object?> CreatePropertySetter(PropertyInfo property)
+    private static Action<object, object?> CreatePropertySetter(PropertyInfo property)
     {
         MethodInvoker? setMethodInvoker = null;
 
@@ -242,20 +242,20 @@ public static class EntityHelper
     private static EntityTypeMetadata CreateEntityTypeMetadata(
         [DynamicallyAccessedMembers(EntityMemberTypes)] Type entityType)
     {
-        String tableName;
+        string tableName;
 
         DbConnectionPlusConfiguration.Instance.GetEntityTypeBuilders()
             .TryGetValue(entityType, out var entityTypeBuilder);
 
         if (entityTypeBuilder is not null)
         {
-            tableName = !String.IsNullOrWhiteSpace(entityTypeBuilder.TableName)
+            tableName = !string.IsNullOrWhiteSpace(entityTypeBuilder.TableName)
                 ? entityTypeBuilder.TableName
                 : entityType.Name;
         }
         else
         {
-            tableName = !String.IsNullOrWhiteSpace(entityType.GetCustomAttribute<TableAttribute>()?.Name)
+            tableName = !string.IsNullOrWhiteSpace(entityType.GetCustomAttribute<TableAttribute>()?.Name)
                 ? entityType.GetCustomAttribute<TableAttribute>()?.Name!
                 : entityType.Name;
         }
@@ -275,7 +275,7 @@ public static class EntityHelper
                 propertiesMetadata[i] = new(
                     property.CanRead,
                     property.CanWrite,
-                    !String.IsNullOrWhiteSpace(propertyBuilder.ColumnName)
+                    !string.IsNullOrWhiteSpace(propertyBuilder.ColumnName)
                         ? propertyBuilder.ColumnName
                         : property.Name,
                     propertyBuilder.IsComputed,

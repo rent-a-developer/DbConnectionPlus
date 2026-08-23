@@ -13,7 +13,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 // file for the measurements behind that.
 public class AotJobFilter : IFilter
 {
-    public Boolean Predicate(BenchmarkCase benchmarkCase)
+    public bool Predicate(BenchmarkCase benchmarkCase)
     {
         var isAotJob = benchmarkCase.Job.Id.Contains(BenchmarksConfig.AotJobId, StringComparison.Ordinal);
         var benchmarkName = benchmarkCase.Descriptor.WorkloadMethod.Name;
@@ -31,7 +31,7 @@ public class AotJobFilter : IFilter
     // materializers with Reflection.Emit - so the only way to have it here is the Dapper.AOT build-time
     // generator, and that generator handles neither value tuples nor Dapper.Contrib, which is what the other
     // two categories compare against.
-    private static readonly HashSet<String> AotJobBenchmarks =
+    private static readonly HashSet<string> AotJobBenchmarks =
     [
         nameof(Benchmarks.Query_Entities_Command),
         nameof(Benchmarks.Query_Entities_Dapper_Aot),
@@ -43,5 +43,5 @@ public class AotJobFilter : IFilter
     ];
 
     // Marks a benchmark as Native AOT only, so that it is kept out of the JIT job.
-    private const String AotOnlyBenchmarkSuffix = "_Aot";
+    private const string AotOnlyBenchmarkSuffix = "_Aot";
 }
