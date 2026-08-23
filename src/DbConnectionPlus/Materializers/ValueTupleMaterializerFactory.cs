@@ -61,6 +61,108 @@ internal static class ValueTupleMaterializerFactory
     /// </summary>
     private const int ValueTupleFieldCountBeforeNesting = 7;
 
+    private static readonly ConcurrentDictionary<MaterializerCacheKey, Delegate> materializerCache = [];
+
+    /// <summary>
+    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
+    /// the value tuple type <typeparamref name="TValueTuple" /> using reflection instead of a compiled expression
+    /// tree.
+    /// </summary>
+    /// <typeparam name="TValueTuple">The type of value tuple to materialize.</typeparam>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the value tuple type
+    /// <typeparamref name="TValueTuple" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReader" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReaderFieldNames" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReaderFieldTypes" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This is the materializer for applications published with Native AOT, where no run-time code generation is
+    /// available. Value tuples are materialized ordinal-positionally, exactly as
+    /// <see cref="CreateExpressionMaterializer{TValueTuple}" /> materializes them, including value tuples with more
+    /// than seven fields, which the runtime represents as nested value tuples.
+    /// </para>
+    /// <para>
+    /// Everything that depends only on the shape of the result set - the field ordinals, the target types, whether a
+    /// field value needs to be converted, and the constructors of the value tuple types - is resolved once, exactly
+    /// as the compiled expression tree bakes it in. Per row the materializer only walks an array, reads the fields
+    /// and passes them to the constructors. The materializer cache is keyed by that shape, so the resolution happens
+    /// once per shape.
+    /// </para>
+    /// <para>
+    /// The exception types and the exception messages are identical to the ones of the compiled expression tree, so
+    /// that the behaviour a consumer observes does not depend on how the application was published.
+    /// </para>
+    /// </remarks>
+    internal static Func<DbDataReader, TValueTuple> CreateReflectionMaterializer<
+        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
+    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
+    {
+        ArgumentNullException.ThrowIfNull(dataReader);
+        ArgumentNullException.ThrowIfNull(dataReaderFieldNames);
+        ArgumentNullException.ThrowIfNull(dataReaderFieldTypes);
+
+        var valueTupleType = typeof(TValueTuple);
+
+        // Resolved here rather than taken from the caller, so that this method can be reached directly from a test:
+        // on the JIT the dispatch in CreateMaterializer always picks the expression tree.
+        var valueTupleFieldTypes = GetValueTupleFieldTypes(valueTupleType);
+
+        var columnBindings = new ReflectionColumnBinding[dataReader.FieldCount];
+
+        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
+        {
+            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
+            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
+            var targetType = valueTupleFieldTypes[fieldOrdinal];
+
+            columnBindings[fieldOrdinal] = new ReflectionColumnBinding(
+                GetColumnNameOrPosition(fieldOrdinal, dataReaderFieldName),
+                fieldOrdinal,
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
+                    fieldOrdinal,
+                    dataReaderFieldName,
+                    dataReaderFieldType
+                ),
+                dataReaderFieldType != targetType,
+                targetType
+            );
+        }
+
+        var valueTupleConstructors = GetValueTupleConstructors(valueTupleType)
+            .Select(ConstructorInvoker.Create)
+            .ToArray();
+
+        return rowDataReader =>
+            MaterializeValueTuple<TValueTuple>(rowDataReader, valueTupleType, valueTupleConstructors, columnBindings);
+    }
+
     /// <summary>
     /// Gets a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of the
     /// value tuple type <typeparamref name="TValueTuple" />.
@@ -171,164 +273,53 @@ internal static class ValueTupleMaterializerFactory
     }
 
     /// <summary>
-    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
-    /// the value tuple type <typeparamref name="TValueTuple" /> using reflection instead of a compiled expression
-    /// tree.
+    /// Constructs the value tuple that holds <paramref name="fieldValues" />.
     /// </summary>
-    /// <typeparam name="TValueTuple">The type of value tuple to materialize.</typeparam>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// <param name="valueTupleConstructors">
+    /// The constructors of the value tuple types, from the outermost to the innermost, as returned by
+    /// <see cref="GetValueTupleConstructors" />.
     /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// <param name="fieldValues">
+    /// The value of every field of the value tuple, including the fields of all nested value tuples, in the order in
+    /// which the fields are declared.
     /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the value tuple type
-    /// <typeparamref name="TValueTuple" />.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReader" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReaderFieldNames" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReaderFieldTypes" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///     </list>
-    /// </exception>
+    /// <returns>The constructed value tuple, boxed.</returns>
     /// <remarks>
-    /// <para>
-    /// This is the materializer for applications published with Native AOT, where no run-time code generation is
-    /// available. Value tuples are materialized ordinal-positionally, exactly as
-    /// <see cref="CreateExpressionMaterializer{TValueTuple}" /> materializes them, including value tuples with more
-    /// than seven fields, which the runtime represents as nested value tuples.
-    /// </para>
-    /// <para>
-    /// Everything that depends only on the shape of the result set - the field ordinals, the target types, whether a
-    /// field value needs to be converted, and the constructors of the value tuple types - is resolved once, exactly
-    /// as the compiled expression tree bakes it in. Per row the materializer only walks an array, reads the fields
-    /// and passes them to the constructors. The materializer cache is keyed by that shape, so the resolution happens
-    /// once per shape.
-    /// </para>
-    /// <para>
-    /// The exception types and the exception messages are identical to the ones of the compiled expression tree, so
-    /// that the behaviour a consumer observes does not depend on how the application was published.
-    /// </para>
+    /// This does the same as the tail of <see cref="CreateExpressionMaterializer{TValueTuple}" />, which builds the
+    /// same nesting out of <see cref="Expression.New(ConstructorInfo, Expression[])" /> instead of constructing it.
     /// </remarks>
-    internal static Func<DbDataReader, TValueTuple> CreateReflectionMaterializer<
-        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple
-    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
+    private static object ConstructValueTuple(ConstructorInvoker[] valueTupleConstructors, object?[] fieldValues)
     {
-        ArgumentNullException.ThrowIfNull(dataReader);
-        ArgumentNullException.ThrowIfNull(dataReaderFieldNames);
-        ArgumentNullException.ThrowIfNull(dataReaderFieldTypes);
+        // In C# value tuples with more than 7 fields are represented as nested value tuples.
+        // E.g. a ValueTuple with 15 fields is represented as:
+        // ValueTuple<T1, ..., T7, ValueTuple<T8, ..., T14, ValueTuple<T15>>>
+        // In this case we need to create the nested value tuples from the inside out.
 
-        var valueTupleType = typeof(TValueTuple);
+        // So we chunk the field values into groups of 7, which gives us the field values of one of those value
+        // tuples per chunk. The chunks are in the same order as valueTupleConstructors: the first chunk and the
+        // first constructor belong to the outermost value tuple, the last ones to the innermost value tuple.
+        var fieldValueChunks = fieldValues.Chunk(ValueTupleFieldCountBeforeNesting).ToArray();
 
-        // Resolved here rather than taken from the caller, so that this method can be reached directly from a test:
-        // on the JIT the dispatch in CreateMaterializer always picks the expression tree.
-        var valueTupleFieldTypes = GetValueTupleFieldTypes(valueTupleType);
+        object? valueTuple = null;
 
-        var columnBindings = new ReflectionColumnBinding[dataReader.FieldCount];
-
-        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
+        // Now we create the nested value tuples from the inside out, by walking both arrays from their last entry
+        // to their first one. When we are done valueTuple contains the outermost value tuple.
+        for (var chunkIndex = fieldValueChunks.Length - 1; chunkIndex >= 0; chunkIndex--)
         {
-            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
-            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
-            var targetType = valueTupleFieldTypes[fieldOrdinal];
+            // If valueTuple is null, it means we are at the innermost value tuple, so we only need to use the
+            // current chunk of field values as arguments.
+            //
+            // Otherwise, if valueTuple is not null, it means we are not at the innermost value tuple, and we need to
+            // add valueTuple (which contains the last created inner value tuple) as the argument for the "Rest"
+            // parameter.
+            var constructorArguments = valueTuple is not null
+                ? [.. fieldValueChunks[chunkIndex], valueTuple]
+                : fieldValueChunks[chunkIndex];
 
-            columnBindings[fieldOrdinal] = new ReflectionColumnBinding(
-                GetColumnNameOrPosition(fieldOrdinal, dataReaderFieldName),
-                fieldOrdinal,
-                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                    fieldOrdinal,
-                    dataReaderFieldName,
-                    dataReaderFieldType
-                ),
-                dataReaderFieldType != targetType,
-                targetType
-            );
+            valueTuple = valueTupleConstructors[chunkIndex].Invoke(constructorArguments.AsSpan());
         }
 
-        var valueTupleConstructors = GetValueTupleConstructors(valueTupleType)
-            .Select(ConstructorInvoker.Create)
-            .ToArray();
-
-        return rowDataReader =>
-            MaterializeValueTuple<TValueTuple>(rowDataReader, valueTupleType, valueTupleConstructors, columnBindings);
-    }
-
-    /// <summary>
-    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
-    /// the value tuple type <typeparamref name="TValueTuple" />.
-    /// </summary>
-    /// <typeparam name="TValueTuple">The type of value tuple to materialize.</typeparam>
-    /// <param name="valueTupleFieldTypes">
-    /// The field types of the value tuple type <typeparamref name="TValueTuple" />.
-    /// </param>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the value tuple type
-    /// <typeparamref name="TValueTuple" />.
-    /// </returns>
-    /// <remarks>
-    /// Which of the two implementations builds the materializer is decided here, by
-    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" />: the compiled expression tree when the runtime can
-    /// generate code, and the reflection-based materializer when it cannot. The AOT compiler folds that check to a
-    /// constant and removes the branch it does not need, so an application published with Native AOT does not carry
-    /// the expression-tree implementation at all.
-    /// </remarks>
-#if !NET9_0_OR_GREATER
-    // See the identical suppression in EntityMaterializerFactory.CreateMaterializer for why this is here, why it is
-    // a transcription of a result the net10.0 build verifies rather than an assertion, and why both target
-    // frameworks have to stay in the AOT warning gate.
-    [UnconditionalSuppressMessage(
-        "AOT",
-        "IL3050:Requires dynamic code",
-        Justification = "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds "
-            + "to false and removes together with the expression-tree implementation. The net9.0+ analyzer "
-            + "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on "
-            + "IsDynamicCodeSupported that lets it do so."
-    )]
-#endif
-    private static Delegate CreateMaterializer<[DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple>(
-        Type[] valueTupleFieldTypes,
-        DbDataReader dataReader,
-        string[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
-    {
-        if (RuntimeFeature.IsDynamicCodeSupported)
-        {
-            return CreateExpressionMaterializer<TValueTuple>(
-                valueTupleFieldTypes,
-                dataReader,
-                dataReaderFieldNames,
-                dataReaderFieldTypes
-            );
-        }
-
-        return CreateReflectionMaterializer<TValueTuple>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
+        return valueTuple!;
     }
 
     /// <summary>
@@ -526,6 +517,67 @@ internal static class ValueTupleMaterializerFactory
     }
 
     /// <summary>
+    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
+    /// the value tuple type <typeparamref name="TValueTuple" />.
+    /// </summary>
+    /// <typeparam name="TValueTuple">The type of value tuple to materialize.</typeparam>
+    /// <param name="valueTupleFieldTypes">
+    /// The field types of the value tuple type <typeparamref name="TValueTuple" />.
+    /// </param>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the value tuple type
+    /// <typeparamref name="TValueTuple" />.
+    /// </returns>
+    /// <remarks>
+    /// Which of the two implementations builds the materializer is decided here, by
+    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" />: the compiled expression tree when the runtime can
+    /// generate code, and the reflection-based materializer when it cannot. The AOT compiler folds that check to a
+    /// constant and removes the branch it does not need, so an application published with Native AOT does not carry
+    /// the expression-tree implementation at all.
+    /// </remarks>
+#if !NET9_0_OR_GREATER
+    // See the identical suppression in EntityMaterializerFactory.CreateMaterializer for why this is here, why it is
+    // a transcription of a result the net10.0 build verifies rather than an assertion, and why both target
+    // frameworks have to stay in the AOT warning gate.
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Requires dynamic code",
+        Justification = "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds "
+            + "to false and removes together with the expression-tree implementation. The net9.0+ analyzer "
+            + "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on "
+            + "IsDynamicCodeSupported that lets it do so."
+    )]
+#endif
+    private static Delegate CreateMaterializer<[DynamicallyAccessedMembers(ValueTupleMemberTypes)] TValueTuple>(
+        Type[] valueTupleFieldTypes,
+        DbDataReader dataReader,
+        string[] dataReaderFieldNames,
+        Type[] dataReaderFieldTypes
+    )
+    {
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            return CreateExpressionMaterializer<TValueTuple>(
+                valueTupleFieldTypes,
+                dataReader,
+                dataReaderFieldNames,
+                dataReaderFieldTypes
+            );
+        }
+
+        return CreateReflectionMaterializer<TValueTuple>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
+    }
+
+    /// <summary>
     /// Gets the description of the field with the ordinal <paramref name="fieldOrdinal" /> that the exception
     /// messages refer the consumer to.
     /// </summary>
@@ -621,6 +673,50 @@ internal static class ValueTupleMaterializerFactory
     }
 
     /// <summary>
+    /// <para>
+    /// Gets the types of the fields of the value tuple type <paramref name="valueTupleType" /> including the fields
+    /// of all nested value tuple types.
+    /// </para>
+    /// <para>
+    /// For example, for the value tuple type
+    /// <c><![CDATA[ ValueTuple<T1, T2, T3, T4, T5, T6, T7, ValueTuple<T8, T9> ]]></c> this method returns the types
+    /// T1, T2, T3, T4, T5, T6, T7, T8, T9.
+    /// </para>
+    /// </summary>
+    /// <param name="valueTupleType">The value tuple type of which to get the field types.</param>
+    /// <returns>
+    /// An array containing the types of the fields of the value tuple type <paramref name="valueTupleType" />
+    /// including the fields of all nested value tuple types.
+    /// </returns>
+    private static Type[] GetValueTupleFieldTypes(
+        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType
+    )
+    {
+        var fieldTypes = new List<Type>();
+        var currentValueTupleType = valueTupleType;
+
+        while (true)
+        {
+            // The generic arguments of a value tuple type ARE its field types, in field order.
+            var genericArguments = currentValueTupleType.GetGenericArguments();
+
+            var hasNestedValueTuple = genericArguments.Length > ValueTupleFieldCountBeforeNesting;
+
+            if (!hasNestedValueTuple)
+            {
+                fieldTypes.AddRange(genericArguments);
+                break;
+            }
+
+            fieldTypes.AddRange(genericArguments.Take(ValueTupleFieldCountBeforeNesting));
+
+            currentValueTupleType = genericArguments[^1];
+        }
+
+        return [.. fieldTypes];
+    }
+
+    /// <summary>
     /// Materializes the current row of <paramref name="dataReader" /> to an instance of the value tuple type
     /// <typeparamref name="TValueTuple" />.
     /// </summary>
@@ -654,87 +750,6 @@ internal static class ValueTupleMaterializerFactory
         var fieldValues = ReadFieldValues(dataReader, valueTupleType, columnBindings);
 
         return (TValueTuple)ConstructValueTuple(valueTupleConstructors, fieldValues);
-    }
-
-    /// <summary>
-    /// Reads all fields of the current row of <paramref name="dataReader" />, in the order of the result set.
-    /// </summary>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> to read the current row of.</param>
-    /// <param name="valueTupleType">
-    /// The type of value tuple being materialized. Used in the exception messages.
-    /// </param>
-    /// <param name="columnBindings">The fields of the result set, in the order of the fields of the value tuple.</param>
-    /// <returns>
-    /// The field values, in the order of the result set and therefore in the order of the fields of the value tuple,
-    /// each one ready to be passed to the constructor of the value tuple that holds it.
-    /// </returns>
-    /// <exception cref="InvalidCastException">
-    /// A field of the result set could not be assigned to the corresponding field of the value tuple.
-    /// </exception>
-    private static object?[] ReadFieldValues(
-        DbDataReader dataReader,
-        Type valueTupleType,
-        ReflectionColumnBinding[] columnBindings
-    )
-    {
-        var fieldValues = new object?[columnBindings.Length];
-
-        for (var fieldOrdinal = 0; fieldOrdinal < columnBindings.Length; fieldOrdinal++)
-        {
-            fieldValues[fieldOrdinal] = ReadFieldValue(dataReader, valueTupleType, columnBindings[fieldOrdinal]);
-        }
-
-        return fieldValues;
-    }
-
-    /// <summary>
-    /// Constructs the value tuple that holds <paramref name="fieldValues" />.
-    /// </summary>
-    /// <param name="valueTupleConstructors">
-    /// The constructors of the value tuple types, from the outermost to the innermost, as returned by
-    /// <see cref="GetValueTupleConstructors" />.
-    /// </param>
-    /// <param name="fieldValues">
-    /// The value of every field of the value tuple, including the fields of all nested value tuples, in the order in
-    /// which the fields are declared.
-    /// </param>
-    /// <returns>The constructed value tuple, boxed.</returns>
-    /// <remarks>
-    /// This does the same as the tail of <see cref="CreateExpressionMaterializer{TValueTuple}" />, which builds the
-    /// same nesting out of <see cref="Expression.New(ConstructorInfo, Expression[])" /> instead of constructing it.
-    /// </remarks>
-    private static object ConstructValueTuple(ConstructorInvoker[] valueTupleConstructors, object?[] fieldValues)
-    {
-        // In C# value tuples with more than 7 fields are represented as nested value tuples.
-        // E.g. a ValueTuple with 15 fields is represented as:
-        // ValueTuple<T1, ..., T7, ValueTuple<T8, ..., T14, ValueTuple<T15>>>
-        // In this case we need to create the nested value tuples from the inside out.
-
-        // So we chunk the field values into groups of 7, which gives us the field values of one of those value
-        // tuples per chunk. The chunks are in the same order as valueTupleConstructors: the first chunk and the
-        // first constructor belong to the outermost value tuple, the last ones to the innermost value tuple.
-        var fieldValueChunks = fieldValues.Chunk(ValueTupleFieldCountBeforeNesting).ToArray();
-
-        object? valueTuple = null;
-
-        // Now we create the nested value tuples from the inside out, by walking both arrays from their last entry
-        // to their first one. When we are done valueTuple contains the outermost value tuple.
-        for (var chunkIndex = fieldValueChunks.Length - 1; chunkIndex >= 0; chunkIndex--)
-        {
-            // If valueTuple is null, it means we are at the innermost value tuple, so we only need to use the
-            // current chunk of field values as arguments.
-            //
-            // Otherwise, if valueTuple is not null, it means we are not at the innermost value tuple, and we need to
-            // add valueTuple (which contains the last created inner value tuple) as the argument for the "Rest"
-            // parameter.
-            var constructorArguments = valueTuple is not null
-                ? [.. fieldValueChunks[chunkIndex], valueTuple]
-                : fieldValueChunks[chunkIndex];
-
-            valueTuple = valueTupleConstructors[chunkIndex].Invoke(constructorArguments.AsSpan());
-        }
-
-        return valueTuple!;
     }
 
     /// <summary>
@@ -805,47 +820,34 @@ internal static class ValueTupleMaterializerFactory
     }
 
     /// <summary>
-    /// <para>
-    /// Gets the types of the fields of the value tuple type <paramref name="valueTupleType" /> including the fields
-    /// of all nested value tuple types.
-    /// </para>
-    /// <para>
-    /// For example, for the value tuple type
-    /// <c><![CDATA[ ValueTuple<T1, T2, T3, T4, T5, T6, T7, ValueTuple<T8, T9> ]]></c> this method returns the types
-    /// T1, T2, T3, T4, T5, T6, T7, T8, T9.
-    /// </para>
+    /// Reads all fields of the current row of <paramref name="dataReader" />, in the order of the result set.
     /// </summary>
-    /// <param name="valueTupleType">The value tuple type of which to get the field types.</param>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> to read the current row of.</param>
+    /// <param name="valueTupleType">
+    /// The type of value tuple being materialized. Used in the exception messages.
+    /// </param>
+    /// <param name="columnBindings">The fields of the result set, in the order of the fields of the value tuple.</param>
     /// <returns>
-    /// An array containing the types of the fields of the value tuple type <paramref name="valueTupleType" />
-    /// including the fields of all nested value tuple types.
+    /// The field values, in the order of the result set and therefore in the order of the fields of the value tuple,
+    /// each one ready to be passed to the constructor of the value tuple that holds it.
     /// </returns>
-    private static Type[] GetValueTupleFieldTypes(
-        [DynamicallyAccessedMembers(ValueTupleMemberTypes)] Type valueTupleType
+    /// <exception cref="InvalidCastException">
+    /// A field of the result set could not be assigned to the corresponding field of the value tuple.
+    /// </exception>
+    private static object?[] ReadFieldValues(
+        DbDataReader dataReader,
+        Type valueTupleType,
+        ReflectionColumnBinding[] columnBindings
     )
     {
-        var fieldTypes = new List<Type>();
-        var currentValueTupleType = valueTupleType;
+        var fieldValues = new object?[columnBindings.Length];
 
-        while (true)
+        for (var fieldOrdinal = 0; fieldOrdinal < columnBindings.Length; fieldOrdinal++)
         {
-            // The generic arguments of a value tuple type ARE its field types, in field order.
-            var genericArguments = currentValueTupleType.GetGenericArguments();
-
-            var hasNestedValueTuple = genericArguments.Length > ValueTupleFieldCountBeforeNesting;
-
-            if (!hasNestedValueTuple)
-            {
-                fieldTypes.AddRange(genericArguments);
-                break;
-            }
-
-            fieldTypes.AddRange(genericArguments.Take(ValueTupleFieldCountBeforeNesting));
-
-            currentValueTupleType = genericArguments[^1];
+            fieldValues[fieldOrdinal] = ReadFieldValue(dataReader, valueTupleType, columnBindings[fieldOrdinal]);
         }
 
-        return [.. fieldTypes];
+        return fieldValues;
     }
 
     /// <summary>
@@ -945,8 +947,6 @@ internal static class ValueTupleMaterializerFactory
         }
     }
 
-    private static readonly ConcurrentDictionary<MaterializerCacheKey, Delegate> materializerCache = [];
-
     /// <summary>
     /// A cache key used to uniquely identify a value tuple materializer.
     /// </summary>
@@ -965,14 +965,18 @@ internal static class ValueTupleMaterializerFactory
         Type[] dataReaderFieldTypes
     ) : IEquatable<MaterializerCacheKey>
     {
+        private string[] DataReaderFieldNames { get; } = dataReaderFieldNames;
+        private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
+        private Type[] ValueTupleFieldTypes { get; } = valueTupleFieldTypes;
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
+
         /// <inheritdoc />
         public bool Equals(MaterializerCacheKey other) =>
             this.ValueTupleFieldTypes.SequenceEqual(other.ValueTupleFieldTypes)
             && this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames)
             && this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
-
-        /// <inheritdoc />
-        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode()
@@ -996,10 +1000,6 @@ internal static class ValueTupleMaterializerFactory
 
             return hashCode.ToHashCode();
         }
-
-        private string[] DataReaderFieldNames { get; } = dataReaderFieldNames;
-        private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
-        private Type[] ValueTupleFieldTypes { get; } = valueTupleFieldTypes;
     }
 
     /// <summary>

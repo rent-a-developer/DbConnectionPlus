@@ -19,6 +19,14 @@ internal static class TestDatabaseContainers
     /// </summary>
     public const string Password = "TestTest123!";
 
+    private static readonly TestDatabaseContainer<MySqlContainerFixture> mySql = new("MySQL");
+
+    private static readonly TestDatabaseContainer<OracleContainerFixture> oracle = new("Oracle");
+
+    private static readonly TestDatabaseContainer<PostgreSqlContainerFixture> postgreSql = new("PostgreSQL");
+
+    private static readonly TestDatabaseContainer<SqlServerContainerFixture> sqlServer = new("SQL Server");
+
     /// <summary>
     /// The container running the MySQL server.
     /// </summary>
@@ -69,12 +77,4 @@ internal static class TestDatabaseContainers
     /// Starts the SQL Server container and waits until it accepts connections.
     /// </summary>
     public static ValueTask StartSqlServerAsync() => sqlServer.StartAsync();
-
-    private static readonly TestDatabaseContainer<MySqlContainerFixture> mySql = new("MySQL");
-
-    private static readonly TestDatabaseContainer<OracleContainerFixture> oracle = new("Oracle");
-
-    private static readonly TestDatabaseContainer<PostgreSqlContainerFixture> postgreSql = new("PostgreSQL");
-
-    private static readonly TestDatabaseContainer<SqlServerContainerFixture> sqlServer = new("SQL Server");
 }

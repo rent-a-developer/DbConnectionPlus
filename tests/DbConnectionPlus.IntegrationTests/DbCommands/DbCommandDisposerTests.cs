@@ -14,61 +14,6 @@ public abstract class DbCommandDisposerTests<TTestDatabaseProvider> : Integratio
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     [Fact]
-    public void Dispose_AlreadyDisposed_ShouldNotAttemptToDropTemporaryTablesAgain()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds = Generate.Ids();
-
-        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
-
-        var temporaryTables = statement.TemporaryTables;
-
-        var (_, commandDisposer) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeTrue();
-
-        commandDisposer.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeFalse();
-
-        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
-
-        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
-
-        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
-    }
-
-    [Fact]
-    public void Dispose_ShouldDropTemporaryTables()
-    {
-        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
-
-        var entityIds1 = Generate.Ids();
-        var entityIds2 = Generate.Ids();
-
-        InterpolatedSqlStatement statement = $"""
-            SELECT {Q("Value")} FROM {TemporaryTable(entityIds1)}
-            UNION
-            SELECT {Q("Value")} FROM {TemporaryTable(entityIds2)}
-            """;
-
-        var temporaryTables = statement.TemporaryTables;
-
-        var (_, commandDisposer) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeTrue();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[1].Name).Should().BeTrue();
-
-        commandDisposer.Dispose();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeFalse();
-
-        this.ExistsTemporaryTableInDb(temporaryTables[1].Name).Should().BeFalse();
-    }
-
-    [Fact]
     public async Task DisposeAsync_AlreadyDisposed_ShouldNotAttemptToDropTemporaryTablesAgain()
     {
         Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
@@ -124,5 +69,60 @@ public abstract class DbCommandDisposerTests<TTestDatabaseProvider> : Integratio
         await commandDisposer.DisposeAsync();
 
         this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Dispose_AlreadyDisposed_ShouldNotAttemptToDropTemporaryTablesAgain()
+    {
+        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
+
+        var entityIds = Generate.Ids();
+
+        InterpolatedSqlStatement statement = $"SELECT {Q("Value")} FROM {TemporaryTable(entityIds)}";
+
+        var temporaryTables = statement.TemporaryTables;
+
+        var (_, commandDisposer) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
+
+        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeTrue();
+
+        commandDisposer.Dispose();
+
+        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeFalse();
+
+        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
+
+        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
+
+        Invoking(() => commandDisposer.Dispose()).Should().NotThrow();
+    }
+
+    [Fact]
+    public void Dispose_ShouldDropTemporaryTables()
+    {
+        Assert.SkipUnless(this.DatabaseAdapter.SupportsTemporaryTables(this.Connection), "");
+
+        var entityIds1 = Generate.Ids();
+        var entityIds2 = Generate.Ids();
+
+        InterpolatedSqlStatement statement = $"""
+            SELECT {Q("Value")} FROM {TemporaryTable(entityIds1)}
+            UNION
+            SELECT {Q("Value")} FROM {TemporaryTable(entityIds2)}
+            """;
+
+        var temporaryTables = statement.TemporaryTables;
+
+        var (_, commandDisposer) = DbCommandBuilder.BuildDbCommand(statement, this.DatabaseAdapter, this.Connection);
+
+        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeTrue();
+
+        this.ExistsTemporaryTableInDb(temporaryTables[1].Name).Should().BeTrue();
+
+        commandDisposer.Dispose();
+
+        this.ExistsTemporaryTableInDb(temporaryTables[0].Name).Should().BeFalse();
+
+        this.ExistsTemporaryTableInDb(temporaryTables[1].Name).Should().BeFalse();
     }
 }

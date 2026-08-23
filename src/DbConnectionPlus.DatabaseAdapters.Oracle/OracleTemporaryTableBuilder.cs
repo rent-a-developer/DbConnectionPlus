@@ -15,6 +15,8 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// </summary>
 internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private readonly OracleDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OracleTemporaryTableBuilder" /> class.
     /// </summary>
@@ -231,6 +233,154 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
     }
 
     /// <summary>
+    /// Builds an SQL code to insert data from the specified data reader into the specified temporary table.
+    /// </summary>
+    /// <param name="quotedTableName">The quoted name of the table to insert data into.</param>
+    /// <param name="valuesType">The type of values with which to populate the table.</param>
+    /// <param name="dataReader">The data reader to read data from.</param>
+    /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
+    private static (string SqlCode, OracleParameter[] Parameters) BuildInsertSqlCode(
+        string quotedTableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
+        DbDataReader dataReader
+    )
+    {
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
+
+        sqlBuilder.Append("INSERT INTO ");
+        sqlBuilder.AppendLine(quotedTableName);
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(");
+
+        var fieldCount = dataReader.FieldCount;
+        var parameters = new OracleParameter[fieldCount];
+
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            sqlBuilder.Append("\"");
+            sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+            sqlBuilder.Append("\"");
+
+            parameters[0] = new() { ParameterName = Constants.SingleColumnTemporaryTableColumnName };
+        }
+        else
+        {
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
+                .ToList();
+
+            for (var i = 0; i < properties.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sqlBuilder.Append(", ");
+                }
+
+                var property = properties[i];
+
+                sqlBuilder.Append('"');
+                sqlBuilder.Append(property.ColumnName);
+                sqlBuilder.Append('"');
+
+                parameters[i] = new() { ParameterName = property.PropertyName };
+            }
+        }
+
+        sqlBuilder.AppendLine(")");
+
+        sqlBuilder.AppendLine("VALUES");
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(");
+
+        for (var i = 0; i < fieldCount; i++)
+        {
+            if (i > 0)
+            {
+                sqlBuilder.Append(", ");
+            }
+
+            sqlBuilder.Append(":\"" + parameters[i].ParameterName + "\"");
+        }
+
+        sqlBuilder.AppendLine(")");
+
+        return (sqlBuilder.ToString(), parameters);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
+    /// </summary>
+    /// <param name="values">The sequence containing the values to be read.</param>
+    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
+    /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
+    {
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+        }
+
+        return new EnumerableReader(
+            values,
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
+        );
+    }
+
+    /// <summary>
+    /// Drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="quotedTableName">The quoted name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    private static void DropTemporaryTable(
+        string quotedTableName,
+        OracleConnection connection,
+        OracleTransaction? transaction
+    )
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"DROP TABLE {quotedTableName}";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Asynchronously drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="quotedTableName">The quoted name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private static async ValueTask DropTemporaryTableAsync(
+        string quotedTableName,
+        OracleConnection connection,
+        OracleTransaction? transaction
+    )
+    {
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+
+        command.CommandText = $"DROP TABLE {quotedTableName}";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
     /// </summary>
@@ -439,154 +589,4 @@ internal class OracleTemporaryTableBuilder : ITemporaryTableBuilder
             await insertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
-
-    /// <summary>
-    /// Builds an SQL code to insert data from the specified data reader into the specified temporary table.
-    /// </summary>
-    /// <param name="quotedTableName">The quoted name of the table to insert data into.</param>
-    /// <param name="valuesType">The type of values with which to populate the table.</param>
-    /// <param name="dataReader">The data reader to read data from.</param>
-    /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
-    private static (string SqlCode, OracleParameter[] Parameters) BuildInsertSqlCode(
-        string quotedTableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
-        DbDataReader dataReader
-    )
-    {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
-
-        sqlBuilder.Append("INSERT INTO ");
-        sqlBuilder.AppendLine(quotedTableName);
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(");
-
-        var fieldCount = dataReader.FieldCount;
-        var parameters = new OracleParameter[fieldCount];
-
-        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
-        {
-            sqlBuilder.Append("\"");
-            sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
-            sqlBuilder.Append("\"");
-
-            parameters[0] = new() { ParameterName = Constants.SingleColumnTemporaryTableColumnName };
-        }
-        else
-        {
-            var properties = EntityHelper
-                .GetEntityTypeMetadata(valuesType)
-                .MappedProperties.Where(a => a.CanRead)
-                .ToList();
-
-            for (var i = 0; i < properties.Count; i++)
-            {
-                if (i > 0)
-                {
-                    sqlBuilder.Append(", ");
-                }
-
-                var property = properties[i];
-
-                sqlBuilder.Append('"');
-                sqlBuilder.Append(property.ColumnName);
-                sqlBuilder.Append('"');
-
-                parameters[i] = new() { ParameterName = property.PropertyName };
-            }
-        }
-
-        sqlBuilder.AppendLine(")");
-
-        sqlBuilder.AppendLine("VALUES");
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(");
-
-        for (var i = 0; i < fieldCount; i++)
-        {
-            if (i > 0)
-            {
-                sqlBuilder.Append(", ");
-            }
-
-            sqlBuilder.Append(":\"" + parameters[i].ParameterName + "\"");
-        }
-
-        sqlBuilder.AppendLine(")");
-
-        return (sqlBuilder.ToString(), parameters);
-    }
-
-    /// <summary>
-    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
-    /// </summary>
-    /// <param name="values">The sequence containing the values to be read.</param>
-    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
-    /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
-    private static EnumerableReader CreateValuesDataReader(
-        IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
-    )
-    {
-        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
-        {
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
-        }
-
-        return new EnumerableReader(
-            values,
-            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
-            EnumerableReaderOptions.None
-        );
-    }
-
-    /// <summary>
-    /// Drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="quotedTableName">The quoted name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(
-        string quotedTableName,
-        OracleConnection connection,
-        OracleTransaction? transaction
-    )
-    {
-        using var command = connection.CreateCommand();
-
-        command.CommandText = $"DROP TABLE {quotedTableName}";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        command.ExecuteNonQuery();
-    }
-
-    /// <summary>
-    /// Asynchronously drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="quotedTableName">The quoted name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private static async ValueTask DropTemporaryTableAsync(
-        string quotedTableName,
-        OracleConnection connection,
-        OracleTransaction? transaction
-    )
-    {
-#pragma warning disable CA2007
-        await using var command = connection.CreateCommand();
-#pragma warning restore CA2007
-
-        command.CommandText = $"DROP TABLE {quotedTableName}";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    private readonly OracleDatabaseAdapter databaseAdapter;
 }

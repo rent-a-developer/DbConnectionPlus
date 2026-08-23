@@ -9,6 +9,11 @@ namespace RentADeveloper.DbConnectionPlus.Extensions;
 internal static class ObjectExtensions
 {
     /// <summary>
+    /// The deepest sequence nesting that is rendered before the representation is truncated.
+    /// </summary>
+    private const int MaxSequenceDepth = 10;
+
+    /// <summary>
     /// Gets the string representation of this value suffixed by the fullname of this value's type.
     /// </summary>
     /// <param name="value">The value of which to get the string representation.</param>
@@ -28,6 +33,17 @@ internal static class ObjectExtensions
             DBNull => "{DBNull}",
             _ => $"'{FormatValue(value, 0)}' ({value.GetType()})",
         };
+
+    /// <summary>
+    /// Gets the string representation of a sequence, as its elements separated by commas in square brackets.
+    /// </summary>
+    /// <param name="values">The sequence of which to get the string representation.</param>
+    /// <param name="depth">The nesting depth at which <paramref name="values" /> itself sits.</param>
+    /// <returns>A string representation of <paramref name="values" />.</returns>
+    private static string FormatSequence(IEnumerable values, int depth) =>
+        depth >= MaxSequenceDepth
+            ? "[...]"
+            : "[" + string.Join(",", values.Cast<object?>().Select(item => FormatValue(item, depth + 1))) + "]";
 
     /// <summary>
     /// Gets the string representation of a value, without the type suffix.
@@ -95,20 +111,4 @@ internal static class ObjectExtensions
             // its message. A type that renders as its own name here simply has no ToString override.
             _ => value.ToString() ?? string.Empty,
         };
-
-    /// <summary>
-    /// Gets the string representation of a sequence, as its elements separated by commas in square brackets.
-    /// </summary>
-    /// <param name="values">The sequence of which to get the string representation.</param>
-    /// <param name="depth">The nesting depth at which <paramref name="values" /> itself sits.</param>
-    /// <returns>A string representation of <paramref name="values" />.</returns>
-    private static string FormatSequence(IEnumerable values, int depth) =>
-        depth >= MaxSequenceDepth
-            ? "[...]"
-            : "[" + string.Join(",", values.Cast<object?>().Select(item => FormatValue(item, depth + 1))) + "]";
-
-    /// <summary>
-    /// The deepest sequence nesting that is rendered before the representation is truncated.
-    /// </summary>
-    private const int MaxSequenceDepth = 10;
 }

@@ -7,23 +7,13 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(TemporaryTable_ScalarValues_Command),
-            nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
-        ]
-    )]
-    public void TemporaryTable_ScalarValues__Cleanup() => this.connection.Dispose();
+    private const string TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
+    private const int TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
 
-    [GlobalSetup(
-        Targets = [
-            nameof(TemporaryTable_ScalarValues_Command),
-            nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
-        ]
-    )]
-    public void TemporaryTable_ScalarValues__Setup() => this.SetupDatabase(0);
+    private readonly List<long> temporaryTable_ScalarValues_Values =
+    [
+        .. Enumerable.Range(0, TemporaryTable_ScalarValues_ValuesPerOperation).Select(a => (long)a),
+    ];
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
@@ -96,11 +86,21 @@ public partial class Benchmarks
             ),
         ];
 
-    private readonly List<long> temporaryTable_ScalarValues_Values =
-    [
-        .. Enumerable.Range(0, TemporaryTable_ScalarValues_ValuesPerOperation).Select(a => (long)a),
-    ];
+    [GlobalCleanup(
+        Targets = [
+            nameof(TemporaryTable_ScalarValues_Command),
+            nameof(TemporaryTable_ScalarValues_Dapper),
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ScalarValues__Cleanup() => this.connection.Dispose();
 
-    private const string TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
-    private const int TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
+    [GlobalSetup(
+        Targets = [
+            nameof(TemporaryTable_ScalarValues_Command),
+            nameof(TemporaryTable_ScalarValues_Dapper),
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ScalarValues__Setup() => this.SetupDatabase(0);
 }

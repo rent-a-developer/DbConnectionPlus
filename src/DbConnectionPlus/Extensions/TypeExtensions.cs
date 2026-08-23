@@ -8,6 +8,44 @@ namespace RentADeveloper.DbConnectionPlus.Extensions;
 /// </summary>
 internal static class TypeExtensions
 {
+    private static readonly HashSet<Type> builtInTypes =
+    [
+        typeof(bool),
+        typeof(byte),
+        typeof(sbyte),
+        typeof(char),
+        typeof(decimal),
+        typeof(double),
+        typeof(float),
+        typeof(short),
+        typeof(ushort),
+        typeof(int),
+        typeof(uint),
+        typeof(long),
+        typeof(ulong),
+        typeof(IntPtr),
+        typeof(UIntPtr),
+        typeof(string),
+        typeof(DateTime),
+        typeof(DateOnly),
+        typeof(DateTimeOffset),
+        typeof(TimeSpan),
+        typeof(TimeOnly),
+        typeof(Guid),
+    ];
+
+    private static readonly HashSet<Type> valueTupleTypes =
+    [
+        typeof(ValueTuple<>),
+        typeof(ValueTuple<,>),
+        typeof(ValueTuple<,,>),
+        typeof(ValueTuple<,,,>),
+        typeof(ValueTuple<,,,,>),
+        typeof(ValueTuple<,,,,,>),
+        typeof(ValueTuple<,,,,,,>),
+        typeof(ValueTuple<,,,,,,,>),
+    ];
+
     /// <summary>
     /// Determines whether this type is a built-in .NET type
     /// (e.g. <see cref="bool" />, <see cref="string" />, <see cref="decimal" />, ...).
@@ -92,42 +130,4 @@ internal static class TypeExtensions
 
         return type.IsGenericType && valueTupleTypes.Contains(type.GetGenericTypeDefinition());
     }
-
-    private static readonly HashSet<Type> builtInTypes =
-    [
-        typeof(bool),
-        typeof(byte),
-        typeof(sbyte),
-        typeof(char),
-        typeof(decimal),
-        typeof(double),
-        typeof(float),
-        typeof(short),
-        typeof(ushort),
-        typeof(int),
-        typeof(uint),
-        typeof(long),
-        typeof(ulong),
-        typeof(IntPtr),
-        typeof(UIntPtr),
-        typeof(string),
-        typeof(DateTime),
-        typeof(DateOnly),
-        typeof(DateTimeOffset),
-        typeof(TimeSpan),
-        typeof(TimeOnly),
-        typeof(Guid),
-    ];
-
-    private static readonly HashSet<Type> valueTupleTypes =
-    [
-        typeof(ValueTuple<>),
-        typeof(ValueTuple<,>),
-        typeof(ValueTuple<,,>),
-        typeof(ValueTuple<,,,>),
-        typeof(ValueTuple<,,,,>),
-        typeof(ValueTuple<,,,,,>),
-        typeof(ValueTuple<,,,,,,>),
-        typeof(ValueTuple<,,,,,,,>),
-    ];
 }

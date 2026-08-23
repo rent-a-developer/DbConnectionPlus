@@ -22,6 +22,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Trimming;
 /// </remarks>
 public class ILLinkDescriptorsTests : UnitTestsBase
 {
+    private const string ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
+
     [Fact]
     public void CoreAssembly_ShouldEmbedTheILLinkDescriptor() =>
         typeof(DbConnectionExtensions)
@@ -57,6 +59,4 @@ public class ILLinkDescriptorsTests : UnitTestsBase
 
         return XDocument.Load(stream);
     }
-
-    private const string ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
 }

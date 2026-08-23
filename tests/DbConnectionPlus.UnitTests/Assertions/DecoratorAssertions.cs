@@ -12,6 +12,15 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 public static class DecoratorAssertions
 {
     /// <summary>
+    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
+    /// </summary>
+    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
+        nameof(SpecimenFactory.Create),
+        BindingFlags.Public | BindingFlags.Static,
+        [typeof(ISpecimenBuilder)]
+    )!;
+
+    /// <summary>
     /// <para>
     /// Asserts that <paramref name="decorator" /> forwards all calls to <paramref name="decorated" />, meaning each
     /// public instance method of <paramref name="decorator" /> calls the respective method of
@@ -107,13 +116,4 @@ public static class DecoratorAssertions
             }
         }
     }
-
-    /// <summary>
-    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
-    /// </summary>
-    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
-        nameof(SpecimenFactory.Create),
-        BindingFlags.Public | BindingFlags.Static,
-        [typeof(ISpecimenBuilder)]
-    )!;
 }

@@ -11,6 +11,8 @@ namespace RentADeveloper.DbConnectionPlus;
 /// </summary>
 public static partial class DbConnectionExtensions
 {
+    private static readonly object configurationLockObject = new();
+
     /// <summary>
     /// Configures DbConnectionPlus.
     /// </summary>
@@ -45,6 +47,4 @@ public static partial class DbConnectionExtensions
         DbCommand command,
         IReadOnlyList<InterpolatedTemporaryTable> temporaryTables
     ) => DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
-
-    private static readonly object configurationLockObject = new();
 }

@@ -11,6 +11,49 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 /// </summary>
 public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, NpgsqlDbType> typeToNpgsqlDbType = new()
+    {
+        { typeof(bool), NpgsqlDbType.Boolean },
+        { typeof(byte), NpgsqlDbType.Smallint },
+        { typeof(byte[]), NpgsqlDbType.Bytea },
+        { typeof(char), NpgsqlDbType.Char },
+        { typeof(DateOnly), NpgsqlDbType.Date },
+        { typeof(DateTime), NpgsqlDbType.Timestamp },
+        { typeof(decimal), NpgsqlDbType.Numeric },
+        { typeof(double), NpgsqlDbType.Double },
+        { typeof(Guid), NpgsqlDbType.Uuid },
+        { typeof(short), NpgsqlDbType.Smallint },
+        { typeof(int), NpgsqlDbType.Integer },
+        { typeof(long), NpgsqlDbType.Bigint },
+        { typeof(float), NpgsqlDbType.Real },
+        { typeof(string), NpgsqlDbType.Text },
+        { typeof(TimeOnly), NpgsqlDbType.Time },
+        { typeof(TimeSpan), NpgsqlDbType.Interval },
+    };
+
+    private static readonly Dictionary<Type, string> typeToPostgreSqlDataType = new()
+    {
+        { typeof(bool), "boolean" },
+        { typeof(byte), "smallint" },
+        { typeof(byte[]), "bytea" },
+        { typeof(char), "char(1)" },
+        { typeof(DateOnly), "date" },
+        { typeof(DateTime), "timestamp without time zone" },
+        { typeof(decimal), "decimal" },
+        { typeof(double), "double precision" },
+        { typeof(Guid), "uuid" },
+        { typeof(short), "smallint" },
+        { typeof(int), "integer" },
+        { typeof(long), "bigint" },
+        { typeof(float), "real" },
+        { typeof(string), "text" },
+        { typeof(TimeOnly), "time" },
+        { typeof(TimeSpan), "interval" },
+    };
+
+    private readonly PostgreSqlEntityManipulator entityManipulator;
+    private readonly PostgreSqlTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlDatabaseAdapter" /> class.
     /// </summary>
@@ -178,47 +221,4 @@ public class PostgreSqlDatabaseAdapter : IDatabaseAdapter
 
         return cancellationToken.IsCancellationRequested && exception is OperationCanceledException;
     }
-
-    private readonly PostgreSqlEntityManipulator entityManipulator;
-    private readonly PostgreSqlTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, NpgsqlDbType> typeToNpgsqlDbType = new()
-    {
-        { typeof(bool), NpgsqlDbType.Boolean },
-        { typeof(byte), NpgsqlDbType.Smallint },
-        { typeof(byte[]), NpgsqlDbType.Bytea },
-        { typeof(char), NpgsqlDbType.Char },
-        { typeof(DateOnly), NpgsqlDbType.Date },
-        { typeof(DateTime), NpgsqlDbType.Timestamp },
-        { typeof(decimal), NpgsqlDbType.Numeric },
-        { typeof(double), NpgsqlDbType.Double },
-        { typeof(Guid), NpgsqlDbType.Uuid },
-        { typeof(short), NpgsqlDbType.Smallint },
-        { typeof(int), NpgsqlDbType.Integer },
-        { typeof(long), NpgsqlDbType.Bigint },
-        { typeof(float), NpgsqlDbType.Real },
-        { typeof(string), NpgsqlDbType.Text },
-        { typeof(TimeOnly), NpgsqlDbType.Time },
-        { typeof(TimeSpan), NpgsqlDbType.Interval },
-    };
-
-    private static readonly Dictionary<Type, string> typeToPostgreSqlDataType = new()
-    {
-        { typeof(bool), "boolean" },
-        { typeof(byte), "smallint" },
-        { typeof(byte[]), "bytea" },
-        { typeof(char), "char(1)" },
-        { typeof(DateOnly), "date" },
-        { typeof(DateTime), "timestamp without time zone" },
-        { typeof(decimal), "decimal" },
-        { typeof(double), "double precision" },
-        { typeof(Guid), "uuid" },
-        { typeof(short), "smallint" },
-        { typeof(int), "integer" },
-        { typeof(long), "bigint" },
-        { typeof(float), "real" },
-        { typeof(string), "text" },
-        { typeof(TimeOnly), "time" },
-        { typeof(TimeSpan), "interval" },
-    };
 }

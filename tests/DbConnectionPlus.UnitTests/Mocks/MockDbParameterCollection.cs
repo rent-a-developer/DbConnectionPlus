@@ -5,6 +5,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Mocks;
 /// </summary>
 public class MockDbParameterCollection : DbParameterCollection
 {
+    private readonly List<DbParameter> parameters = [];
+
     /// <inheritdoc />
     public override int Count => this.parameters.Count;
 
@@ -84,6 +86,4 @@ public class MockDbParameterCollection : DbParameterCollection
         var index = this.IndexOf(parameterName);
         return index != -1 ? index : throw new IndexOutOfRangeException();
     }
-
-    private readonly List<DbParameter> parameters = [];
 }

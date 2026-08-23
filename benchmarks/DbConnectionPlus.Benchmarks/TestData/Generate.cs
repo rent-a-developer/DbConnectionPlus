@@ -22,10 +22,60 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 // three for Double and Single, and alphabetic characters only for Char.
 public static class Generate
 {
-    public static BenchmarkEntity Single() => Create(NextId());
+    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+
+    private static readonly DateTime dateTimeBase = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Local);
+
+    // Seeded, so that every process generates the same entities.
+    private static readonly Random random = new(20260813);
+
+    // Guards random. The setup is single threaded today, but a shared unsynchronized Random silently starts
+    // returning zeroes once it is not, which would be invisible in a benchmark result.
+    private static readonly Lock syncRoot = new();
+
+    private static readonly string[] words =
+    [
+        "lorem",
+        "ipsum",
+        "dolor",
+        "sit",
+        "amet",
+        "consectetur",
+        "adipiscing",
+        "elit",
+        "sed",
+        "do",
+        "eiusmod",
+        "tempor",
+        "incididunt",
+        "ut",
+        "labore",
+        "et",
+        "dolore",
+        "magna",
+        "aliqua",
+        "enim",
+        "ad",
+        "minim",
+        "veniam",
+        "quis",
+        "nostrud",
+        "exercitation",
+        "ullamco",
+        "laboris",
+        "nisi",
+        "aliquip",
+        "ex",
+        "ea",
+        "commodo",
+    ];
+
+    private static long nextId;
 
     public static List<BenchmarkEntity> Multiple(int numberOfEntities) =>
         [.. Enumerable.Range(0, numberOfEntities).Select(_ => Single())];
+
+    public static BenchmarkEntity Single() => Create(NextId());
 
     public static BenchmarkEntity UpdateFor(BenchmarkEntity entity)
     {
@@ -69,8 +119,6 @@ public static class Generate
         }
     }
 
-    private static long NextId() => Interlocked.Increment(ref nextId);
-
     private static byte[] NextBytes(int count)
     {
         var bytes = new byte[count];
@@ -79,6 +127,8 @@ public static class Generate
 
         return bytes;
     }
+
+    private static long NextId() => Interlocked.Increment(ref nextId);
 
     private static string NextSentence()
     {
@@ -94,54 +144,4 @@ public static class Generate
 
         return string.Join(' ', sentence) + '.';
     }
-
-    private static long nextId;
-
-    // Seeded, so that every process generates the same entities.
-    private static readonly Random random = new(20260813);
-
-    // Guards random. The setup is single threaded today, but a shared unsynchronized Random silently starts
-    // returning zeroes once it is not, which would be invisible in a benchmark result.
-    private static readonly Lock syncRoot = new();
-
-    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
-
-    private static readonly string[] words =
-    [
-        "lorem",
-        "ipsum",
-        "dolor",
-        "sit",
-        "amet",
-        "consectetur",
-        "adipiscing",
-        "elit",
-        "sed",
-        "do",
-        "eiusmod",
-        "tempor",
-        "incididunt",
-        "ut",
-        "labore",
-        "et",
-        "dolore",
-        "magna",
-        "aliqua",
-        "enim",
-        "ad",
-        "minim",
-        "veniam",
-        "quis",
-        "nostrud",
-        "exercitation",
-        "ullamco",
-        "laboris",
-        "nisi",
-        "aliquip",
-        "ex",
-        "ea",
-        "commodo",
-    ];
-
-    private static readonly DateTime dateTimeBase = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Local);
 }

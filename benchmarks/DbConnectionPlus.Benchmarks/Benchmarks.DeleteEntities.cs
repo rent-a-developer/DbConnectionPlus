@@ -7,30 +7,19 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(DeleteEntities_Command),
-            nameof(DeleteEntities_Dapper),
-            nameof(DeleteEntities_DbConnectionPlus),
-        ]
-    )]
-    public void DeleteEntities__Cleanup() => this.connection.Dispose();
+    private const string DeleteEntities_Category = "DeleteEntities";
+    private const int DeleteEntities_EntitiesPerOperation = 250;
 
-    [GlobalSetup(
-        Targets = [
-            nameof(DeleteEntities_Command),
-            nameof(DeleteEntities_Dapper),
-            nameof(DeleteEntities_DbConnectionPlus),
-        ]
-    )]
-    public void DeleteEntities__Setup()
-    {
-        this.SetupDatabase(DeleteEntities_EntitiesPerOperation * DeleteEntities_OperationsPerInvoke);
+    // Batches per invocation: one reported operation is one delete call over
+    // DeleteEntities_EntitiesPerOperation entities.
+    //
+    // The transaction is rolled back rather than committed, so every invocation puts the rows back. See
+    // DeleteEntity_OperationsPerInvoke for why that matters and for the measurement showing a rollback costs
+    // what a commit costs. Twenty batches is 5 000 seeded rows, down from 75 000, and it amortizes the
+    // transaction far past the point where it could affect the ratios.
+    private const int DeleteEntities_OperationsPerInvoke = 20;
 
-        // The batches are built once here so that the benchmarks do not slice the entity list inside the measured
-        // region. The slicing was identical for all three implementations and therefore only compressed the ratios.
-        this.deleteEntities_batches = [.. this.entitiesInDb.Chunk(DeleteEntities_EntitiesPerOperation)];
-    }
+    private List<BenchmarkEntity[]> deleteEntities_batches = null!;
 
     [Benchmark(Baseline = true, OperationsPerInvoke = DeleteEntities_OperationsPerInvoke)]
     [BenchmarkCategory(DeleteEntities_Category)]
@@ -90,17 +79,28 @@ public partial class Benchmarks
         transaction.Rollback();
     }
 
-    private List<BenchmarkEntity[]> deleteEntities_batches = null!;
+    [GlobalCleanup(
+        Targets = [
+            nameof(DeleteEntities_Command),
+            nameof(DeleteEntities_Dapper),
+            nameof(DeleteEntities_DbConnectionPlus),
+        ]
+    )]
+    public void DeleteEntities__Cleanup() => this.connection.Dispose();
 
-    private const string DeleteEntities_Category = "DeleteEntities";
-    private const int DeleteEntities_EntitiesPerOperation = 250;
+    [GlobalSetup(
+        Targets = [
+            nameof(DeleteEntities_Command),
+            nameof(DeleteEntities_Dapper),
+            nameof(DeleteEntities_DbConnectionPlus),
+        ]
+    )]
+    public void DeleteEntities__Setup()
+    {
+        this.SetupDatabase(DeleteEntities_EntitiesPerOperation * DeleteEntities_OperationsPerInvoke);
 
-    // Batches per invocation: one reported operation is one delete call over
-    // DeleteEntities_EntitiesPerOperation entities.
-    //
-    // The transaction is rolled back rather than committed, so every invocation puts the rows back. See
-    // DeleteEntity_OperationsPerInvoke for why that matters and for the measurement showing a rollback costs
-    // what a commit costs. Twenty batches is 5 000 seeded rows, down from 75 000, and it amortizes the
-    // transaction far past the point where it could affect the ratios.
-    private const int DeleteEntities_OperationsPerInvoke = 20;
+        // The batches are built once here so that the benchmarks do not slice the entity list inside the measured
+        // region. The slicing was identical for all three implementations and therefore only compressed the ratios.
+        this.deleteEntities_batches = [.. this.entitiesInDb.Chunk(DeleteEntities_EntitiesPerOperation)];
+    }
 }

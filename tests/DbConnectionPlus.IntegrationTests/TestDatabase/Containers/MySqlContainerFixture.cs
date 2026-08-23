@@ -15,6 +15,10 @@ internal sealed class MySqlContainerFixture()
     : DbContainerFixture<MySqlBuilder, MySqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
         ITestDatabaseContainerFixture
 {
+    private const string Image = "mysql:latest";
+
+    private const string RootUsername = "root";
+
     /// <inheritdoc />
     public override string ConnectionString =>
         new MySqlConnectionStringBuilder
@@ -39,8 +43,4 @@ internal sealed class MySqlContainerFixture()
         new MySqlBuilder(Image)
             .WithUsername(RootUsername)
             .WithPassword(TestDatabaseContainers.Password);
-
-    private const string Image = "mysql:latest";
-
-    private const string RootUsername = "root";
 }

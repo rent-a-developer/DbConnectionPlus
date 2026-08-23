@@ -11,117 +11,6 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <inheritdoc />
-    public bool CanRetrieveStructureOfTemporaryTables => true;
-
-    /// <inheritdoc />
-    public IDatabaseAdapter DatabaseAdapter => new PostgreSqlDatabaseAdapter();
-
-    /// <inheritdoc />
-    public string DatabaseCollation => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public string DelayTwoSecondsStatement => "SELECT pg_sleep(2);";
-
-    /// <inheritdoc />
-    public bool HasUnsupportedDataType => true;
-
-    /// <inheritdoc />
-    public bool SupportsCommandExecutionWhileDataReaderIsOpen => false;
-
-    /// <inheritdoc />
-    public bool SupportsDateTimeOffset => false;
-
-    /// <inheritdoc />
-    public bool SupportsProperCommandCancellation => true;
-
-    /// <inheritdoc />
-    public bool SupportsStoredProcedures => true;
-
-    /// <inheritdoc />
-    public bool SupportsStoredProceduresReturningResultSet => false;
-
-    /// <inheritdoc />
-    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
-
-    /// <inheritdoc />
-    public DbConnection CreateConnection()
-    {
-        var connection = new NpgsqlConnection(ConnectionString);
-        connection.Open();
-        connection.ChangeDatabase(DatabaseName);
-        return connection;
-    }
-
-    /// <inheritdoc />
-    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
-        connection.Exists(
-            $"""
-            SELECT 1
-            FROM   information_schema.tables
-            WHERE  table_type = 'LOCAL TEMPORARY' AND
-                   table_name = '{tableName}'
-            """,
-            transaction,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public string GetCollationOfTemporaryTableColumn(
-        string temporaryTableName,
-        string columnName,
-        DbConnection connection
-    ) => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public string GetDataTypeOfTemporaryTableColumn(
-        string temporaryTableName,
-        string columnName,
-        DbConnection connection
-    ) =>
-        connection.QuerySingle<string>(
-            $"""
-            SELECT data_type
-            FROM   information_schema.columns
-            WHERE  table_schema LIKE 'pg_temp%' AND
-                   table_name = '{temporaryTableName}' AND
-                   column_name = '{columnName}'
-            """,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public string GetUnsupportedDataTypeLiteral() => "(1, 2)";
-
-    public void ResetDatabase()
-    {
-        using var connection = new NpgsqlConnection(ConnectionString);
-        connection.Open();
-
-        if (!isDatabasePrepared)
-        {
-            connection.ExecuteNonQuery($"DROP DATABASE IF EXISTS \"{DatabaseName}\" WITH (FORCE)");
-            connection.ExecuteNonQuery($"CREATE DATABASE \"{DatabaseName}\"");
-
-            connection.ChangeDatabase(DatabaseName);
-
-            connection.ExecuteNonQuery(CreateDatabaseObjectsSql);
-
-            isDatabasePrepared = true;
-        }
-
-        connection.ChangeDatabase(DatabaseName);
-        connection.ExecuteNonQuery(PurgeTablesSql);
-    }
-
-    /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartPostgreSqlAsync();
-
-    /// <summary>
-    /// The connection string that connects to the PostgreSQL server running in the test container.
-    /// </summary>
-    private static string ConnectionString => TestDatabaseContainers.PostgreSql.ConnectionString;
-
     private const string CreateDatabaseObjectsSql = """
         CREATE EXTENSION IF NOT EXISTS pgcrypto; -- Needed for gen_random_bytes()
 
@@ -233,4 +122,115 @@ public class PostgreSqlTestDatabaseProvider : ITestDatabaseProvider
         """;
 
     private static bool isDatabasePrepared;
+
+    /// <inheritdoc />
+    public bool CanRetrieveStructureOfTemporaryTables => true;
+
+    /// <inheritdoc />
+    public IDatabaseAdapter DatabaseAdapter => new PostgreSqlDatabaseAdapter();
+
+    /// <inheritdoc />
+    public string DatabaseCollation => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string DelayTwoSecondsStatement => "SELECT pg_sleep(2);";
+
+    /// <inheritdoc />
+    public bool HasUnsupportedDataType => true;
+
+    /// <inheritdoc />
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => false;
+
+    /// <inheritdoc />
+    public bool SupportsDateTimeOffset => false;
+
+    /// <inheritdoc />
+    public bool SupportsProperCommandCancellation => true;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProcedures => true;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProceduresReturningResultSet => false;
+
+    /// <inheritdoc />
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+
+    /// <summary>
+    /// The connection string that connects to the PostgreSQL server running in the test container.
+    /// </summary>
+    private static string ConnectionString => TestDatabaseContainers.PostgreSql.ConnectionString;
+
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartPostgreSqlAsync();
+
+    /// <inheritdoc />
+    public DbConnection CreateConnection()
+    {
+        var connection = new NpgsqlConnection(ConnectionString);
+        connection.Open();
+        connection.ChangeDatabase(DatabaseName);
+        return connection;
+    }
+
+    /// <inheritdoc />
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
+        connection.Exists(
+            $"""
+            SELECT 1
+            FROM   information_schema.tables
+            WHERE  table_type = 'LOCAL TEMPORARY' AND
+                   table_name = '{tableName}'
+            """,
+            transaction,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) =>
+        connection.QuerySingle<string>(
+            $"""
+            SELECT data_type
+            FROM   information_schema.columns
+            WHERE  table_schema LIKE 'pg_temp%' AND
+                   table_name = '{temporaryTableName}' AND
+                   column_name = '{columnName}'
+            """,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetUnsupportedDataTypeLiteral() => "(1, 2)";
+
+    public void ResetDatabase()
+    {
+        using var connection = new NpgsqlConnection(ConnectionString);
+        connection.Open();
+
+        if (!isDatabasePrepared)
+        {
+            connection.ExecuteNonQuery($"DROP DATABASE IF EXISTS \"{DatabaseName}\" WITH (FORCE)");
+            connection.ExecuteNonQuery($"CREATE DATABASE \"{DatabaseName}\"");
+
+            connection.ChangeDatabase(DatabaseName);
+
+            connection.ExecuteNonQuery(CreateDatabaseObjectsSql);
+
+            isDatabasePrepared = true;
+        }
+
+        connection.ChangeDatabase(DatabaseName);
+        connection.ExecuteNonQuery(PurgeTablesSql);
+    }
 }

@@ -23,6 +23,8 @@ public abstract class EntityManipulator_UpdateEntityTests<TTestDatabaseProvider>
     : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
+    private readonly IEntityManipulator manipulator;
+
     /// <inheritdoc />
     protected EntityManipulator_UpdateEntityTests() => this.manipulator = this.DatabaseAdapter.EntityManipulator;
 
@@ -430,6 +432,4 @@ public abstract class EntityManipulator_UpdateEntityTests<TTestDatabaseProvider>
             return Task.FromException<int>(ex);
         }
     }
-
-    private readonly IEntityManipulator manipulator;
 }

@@ -9,6 +9,9 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DbCommands;
 
 public class DbCommandBuilderTests : UnitTestsBase
 {
+    private readonly List<long> testEntityIds = Generate.Ids();
+    private readonly long testProductId = Generate.Id();
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -644,7 +647,4 @@ public class DbCommandBuilderTests : UnitTestsBase
             return Task.FromException<(DbCommand, DbCommandDisposer)>(ex);
         }
     }
-
-    private readonly List<long> testEntityIds = Generate.Ids();
-    private readonly long testProductId = Generate.Id();
 }

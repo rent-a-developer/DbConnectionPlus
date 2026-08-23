@@ -20,6 +20,15 @@ internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
     where TFixture : class, ITestDatabaseContainerFixture, new()
 {
     /// <summary>
+    /// The started - or currently starting - fixture.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Lazy{T}" /> defaults to <see cref="LazyThreadSafetyMode.ExecutionAndPublication" />, so the
+    /// task - and with it the container - is created once, no matter how many test classes ask for it.
+    /// </remarks>
+    private readonly Lazy<Task<TFixture>> fixture = new(() => CreateAndStartAsync(databaseSystemName));
+
+    /// <summary>
     /// The fixture that runs the database server.
     /// </summary>
     /// <exception cref="InvalidOperationException">The container has not been started.</exception>
@@ -79,13 +88,4 @@ internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
 
         return fixture;
     }
-
-    /// <summary>
-    /// The started - or currently starting - fixture.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Lazy{T}" /> defaults to <see cref="LazyThreadSafetyMode.ExecutionAndPublication" />, so the
-    /// task - and with it the container - is created once, no matter how many test classes ask for it.
-    /// </remarks>
-    private readonly Lazy<Task<TFixture>> fixture = new(() => CreateAndStartAsync(databaseSystemName));
 }

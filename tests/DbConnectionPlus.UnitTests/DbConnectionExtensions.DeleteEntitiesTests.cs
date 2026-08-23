@@ -3,25 +3,6 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 public class DbConnectionExtensions_DeleteEntitiesTests : UnitTestsBase
 {
     [Fact]
-    public void DeleteEntities_ShouldCallEntityManipulator()
-    {
-        var entities = Generate.Multiple<Entity>();
-        using var transaction = this.MockDbConnection.BeginTransaction();
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var numberOfAffectedRows = Generate.SmallNumber();
-
-        this.MockEntityManipulator.DeleteEntities(this.MockDbConnection, entities, transaction, cancellationToken)
-            .Returns(numberOfAffectedRows);
-
-        this.MockDbConnection.DeleteEntities(entities, transaction, cancellationToken)
-            .Should()
-            .Be(numberOfAffectedRows);
-
-        this.MockEntityManipulator.Received()
-            .DeleteEntities(this.MockDbConnection, entities, transaction, cancellationToken);
-    }
-
-    [Fact]
     public async Task DeleteEntitiesAsync_ShouldCallEntityManipulator()
     {
         var entities = Generate.Multiple<Entity>();
@@ -39,6 +20,25 @@ public class DbConnectionExtensions_DeleteEntitiesTests : UnitTestsBase
         await this
             .MockEntityManipulator.Received()
             .DeleteEntitiesAsync(this.MockDbConnection, entities, transaction, cancellationToken);
+    }
+
+    [Fact]
+    public void DeleteEntities_ShouldCallEntityManipulator()
+    {
+        var entities = Generate.Multiple<Entity>();
+        using var transaction = this.MockDbConnection.BeginTransaction();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var numberOfAffectedRows = Generate.SmallNumber();
+
+        this.MockEntityManipulator.DeleteEntities(this.MockDbConnection, entities, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
+
+        this.MockDbConnection.DeleteEntities(entities, transaction, cancellationToken)
+            .Should()
+            .Be(numberOfAffectedRows);
+
+        this.MockEntityManipulator.Received()
+            .DeleteEntities(this.MockDbConnection, entities, transaction, cancellationToken);
     }
 
     [Fact]

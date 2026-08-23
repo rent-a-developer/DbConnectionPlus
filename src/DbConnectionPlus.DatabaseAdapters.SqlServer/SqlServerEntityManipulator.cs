@@ -14,6 +14,11 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
 internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
+    private readonly SqlServerDatabaseAdapter databaseAdapter = databaseAdapter;
+    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
+
     /// <inheritdoc />
     public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
@@ -657,6 +662,81 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
     }
 
     /// <summary>
+    /// Updates the database generated properties of the provided entity from the provided data reader.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="reader">The data reader from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    private static void UpdateDatabaseGeneratedProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        DbDataReader reader,
+        object entity,
+        CancellationToken cancellationToken
+    )
+    {
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 && reader.Read())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously updates the database generated properties of the provided entity from the provided data
+    /// reader.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="reader">The data reader from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private static async Task UpdateDatabaseGeneratedPropertiesAsync(
+        EntityTypeMetadata entityTypeMetadata,
+        DbDataReader reader,
+        object entity,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0
+            && await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+        )
+        {
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates a command to delete an entity.
     /// </summary>
     /// <param name="connection">The connection to use to create the command.</param>
@@ -1035,84 +1115,4 @@ internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapt
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    /// <summary>
-    /// Updates the database generated properties of the provided entity from the provided data reader.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="reader">The data reader from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    private static void UpdateDatabaseGeneratedProperties(
-        EntityTypeMetadata entityTypeMetadata,
-        DbDataReader reader,
-        object entity,
-        CancellationToken cancellationToken
-    )
-    {
-        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 && reader.Read())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = reader.GetValue(i);
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously updates the database generated properties of the provided entity from the provided data
-    /// reader.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="reader">The data reader from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    private static async Task UpdateDatabaseGeneratedPropertiesAsync(
-        EntityTypeMetadata entityTypeMetadata,
-        DbDataReader reader,
-        object entity,
-        CancellationToken cancellationToken
-    )
-    {
-        if (
-            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0
-            && await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
-        )
-        {
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = reader.GetValue(i);
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    private readonly SqlServerDatabaseAdapter databaseAdapter = databaseAdapter;
-    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
 }

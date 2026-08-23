@@ -7,23 +7,51 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(InsertEntities_Command),
-            nameof(InsertEntities_Dapper),
-            nameof(InsertEntities_DbConnectionPlus),
-        ]
-    )]
-    public void InsertEntities__Cleanup() => this.connection.Dispose();
+    private const string InsertEntities_Category = "InsertEntities";
+    private const int InsertEntities_EntitiesPerOperation = 200;
 
-    [GlobalSetup(
-        Targets = [
-            nameof(InsertEntities_Command),
-            nameof(InsertEntities_Dapper),
-            nameof(InsertEntities_DbConnectionPlus),
-        ]
-    )]
-    public void InsertEntities__Setup() => this.SetupDatabase(0);
+    private const string InsertEntitySql = """
+        INSERT INTO Entity
+        (
+          Id,
+          BooleanValue,
+          BytesValue,
+          ByteValue,
+          CharValue,
+          DateTimeValue,
+          DecimalValue,
+          DoubleValue,
+          EnumValue,
+          Int16Value,
+          Int32Value,
+          Int64Value,
+          SingleValue,
+          StringValue
+        )
+        VALUES
+        (
+          @Id,
+          @BooleanValue,
+          @BytesValue,
+          @ByteValue,
+          @CharValue,
+          @DateTimeValue,
+          @DecimalValue,
+          @DoubleValue,
+          @EnumValue,
+          @Int16Value,
+          @Int32Value,
+          @Int64Value,
+          @SingleValue,
+          @StringValue
+        )
+        """;
+
+    private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert = Generate.Multiple(
+        InsertEntities_EntitiesPerOperation
+    );
+
+    private long insertEntities_nextId;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(InsertEntities_Category)]
@@ -81,6 +109,24 @@ public partial class Benchmarks
         this.connection.InsertEntities(this.insertEntities_entitiesToInsert);
     }
 
+    [GlobalCleanup(
+        Targets = [
+            nameof(InsertEntities_Command),
+            nameof(InsertEntities_Dapper),
+            nameof(InsertEntities_DbConnectionPlus),
+        ]
+    )]
+    public void InsertEntities__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [
+            nameof(InsertEntities_Command),
+            nameof(InsertEntities_Dapper),
+            nameof(InsertEntities_DbConnectionPlus),
+        ]
+    )]
+    public void InsertEntities__Setup() => this.SetupDatabase(0);
+
     // A fresh key per entity, because Id is the primary key and the benchmarks insert the same set of entities
     // over and over into a table that starts out empty. This runs inside the measured region, but it is a few
     // hundred nanoseconds of field writes against an operation of several milliseconds, and all three
@@ -92,50 +138,4 @@ public partial class Benchmarks
             entity.Id = ++this.insertEntities_nextId;
         }
     }
-
-    private readonly List<BenchmarkEntity> insertEntities_entitiesToInsert = Generate.Multiple(
-        InsertEntities_EntitiesPerOperation
-    );
-
-    private long insertEntities_nextId;
-
-    private const string InsertEntities_Category = "InsertEntities";
-    private const int InsertEntities_EntitiesPerOperation = 200;
-
-    private const string InsertEntitySql = """
-        INSERT INTO Entity
-        (
-          Id,
-          BooleanValue,
-          BytesValue,
-          ByteValue,
-          CharValue,
-          DateTimeValue,
-          DecimalValue,
-          DoubleValue,
-          EnumValue,
-          Int16Value,
-          Int32Value,
-          Int64Value,
-          SingleValue,
-          StringValue
-        )
-        VALUES
-        (
-          @Id,
-          @BooleanValue,
-          @BytesValue,
-          @ByteValue,
-          @CharValue,
-          @DateTimeValue,
-          @DecimalValue,
-          @DoubleValue,
-          @EnumValue,
-          @Int16Value,
-          @Int32Value,
-          @Int64Value,
-          @SingleValue,
-          @StringValue
-        )
-        """;
 }

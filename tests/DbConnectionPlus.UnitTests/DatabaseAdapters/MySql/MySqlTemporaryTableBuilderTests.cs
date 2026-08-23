@@ -4,17 +4,7 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.MySql;
 
 public class MySqlTemporaryTableBuilderTests : UnitTestsBase
 {
-    [Fact]
-    public void BuildTemporaryTable_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
-    {
-        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int)))
-            .Should()
-            .Throw<ArgumentException>();
-
-        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int)))
-            .Should()
-            .Throw<ArgumentException>();
-    }
+    private readonly MySqlTemporaryTableBuilder builder = new(new());
 
     [Fact]
     public async Task BuildTemporaryTableAsync_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
@@ -33,6 +23,18 @@ public class MySqlTemporaryTableBuilderTests : UnitTestsBase
     }
 
     [Fact]
+    public void BuildTemporaryTable_NameIsNullOrEmptyOrWhitespace_ShouldThrow()
+    {
+        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, "", new[] { 1 }, typeof(int)))
+            .Should()
+            .Throw<ArgumentException>();
+
+        Invoking(() => this.builder.BuildTemporaryTable(this.MockDbConnection, null, " ", new[] { 1 }, typeof(int)))
+            .Should()
+            .Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
         ArgumentNullGuardVerifier.Verify(() => new MySqlTemporaryTableBuilder(new()));
@@ -45,6 +47,4 @@ public class MySqlTemporaryTableBuilderTests : UnitTestsBase
             this.builder.BuildTemporaryTableAsync(this.MockDbConnection, null, "Name", new[] { 1 }, typeof(int))
         );
     }
-
-    private readonly MySqlTemporaryTableBuilder builder = new(new());
 }

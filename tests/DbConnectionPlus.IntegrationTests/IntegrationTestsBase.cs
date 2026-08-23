@@ -36,6 +36,26 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
         IAsyncDisposable
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
+    /// <summary>
+    /// The database adapter for the test database of the currently running integration test.
+    /// </summary>
+    /// <remarks>
+    /// The adapter rather than the provider: an interface that declares a static abstract member - which
+    /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
+    /// </remarks>
+#pragma warning disable S2743
+    private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
+#pragma warning restore S2743
+
+    /// <summary>
+    /// The connection to the test database for the currently running integration test.
+    /// </summary>
+#pragma warning disable S2743
+    private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
+#pragma warning restore S2743
+
+    private bool logDbCommands;
+
     protected IntegrationTestsBase()
     {
         // Ensure consistent culture for tests.
@@ -86,23 +106,20 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// </summary>
     public bool DelayNextDbCommand { get; set; }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        GC.SuppressFinalize(this);
+    /// <summary>
+    /// The connection to the test database.
+    /// </summary>
+    protected DbConnection Connection { get; }
 
-        this.Connection.Close();
-        this.Connection.Dispose();
-    }
+    /// <summary>
+    /// The DbConnectionPlus database adapter for the test database.
+    /// </summary>
+    protected IDatabaseAdapter DatabaseAdapter => this.TestDatabaseProvider.DatabaseAdapter;
 
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        GC.SuppressFinalize(this);
-
-        await this.Connection.CloseAsync();
-        await this.Connection.DisposeAsync();
-    }
+    /// <summary>
+    /// The provider for the test database.
+    /// </summary>
+    protected TTestDatabaseProvider TestDatabaseProvider { get; }
 
     /// <summary>
     /// Returns the specified parameter name with the appropriate prefix (e.g. "@" for SQL Server or ":" for Oracle)
@@ -134,20 +151,36 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     public static string QT(string tableName) =>
         currentDatabaseAdapter.Value!.QuoteTemporaryTableName(tableName, currentTestDatabaseConnection.Value!);
 
-    /// <summary>
-    /// The connection to the test database.
-    /// </summary>
-    protected DbConnection Connection { get; }
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        this.Connection.Close();
+        this.Connection.Dispose();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+
+        await this.Connection.CloseAsync();
+        await this.Connection.DisposeAsync();
+    }
 
     /// <summary>
-    /// The DbConnectionPlus database adapter for the test database.
+    /// Creates a <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.
     /// </summary>
-    protected IDatabaseAdapter DatabaseAdapter => this.TestDatabaseProvider.DatabaseAdapter;
-
-    /// <summary>
-    /// The provider for the test database.
-    /// </summary>
-    protected TTestDatabaseProvider TestDatabaseProvider { get; }
+    /// <returns>A <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.</returns>
+    protected static CancellationToken CreateCancellationTokenThatIsCancelledAfter100Milliseconds()
+    {
+#pragma warning disable S2930
+        var cancellationTokenSource = new CancellationTokenSource();
+#pragma warning restore S2930
+        cancellationTokenSource.CancelAfter(100);
+        return cancellationTokenSource.Token;
+    }
 
     /// <summary>
     /// Creates the specified number of entities of the type <typeparamref name="T" /> and inserts them into the test
@@ -353,37 +386,4 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             Console.WriteLine(logMessageBuilder.ToString());
         }
     }
-
-    /// <summary>
-    /// Creates a <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.
-    /// </summary>
-    /// <returns>A <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.</returns>
-    protected static CancellationToken CreateCancellationTokenThatIsCancelledAfter100Milliseconds()
-    {
-#pragma warning disable S2930
-        var cancellationTokenSource = new CancellationTokenSource();
-#pragma warning restore S2930
-        cancellationTokenSource.CancelAfter(100);
-        return cancellationTokenSource.Token;
-    }
-
-    private bool logDbCommands;
-
-    /// <summary>
-    /// The connection to the test database for the currently running integration test.
-    /// </summary>
-#pragma warning disable S2743
-    private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
-#pragma warning restore S2743
-
-    /// <summary>
-    /// The database adapter for the test database of the currently running integration test.
-    /// </summary>
-    /// <remarks>
-    /// The adapter rather than the provider: an interface that declares a static abstract member - which
-    /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
-    /// </remarks>
-#pragma warning disable S2743
-    private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
-#pragma warning restore S2743
 }

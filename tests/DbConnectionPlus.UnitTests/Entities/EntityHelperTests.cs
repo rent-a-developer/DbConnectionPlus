@@ -8,6 +8,15 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Entities;
 
 public class EntityHelperTests : UnitTestsBase
 {
+    /// <summary>
+    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
+    /// </summary>
+    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
+        nameof(SpecimenFactory.Create),
+        BindingFlags.Public | BindingFlags.Static,
+        [typeof(ISpecimenBuilder)]
+    )!;
+
     [Fact]
     public void FindCompatibleConstructor_MatchingPrivateConstructor_ShouldReturnPrivateConstructor()
     {
@@ -53,6 +62,23 @@ public class EntityHelperTests : UnitTestsBase
             .BeNull();
 
     [Fact]
+    public void FindCompatibleConstructor_NamesMatchWithDifferentCasing_TypesMatch_ShouldReturnConstructor()
+    {
+        var constructor = EntityHelper.FindCompatibleConstructor(
+            typeof(ItemWithConstructor),
+            [("A", typeof(short)), ("B", typeof(int)), ("C", typeof(long))]
+        );
+
+        constructor.Should().NotBeNull();
+
+        constructor
+            .GetParameters()
+            .Select(a => a.ParameterType)
+            .Should()
+            .BeEquivalentTo([typeof(short), typeof(int), typeof(long)]);
+    }
+
+    [Fact]
     public void FindCompatibleConstructor_NamesMatch_TypesAreCompatible_ShouldReturnConstructor()
     {
         var constructor = EntityHelper.FindCompatibleConstructor(
@@ -94,23 +120,6 @@ public class EntityHelperTests : UnitTestsBase
             .Select(a => (a.Name, a.ParameterType))
             .Should()
             .BeEquivalentTo([("a", typeof(short)), ("b", typeof(int)), ("c", typeof(long))]);
-    }
-
-    [Fact]
-    public void FindCompatibleConstructor_NamesMatchWithDifferentCasing_TypesMatch_ShouldReturnConstructor()
-    {
-        var constructor = EntityHelper.FindCompatibleConstructor(
-            typeof(ItemWithConstructor),
-            [("A", typeof(short)), ("B", typeof(int)), ("C", typeof(long))]
-        );
-
-        constructor.Should().NotBeNull();
-
-        constructor
-            .GetParameters()
-            .Select(a => a.ParameterType)
-            .Should()
-            .BeEquivalentTo([typeof(short), typeof(int), typeof(long)]);
     }
 
     [Fact]
@@ -419,43 +428,6 @@ public class EntityHelperTests : UnitTestsBase
             );
 
     [Fact]
-    public void ShouldGuardAgainstNullArguments()
-    {
-        (string Name, Type Type)[] constructorParameters =
-        [
-            ("a", typeof(short)),
-            ("b", typeof(int)),
-            ("c", typeof(long)),
-        ];
-
-        ArgumentNullGuardVerifier.Verify(() =>
-            EntityHelper.FindCompatibleConstructor(typeof(ItemWithConstructor), constructorParameters)
-        );
-        ArgumentNullGuardVerifier.Verify(() => EntityHelper.FindParameterlessConstructor(typeof(ItemWithConstructor)));
-        ArgumentNullGuardVerifier.Verify(() => EntityHelper.GetEntityTypeMetadata(typeof(Entity)));
-    }
-
-    [Fact]
-    public void GetEntityTypeMetadata_ShouldNotInvokePropertyAccessorsWhileCreatingMetadata()
-    {
-        // Every accessor of this entity throws, so building its metadata would fail if the accessors were
-        // resolved and invoked eagerly.
-        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithThrowingAccessors));
-
-        var property = metadata.MappedProperties.Single(p =>
-            p.PropertyName == nameof(EntityWithThrowingAccessors.Value)
-        );
-
-        property.PropertyGetter.Should().NotBeNull();
-
-        // The accessor is real - it simply had not been called yet.
-        Invoking(() => property.PropertyGetter!(new EntityWithThrowingAccessors()))
-            .Should()
-            .Throw<InvalidOperationException>()
-            .WithMessage("Getter was invoked.");
-    }
-
-    [Fact]
     public void GetEntityTypeMetadata_PropertyAccessors_ShouldWorkAcrossRepeatedCalls()
     {
         var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithNonPublicSetter));
@@ -495,25 +467,41 @@ public class EntityHelperTests : UnitTestsBase
         entity.Name.Should().Be("Ada");
     }
 
-    /// <summary>
-    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
-    /// </summary>
-    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
-        nameof(SpecimenFactory.Create),
-        BindingFlags.Public | BindingFlags.Static,
-        [typeof(ISpecimenBuilder)]
-    )!;
-
-    /// <summary>
-    /// An entity whose property accessors throw, used to prove that creating metadata does not invoke them.
-    /// </summary>
-    private sealed class EntityWithThrowingAccessors
+    [Fact]
+    public void GetEntityTypeMetadata_ShouldNotInvokePropertyAccessorsWhileCreatingMetadata()
     {
-        public int Value
-        {
-            get => throw new InvalidOperationException("Getter was invoked.");
-            set => throw new InvalidOperationException("Setter was invoked.");
-        }
+        // Every accessor of this entity throws, so building its metadata would fail if the accessors were
+        // resolved and invoked eagerly.
+        var metadata = EntityHelper.GetEntityTypeMetadata(typeof(EntityWithThrowingAccessors));
+
+        var property = metadata.MappedProperties.Single(p =>
+            p.PropertyName == nameof(EntityWithThrowingAccessors.Value)
+        );
+
+        property.PropertyGetter.Should().NotBeNull();
+
+        // The accessor is real - it simply had not been called yet.
+        Invoking(() => property.PropertyGetter!(new EntityWithThrowingAccessors()))
+            .Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Getter was invoked.");
+    }
+
+    [Fact]
+    public void ShouldGuardAgainstNullArguments()
+    {
+        (string Name, Type Type)[] constructorParameters =
+        [
+            ("a", typeof(short)),
+            ("b", typeof(int)),
+            ("c", typeof(long)),
+        ];
+
+        ArgumentNullGuardVerifier.Verify(() =>
+            EntityHelper.FindCompatibleConstructor(typeof(ItemWithConstructor), constructorParameters)
+        );
+        ArgumentNullGuardVerifier.Verify(() => EntityHelper.FindParameterlessConstructor(typeof(ItemWithConstructor)));
+        ArgumentNullGuardVerifier.Verify(() => EntityHelper.GetEntityTypeMetadata(typeof(Entity)));
     }
 
     /// <summary>
@@ -528,5 +516,17 @@ public class EntityHelperTests : UnitTestsBase
 #pragma warning disable RCS1170
         public int Value { get; private set; }
 #pragma warning restore RCS1170
+    }
+
+    /// <summary>
+    /// An entity whose property accessors throw, used to prove that creating metadata does not invoke them.
+    /// </summary>
+    private sealed class EntityWithThrowingAccessors
+    {
+        public int Value
+        {
+            get => throw new InvalidOperationException("Getter was invoked.");
+            set => throw new InvalidOperationException("Setter was invoked.");
+        }
     }
 }

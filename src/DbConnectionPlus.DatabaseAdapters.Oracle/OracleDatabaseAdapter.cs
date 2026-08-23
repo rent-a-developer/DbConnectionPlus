@@ -11,6 +11,52 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// </summary>
 public class OracleDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, DbType> typeToDbType = new()
+    {
+        { typeof(bool), DbType.Boolean },
+        { typeof(byte), DbType.Byte },
+        { typeof(byte[]), DbType.Binary },
+        { typeof(char), DbType.StringFixedLength },
+        { typeof(DateOnly), DbType.Date },
+        { typeof(DateTime), DbType.DateTime },
+        { typeof(DateTimeOffset), DbType.DateTimeOffset },
+        { typeof(decimal), DbType.Decimal },
+        { typeof(double), DbType.Double },
+        { typeof(Guid), DbType.Guid },
+        { typeof(short), DbType.Int16 },
+        { typeof(int), DbType.Int32 },
+        { typeof(long), DbType.Int64 },
+        { typeof(float), DbType.Single },
+        { typeof(string), DbType.String },
+        { typeof(TimeOnly), DbType.Time },
+        { typeof(TimeSpan), DbType.Time },
+    };
+
+    private static readonly Dictionary<Type, string> typeToOracleDataType = new()
+    {
+        { typeof(bool), "NUMBER(1)" },
+        { typeof(byte), "NUMBER(3)" },
+        { typeof(byte[]), "RAW(2000)" },
+        { typeof(char), "CHAR(1)" },
+        { typeof(DateOnly), "DATE" },
+        { typeof(DateTime), "TIMESTAMP" },
+        { typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE" },
+        { typeof(decimal), "NUMBER(28,10)" },
+        { typeof(double), "BINARY_DOUBLE" },
+        { typeof(Guid), "RAW(16)" },
+        { typeof(short), "NUMBER(5)" },
+        { typeof(int), "NUMBER(10)" },
+        { typeof(long), "NUMBER(19)" },
+        { typeof(float), "BINARY_FLOAT" },
+        { typeof(string), "NVARCHAR2(2000)" },
+        { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
+        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" },
+    };
+
+    private readonly OracleEntityManipulator entityManipulator;
+    private readonly ConcurrentDictionary<string, bool> supportsTemporaryTablesPerConnectionString = [];
+    private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OracleDatabaseAdapter" /> class.
     /// </summary>
@@ -19,6 +65,34 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         this.entityManipulator = new(this);
         this.temporaryTableBuilder = new(this);
     }
+
+    /// <summary>
+    /// <para>
+    /// Determines whether the temporary tables feature of DbConnectionPlus
+    /// (<see cref="DbConnectionExtensions.TemporaryTable{T}" />) is allowed to be used with Oracle databases.
+    /// Disabled by default.
+    /// </para>
+    /// <para>
+    /// WARNING:
+    /// Before enabling this feature, read the following note:
+    /// When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
+    /// following implications:
+    /// The temporary tables feature of DbConnectionPlus creates private temporary tables and drops them after use.
+    /// Unfortunately DDL statements (like creating and dropping a private temporary table) cause an implicit commit of
+    /// the current transaction in an Oracle database.
+    /// That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
+    /// committed when the temporary table is created and again when it is dropped!
+    /// </para>
+    /// <para>
+    /// Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
+    /// explicit transactions or at least be aware of the implications.
+    /// You have been warned!
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
+    /// </remarks>
+    public static bool AllowTemporaryTables { get; set; }
 
     /// <inheritdoc />
     public IEntityManipulator EntityManipulator => this.entityManipulator;
@@ -239,34 +313,6 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <summary>
-    /// <para>
-    /// Determines whether the temporary tables feature of DbConnectionPlus
-    /// (<see cref="DbConnectionExtensions.TemporaryTable{T}" />) is allowed to be used with Oracle databases.
-    /// Disabled by default.
-    /// </para>
-    /// <para>
-    /// WARNING:
-    /// Before enabling this feature, read the following note:
-    /// When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
-    /// following implications:
-    /// The temporary tables feature of DbConnectionPlus creates private temporary tables and drops them after use.
-    /// Unfortunately DDL statements (like creating and dropping a private temporary table) cause an implicit commit of
-    /// the current transaction in an Oracle database.
-    /// That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
-    /// committed when the temporary table is created and again when it is dropped!
-    /// </para>
-    /// <para>
-    /// Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
-    /// explicit transactions or at least be aware of the implications.
-    /// You have been warned!
-    /// </para>
-    /// </summary>
-    /// <remarks>
-    /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
-    /// </remarks>
-    public static bool AllowTemporaryTables { get; set; }
-
-    /// <summary>
     /// Throws an <see cref="InvalidOperationException" /> indicating that the temporary tables feature of
     /// DbConnectionPlus is disabled for Oracle databases.
     /// </summary>
@@ -278,50 +324,4 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
                 + "to true, but be sure to read the documentation first, because enabling this feature has implications "
                 + "for transaction management."
         );
-
-    private readonly OracleEntityManipulator entityManipulator;
-    private readonly ConcurrentDictionary<string, bool> supportsTemporaryTablesPerConnectionString = [];
-    private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, DbType> typeToDbType = new()
-    {
-        { typeof(bool), DbType.Boolean },
-        { typeof(byte), DbType.Byte },
-        { typeof(byte[]), DbType.Binary },
-        { typeof(char), DbType.StringFixedLength },
-        { typeof(DateOnly), DbType.Date },
-        { typeof(DateTime), DbType.DateTime },
-        { typeof(DateTimeOffset), DbType.DateTimeOffset },
-        { typeof(decimal), DbType.Decimal },
-        { typeof(double), DbType.Double },
-        { typeof(Guid), DbType.Guid },
-        { typeof(short), DbType.Int16 },
-        { typeof(int), DbType.Int32 },
-        { typeof(long), DbType.Int64 },
-        { typeof(float), DbType.Single },
-        { typeof(string), DbType.String },
-        { typeof(TimeOnly), DbType.Time },
-        { typeof(TimeSpan), DbType.Time },
-    };
-
-    private static readonly Dictionary<Type, string> typeToOracleDataType = new()
-    {
-        { typeof(bool), "NUMBER(1)" },
-        { typeof(byte), "NUMBER(3)" },
-        { typeof(byte[]), "RAW(2000)" },
-        { typeof(char), "CHAR(1)" },
-        { typeof(DateOnly), "DATE" },
-        { typeof(DateTime), "TIMESTAMP" },
-        { typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE" },
-        { typeof(decimal), "NUMBER(28,10)" },
-        { typeof(double), "BINARY_DOUBLE" },
-        { typeof(Guid), "RAW(16)" },
-        { typeof(short), "NUMBER(5)" },
-        { typeof(int), "NUMBER(10)" },
-        { typeof(long), "NUMBER(19)" },
-        { typeof(float), "BINARY_FLOAT" },
-        { typeof(string), "NVARCHAR2(2000)" },
-        { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
-        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" },
-    };
 }

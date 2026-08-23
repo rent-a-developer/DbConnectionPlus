@@ -10,6 +10,12 @@ namespace RentADeveloper.DbConnectionPlus.DbCommands;
 /// </summary>
 internal class DbCommandDisposer : IDisposable, IAsyncDisposable
 {
+    private readonly CancellationTokenRegistration cancellationTokenRegistration;
+    private readonly DbCommand command;
+    private readonly TemporaryTableDisposer[] temporaryTableDisposers;
+
+    private bool isDisposed;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DbCommandDisposer" /> class.
     /// </summary>
@@ -90,10 +96,4 @@ internal class DbCommandDisposer : IDisposable, IAsyncDisposable
             await tableDisposer.DisposeAsync().ConfigureAwait(false);
         }
     }
-
-    private readonly CancellationTokenRegistration cancellationTokenRegistration;
-    private readonly DbCommand command;
-    private readonly TemporaryTableDisposer[] temporaryTableDisposers;
-
-    private bool isDisposed;
 }

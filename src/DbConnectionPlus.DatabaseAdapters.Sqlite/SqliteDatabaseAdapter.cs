@@ -10,6 +10,30 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 /// </summary>
 public class SqliteDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToSqliteDataType = new()
+    {
+        { typeof(bool), "INTEGER" },
+        { typeof(byte), "INTEGER" },
+        { typeof(byte[]), "BLOB" },
+        { typeof(char), "TEXT" },
+        { typeof(DateOnly), "TEXT" },
+        { typeof(DateTime), "TEXT" },
+        { typeof(DateTimeOffset), "TEXT" },
+        { typeof(decimal), "TEXT" },
+        { typeof(double), "REAL" },
+        { typeof(Guid), "TEXT" },
+        { typeof(short), "INTEGER" },
+        { typeof(int), "INTEGER" },
+        { typeof(long), "INTEGER" },
+        { typeof(float), "REAL" },
+        { typeof(string), "TEXT" },
+        { typeof(TimeOnly), "TEXT" },
+        { typeof(TimeSpan), "TEXT" },
+    };
+
+    private readonly SqliteEntityManipulator entityManipulator;
+    private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseAdapter" /> class.
     /// </summary>
@@ -118,28 +142,4 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
         // SQLite does not support proper statement cancellation.
         return false;
     }
-
-    private readonly SqliteEntityManipulator entityManipulator;
-    private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, string> typeToSqliteDataType = new()
-    {
-        { typeof(bool), "INTEGER" },
-        { typeof(byte), "INTEGER" },
-        { typeof(byte[]), "BLOB" },
-        { typeof(char), "TEXT" },
-        { typeof(DateOnly), "TEXT" },
-        { typeof(DateTime), "TEXT" },
-        { typeof(DateTimeOffset), "TEXT" },
-        { typeof(decimal), "TEXT" },
-        { typeof(double), "REAL" },
-        { typeof(Guid), "TEXT" },
-        { typeof(short), "INTEGER" },
-        { typeof(int), "INTEGER" },
-        { typeof(long), "INTEGER" },
-        { typeof(float), "REAL" },
-        { typeof(string), "TEXT" },
-        { typeof(TimeOnly), "TEXT" },
-        { typeof(TimeSpan), "TEXT" },
-    };
 }

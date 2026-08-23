@@ -5,10 +5,19 @@ namespace RentADeveloper.DbConnectionPlus.Configuration;
 /// </summary>
 public sealed class DbConnectionPlusConfiguration : IFreezable
 {
+    private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
+    private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = [];
+    private bool isFrozen;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DbConnectionPlusConfiguration" /> class.
     /// </summary>
     internal DbConnectionPlusConfiguration() { }
+
+    /// <summary>
+    /// The singleton instance of <see cref="DbConnectionPlusConfiguration" />.
+    /// </summary>
+    public static DbConnectionPlusConfiguration Instance { get; internal set; } = new();
 
     /// <summary>
     /// <para>
@@ -117,22 +126,6 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         this.databaseAdapters[typeof(TConnection)] = adapter;
     }
 
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
-        {
-            entityTypeBuilder.Freeze();
-        }
-    }
-
-    /// <summary>
-    /// The singleton instance of <see cref="DbConnectionPlusConfiguration" />.
-    /// </summary>
-    public static DbConnectionPlusConfiguration Instance { get; internal set; } = new();
-
     /// <summary>
     /// Retrieves the database adapter associated with the connection type <paramref name="connectionType" />.
     /// </summary>
@@ -182,7 +175,14 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         }
     }
 
-    private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
-    private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = [];
-    private bool isFrozen;
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
+        {
+            entityTypeBuilder.Freeze();
+        }
+    }
 }

@@ -9,6 +9,19 @@ namespace RentADeveloper.DbConnectionPlus.Configuration;
 /// <typeparam name="TEntity">The type of the entity being configured.</typeparam>
 public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
 {
+    private readonly ConcurrentDictionary<string, IEntityPropertyBuilder> propertyBuilders = new();
+    private bool isFrozen;
+    private string? tableName;
+
+    /// <inheritdoc />
+    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
+
+    /// <inheritdoc />
+    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders => this.propertyBuilders;
+
+    /// <inheritdoc />
+    string? IEntityTypeBuilder.TableName => this.tableName;
+
     /// <summary>
     /// Gets a builder for configuring the specified property.
     /// </summary>
@@ -60,38 +73,6 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
         return this;
     }
 
-    /// <inheritdoc />
-    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
-
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var propertyBuilder in this.propertyBuilders.Values)
-        {
-            propertyBuilder.Freeze();
-        }
-    }
-
-    /// <inheritdoc />
-    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders => this.propertyBuilders;
-
-    /// <inheritdoc />
-    string? IEntityTypeBuilder.TableName => this.tableName;
-
-    /// <summary>
-    /// Ensures this instance is not frozen.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">This object is already frozen.</exception>
-    private void EnsureNotFrozen()
-    {
-        if (this.isFrozen)
-        {
-            ThrowHelper.ThrowConfigurationIsFrozenException();
-        }
-    }
-
     /// <summary>
     /// Gets the name of the property accessed in the specified property access expression.
     /// </summary>
@@ -109,7 +90,26 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
                 nameof(propertyExpression)
             );
 
-    private readonly ConcurrentDictionary<string, IEntityPropertyBuilder> propertyBuilders = new();
-    private bool isFrozen;
-    private string? tableName;
+    /// <summary>
+    /// Ensures this instance is not frozen.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">This object is already frozen.</exception>
+    private void EnsureNotFrozen()
+    {
+        if (this.isFrozen)
+        {
+            ThrowHelper.ThrowConfigurationIsFrozenException();
+        }
+    }
+
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var propertyBuilder in this.propertyBuilders.Values)
+        {
+            propertyBuilder.Freeze();
+        }
+    }
 }

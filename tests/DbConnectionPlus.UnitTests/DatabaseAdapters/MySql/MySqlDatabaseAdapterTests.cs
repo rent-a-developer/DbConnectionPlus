@@ -4,6 +4,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.MySql;
 
 public class MySqlDatabaseAdapterTests : UnitTestsBase
 {
+    private readonly MySqlDatabaseAdapter adapter = new();
+
     [Fact]
     public void BindParameterValue_BytesValue_ShouldSetDbTypeAndValue()
     {
@@ -177,6 +179,4 @@ public class MySqlDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void WasSqlStatementCancelledByCancellationToken_ShouldAlwaysReturnFalse() =>
         this.adapter.WasSqlStatementCancelledByCancellationToken(new(), CancellationToken.None).Should().BeFalse();
-
-    private readonly MySqlDatabaseAdapter adapter = new();
 }

@@ -5,6 +5,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Oracle;
 
 public class OracleDatabaseAdapterTests : UnitTestsBase
 {
+    private readonly OracleDatabaseAdapter adapter = new();
+
     [Fact]
     public void AllowTemporaryTables_ShouldReturnFalsePerDefault() =>
         OracleDatabaseAdapter.AllowTemporaryTables.Should().BeFalse();
@@ -336,6 +338,4 @@ public class OracleDatabaseAdapterTests : UnitTestsBase
 
         this.adapter.TemporaryTableBuilder.Should().BeOfType<OracleTemporaryTableBuilder>();
     }
-
-    private readonly OracleDatabaseAdapter adapter = new();
 }

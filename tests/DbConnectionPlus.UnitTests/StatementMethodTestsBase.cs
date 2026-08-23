@@ -29,6 +29,25 @@ public abstract class StatementMethodTestsBase(
     > syncTestMethod
 ) : UnitTestsBase
 {
+    private readonly Func<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken,
+        Task
+    > asyncTestMethod = asyncTestMethod;
+
+    private readonly Action<
+        DbConnection,
+        InterpolatedSqlStatement,
+        DbTransaction?,
+        TimeSpan?,
+        CommandType,
+        CancellationToken
+    > syncTestMethod = syncTestMethod;
+
     [Fact]
     public async Task AsyncMethod_ShouldUseCommandTimeout()
     {
@@ -150,23 +169,4 @@ public abstract class StatementMethodTestsBase(
                 Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
             );
     }
-
-    private readonly Func<
-        DbConnection,
-        InterpolatedSqlStatement,
-        DbTransaction?,
-        TimeSpan?,
-        CommandType,
-        CancellationToken,
-        Task
-    > asyncTestMethod = asyncTestMethod;
-
-    private readonly Action<
-        DbConnection,
-        InterpolatedSqlStatement,
-        DbTransaction?,
-        TimeSpan?,
-        CommandType,
-        CancellationToken
-    > syncTestMethod = syncTestMethod;
 }

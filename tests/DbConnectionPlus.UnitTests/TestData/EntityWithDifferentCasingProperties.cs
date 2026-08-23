@@ -5,8 +5,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public record EntityWithDifferentCasingProperties
 {
     public bool BooleanVALUE { get; set; }
-    public byte[] BytesVALUE { get; set; } = null!;
     public byte ByteVALUE { get; set; }
+    public byte[] BytesVALUE { get; set; } = null!;
     public char CharVALUE { get; set; }
     public DateOnly DateOnlyVALUE { get; set; }
     public DateTime DateTimeVALUE { get; set; }

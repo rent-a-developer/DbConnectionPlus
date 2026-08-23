@@ -10,13 +10,6 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Extensions;
 public class ObjectExtensionsTests : UnitTestsBase
 {
     [Fact]
-    public void ToDebugString_ShouldUseToStringForUnhandledTypes() =>
-        new Item("A")
-            .ToDebugString()
-            .Should()
-            .Be("'Item A' (RentADeveloper.DbConnectionPlus.UnitTests.Extensions.ObjectExtensionsTests+Item)");
-
-    [Fact]
     public void ToDebugString_ShouldRenderSequencesElementByElement()
     {
         new List<string> { "A", "B" }
@@ -35,22 +28,6 @@ public class ObjectExtensionsTests : UnitTestsBase
             .Be("'[[1,2],[3]]' (System.Int32[][])");
 
         Array.Empty<int>().ToDebugString().Should().Be("'[]' (System.Int32[])");
-    }
-
-    [Fact]
-    public void ToDebugString_ShouldTruncateSelfReferencingSequencesInsteadOfRecursingForever()
-    {
-        var values = new List<object?> { 1 };
-
-        values.Add(values);
-
-        // The depth bound replaces the cycle handling that the previous JsonSerializer-based implementation got
-        // from ReferenceHandler.IgnoreCycles. What matters is that this terminates at all; the exact nesting
-        // depth at which it stops is an implementation detail.
-        var debugString = values.ToDebugString();
-
-        debugString.Should().StartWith("'[1,[1,[1,");
-        debugString.Should().Contain("[...]");
     }
 
     [Fact]
@@ -138,6 +115,29 @@ public class ObjectExtensionsTests : UnitTestsBase
                     + "(RentADeveloper.DbConnectionPlus.UnitTests.TestData.EntityWithEnumStoredAsString)"
             );
     }
+
+    [Fact]
+    public void ToDebugString_ShouldTruncateSelfReferencingSequencesInsteadOfRecursingForever()
+    {
+        var values = new List<object?> { 1 };
+
+        values.Add(values);
+
+        // The depth bound replaces the cycle handling that the previous JsonSerializer-based implementation got
+        // from ReferenceHandler.IgnoreCycles. What matters is that this terminates at all; the exact nesting
+        // depth at which it stops is an implementation detail.
+        var debugString = values.ToDebugString();
+
+        debugString.Should().StartWith("'[1,[1,[1,");
+        debugString.Should().Contain("[...]");
+    }
+
+    [Fact]
+    public void ToDebugString_ShouldUseToStringForUnhandledTypes() =>
+        new Item("A")
+            .ToDebugString()
+            .Should()
+            .Be("'Item A' (RentADeveloper.DbConnectionPlus.UnitTests.Extensions.ObjectExtensionsTests+Item)");
 
     private sealed class Item(string id)
     {

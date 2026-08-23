@@ -18,6 +18,17 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public static class Generate
 {
     /// <summary>
+    /// The characters used for Char generation.
+    /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
+    /// certain characters.
+    /// </summary>
+    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+
+    private static readonly Faker faker;
+    private static readonly Fixture fixture;
+    private static long entityId = 1;
+
+    /// <summary>
     /// Initializes the <see cref="Generate" /> class.
     /// </summary>
     static Generate()
@@ -297,17 +308,6 @@ public static class Generate
             property.PropertySetter!(targetEntity!, property.PropertyGetter!(sourceEntity!));
         }
     }
-
-    /// <summary>
-    /// The characters used for Char generation.
-    /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
-    /// certain characters.
-    /// </summary>
-    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
-
-    private static readonly Faker faker;
-    private static readonly Fixture fixture;
-    private static long entityId = 1;
 
     /// <summary>
     /// An AutoFixture customization that excludes properties that are ignored in the entity model from being populated

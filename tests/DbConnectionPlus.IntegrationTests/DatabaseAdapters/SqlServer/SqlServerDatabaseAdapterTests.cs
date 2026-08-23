@@ -6,6 +6,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.SqlS
 
 public class SqlServerDatabaseAdapterTests : IntegrationTestsBase<SqlServerTestDatabaseProvider>
 {
+    private readonly SqlServerDatabaseAdapter adapter = new();
+
     [Fact]
     public void SupportsTemporaryTables_ShouldReturnTrue() =>
         this.adapter.SupportsTemporaryTables(this.Connection).Should().BeTrue();
@@ -35,6 +37,4 @@ public class SqlServerDatabaseAdapterTests : IntegrationTestsBase<SqlServerTestD
 
         this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None).Should().BeFalse();
     }
-
-    private readonly SqlServerDatabaseAdapter adapter = new();
 }

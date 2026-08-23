@@ -30,6 +30,28 @@ public class EntityTypeBuilderTests : UnitTestsBase
     }
 
     [Fact]
+    public void PropertyBuilders_ShouldGetBuildersOfConfiguredProperties()
+    {
+        var builder = new EntityTypeBuilder<Entity>();
+
+        builder.Property(a => a.Id).IsKey();
+        builder.Property(a => a.StringValue).IsComputed();
+        builder.Property(a => a.Int64Value).IsIgnored();
+
+        var propertyBuilders = ((IEntityTypeBuilder)builder).PropertyBuilders;
+
+        propertyBuilders.Should().HaveCount(3);
+
+        propertyBuilders.Should().ContainKeys("Id", "StringValue", "Int64Value");
+
+        propertyBuilders["Id"].Should().BeSameAs(builder.Property(a => a.Id));
+
+        propertyBuilders["StringValue"].Should().BeSameAs(builder.Property(a => a.StringValue));
+
+        propertyBuilders["Int64Value"].Should().BeSameAs(builder.Property(a => a.Int64Value));
+    }
+
+    [Fact]
     public void Property_InvalidExpression_ShouldThrow()
     {
         var builder = new EntityTypeBuilder<Entity>();
@@ -53,28 +75,6 @@ public class EntityTypeBuilderTests : UnitTestsBase
         propertyBuilder.Should().NotBeNull();
 
         builder.Property(a => a.Id).Should().BeSameAs(propertyBuilder);
-    }
-
-    [Fact]
-    public void PropertyBuilders_ShouldGetBuildersOfConfiguredProperties()
-    {
-        var builder = new EntityTypeBuilder<Entity>();
-
-        builder.Property(a => a.Id).IsKey();
-        builder.Property(a => a.StringValue).IsComputed();
-        builder.Property(a => a.Int64Value).IsIgnored();
-
-        var propertyBuilders = ((IEntityTypeBuilder)builder).PropertyBuilders;
-
-        propertyBuilders.Should().HaveCount(3);
-
-        propertyBuilders.Should().ContainKeys("Id", "StringValue", "Int64Value");
-
-        propertyBuilders["Id"].Should().BeSameAs(builder.Property(a => a.Id));
-
-        propertyBuilders["StringValue"].Should().BeSameAs(builder.Property(a => a.StringValue));
-
-        propertyBuilders["Int64Value"].Should().BeSameAs(builder.Property(a => a.Int64Value));
     }
 
     [Fact]

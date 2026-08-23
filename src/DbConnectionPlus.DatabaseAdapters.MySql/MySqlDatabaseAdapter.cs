@@ -10,6 +10,29 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 /// </summary>
 public class MySqlDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToMySqlDataType = new()
+    {
+        { typeof(bool), "TINYINT(1)" },
+        { typeof(byte), "TINYINT UNSIGNED" },
+        { typeof(byte[]), "BLOB" },
+        { typeof(char), "CHAR(1)" },
+        { typeof(DateOnly), "DATE" },
+        { typeof(DateTime), "DATETIME" },
+        { typeof(decimal), "DECIMAL(65,30)" },
+        { typeof(double), "DOUBLE" },
+        { typeof(Guid), "CHAR(36)" },
+        { typeof(short), "SMALLINT" },
+        { typeof(int), "INT" },
+        { typeof(long), "BIGINT" },
+        { typeof(float), "FLOAT" },
+        { typeof(string), "TEXT" },
+        { typeof(TimeOnly), "TIME" },
+        { typeof(TimeSpan), "TIME" },
+    };
+
+    private readonly MySqlEntityManipulator entityManipulator;
+    private readonly MySqlTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MySqlDatabaseAdapter" /> class.
     /// </summary>
@@ -118,27 +141,4 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
         // MySqlConnector does not support proper statement cancellation.
         return false;
     }
-
-    private readonly MySqlEntityManipulator entityManipulator;
-    private readonly MySqlTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, string> typeToMySqlDataType = new()
-    {
-        { typeof(bool), "TINYINT(1)" },
-        { typeof(byte), "TINYINT UNSIGNED" },
-        { typeof(byte[]), "BLOB" },
-        { typeof(char), "CHAR(1)" },
-        { typeof(DateOnly), "DATE" },
-        { typeof(DateTime), "DATETIME" },
-        { typeof(decimal), "DECIMAL(65,30)" },
-        { typeof(double), "DOUBLE" },
-        { typeof(Guid), "CHAR(36)" },
-        { typeof(short), "SMALLINT" },
-        { typeof(int), "INT" },
-        { typeof(long), "BIGINT" },
-        { typeof(float), "FLOAT" },
-        { typeof(string), "TEXT" },
-        { typeof(TimeOnly), "TIME" },
-        { typeof(TimeSpan), "TIME" },
-    };
 }

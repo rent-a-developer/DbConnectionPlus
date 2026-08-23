@@ -4,6 +4,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_TemporaryTableTests : UnitTestsBase
 {
+    private readonly List<long> testEntityIds = Generate.Ids();
+
     [Fact]
     public void ShouldGuardAgainstNullArguments() =>
         ArgumentNullGuardVerifier.Verify(() => TemporaryTable(new List<string>()));
@@ -71,6 +73,4 @@ public class DbConnectionExtensions_TemporaryTableTests : UnitTestsBase
             .Should()
             .Throw<ArgumentException>()
             .WithMessage($"The type parameter T cannot be the type {typeof(object)}.");
-
-    private readonly List<long> testEntityIds = Generate.Ids();
 }

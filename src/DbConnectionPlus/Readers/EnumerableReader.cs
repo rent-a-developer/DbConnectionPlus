@@ -21,6 +21,21 @@ namespace RentADeveloper.DbConnectionPlus.Readers;
 /// </remarks>
 internal sealed class EnumerableReader : DbDataReader
 {
+    private readonly IEnumerator enumerator;
+    private readonly string[] fieldNames;
+    private readonly EnumerableReaderOptions options;
+    private readonly EntityPropertyMetadata[] properties;
+
+    [DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
+    private readonly Type? valuesType;
+
+    private object? current;
+    private bool isClosed;
+    private bool isDisposed;
+    private bool isEnumeratorDisposed;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="EnumerableReader" /> class that reads a single column, where
     /// each element of <paramref name="values" /> is the value of that column.
@@ -151,13 +166,28 @@ internal sealed class EnumerableReader : DbDataReader
     public override bool IsClosed => this.isClosed;
 
     /// <inheritdoc />
+    public override int RecordsAffected => -1;
+
+    /// <summary>
+    /// Gets a value indicating whether the reader reads a single column whose value is the sequence element itself.
+    /// </summary>
+    private bool IsSingleColumn => this.valuesType is not null;
+
+    /// <summary>
+    /// Gets a value indicating whether the reader returns <see cref="char" /> values as <see cref="string" />.
+    /// </summary>
+    private bool ReadsCharsAsStrings => this.options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings);
+
+    /// <summary>
+    /// Gets a value indicating whether the reader serializes <see cref="Enum" /> values while reading them.
+    /// </summary>
+    private bool SerializesEnums => this.options.HasFlag(EnumerableReaderOptions.SerializeEnums);
+
+    /// <inheritdoc />
     public override object this[int ordinal] => this.GetValue(ordinal);
 
     /// <inheritdoc />
     public override object this[string name] => this.GetValue(this.GetOrdinalOrThrow(name));
-
-    /// <inheritdoc />
-    public override int RecordsAffected => -1;
 
     /// <inheritdoc />
     public override void Close()
@@ -411,204 +441,6 @@ internal sealed class EnumerableReader : DbDataReader
     }
 
     /// <summary>
-    /// Gets a value indicating whether the reader reads a single column whose value is the sequence element itself.
-    /// </summary>
-    private bool IsSingleColumn => this.valuesType is not null;
-
-    /// <summary>
-    /// Gets a value indicating whether the reader returns <see cref="char" /> values as <see cref="string" />.
-    /// </summary>
-    private bool ReadsCharsAsStrings => this.options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings);
-
-    /// <summary>
-    /// Gets a value indicating whether the reader serializes <see cref="Enum" /> values while reading them.
-    /// </summary>
-    private bool SerializesEnums => this.options.HasFlag(EnumerableReaderOptions.SerializeEnums);
-
-    /// <summary>
-    /// Disposes the enumerator obtained from the enumerable.
-    /// </summary>
-    private void DisposeEnumerator()
-    {
-        if (this.isEnumeratorDisposed)
-        {
-            return;
-        }
-
-        this.isEnumeratorDisposed = true;
-        (this.enumerator as IDisposable)?.Dispose();
-    }
-
-    /// <summary>
-    /// Throws if the specified ordinal is not one of the ordinals the reader supports.
-    /// </summary>
-    /// <param name="ordinal">The ordinal to check.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
-    /// </exception>
-    private void EnsureValidFieldOrdinal(int ordinal)
-    {
-        if (ordinal >= 0 && ordinal < this.FieldCount)
-        {
-            return;
-        }
-
-        throw new ArgumentOutOfRangeException(
-            nameof(ordinal),
-            ordinal,
-            this.IsSingleColumn
-                ? $"The specified ordinal {ordinal} is not supported. The only supported ordinal is zero."
-                : $"The specified ordinal {ordinal} is not supported. The supported ordinals are 0 to "
-                    + $"{this.FieldCount - 1}."
-        );
-    }
-
-    /// <summary>
-    /// Gets the type of the values the column with the specified ordinal reads.
-    /// </summary>
-    /// <param name="ordinal">The ordinal of the column to inspect.</param>
-    /// <returns>
-    /// The type passed to the constructor if the reader reads a single column; otherwise the type of the property
-    /// the column is mapped to.
-    /// </returns>
-    private Type GetColumnType(int ordinal) => this.valuesType ?? this.properties[ordinal].PropertyType;
-
-    /// <summary>
-    /// Resolves the ordinal of the specified field name, throwing when the reader does not have such a field.
-    /// </summary>
-    /// <param name="name">The field name to resolve.</param>
-    /// <returns>The ordinal of the field with the specified name.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The reader does not have a field with the specified name <paramref name="name" />.
-    /// </exception>
-    private int GetOrdinalOrThrow(string name)
-    {
-        var ordinal = Array.IndexOf(this.fieldNames, name);
-
-        if (ordinal >= 0)
-        {
-            return ordinal;
-        }
-
-        throw new ArgumentOutOfRangeException(
-            nameof(name),
-            this.IsSingleColumn
-                ? $"The specified field name '{name}' is not supported. The only supported field name is "
-                    + $"'{this.fieldNames[0]}'."
-                : $"The specified field name '{name}' is not supported. The supported field names are "
-                    + $"'{string.Join("', '", this.fieldNames)}'."
-        );
-    }
-
-    /// <summary>
-    /// Determines whether the column with the specified ordinal is mapped to an <see cref="Enum" /> property.
-    /// </summary>
-    /// <param name="ordinal">The ordinal of the column to inspect.</param>
-    /// <returns>
-    /// <see langword="true" /> if the column is mapped to an <see cref="Enum" /> property; otherwise,
-    /// <see langword="false" />.
-    /// </returns>
-    private bool IsEnumColumn(int ordinal) => this.GetColumnType(ordinal).IsEnumOrNullableEnumType();
-
-    /// <summary>
-    /// Applies the reader's <see cref="EnumerableReaderOptions" /> to a value that was read from an entity.
-    /// </summary>
-    /// <param name="value">The value to serialize.</param>
-    /// <returns>The serialized value.</returns>
-    private object SerializeValue(object value)
-    {
-        if (this.SerializesEnums && value is Enum enumValue)
-        {
-            return EnumSerializer.SerializeEnum(
-                enumValue,
-                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-            );
-        }
-
-        if (this.ReadsCharsAsStrings && value is char charValue)
-        {
-            // The data readers of all major database systems return the type String for CHAR columns.
-            // So we mimic the same behavior for consistency.
-
-            return charValue.ToString();
-        }
-
-        return value;
-    }
-
-    /// <summary>
-    /// Resolves the type a column is reported as from the type of the property it is mapped to.
-    /// </summary>
-    /// <param name="propertyType">The type of the property the column is mapped to.</param>
-    /// <param name="options">The behaviours the reader applies to the values it reads.</param>
-    /// <returns>The type the column is reported as.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The configured <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" /> is not a defined value.
-    /// </exception>
-    /// <remarks>
-    /// Every branch returns a <c>typeof</c> literal so that the value satisfies the
-    /// <see cref="DynamicallyAccessedMembersAttribute" /> the base class puts on
-    /// <see cref="DbDataReader.GetFieldType" />; see the remarks there. A type that is neither a supported built-in
-    /// type nor covered by <paramref name="options" /> — an <see cref="Enum" /> outside MySQL, most notably — is
-    /// reported as <see cref="object" />. Returning the runtime property type would violate the inherited trimming
-    /// contract because <c>PropertyInfo.PropertyType</c> carries no member annotation. No caller inside this library
-    /// reads that fallback: <c>PostgreSqlTemporaryTableBuilder</c>, the one place that would inspect the reader's
-    /// field types, derives its <c>NpgsqlDbType</c> values from the entity metadata instead.
-    /// </remarks>
-    [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
-    )]
-    private static Type MapReportedFieldType(Type propertyType, EnumerableReaderOptions options)
-    {
-        if (propertyType.IsEnumOrNullableEnumType())
-        {
-            if (!options.HasFlag(EnumerableReaderOptions.SerializeEnums))
-            {
-                return typeof(object);
-            }
-
-            var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
-
-            return enumSerializationMode switch
-            {
-                EnumSerializationMode.Strings => typeof(string),
-
-                EnumSerializationMode.Integers => typeof(int),
-
-                _ => ThrowInvalidEnumSerializationModeException(enumSerializationMode),
-            };
-        }
-
-        if (propertyType.IsCharOrNullableCharType() && options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings))
-        {
-            // The data readers of all major database systems return the type String for CHAR columns.
-            // So we mimic the same behavior for consistency.
-
-            return typeof(string);
-        }
-
-        return MapBuiltInFieldType(Nullable.GetUnderlyingType(propertyType) ?? propertyType);
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException" /> indicating that the specified
-    /// <see cref="EnumSerializationMode" /> is invalid.
-    /// </summary>
-    /// <param name="enumSerializationMode">The <see cref="EnumSerializationMode" /> value that is invalid.</param>
-    /// <returns>This method never returns.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Always thrown.</exception>
-    [DoesNotReturn]
-    [return: DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
-    )]
-    private static Type ThrowInvalidEnumSerializationModeException(EnumSerializationMode enumSerializationMode) =>
-        throw new ArgumentOutOfRangeException(
-            nameof(enumSerializationMode),
-            enumSerializationMode,
-            $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
-        );
-
-    /// <summary>
     /// Maps a non-nullable property type onto the statically known <see cref="Type" /> the column is reported as.
     /// </summary>
     /// <param name="propertyType">The non-nullable type of the property the column is mapped to.</param>
@@ -744,17 +576,186 @@ internal sealed class EnumerableReader : DbDataReader
         return typeof(object);
     }
 
-    private readonly IEnumerator enumerator;
-    private readonly string[] fieldNames;
-    private readonly EnumerableReaderOptions options;
-    private readonly EntityPropertyMetadata[] properties;
-
-    [DynamicallyAccessedMembers(
+    /// <summary>
+    /// Resolves the type a column is reported as from the type of the property it is mapped to.
+    /// </summary>
+    /// <param name="propertyType">The type of the property the column is mapped to.</param>
+    /// <param name="options">The behaviours the reader applies to the values it reads.</param>
+    /// <returns>The type the column is reported as.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The configured <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" /> is not a defined value.
+    /// </exception>
+    /// <remarks>
+    /// Every branch returns a <c>typeof</c> literal so that the value satisfies the
+    /// <see cref="DynamicallyAccessedMembersAttribute" /> the base class puts on
+    /// <see cref="DbDataReader.GetFieldType" />; see the remarks there. A type that is neither a supported built-in
+    /// type nor covered by <paramref name="options" /> — an <see cref="Enum" /> outside MySQL, most notably — is
+    /// reported as <see cref="object" />. Returning the runtime property type would violate the inherited trimming
+    /// contract because <c>PropertyInfo.PropertyType</c> carries no member annotation. No caller inside this library
+    /// reads that fallback: <c>PostgreSqlTemporaryTableBuilder</c>, the one place that would inspect the reader's
+    /// field types, derives its <c>NpgsqlDbType</c> values from the entity metadata instead.
+    /// </remarks>
+    [return: DynamicallyAccessedMembers(
         DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
     )]
-    private readonly Type? valuesType;
-    private object? current;
-    private bool isClosed;
-    private bool isDisposed;
-    private bool isEnumeratorDisposed;
+    private static Type MapReportedFieldType(Type propertyType, EnumerableReaderOptions options)
+    {
+        if (propertyType.IsEnumOrNullableEnumType())
+        {
+            if (!options.HasFlag(EnumerableReaderOptions.SerializeEnums))
+            {
+                return typeof(object);
+            }
+
+            var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
+
+            return enumSerializationMode switch
+            {
+                EnumSerializationMode.Strings => typeof(string),
+
+                EnumSerializationMode.Integers => typeof(int),
+
+                _ => ThrowInvalidEnumSerializationModeException(enumSerializationMode),
+            };
+        }
+
+        if (propertyType.IsCharOrNullableCharType() && options.HasFlag(EnumerableReaderOptions.ReadCharsAsStrings))
+        {
+            // The data readers of all major database systems return the type String for CHAR columns.
+            // So we mimic the same behavior for consistency.
+
+            return typeof(string);
+        }
+
+        return MapBuiltInFieldType(Nullable.GetUnderlyingType(propertyType) ?? propertyType);
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentOutOfRangeException" /> indicating that the specified
+    /// <see cref="EnumSerializationMode" /> is invalid.
+    /// </summary>
+    /// <param name="enumSerializationMode">The <see cref="EnumSerializationMode" /> value that is invalid.</param>
+    /// <returns>This method never returns.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Always thrown.</exception>
+    [DoesNotReturn]
+    [return: DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+    )]
+    private static Type ThrowInvalidEnumSerializationModeException(EnumSerializationMode enumSerializationMode) =>
+        throw new ArgumentOutOfRangeException(
+            nameof(enumSerializationMode),
+            enumSerializationMode,
+            $"The {nameof(EnumSerializationMode)} {enumSerializationMode.ToDebugString()} is not supported."
+        );
+
+    /// <summary>
+    /// Disposes the enumerator obtained from the enumerable.
+    /// </summary>
+    private void DisposeEnumerator()
+    {
+        if (this.isEnumeratorDisposed)
+        {
+            return;
+        }
+
+        this.isEnumeratorDisposed = true;
+        (this.enumerator as IDisposable)?.Dispose();
+    }
+
+    /// <summary>
+    /// Throws if the specified ordinal is not one of the ordinals the reader supports.
+    /// </summary>
+    /// <param name="ordinal">The ordinal to check.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The specified ordinal <paramref name="ordinal" /> is not one of the ordinals the reader supports.
+    /// </exception>
+    private void EnsureValidFieldOrdinal(int ordinal)
+    {
+        if (ordinal >= 0 && ordinal < this.FieldCount)
+        {
+            return;
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(ordinal),
+            ordinal,
+            this.IsSingleColumn
+                ? $"The specified ordinal {ordinal} is not supported. The only supported ordinal is zero."
+                : $"The specified ordinal {ordinal} is not supported. The supported ordinals are 0 to "
+                    + $"{this.FieldCount - 1}."
+        );
+    }
+
+    /// <summary>
+    /// Gets the type of the values the column with the specified ordinal reads.
+    /// </summary>
+    /// <param name="ordinal">The ordinal of the column to inspect.</param>
+    /// <returns>
+    /// The type passed to the constructor if the reader reads a single column; otherwise the type of the property
+    /// the column is mapped to.
+    /// </returns>
+    private Type GetColumnType(int ordinal) => this.valuesType ?? this.properties[ordinal].PropertyType;
+
+    /// <summary>
+    /// Resolves the ordinal of the specified field name, throwing when the reader does not have such a field.
+    /// </summary>
+    /// <param name="name">The field name to resolve.</param>
+    /// <returns>The ordinal of the field with the specified name.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The reader does not have a field with the specified name <paramref name="name" />.
+    /// </exception>
+    private int GetOrdinalOrThrow(string name)
+    {
+        var ordinal = Array.IndexOf(this.fieldNames, name);
+
+        if (ordinal >= 0)
+        {
+            return ordinal;
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(name),
+            this.IsSingleColumn
+                ? $"The specified field name '{name}' is not supported. The only supported field name is "
+                    + $"'{this.fieldNames[0]}'."
+                : $"The specified field name '{name}' is not supported. The supported field names are "
+                    + $"'{string.Join("', '", this.fieldNames)}'."
+        );
+    }
+
+    /// <summary>
+    /// Determines whether the column with the specified ordinal is mapped to an <see cref="Enum" /> property.
+    /// </summary>
+    /// <param name="ordinal">The ordinal of the column to inspect.</param>
+    /// <returns>
+    /// <see langword="true" /> if the column is mapped to an <see cref="Enum" /> property; otherwise,
+    /// <see langword="false" />.
+    /// </returns>
+    private bool IsEnumColumn(int ordinal) => this.GetColumnType(ordinal).IsEnumOrNullableEnumType();
+
+    /// <summary>
+    /// Applies the reader's <see cref="EnumerableReaderOptions" /> to a value that was read from an entity.
+    /// </summary>
+    /// <param name="value">The value to serialize.</param>
+    /// <returns>The serialized value.</returns>
+    private object SerializeValue(object value)
+    {
+        if (this.SerializesEnums && value is Enum enumValue)
+        {
+            return EnumSerializer.SerializeEnum(
+                enumValue,
+                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+            );
+        }
+
+        if (this.ReadsCharsAsStrings && value is char charValue)
+        {
+            // The data readers of all major database systems return the type String for CHAR columns.
+            // So we mimic the same behavior for consistency.
+
+            return charValue.ToString();
+        }
+
+        return value;
+    }
 }

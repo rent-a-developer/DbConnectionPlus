@@ -7,11 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
-    public void Parameter__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
-    public void Parameter__Setup() => this.SetupDatabase(0);
+    private const string Parameter_Category = "Parameter";
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Parameter_Category)]
@@ -66,5 +62,9 @@ public partial class Benchmarks
             """
         );
 
-    private const string Parameter_Category = "Parameter";
+    [GlobalCleanup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
+    public void Parameter__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(Targets = [nameof(Parameter_Command), nameof(Parameter_Dapper), nameof(Parameter_DbConnectionPlus)])]
+    public void Parameter__Setup() => this.SetupDatabase(0);
 }

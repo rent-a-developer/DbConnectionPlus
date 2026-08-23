@@ -13,6 +13,35 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 [Config(typeof(BenchmarksConfig))]
 public partial class Benchmarks
 {
+    /*
+     * INTEGER PRIMARY KEY makes Id an alias for the rowid, so lookups by Id are b-tree descents instead of
+     * full table scans. Without it every "WHERE Id = ?" scanned the whole table, and that scan dominated the delete,
+     * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
+     * the code under test.
+     */
+    private const string CreateEntityTableSql = """
+        CREATE TABLE Entity
+        (
+            Id INTEGER PRIMARY KEY,
+            BooleanValue INTEGER,
+            BytesValue BLOB,
+            ByteValue INTEGER,
+            CharValue TEXT,
+            DateTimeValue TEXT,
+            DecimalValue TEXT,
+            DoubleValue REAL,
+            EnumValue TEXT,
+            Int16Value INTEGER,
+            Int32Value INTEGER,
+            Int64Value INTEGER,
+            SingleValue REAL,
+            StringValue TEXT
+        );
+        """;
+
+    private SqliteConnection connection = null!;
+    private List<BenchmarkEntity> entitiesInDb = null!;
+
     static Benchmarks() => DbConnectionPlusConfiguration.Instance.UseSqlite();
 
     public Benchmarks()
@@ -25,25 +54,6 @@ public partial class Benchmarks
         {
             SqlMapperExtensions.TableNameMapper = null;
         }
-    }
-
-    private void SetupDatabase(int numberOfEntities)
-    {
-        this.connection?.Dispose();
-
-        this.connection = new("Data Source=:memory:");
-        this.connection.Open();
-
-        using var createEntityTableCommand = this.connection.CreateCommand();
-        createEntityTableCommand.CommandText = CreateEntityTableSql;
-        createEntityTableCommand.ExecuteNonQuery();
-
-        using var transaction = this.connection.BeginTransaction();
-
-        this.entitiesInDb = Generate.Multiple(numberOfEntities);
-        this.connection.InsertEntities(this.entitiesInDb, transaction);
-
-        transaction.Commit();
     }
 
     private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<string, SqliteParameter> parameters)
@@ -92,32 +102,22 @@ public partial class Benchmarks
         };
     }
 
-    private SqliteConnection connection = null!;
-    private List<BenchmarkEntity> entitiesInDb = null!;
+    private void SetupDatabase(int numberOfEntities)
+    {
+        this.connection?.Dispose();
 
-    /*
-     * INTEGER PRIMARY KEY makes Id an alias for the rowid, so lookups by Id are b-tree descents instead of
-     * full table scans. Without it every "WHERE Id = ?" scanned the whole table, and that scan dominated the delete,
-     * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
-     * the code under test.
-     */
-    private const string CreateEntityTableSql = """
-        CREATE TABLE Entity
-        (
-            Id INTEGER PRIMARY KEY,
-            BooleanValue INTEGER,
-            BytesValue BLOB,
-            ByteValue INTEGER,
-            CharValue TEXT,
-            DateTimeValue TEXT,
-            DecimalValue TEXT,
-            DoubleValue REAL,
-            EnumValue TEXT,
-            Int16Value INTEGER,
-            Int32Value INTEGER,
-            Int64Value INTEGER,
-            SingleValue REAL,
-            StringValue TEXT
-        );
-        """;
+        this.connection = new("Data Source=:memory:");
+        this.connection.Open();
+
+        using var createEntityTableCommand = this.connection.CreateCommand();
+        createEntityTableCommand.CommandText = CreateEntityTableSql;
+        createEntityTableCommand.ExecuteNonQuery();
+
+        using var transaction = this.connection.BeginTransaction();
+
+        this.entitiesInDb = Generate.Multiple(numberOfEntities);
+        this.connection.InsertEntities(this.entitiesInDb, transaction);
+
+        transaction.Commit();
+    }
 }

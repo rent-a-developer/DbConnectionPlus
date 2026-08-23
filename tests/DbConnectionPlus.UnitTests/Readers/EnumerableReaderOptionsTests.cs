@@ -101,6 +101,22 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
     }
 
     [Fact]
+    public void GetValue_NullProperty_ShouldReturnDbNull()
+    {
+        Entity[] entities = [new() { StringValue = null! }];
+
+        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.None);
+
+        reader.Read();
+
+        var ordinal = reader.GetOrdinal("StringValue");
+
+        reader.GetValue(ordinal).Should().Be(DBNull.Value);
+
+        reader.IsDBNull(ordinal).Should().BeTrue();
+    }
+
+    [Fact]
     public void GetValues_CharPropertyReadAsString_ShouldConvertToString()
     {
         Entity[] entities = [new() { CharValue = Generate.Single<char>() }];
@@ -181,22 +197,6 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
         values[reader.GetOrdinal("EnumValue")].Should().Be(entity.EnumValue);
 
         values[reader.GetOrdinal("CharValue")].Should().Be(entity.CharValue);
-    }
-
-    [Fact]
-    public void GetValue_NullProperty_ShouldReturnDbNull()
-    {
-        Entity[] entities = [new() { StringValue = null! }];
-
-        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.None);
-
-        reader.Read();
-
-        var ordinal = reader.GetOrdinal("StringValue");
-
-        reader.GetValue(ordinal).Should().Be(DBNull.Value);
-
-        reader.IsDBNull(ordinal).Should().BeTrue();
     }
 
     /// <summary>

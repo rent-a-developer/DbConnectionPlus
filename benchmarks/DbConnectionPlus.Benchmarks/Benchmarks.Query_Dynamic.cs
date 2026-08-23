@@ -9,15 +9,8 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
-    )]
-    public void Query_Dynamic__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(
-        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
-    )]
-    public void Query_Dynamic__Setup() => this.SetupDatabase(Query_Dynamic_EntitiesPerOperation);
+    private const string Query_Dynamic_Category = "Query_Dynamic";
+    private const int Query_Dynamic_EntitiesPerOperation = 100;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Dynamic_Category)]
@@ -68,6 +61,13 @@ public partial class Benchmarks
     [BenchmarkCategory(Query_Dynamic_Category)]
     public List<DataRow> Query_Dynamic_DbConnectionPlus() => [.. this.connection.Query("SELECT * FROM Entity")];
 
-    private const string Query_Dynamic_Category = "Query_Dynamic";
-    private const int Query_Dynamic_EntitiesPerOperation = 100;
+    [GlobalCleanup(
+        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
+    )]
+    public void Query_Dynamic__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [nameof(Query_Dynamic_Command), nameof(Query_Dynamic_Dapper), nameof(Query_Dynamic_DbConnectionPlus)]
+    )]
+    public void Query_Dynamic__Setup() => this.SetupDatabase(Query_Dynamic_EntitiesPerOperation);
 }

@@ -7,6 +7,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.Orac
 
 public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabaseProvider>
 {
+    private readonly OracleDatabaseAdapter adapter = new();
+
     [Fact]
     public void QuoteTemporaryTableName_ShouldQuoteTableName()
     {
@@ -45,6 +47,4 @@ public class OracleDatabaseAdapterTests : IntegrationTestsBase<OracleTestDatabas
 
         this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None).Should().BeFalse();
     }
-
-    private readonly OracleDatabaseAdapter adapter = new();
 }

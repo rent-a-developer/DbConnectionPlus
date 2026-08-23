@@ -7,11 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
-    public void Exists__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
-    public void Exists__Setup() => this.SetupDatabase(1);
+    private const string Exists_Category = "Exists";
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Exists_Category)]
@@ -57,5 +53,9 @@ public partial class Benchmarks
         return this.connection.Exists($"SELECT 1 FROM Entity WHERE Id = {Parameter(entityId)}");
     }
 
-    private const string Exists_Category = "Exists";
+    [GlobalCleanup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
+    public void Exists__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(Targets = [nameof(Exists_Command), nameof(Exists_Dapper), nameof(Exists_DbConnectionPlus)])]
+    public void Exists__Setup() => this.SetupDatabase(1);
 }

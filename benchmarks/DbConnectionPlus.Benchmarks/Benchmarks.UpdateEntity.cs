@@ -7,40 +7,11 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
-    )]
-    public void UpdateEntity__Cleanup() => this.connection.Dispose();
+    private const string UpdateEntity_Category = "UpdateEntity";
+    private const int UpdateEntity_UpdatedEntityPoolSize = 64;
 
-    [GlobalSetup(
-        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
-    )]
-    public void UpdateEntity__Setup()
-    {
-        this.SetupDatabase(1);
-
-        // Building the updated entity inside the benchmark charged its generation to all three implementations -
-        // including the DbCommand baseline and Dapper - which both dominated the measurement and hid changes in
-        // DbConnectionPlus behind a baseline that moved with them.
-        //
-        // A pool rather than a single entity, so that consecutive invocations write different values. Reusing one
-        // entity would mean every invocation after the first writes the values that are already stored, which is not
-        // what an update does in practice.
-        this.updateEntity_ModifiedEntitiesPool =
-        [
-            .. Enumerable
-                .Range(0, UpdateEntity_UpdatedEntityPoolSize)
-                .Select(_ => Generate.UpdateFor(this.entitiesInDb[0])),
-        ];
-    }
-
-    private BenchmarkEntity UpdateEntity_GetNextModifiedEntity()
-    {
-        this.updateEntity_ModifiedEntitiesPoolIndex =
-            (this.updateEntity_ModifiedEntitiesPoolIndex + 1) % UpdateEntity_UpdatedEntityPoolSize;
-
-        return this.updateEntity_ModifiedEntitiesPool[this.updateEntity_ModifiedEntitiesPoolIndex];
-    }
+    private List<BenchmarkEntity> updateEntity_ModifiedEntitiesPool = null!;
+    private int updateEntity_ModifiedEntitiesPoolIndex;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(UpdateEntity_Category)]
@@ -103,9 +74,38 @@ public partial class Benchmarks
     public void UpdateEntity_DbConnectionPlus() =>
         this.connection.UpdateEntity(this.UpdateEntity_GetNextModifiedEntity());
 
-    private List<BenchmarkEntity> updateEntity_ModifiedEntitiesPool = null!;
-    private int updateEntity_ModifiedEntitiesPoolIndex;
+    [GlobalCleanup(
+        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
+    )]
+    public void UpdateEntity__Cleanup() => this.connection.Dispose();
 
-    private const string UpdateEntity_Category = "UpdateEntity";
-    private const int UpdateEntity_UpdatedEntityPoolSize = 64;
+    [GlobalSetup(
+        Targets = [nameof(UpdateEntity_Command), nameof(UpdateEntity_Dapper), nameof(UpdateEntity_DbConnectionPlus)]
+    )]
+    public void UpdateEntity__Setup()
+    {
+        this.SetupDatabase(1);
+
+        // Building the updated entity inside the benchmark charged its generation to all three implementations -
+        // including the DbCommand baseline and Dapper - which both dominated the measurement and hid changes in
+        // DbConnectionPlus behind a baseline that moved with them.
+        //
+        // A pool rather than a single entity, so that consecutive invocations write different values. Reusing one
+        // entity would mean every invocation after the first writes the values that are already stored, which is not
+        // what an update does in practice.
+        this.updateEntity_ModifiedEntitiesPool =
+        [
+            .. Enumerable
+                .Range(0, UpdateEntity_UpdatedEntityPoolSize)
+                .Select(_ => Generate.UpdateFor(this.entitiesInDb[0])),
+        ];
+    }
+
+    private BenchmarkEntity UpdateEntity_GetNextModifiedEntity()
+    {
+        this.updateEntity_ModifiedEntitiesPoolIndex =
+            (this.updateEntity_ModifiedEntitiesPoolIndex + 1) % UpdateEntity_UpdatedEntityPoolSize;
+
+        return this.updateEntity_ModifiedEntitiesPool[this.updateEntity_ModifiedEntitiesPoolIndex];
+    }
 }

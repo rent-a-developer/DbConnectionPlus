@@ -14,6 +14,11 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
 internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
+    private readonly OracleDatabaseAdapter databaseAdapter = databaseAdapter;
+    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
+
     /// <inheritdoc />
     public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
@@ -637,6 +642,37 @@ internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : 
     }
 
     /// <summary>
+    /// Updates the database generated properties of the provided entity from the provided output parameters.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    private static void UpdateDatabaseGeneratedProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        DbParameter[] outputParameters,
+        object entity
+    )
+    {
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
+        {
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = outputParameters[i].Value;
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates a command to delete an entity.
     /// </summary>
     /// <param name="connection">The connection to use to create the command.</param>
@@ -1106,40 +1142,4 @@ internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : 
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    /// <summary>
-    /// Updates the database generated properties of the provided entity from the provided output parameters.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    private static void UpdateDatabaseGeneratedProperties(
-        EntityTypeMetadata entityTypeMetadata,
-        DbParameter[] outputParameters,
-        object entity
-    )
-    {
-        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
-        {
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = outputParameters[i].Value;
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    private readonly OracleDatabaseAdapter databaseAdapter = databaseAdapter;
-    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
 }

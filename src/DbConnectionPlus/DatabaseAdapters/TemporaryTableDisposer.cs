@@ -9,6 +9,11 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters;
 /// </summary>
 public sealed class TemporaryTableDisposer : IDisposable, IAsyncDisposable
 {
+    private readonly Func<ValueTask> dropTableAsyncFunction;
+    private readonly Action dropTableFunction;
+
+    private bool isDisposed;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TemporaryTableDisposer" /> class.
     /// </summary>
@@ -65,9 +70,4 @@ public sealed class TemporaryTableDisposer : IDisposable, IAsyncDisposable
         this.isDisposed = true;
         return this.dropTableAsyncFunction();
     }
-
-    private readonly Func<ValueTask> dropTableAsyncFunction;
-    private readonly Action dropTableFunction;
-
-    private bool isDisposed;
 }

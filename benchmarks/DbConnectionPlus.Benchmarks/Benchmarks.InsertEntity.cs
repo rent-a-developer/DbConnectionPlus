@@ -7,15 +7,13 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
-    )]
-    public void InsertEntity__Cleanup() => this.connection.Dispose();
+    private const string InsertEntity_Category = "InsertEntity";
 
-    [GlobalSetup(
-        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
-    )]
-    public void InsertEntity__Setup() => this.SetupDatabase(0);
+    private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single();
+
+    // A fresh key per invocation, because Id is the primary key and the benchmarks insert the same entity over
+    // and over into a table that starts out empty.
+    private long insertEntity_nextId;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(InsertEntity_Category)]
@@ -70,13 +68,15 @@ public partial class Benchmarks
         this.connection.InsertEntity(this.insertEntity_entityToInsert);
     }
 
+    [GlobalCleanup(
+        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
+    )]
+    public void InsertEntity__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [nameof(InsertEntity_Command), nameof(InsertEntity_Dapper), nameof(InsertEntity_DbConnectionPlus)]
+    )]
+    public void InsertEntity__Setup() => this.SetupDatabase(0);
+
     private void AssignNextInsertEntityId() => this.insertEntity_entityToInsert.Id = ++this.insertEntity_nextId;
-
-    private readonly BenchmarkEntity insertEntity_entityToInsert = Generate.Single();
-
-    // A fresh key per invocation, because Id is the primary key and the benchmarks insert the same entity over
-    // and over into a table that starts out empty.
-    private long insertEntity_nextId;
-
-    private const string InsertEntity_Category = "InsertEntity";
 }

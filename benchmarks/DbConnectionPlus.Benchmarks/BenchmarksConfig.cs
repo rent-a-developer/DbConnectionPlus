@@ -10,6 +10,11 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public class BenchmarksConfig : ManualConfig
 {
+    public const string AotJobId = "AOT";
+
+    // The Job column of the summary shows these.
+    public const string JitJobId = "JIT";
+
     public BenchmarksConfig()
     {
         this.Orderer = new BenchmarksOrderer();
@@ -52,8 +57,4 @@ public class BenchmarksConfig : ManualConfig
             .WithMaxIterationCount(20)
             // Since DbConnectionPlus will mostly be used in server applications, we test with server GC.
             .WithGcServer(true);
-
-    // The Job column of the summary shows these.
-    public const string JitJobId = "JIT";
-    public const string AotJobId = "AOT";
 }

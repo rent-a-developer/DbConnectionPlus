@@ -7,44 +7,12 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(UpdateEntities_Command),
-            nameof(UpdateEntities_Dapper),
-            nameof(UpdateEntities_DbConnectionPlus),
-        ]
-    )]
-    public void UpdateEntities__Cleanup() => this.connection.Dispose();
+    private const string UpdateEntities_Category = "UpdateEntities";
+    private const int UpdateEntities_EntitiesPerOperation = 100;
+    private const int UpdateEntities_UpdatedEntitiesPoolSize = 8;
 
-    [GlobalSetup(
-        Targets = [
-            nameof(UpdateEntities_Command),
-            nameof(UpdateEntities_Dapper),
-            nameof(UpdateEntities_DbConnectionPlus),
-        ]
-    )]
-    public void UpdateEntities__Setup()
-    {
-        this.SetupDatabase(UpdateEntities_EntitiesPerOperation);
-
-        // See the note on UpdateEntity__Setup: generating the updated entities inside the benchmark charged their
-        // generation to all three implementations, and a single pre-generated set would make every invocation after
-        // the first write the values that are already stored.
-        this.updateEntities_ModifiedEntitiesPool =
-        [
-            .. Enumerable
-                .Range(0, UpdateEntities_UpdatedEntitiesPoolSize)
-                .Select(_ => Generate.UpdatesFor(this.entitiesInDb)),
-        ];
-    }
-
-    private List<BenchmarkEntity> UpdateEntities_GetNextModifiedEntities()
-    {
-        this.updateEntities_ModifiedEntitiesPoolIndex =
-            (this.updateEntities_ModifiedEntitiesPoolIndex + 1) % UpdateEntities_UpdatedEntitiesPoolSize;
-
-        return this.updateEntities_ModifiedEntitiesPool[this.updateEntities_ModifiedEntitiesPoolIndex];
-    }
+    private List<List<BenchmarkEntity>> updateEntities_ModifiedEntitiesPool = null!;
+    private int updateEntities_ModifiedEntitiesPoolIndex;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(UpdateEntities_Category)]
@@ -110,10 +78,42 @@ public partial class Benchmarks
     public void UpdateEntities_DbConnectionPlus() =>
         this.connection.UpdateEntities(this.UpdateEntities_GetNextModifiedEntities());
 
-    private List<List<BenchmarkEntity>> updateEntities_ModifiedEntitiesPool = null!;
-    private int updateEntities_ModifiedEntitiesPoolIndex;
+    [GlobalCleanup(
+        Targets = [
+            nameof(UpdateEntities_Command),
+            nameof(UpdateEntities_Dapper),
+            nameof(UpdateEntities_DbConnectionPlus),
+        ]
+    )]
+    public void UpdateEntities__Cleanup() => this.connection.Dispose();
 
-    private const string UpdateEntities_Category = "UpdateEntities";
-    private const int UpdateEntities_EntitiesPerOperation = 100;
-    private const int UpdateEntities_UpdatedEntitiesPoolSize = 8;
+    [GlobalSetup(
+        Targets = [
+            nameof(UpdateEntities_Command),
+            nameof(UpdateEntities_Dapper),
+            nameof(UpdateEntities_DbConnectionPlus),
+        ]
+    )]
+    public void UpdateEntities__Setup()
+    {
+        this.SetupDatabase(UpdateEntities_EntitiesPerOperation);
+
+        // See the note on UpdateEntity__Setup: generating the updated entities inside the benchmark charged their
+        // generation to all three implementations, and a single pre-generated set would make every invocation after
+        // the first write the values that are already stored.
+        this.updateEntities_ModifiedEntitiesPool =
+        [
+            .. Enumerable
+                .Range(0, UpdateEntities_UpdatedEntitiesPoolSize)
+                .Select(_ => Generate.UpdatesFor(this.entitiesInDb)),
+        ];
+    }
+
+    private List<BenchmarkEntity> UpdateEntities_GetNextModifiedEntities()
+    {
+        this.updateEntities_ModifiedEntitiesPoolIndex =
+            (this.updateEntities_ModifiedEntitiesPoolIndex + 1) % UpdateEntities_UpdatedEntitiesPoolSize;
+
+        return this.updateEntities_ModifiedEntitiesPool[this.updateEntities_ModifiedEntitiesPoolIndex];
+    }
 }

@@ -13,14 +13,8 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 // file for the measurements behind that.
 public class AotJobFilter : IFilter
 {
-    public bool Predicate(BenchmarkCase benchmarkCase)
-    {
-        var isAotJob = benchmarkCase.Job.Id.Contains(BenchmarksConfig.AotJobId, StringComparison.Ordinal);
-        var benchmarkName = benchmarkCase.Descriptor.WorkloadMethod.Name;
-        var isAotOnlyBenchmark = benchmarkName.EndsWith(AotOnlyBenchmarkSuffix, StringComparison.Ordinal);
-
-        return isAotJob ? AotJobBenchmarks.Contains(benchmarkName) : !isAotOnlyBenchmark;
-    }
+    // Marks a benchmark as Native AOT only, so that it is kept out of the JIT job.
+    private const string AotOnlyBenchmarkSuffix = "_Aot";
 
     // TemporaryTable_ComplexObjects is here because it ends in a Query<BenchmarkEntity> over the temporary
     // table: its write path is single path, its read path is not.
@@ -40,6 +34,12 @@ public class AotJobFilter : IFilter
         nameof(Benchmarks.TemporaryTable_ComplexObjects_DbConnectionPlus),
     ];
 
-    // Marks a benchmark as Native AOT only, so that it is kept out of the JIT job.
-    private const string AotOnlyBenchmarkSuffix = "_Aot";
+    public bool Predicate(BenchmarkCase benchmarkCase)
+    {
+        var isAotJob = benchmarkCase.Job.Id.Contains(BenchmarksConfig.AotJobId, StringComparison.Ordinal);
+        var benchmarkName = benchmarkCase.Descriptor.WorkloadMethod.Name;
+        var isAotOnlyBenchmark = benchmarkName.EndsWith(AotOnlyBenchmarkSuffix, StringComparison.Ordinal);
+
+        return isAotJob ? AotJobBenchmarks.Contains(benchmarkName) : !isAotOnlyBenchmark;
+    }
 }

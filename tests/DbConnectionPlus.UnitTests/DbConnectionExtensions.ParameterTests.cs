@@ -4,6 +4,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_ParameterTests : UnitTestsBase
 {
+    private const long TestProductId = 106L;
+
     [Fact]
     public void Parameter_ShouldInferParameterNameFromValueExpressionIfPossible()
     {
@@ -50,6 +52,4 @@ public class DbConnectionExtensions_ParameterTests : UnitTestsBase
             .HaveLength(60)
             .And.Be("Longname_1234567890_1234567890_1234567890_1234567890_1234567");
     }
-
-    private const long TestProductId = 106L;
 }

@@ -5,6 +5,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.PostgreSql;
 
 public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
 {
+    private readonly PostgreSqlDatabaseAdapter adapter = new();
+
     [Fact]
     public void BindParameterValue_BytesValue_ShouldSetDbTypeAndValue()
     {
@@ -219,6 +221,4 @@ public class PostgreSqlDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void TemporaryTableBuilder_ShouldReturnBuilder() =>
         this.adapter.TemporaryTableBuilder.Should().BeOfType<PostgreSqlTemporaryTableBuilder>();
-
-    private readonly PostgreSqlDatabaseAdapter adapter = new();
 }

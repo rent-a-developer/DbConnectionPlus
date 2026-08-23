@@ -4,6 +4,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.Sqlite;
 
 public class SqliteDatabaseAdapterTests : UnitTestsBase
 {
+    private readonly SqliteDatabaseAdapter adapter = new();
+
     [Fact]
     public void BindParameterValue_BytesValue_ShouldSetDbTypeAndValue()
     {
@@ -179,6 +181,4 @@ public class SqliteDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void WasSqlStatementCancelledByCancellationToken_ShouldAlwaysReturnFalse() =>
         this.adapter.WasSqlStatementCancelledByCancellationToken(new(), CancellationToken.None).Should().BeFalse();
-
-    private readonly SqliteDatabaseAdapter adapter = new();
 }

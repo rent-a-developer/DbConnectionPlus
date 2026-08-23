@@ -7,6 +7,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.Post
 
 public class PostgreSqlDatabaseAdapterTests : IntegrationTestsBase<PostgreSqlTestDatabaseProvider>
 {
+    private readonly PostgreSqlDatabaseAdapter adapter = new();
+
     [Fact]
     public void SupportsTemporaryTables_ShouldReturnTrue() =>
         this.adapter.SupportsTemporaryTables(this.Connection).Should().BeTrue();
@@ -39,6 +41,4 @@ public class PostgreSqlDatabaseAdapterTests : IntegrationTestsBase<PostgreSqlTes
 
         this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None).Should().BeFalse();
     }
-
-    private readonly PostgreSqlDatabaseAdapter adapter = new();
 }

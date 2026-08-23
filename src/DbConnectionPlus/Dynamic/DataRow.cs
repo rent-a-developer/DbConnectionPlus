@@ -47,6 +47,19 @@ namespace RentADeveloper.DbConnectionPlus.Dynamic;
 public class DataRow(IDictionary<string, object?> columns) : IDictionary<string, object?>, IDynamicMetaObjectProvider
 #pragma warning restore CA1710
 {
+    /// <summary>
+    /// Reads the value of a column, used as the target of a bound dynamic member read.
+    /// </summary>
+    private static readonly Func<DataRow, string, object?> readColumn = static (row, columnName) => row[columnName];
+
+    /// <summary>
+    /// Writes the value of a column and returns it, used as the target of a bound dynamic member write.
+    /// </summary>
+    private static readonly Func<DataRow, string, object?, object?> writeColumn = static (row, columnName, value) =>
+        row[columnName] = value;
+
+    private readonly IDictionary<string, object?> columns = columns;
+
     /// <inheritdoc />
     public int Count => this.columns.Count;
 
@@ -54,17 +67,17 @@ public class DataRow(IDictionary<string, object?> columns) : IDictionary<string,
     public bool IsReadOnly => this.columns.IsReadOnly;
 
     /// <inheritdoc />
+    public ICollection<string> Keys => this.columns.Keys;
+
+    /// <inheritdoc />
+    public ICollection<object?> Values => this.columns.Values;
+
+    /// <inheritdoc />
     public object? this[string key]
     {
         get => this.columns[key];
         set => this.columns[key] = value;
     }
-
-    /// <inheritdoc />
-    public ICollection<string> Keys => this.columns.Keys;
-
-    /// <inheritdoc />
-    public ICollection<object?> Values => this.columns.Values;
 
     /// <inheritdoc />
     public void Add(KeyValuePair<string, object?> item) => this.columns.Add(item);
@@ -109,23 +122,10 @@ public class DataRow(IDictionary<string, object?> columns) : IDictionary<string,
     protected virtual DynamicMetaObject GetMetaObject(Expression parameter) => new DataRowMetaObject(parameter, this);
 
     /// <inheritdoc />
-    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => this.GetMetaObject(parameter);
-
-    /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-    /// <summary>
-    /// Reads the value of a column, used as the target of a bound dynamic member read.
-    /// </summary>
-    private static readonly Func<DataRow, string, object?> readColumn = static (row, columnName) => row[columnName];
-
-    /// <summary>
-    /// Writes the value of a column and returns it, used as the target of a bound dynamic member write.
-    /// </summary>
-    private static readonly Func<DataRow, string, object?, object?> writeColumn = static (row, columnName, value) =>
-        row[columnName] = value;
-
-    private readonly IDictionary<string, object?> columns = columns;
+    /// <inheritdoc />
+    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => this.GetMetaObject(parameter);
 
     /// <summary>
     /// Binds member access on a <see cref="DataRow" /> to the columns of the row, so that <c>row.Id</c> resolves to

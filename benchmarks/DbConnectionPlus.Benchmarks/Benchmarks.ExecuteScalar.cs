@@ -7,15 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
-    )]
-    public void ExecuteScalar__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(
-        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
-    )]
-    public void ExecuteScalar__Setup() => this.SetupDatabase(1);
+    private const string ExecuteScalar_Category = "ExecuteScalar";
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteScalar_Category)]
@@ -60,5 +52,13 @@ public partial class Benchmarks
         );
     }
 
-    private const string ExecuteScalar_Category = "ExecuteScalar";
+    [GlobalCleanup(
+        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
+    )]
+    public void ExecuteScalar__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [nameof(ExecuteScalar_Command), nameof(ExecuteScalar_Dapper), nameof(ExecuteScalar_DbConnectionPlus)]
+    )]
+    public void ExecuteScalar__Setup() => this.SetupDatabase(1);
 }

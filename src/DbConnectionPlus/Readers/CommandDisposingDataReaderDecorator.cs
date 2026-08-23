@@ -12,6 +12,12 @@ namespace RentADeveloper.DbConnectionPlus.Readers;
 /// </summary>
 internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
 {
+    private readonly CancellationToken commandCancellationToken;
+    private readonly DbCommandDisposer commandDisposer;
+    private readonly DbDataReader dataReader;
+    private readonly IDatabaseAdapter databaseAdapter;
+    private bool isDisposed;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandDisposingDataReaderDecorator" /> class.
     /// </summary>
@@ -70,16 +76,16 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
     public override bool IsClosed => this.dataReader.IsClosed;
 
     /// <inheritdoc />
-    public override object this[int ordinal] => this.dataReader[ordinal];
-
-    /// <inheritdoc />
-    public override object this[string name] => this.dataReader[name];
-
-    /// <inheritdoc />
     public override int RecordsAffected => this.dataReader.RecordsAffected;
 
     /// <inheritdoc />
     public override int VisibleFieldCount => this.dataReader.VisibleFieldCount;
+
+    /// <inheritdoc />
+    public override object this[int ordinal] => this.dataReader[ordinal];
+
+    /// <inheritdoc />
+    public override object this[string name] => this.dataReader[name];
 
     /// <inheritdoc />
     public override void Close() => this.dataReader.Close();
@@ -290,10 +296,4 @@ internal sealed class CommandDisposingDataReaderDecorator : DbDataReader
             this.commandDisposer.Dispose();
         }
     }
-
-    private readonly CancellationToken commandCancellationToken;
-    private readonly DbCommandDisposer commandDisposer;
-    private readonly IDatabaseAdapter databaseAdapter;
-    private readonly DbDataReader dataReader;
-    private bool isDisposed;
 }

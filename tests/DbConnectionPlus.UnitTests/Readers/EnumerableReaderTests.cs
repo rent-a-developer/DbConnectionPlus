@@ -9,11 +9,31 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
 public class EnumerableReaderTests : UnitTestsBase
 {
+    private const string FieldName = "Value";
+
+    private readonly EnumerableReader enumerableReader;
+    private readonly int[] testValues;
+
     /// <inheritdoc />
     public EnumerableReaderTests()
     {
         this.testValues = Generate.Single<int[]>();
         this.enumerableReader = new(this.testValues, typeof(int), FieldName);
+    }
+
+    [Fact]
+    public async Task CloseAsync_ShouldDisposeEnumerator()
+    {
+        var enumerable = Substitute.For<IEnumerable>();
+        var enumerator = Substitute.For<IEnumerator, IDisposable>();
+
+        enumerable.GetEnumerator().Returns(enumerator);
+
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
+
+        await reader.CloseAsync();
+
+        ((IDisposable)enumerator).Received().Dispose();
     }
 
     [Fact]
@@ -42,21 +62,6 @@ public class EnumerableReaderTests : UnitTestsBase
     }
 
     [Fact]
-    public async Task CloseAsync_ShouldDisposeEnumerator()
-    {
-        var enumerable = Substitute.For<IEnumerable>();
-        var enumerator = Substitute.For<IEnumerator, IDisposable>();
-
-        enumerable.GetEnumerator().Returns(enumerator);
-
-        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
-
-        await reader.CloseAsync();
-
-        ((IDisposable)enumerator).Received().Dispose();
-    }
-
-    [Fact]
     public void Constructor_FieldNameEmptyOrWhitespace_ShouldThrow()
     {
         Invoking(() => new EnumerableReader(this.testValues, typeof(int), string.Empty))
@@ -68,21 +73,6 @@ public class EnumerableReaderTests : UnitTestsBase
 
     [Fact]
     public void Depth_ShouldAlwaysReturnZero() => this.enumerableReader.Depth.Should().Be(0);
-
-    [Fact]
-    public void Dispose_ShouldDisposeEnumerator()
-    {
-        var enumerable = Substitute.For<IEnumerable>();
-        var enumerator = Substitute.For<IEnumerator, IDisposable>();
-
-        enumerable.GetEnumerator().Returns(enumerator);
-
-        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
-
-        reader.Dispose();
-
-        ((IDisposable)enumerator).Received().Dispose();
-    }
 
     [Fact]
     public async Task DisposeAsync_ShouldDisposeEnumerator()
@@ -100,7 +90,48 @@ public class EnumerableReaderTests : UnitTestsBase
     }
 
     [Fact]
+    public void Dispose_ShouldDisposeEnumerator()
+    {
+        var enumerable = Substitute.For<IEnumerable>();
+        var enumerator = Substitute.For<IEnumerator, IDisposable>();
+
+        enumerable.GetEnumerator().Returns(enumerator);
+
+        var reader = new EnumerableReader(enumerable, typeof(int), FieldName);
+
+        reader.Dispose();
+
+        ((IDisposable)enumerator).Received().Dispose();
+    }
+
+    [Fact]
     public void FieldCount_ShouldAlwaysReturnOne() => this.enumerableReader.FieldCount.Should().Be(1);
+
+    [Fact]
+    public void Fields_MultiColumn_ShouldMatchMappedReadableProperties()
+    {
+        var properties = EntityHelper
+            .GetEntityTypeMetadata(typeof(Entity))
+            .MappedProperties.Where(a => a.CanRead)
+            .ToArray();
+
+        using var reader = new EnumerableReader(new Entity[] { new() }, properties, EnumerableReaderOptions.None);
+
+        reader.FieldCount.Should().Be(properties.Length);
+
+        Enumerable
+            .Range(0, properties.Length)
+            .Select(reader.GetName)
+            .Should()
+            .Equal(properties.Select(a => a.PropertyName));
+
+        properties
+            .Select(a => reader.GetOrdinal(a.PropertyName))
+            .Should()
+            .Equal(Enumerable.Range(0, properties.Length));
+
+        reader.GetOrdinal("NonExistentField").Should().Be(-1);
+    }
 
     [Fact]
     public void GetDataTypeName_InvalidOrdinal_ShouldThrow() =>
@@ -200,6 +231,26 @@ public class EnumerableReaderTests : UnitTestsBase
     }
 
     [Fact]
+    public void GetValues_MultiColumnShortBuffer_ShouldFillAvailableEntries()
+    {
+        var entity = Generate.Single<Entity>();
+        var properties = EntityHelper
+            .GetEntityTypeMetadata(typeof(Entity))
+            .MappedProperties.Where(a => a.CanRead)
+            .ToArray();
+
+        using var reader = new EnumerableReader(new[] { entity }, properties, EnumerableReaderOptions.None);
+
+        reader.Read();
+
+        var values = new object[2];
+
+        reader.GetValues(values).Should().Be(values.Length);
+
+        values.Should().Equal(properties.Take(values.Length).Select(a => a.PropertyGetter!(entity) ?? DBNull.Value));
+    }
+
+    [Fact]
     public void GetValues_ShouldAlwaysReturnOne()
     {
         var values = new object[1];
@@ -225,52 +276,6 @@ public class EnumerableReaderTests : UnitTestsBase
 
             buffer[0].Should().Be(value);
         }
-    }
-
-    [Fact]
-    public void Fields_MultiColumn_ShouldMatchMappedReadableProperties()
-    {
-        var properties = EntityHelper
-            .GetEntityTypeMetadata(typeof(Entity))
-            .MappedProperties.Where(a => a.CanRead)
-            .ToArray();
-
-        using var reader = new EnumerableReader(new Entity[] { new() }, properties, EnumerableReaderOptions.None);
-
-        reader.FieldCount.Should().Be(properties.Length);
-
-        Enumerable
-            .Range(0, properties.Length)
-            .Select(reader.GetName)
-            .Should()
-            .Equal(properties.Select(a => a.PropertyName));
-
-        properties
-            .Select(a => reader.GetOrdinal(a.PropertyName))
-            .Should()
-            .Equal(Enumerable.Range(0, properties.Length));
-
-        reader.GetOrdinal("NonExistentField").Should().Be(-1);
-    }
-
-    [Fact]
-    public void GetValues_MultiColumnShortBuffer_ShouldFillAvailableEntries()
-    {
-        var entity = Generate.Single<Entity>();
-        var properties = EntityHelper
-            .GetEntityTypeMetadata(typeof(Entity))
-            .MappedProperties.Where(a => a.CanRead)
-            .ToArray();
-
-        using var reader = new EnumerableReader(new[] { entity }, properties, EnumerableReaderOptions.None);
-
-        reader.Read();
-
-        var values = new object[2];
-
-        reader.GetValues(values).Should().Be(values.Length);
-
-        values.Should().Equal(properties.Take(values.Length).Select(a => a.PropertyGetter!(entity) ?? DBNull.Value));
     }
 
     [Fact]
@@ -401,8 +406,4 @@ public class EnumerableReaderTests : UnitTestsBase
 
         accessor(reader).Should().Be(value);
     }
-
-    private readonly EnumerableReader enumerableReader;
-    private readonly int[] testValues;
-    private const string FieldName = "Value";
 }

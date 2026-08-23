@@ -12,6 +12,11 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
+    /// The maximum length for inferred parameter names. This length is supported by all major database systems.
+    /// </summary>
+    private const int MaximumParameterNameLength = 60;
+
+    /// <summary>
     /// <para>
     /// Wraps <paramref name="parameterValue" /> in an instance of <see cref="InterpolatedParameter" /> to indicate
     /// that this value should be passed as a parameter to an SQL statement.
@@ -87,9 +92,4 @@ public static partial class DbConnectionExtensions
 
         return new(inferredParameterName, parameterValue);
     }
-
-    /// <summary>
-    /// The maximum length for inferred parameter names. This length is supported by all major database systems.
-    /// </summary>
-    private const int MaximumParameterNameLength = 60;
 }

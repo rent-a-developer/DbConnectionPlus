@@ -3,8 +3,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public record Entity
 {
     public bool BooleanValue { get; set; }
-    public byte[] BytesValue { get; set; } = null!;
     public byte ByteValue { get; set; }
+    public byte[] BytesValue { get; set; } = null!;
     public char CharValue { get; set; }
     public DateOnly DateOnlyValue { get; set; }
     public DateTime DateTimeValue { get; set; }

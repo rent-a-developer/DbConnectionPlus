@@ -5,20 +5,20 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public class FakeConnectionC : FakeConnectionA
 {
     /// <inheritdoc />
-    [AllowNull]
-    public override string ConnectionString { get; set; }
+    public override string DataSource => null!;
 
     /// <inheritdoc />
     public override string Database => null!;
-
-    /// <inheritdoc />
-    public override string DataSource => null!;
 
     /// <inheritdoc />
     public override string ServerVersion => null!;
 
     /// <inheritdoc />
     public override ConnectionState State => ConnectionState.Closed;
+
+    /// <inheritdoc />
+    [AllowNull]
+    public override string ConnectionString { get; set; }
 
     /// <inheritdoc />
     public override void ChangeDatabase(string databaseName) => throw new NotImplementedException();

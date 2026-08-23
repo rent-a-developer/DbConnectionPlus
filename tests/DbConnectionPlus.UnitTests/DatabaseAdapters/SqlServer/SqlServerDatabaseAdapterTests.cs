@@ -4,6 +4,8 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters.SqlServer;
 
 public class SqlServerDatabaseAdapterTests : UnitTestsBase
 {
+    private readonly SqlServerDatabaseAdapter adapter = new();
+
     [Fact]
     public void BindParameterValue_BytesValue_ShouldSetDbTypeAndValue()
     {
@@ -176,6 +178,4 @@ public class SqlServerDatabaseAdapterTests : UnitTestsBase
     [Fact]
     public void TemporaryTableBuilder_ShouldReturnBuilder() =>
         this.adapter.TemporaryTableBuilder.Should().BeOfType<SqlServerTemporaryTableBuilder>();
-
-    private readonly SqlServerDatabaseAdapter adapter = new();
 }

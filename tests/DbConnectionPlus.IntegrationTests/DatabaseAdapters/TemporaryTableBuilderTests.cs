@@ -19,6 +19,8 @@ public sealed class TemporaryTableBuilderTests_SqlServer : TemporaryTableBuilder
 public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : IntegrationTestsBase<TTestDatabaseProvider>
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
+    private readonly ITemporaryTableBuilder builder;
+
     /// <inheritdoc />
     protected TemporaryTableBuilderTests() => this.builder = this.DatabaseAdapter.TemporaryTableBuilder;
 
@@ -350,6 +352,35 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(bool useAsyncApi)
+    {
+        var values = Generate.MultipleNullable<int>();
+
+        await using var tableDisposer = await this.CallApi(
+            useAsyncApi,
+            this.Connection,
+            null,
+            "NullValues",
+            values,
+            typeof(int?),
+            TestContext.Current.CancellationToken
+        );
+
+        (
+            await this
+                .Connection.QueryAsync<int?>(
+                    $"SELECT {Q("Value")} FROM {QT("NullValues")}",
+                    cancellationToken: TestContext.Current.CancellationToken
+                )
+                .ToListAsync(TestContext.Current.CancellationToken)
+        )
+            .Should()
+            .BeEquivalentTo(values);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task BuildTemporaryTable_ScalarValues_DateTimeOffsetValues_ShouldSupportDateTimeOffset(
         bool useAsyncApi
     )
@@ -579,35 +610,6 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task BuildTemporaryTable_ScalarValuesWithNullValues_ShouldHandleNullValues(bool useAsyncApi)
-    {
-        var values = Generate.MultipleNullable<int>();
-
-        await using var tableDisposer = await this.CallApi(
-            useAsyncApi,
-            this.Connection,
-            null,
-            "NullValues",
-            values,
-            typeof(int?),
-            TestContext.Current.CancellationToken
-        );
-
-        (
-            await this
-                .Connection.QueryAsync<int?>(
-                    $"SELECT {Q("Value")} FROM {QT("NullValues")}",
-                    cancellationToken: TestContext.Current.CancellationToken
-                )
-                .ToListAsync(TestContext.Current.CancellationToken)
-        )
-            .Should()
-            .BeEquivalentTo(values);
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
     public async Task BuildTemporaryTable_ShouldReturnDisposerThatDropsTableAsync(bool useAsyncApi)
     {
         var disposer = await this.CallApi(
@@ -660,6 +662,4 @@ public abstract class TemporaryTableBuilderTests<TTestDatabaseProvider> : Integr
             return Task.FromException<TemporaryTableDisposer>(ex);
         }
     }
-
-    private readonly ITemporaryTableBuilder builder;
 }

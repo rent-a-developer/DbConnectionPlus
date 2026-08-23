@@ -3,25 +3,6 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 public class DbConnectionExtensions_InsertEntitiesTests : UnitTestsBase
 {
     [Fact]
-    public void InsertEntities_ShouldCallEntityManipulator()
-    {
-        var entities = Generate.Multiple<Entity>();
-        using var transaction = this.MockDbConnection.BeginTransaction();
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var numberOfAffectedRows = Generate.SmallNumber();
-
-        this.MockEntityManipulator.InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken)
-            .Returns(numberOfAffectedRows);
-
-        this.MockDbConnection.InsertEntities(entities, transaction, cancellationToken)
-            .Should()
-            .Be(numberOfAffectedRows);
-
-        this.MockEntityManipulator.Received()
-            .InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken);
-    }
-
-    [Fact]
     public async Task InsertEntitiesAsync_ShouldCallEntityManipulator()
     {
         var entities = Generate.Multiple<Entity>();
@@ -39,6 +20,25 @@ public class DbConnectionExtensions_InsertEntitiesTests : UnitTestsBase
         await this
             .MockEntityManipulator.Received()
             .InsertEntitiesAsync(this.MockDbConnection, entities, transaction, cancellationToken);
+    }
+
+    [Fact]
+    public void InsertEntities_ShouldCallEntityManipulator()
+    {
+        var entities = Generate.Multiple<Entity>();
+        using var transaction = this.MockDbConnection.BeginTransaction();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var numberOfAffectedRows = Generate.SmallNumber();
+
+        this.MockEntityManipulator.InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
+
+        this.MockDbConnection.InsertEntities(entities, transaction, cancellationToken)
+            .Should()
+            .Be(numberOfAffectedRows);
+
+        this.MockEntityManipulator.Received()
+            .InsertEntities(this.MockDbConnection, entities, transaction, cancellationToken);
     }
 
     [Fact]

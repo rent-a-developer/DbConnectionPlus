@@ -52,6 +52,8 @@ public static class EntityHelper
     internal const DynamicallyAccessedMemberTypes TemporaryTableValueMemberTypes =
         EntityMemberTypes | DynamicallyAccessedMemberTypes.PublicFields;
 
+    private static readonly ConcurrentDictionary<Type, EntityTypeMetadata> entityTypeMetadataPerEntityType = [];
+
     /// <summary>
     /// Tries to find a constructor of the type <paramref name="type" /> that has parameters compatible to the
     /// specified expected parameters.
@@ -178,52 +180,6 @@ public static class EntityHelper
     /// Resets the cached entity types metadata.
     /// </summary>
     internal static void ResetEntityTypeMetadataCache() => entityTypeMetadataPerEntityType.Clear();
-
-    /// <summary>
-    /// Creates the getter function for the property <paramref name="property" />.
-    /// </summary>
-    /// <param name="property">The property for which to create the getter function.</param>
-    /// <returns>A function taking an entity and returning the value of <paramref name="property" />.</returns>
-    /// <remarks>
-    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
-    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
-    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
-    /// one is correct.
-    /// </remarks>
-    private static Func<object, object?> CreatePropertyGetter(PropertyInfo property)
-    {
-        MethodInvoker? getMethodInvoker = null;
-
-        return entity =>
-        {
-            getMethodInvoker ??= MethodInvoker.Create(property.GetMethod!);
-
-            return getMethodInvoker.Invoke(entity);
-        };
-    }
-
-    /// <summary>
-    /// Creates the setter function for the property <paramref name="property" />.
-    /// </summary>
-    /// <param name="property">The property for which to create the setter function.</param>
-    /// <returns>An action taking an entity and the value to assign to <paramref name="property" />.</returns>
-    /// <remarks>
-    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
-    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
-    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
-    /// one is correct.
-    /// </remarks>
-    private static Action<object, object?> CreatePropertySetter(PropertyInfo property)
-    {
-        MethodInvoker? setMethodInvoker = null;
-
-        return (entity, value) =>
-        {
-            setMethodInvoker ??= MethodInvoker.Create(property.SetMethod!);
-
-            setMethodInvoker.Invoke(entity, value);
-        };
-    }
 
     /// <summary>
     /// Creates the metadata for the entity type <paramref name="entityType" />.
@@ -386,5 +342,49 @@ public static class EntityHelper
         );
     }
 
-    private static readonly ConcurrentDictionary<Type, EntityTypeMetadata> entityTypeMetadataPerEntityType = [];
+    /// <summary>
+    /// Creates the getter function for the property <paramref name="property" />.
+    /// </summary>
+    /// <param name="property">The property for which to create the getter function.</param>
+    /// <returns>A function taking an entity and returning the value of <paramref name="property" />.</returns>
+    /// <remarks>
+    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
+    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
+    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
+    /// one is correct.
+    /// </remarks>
+    private static Func<object, object?> CreatePropertyGetter(PropertyInfo property)
+    {
+        MethodInvoker? getMethodInvoker = null;
+
+        return entity =>
+        {
+            getMethodInvoker ??= MethodInvoker.Create(property.GetMethod!);
+
+            return getMethodInvoker.Invoke(entity);
+        };
+    }
+
+    /// <summary>
+    /// Creates the setter function for the property <paramref name="property" />.
+    /// </summary>
+    /// <param name="property">The property for which to create the setter function.</param>
+    /// <returns>An action taking an entity and the value to assign to <paramref name="property" />.</returns>
+    /// <remarks>
+    /// The underlying <see cref="MethodInvoker" /> is resolved on the first call and then kept in the closure, so
+    /// building the metadata of an entity type costs nothing per property until an accessor is actually used. The
+    /// unsynchronized assignment is deliberate: two threads racing here produce two equivalent invokers, and either
+    /// one is correct.
+    /// </remarks>
+    private static Action<object, object?> CreatePropertySetter(PropertyInfo property)
+    {
+        MethodInvoker? setMethodInvoker = null;
+
+        return (entity, value) =>
+        {
+            setMethodInvoker ??= MethodInvoker.Create(property.SetMethod!);
+
+            setMethodInvoker.Invoke(entity, value);
+        };
+    }
 }

@@ -13,25 +13,6 @@ public class DbConnectionExtensions_UpdateEntitiesTests : UnitTestsBase
     }
 
     [Fact]
-    public void UpdateEntities_ShouldCallEntityManipulator()
-    {
-        var entities = Generate.Multiple<Entity>();
-        using var transaction = this.MockDbConnection.BeginTransaction();
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var numberOfAffectedRows = Generate.SmallNumber();
-
-        this.MockEntityManipulator.UpdateEntities(this.MockDbConnection, entities, transaction, cancellationToken)
-            .Returns(numberOfAffectedRows);
-
-        this.MockDbConnection.UpdateEntities(entities, transaction, cancellationToken)
-            .Should()
-            .Be(numberOfAffectedRows);
-
-        this.MockEntityManipulator.Received()
-            .UpdateEntities(this.MockDbConnection, entities, transaction, cancellationToken);
-    }
-
-    [Fact]
     public async Task UpdateEntitiesAsync_ShouldCallEntityManipulator()
     {
         var entities = Generate.Multiple<Entity>();
@@ -49,5 +30,24 @@ public class DbConnectionExtensions_UpdateEntitiesTests : UnitTestsBase
         await this
             .MockEntityManipulator.Received()
             .UpdateEntitiesAsync(this.MockDbConnection, entities, transaction, cancellationToken);
+    }
+
+    [Fact]
+    public void UpdateEntities_ShouldCallEntityManipulator()
+    {
+        var entities = Generate.Multiple<Entity>();
+        using var transaction = this.MockDbConnection.BeginTransaction();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var numberOfAffectedRows = Generate.SmallNumber();
+
+        this.MockEntityManipulator.UpdateEntities(this.MockDbConnection, entities, transaction, cancellationToken)
+            .Returns(numberOfAffectedRows);
+
+        this.MockDbConnection.UpdateEntities(entities, transaction, cancellationToken)
+            .Should()
+            .Be(numberOfAffectedRows);
+
+        this.MockEntityManipulator.Received()
+            .UpdateEntities(this.MockDbConnection, entities, transaction, cancellationToken);
     }
 }

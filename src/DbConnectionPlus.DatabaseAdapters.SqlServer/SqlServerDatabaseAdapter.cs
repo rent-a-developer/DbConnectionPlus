@@ -10,6 +10,31 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 /// </summary>
 public class SqlServerDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToSqlDataType = new()
+    {
+        { typeof(bool), "bit" },
+        { typeof(byte), "tinyint" },
+        { typeof(byte[]), "varbinary(max)" },
+        { typeof(char), "char(1)" },
+        { typeof(DateOnly), "date" },
+        { typeof(DateTime), "datetime2" },
+        { typeof(DateTimeOffset), "datetimeoffset" },
+        { typeof(decimal), "decimal(28,10)" },
+        { typeof(double), "float" },
+        { typeof(Guid), "uniqueidentifier" },
+        { typeof(short), "smallint" },
+        { typeof(int), "int" },
+        { typeof(long), "bigint" },
+        { typeof(object), "sql_variant" },
+        { typeof(float), "real" },
+        { typeof(string), "nvarchar(max)" },
+        { typeof(TimeOnly), "time" },
+        { typeof(TimeSpan), "time" },
+    };
+
+    private readonly SqlServerEntityManipulator entityManipulator;
+    private readonly SqlServerTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerDatabaseAdapter" /> class.
     /// </summary>
@@ -140,29 +165,4 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
 
         return false;
     }
-
-    private readonly SqlServerEntityManipulator entityManipulator;
-    private readonly SqlServerTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, string> typeToSqlDataType = new()
-    {
-        { typeof(bool), "bit" },
-        { typeof(byte), "tinyint" },
-        { typeof(byte[]), "varbinary(max)" },
-        { typeof(char), "char(1)" },
-        { typeof(DateOnly), "date" },
-        { typeof(DateTime), "datetime2" },
-        { typeof(DateTimeOffset), "datetimeoffset" },
-        { typeof(decimal), "decimal(28,10)" },
-        { typeof(double), "float" },
-        { typeof(Guid), "uniqueidentifier" },
-        { typeof(short), "smallint" },
-        { typeof(int), "int" },
-        { typeof(long), "bigint" },
-        { typeof(object), "sql_variant" },
-        { typeof(float), "real" },
-        { typeof(string), "nvarchar(max)" },
-        { typeof(TimeOnly), "time" },
-        { typeof(TimeSpan), "time" },
-    };
 }

@@ -15,6 +15,8 @@ internal sealed class PostgreSqlContainerFixture()
     : DbContainerFixture<PostgreSqlBuilder, PostgreSqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
         ITestDatabaseContainerFixture
 {
+    private const string Image = "postgres:latest";
+
     /// <inheritdoc />
     public override string ConnectionString =>
         new NpgsqlConnectionStringBuilder
@@ -31,6 +33,4 @@ internal sealed class PostgreSqlContainerFixture()
     /// <inheritdoc />
     protected override PostgreSqlBuilder Configure() =>
         new PostgreSqlBuilder(Image).WithPassword(TestDatabaseContainers.Password);
-
-    private const string Image = "postgres:latest";
 }

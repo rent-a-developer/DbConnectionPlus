@@ -13,6 +13,67 @@ namespace RentADeveloper.DbConnectionPlus.Materializers;
 /// </summary>
 internal static class MaterializerFactoryHelper
 {
+    private static readonly Dictionary<Type, MethodInfo> dbDataReaderTypedGetMethods = new()
+    {
+        { typeof(bool), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetBoolean))! },
+        { typeof(byte), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetByte))! },
+        { typeof(DateTime), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime))! },
+        { typeof(decimal), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDecimal))! },
+        { typeof(double), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDouble))! },
+        { typeof(float), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFloat))! },
+        { typeof(Guid), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetGuid))! },
+        { typeof(short), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt16))! },
+        { typeof(int), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt32))! },
+        { typeof(long), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt64))! },
+        { typeof(string), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! },
+    };
+
+    /// <summary>
+    /// The functions that read a field value using the same typed <see cref="DbDataReader" />.GetXXX method as
+    /// <see cref="dbDataReaderTypedGetMethods" />, for the materializer path that cannot compile an expression tree.
+    /// </summary>
+    /// <remarks>
+    /// The key set must stay identical to the key set of <see cref="dbDataReaderTypedGetMethods" />, otherwise the
+    /// two materializer paths disagree on which field types are supported.
+    /// </remarks>
+    private static readonly Dictionary<Type, Func<DbDataReader, int, object?>> dbDataReaderTypedGetValueFunctions =
+        new()
+        {
+            { typeof(bool), static (dataReader, fieldOrdinal) => dataReader.GetBoolean(fieldOrdinal) },
+            { typeof(byte), static (dataReader, fieldOrdinal) => dataReader.GetByte(fieldOrdinal) },
+            { typeof(DateTime), static (dataReader, fieldOrdinal) => dataReader.GetDateTime(fieldOrdinal) },
+            { typeof(decimal), static (dataReader, fieldOrdinal) => dataReader.GetDecimal(fieldOrdinal) },
+            { typeof(double), static (dataReader, fieldOrdinal) => dataReader.GetDouble(fieldOrdinal) },
+            { typeof(float), static (dataReader, fieldOrdinal) => dataReader.GetFloat(fieldOrdinal) },
+            { typeof(Guid), static (dataReader, fieldOrdinal) => dataReader.GetGuid(fieldOrdinal) },
+            { typeof(short), static (dataReader, fieldOrdinal) => dataReader.GetInt16(fieldOrdinal) },
+            { typeof(int), static (dataReader, fieldOrdinal) => dataReader.GetInt32(fieldOrdinal) },
+            { typeof(long), static (dataReader, fieldOrdinal) => dataReader.GetInt64(fieldOrdinal) },
+            { typeof(string), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) },
+        };
+
+    /// <summary>
+    /// The field types <see cref="DbDataReader" /> has no typed GetXXX method for, and which
+    /// <see cref="CreateGetDbDataReaderFieldValueExpression" /> therefore reads through
+    /// <see cref="DbDataReader.GetValue" /> instead.
+    /// </summary>
+    private static readonly HashSet<Type> dbDataReaderUntypedFieldTypes =
+    [
+        typeof(byte[]),
+        typeof(DateOnly),
+        typeof(DateTimeOffset),
+        typeof(TimeOnly),
+        typeof(TimeSpan),
+    ];
+
+    /// <summary>
+    /// The generic method definition of the <see cref="ValueConverter.ConvertValueToType{TTarget}" /> method, cached
+    /// for <see cref="MakeValueConverterConvertValueToTypeMethod" />.
+    /// </summary>
+    private static readonly MethodInfo valueConverterConvertValueToTypeMethod = typeof(ValueConverter)
+        .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+        .First(m => m is { Name: nameof(ValueConverter.ConvertValueToType), IsGenericMethod: true });
+
     /// <summary>
     /// The <see cref="DbDataReader.GetValue(int)" /> method.
     /// </summary>
@@ -43,50 +104,6 @@ internal static class MaterializerFactoryHelper
     /// </summary>
     internal static PropertyInfo StringLengthProperty { get; } =
         typeof(string).GetProperty(nameof(String.Length), BindingFlags.Instance | BindingFlags.Public)!;
-
-    /// <summary>
-    /// Specializes <see cref="valueConverterConvertValueToTypeMethod" /> over <paramref name="targetType" />, so that
-    /// a compiled expression tree can call the generic
-    /// <see cref="ValueConverter.ConvertValueToType{TTarget}" /> directly.
-    /// </summary>
-    /// <param name="targetType">The type to specialize the method over.</param>
-    /// <returns>
-    /// The <see cref="ValueConverter.ConvertValueToType{TTarget}" /> method, specialized over
-    /// <paramref name="targetType" />.
-    /// </returns>
-    /// <remarks>
-    /// <para>
-    /// This exists as its own method purely so that the <c>IL2060</c> suppression below covers one line of code
-    /// instead of the whole expression-building method it is called from. Both materializer factories call it.
-    /// </para>
-    /// <para>
-    /// The suppression is sound rather than convenient, and provably so:
-    /// <see cref="ValueConverter.ConvertValueToType{TTarget}" /> declares <b>no</b>
-    /// <see cref="DynamicallyAccessedMembersAttribute" /> on its type parameter. <c>IL2060</c> reports that the
-    /// requirements of a runtime-specialized generic method cannot be guaranteed; here there are no requirements to
-    /// guarantee, so there is nothing the trimmer could remove and nothing for a consumer to act on. Whether the
-    /// conversion reflects over the target type at all is a question about the converters, which are annotation-free
-    /// and verified so: the trim analyzers report nothing for <c>ValueConverter</c> or <c>EnumConverter</c>.
-    /// </para>
-    /// <para>
-    /// <see cref="RequiresDynamicCodeAttribute" /> is a different matter and is kept: specializing a generic method
-    /// over a value type at run time genuinely needs code generation. Only the callers that are guarded by
-    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" /> may reach this.
-    /// </para>
-    /// </remarks>
-    [RequiresDynamicCode(
-        "Specializing a generic method over a value type at run time is not supported when the application is "
-            + "published with Native AOT. Call this only from a RuntimeFeature.IsDynamicCodeSupported branch."
-    )]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2060:MakeGenericMethod call cannot be statically analyzed",
-        Justification = "ValueConverter.ConvertValueToType<TTarget> declares no DynamicallyAccessedMembers on TTarget, so the "
-            + "specialized instantiation has no requirements that trimming could fail to preserve. Reaching this "
-            + "method at all requires a RuntimeFeature.IsDynamicCodeSupported branch."
-    )]
-    internal static MethodInfo MakeValueConverterConvertValueToTypeMethod(Type targetType) =>
-        valueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType);
 
     /// <summary>
     /// Creates an <see cref="Expression" /> that gets the value of a field of the specified field type from a
@@ -285,64 +302,47 @@ internal static class MaterializerFactoryHelper
         return dbDataReaderTypedGetMethods.ContainsKey(fieldType) || dbDataReaderUntypedFieldTypes.Contains(fieldType);
     }
 
-    private static readonly Dictionary<Type, MethodInfo> dbDataReaderTypedGetMethods = new()
-    {
-        { typeof(bool), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetBoolean))! },
-        { typeof(byte), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetByte))! },
-        { typeof(DateTime), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDateTime))! },
-        { typeof(decimal), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDecimal))! },
-        { typeof(double), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetDouble))! },
-        { typeof(float), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetFloat))! },
-        { typeof(Guid), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetGuid))! },
-        { typeof(short), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt16))! },
-        { typeof(int), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt32))! },
-        { typeof(long), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetInt64))! },
-        { typeof(string), typeof(DbDataReader).GetMethod(nameof(DbDataReader.GetString))! },
-    };
-
     /// <summary>
-    /// The functions that read a field value using the same typed <see cref="DbDataReader" />.GetXXX method as
-    /// <see cref="dbDataReaderTypedGetMethods" />, for the materializer path that cannot compile an expression tree.
+    /// Specializes <see cref="valueConverterConvertValueToTypeMethod" /> over <paramref name="targetType" />, so that
+    /// a compiled expression tree can call the generic
+    /// <see cref="ValueConverter.ConvertValueToType{TTarget}" /> directly.
     /// </summary>
+    /// <param name="targetType">The type to specialize the method over.</param>
+    /// <returns>
+    /// The <see cref="ValueConverter.ConvertValueToType{TTarget}" /> method, specialized over
+    /// <paramref name="targetType" />.
+    /// </returns>
     /// <remarks>
-    /// The key set must stay identical to the key set of <see cref="dbDataReaderTypedGetMethods" />, otherwise the
-    /// two materializer paths disagree on which field types are supported.
+    /// <para>
+    /// This exists as its own method purely so that the <c>IL2060</c> suppression below covers one line of code
+    /// instead of the whole expression-building method it is called from. Both materializer factories call it.
+    /// </para>
+    /// <para>
+    /// The suppression is sound rather than convenient, and provably so:
+    /// <see cref="ValueConverter.ConvertValueToType{TTarget}" /> declares <b>no</b>
+    /// <see cref="DynamicallyAccessedMembersAttribute" /> on its type parameter. <c>IL2060</c> reports that the
+    /// requirements of a runtime-specialized generic method cannot be guaranteed; here there are no requirements to
+    /// guarantee, so there is nothing the trimmer could remove and nothing for a consumer to act on. Whether the
+    /// conversion reflects over the target type at all is a question about the converters, which are annotation-free
+    /// and verified so: the trim analyzers report nothing for <c>ValueConverter</c> or <c>EnumConverter</c>.
+    /// </para>
+    /// <para>
+    /// <see cref="RequiresDynamicCodeAttribute" /> is a different matter and is kept: specializing a generic method
+    /// over a value type at run time genuinely needs code generation. Only the callers that are guarded by
+    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" /> may reach this.
+    /// </para>
     /// </remarks>
-    private static readonly Dictionary<Type, Func<DbDataReader, int, object?>> dbDataReaderTypedGetValueFunctions =
-        new()
-        {
-            { typeof(bool), static (dataReader, fieldOrdinal) => dataReader.GetBoolean(fieldOrdinal) },
-            { typeof(byte), static (dataReader, fieldOrdinal) => dataReader.GetByte(fieldOrdinal) },
-            { typeof(DateTime), static (dataReader, fieldOrdinal) => dataReader.GetDateTime(fieldOrdinal) },
-            { typeof(decimal), static (dataReader, fieldOrdinal) => dataReader.GetDecimal(fieldOrdinal) },
-            { typeof(double), static (dataReader, fieldOrdinal) => dataReader.GetDouble(fieldOrdinal) },
-            { typeof(float), static (dataReader, fieldOrdinal) => dataReader.GetFloat(fieldOrdinal) },
-            { typeof(Guid), static (dataReader, fieldOrdinal) => dataReader.GetGuid(fieldOrdinal) },
-            { typeof(short), static (dataReader, fieldOrdinal) => dataReader.GetInt16(fieldOrdinal) },
-            { typeof(int), static (dataReader, fieldOrdinal) => dataReader.GetInt32(fieldOrdinal) },
-            { typeof(long), static (dataReader, fieldOrdinal) => dataReader.GetInt64(fieldOrdinal) },
-            { typeof(string), static (dataReader, fieldOrdinal) => dataReader.GetString(fieldOrdinal) },
-        };
-
-    /// <summary>
-    /// The field types <see cref="DbDataReader" /> has no typed GetXXX method for, and which
-    /// <see cref="CreateGetDbDataReaderFieldValueExpression" /> therefore reads through
-    /// <see cref="DbDataReader.GetValue" /> instead.
-    /// </summary>
-    private static readonly HashSet<Type> dbDataReaderUntypedFieldTypes =
-    [
-        typeof(byte[]),
-        typeof(DateOnly),
-        typeof(DateTimeOffset),
-        typeof(TimeOnly),
-        typeof(TimeSpan),
-    ];
-
-    /// <summary>
-    /// The generic method definition of the <see cref="ValueConverter.ConvertValueToType{TTarget}" /> method, cached
-    /// for <see cref="MakeValueConverterConvertValueToTypeMethod" />.
-    /// </summary>
-    private static readonly MethodInfo valueConverterConvertValueToTypeMethod = typeof(ValueConverter)
-        .GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-        .First(m => m is { Name: nameof(ValueConverter.ConvertValueToType), IsGenericMethod: true });
+    [RequiresDynamicCode(
+        "Specializing a generic method over a value type at run time is not supported when the application is "
+            + "published with Native AOT. Call this only from a RuntimeFeature.IsDynamicCodeSupported branch."
+    )]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2060:MakeGenericMethod call cannot be statically analyzed",
+        Justification = "ValueConverter.ConvertValueToType<TTarget> declares no DynamicallyAccessedMembers on TTarget, so the "
+            + "specialized instantiation has no requirements that trimming could fail to preserve. Reaching this "
+            + "method at all requires a RuntimeFeature.IsDynamicCodeSupported branch."
+    )]
+    internal static MethodInfo MakeValueConverterConvertValueToTypeMethod(Type targetType) =>
+        valueConverterConvertValueToTypeMethod.MakeGenericMethod(targetType);
 }

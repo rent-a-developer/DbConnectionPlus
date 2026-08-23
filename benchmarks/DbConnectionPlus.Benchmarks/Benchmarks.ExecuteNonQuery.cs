@@ -7,23 +7,7 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(ExecuteNonQuery_Command),
-            nameof(ExecuteNonQuery_Dapper),
-            nameof(ExecuteNonQuery_DbConnectionPlus),
-        ]
-    )]
-    public void ExecuteNonQuery__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(
-        Targets = [
-            nameof(ExecuteNonQuery_Command),
-            nameof(ExecuteNonQuery_Dapper),
-            nameof(ExecuteNonQuery_DbConnectionPlus),
-        ]
-    )]
-    public void ExecuteNonQuery__Setup() => this.SetupDatabase(0);
+    private const string ExecuteNonQuery_Category = "ExecuteNonQuery";
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(ExecuteNonQuery_Category)]
@@ -53,5 +37,21 @@ public partial class Benchmarks
     public void ExecuteNonQuery_DbConnectionPlus() =>
         this.connection.ExecuteNonQuery($"DELETE FROM Entity WHERE Id = {Parameter(-1)}");
 
-    private const string ExecuteNonQuery_Category = "ExecuteNonQuery";
+    [GlobalCleanup(
+        Targets = [
+            nameof(ExecuteNonQuery_Command),
+            nameof(ExecuteNonQuery_Dapper),
+            nameof(ExecuteNonQuery_DbConnectionPlus),
+        ]
+    )]
+    public void ExecuteNonQuery__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [
+            nameof(ExecuteNonQuery_Command),
+            nameof(ExecuteNonQuery_Dapper),
+            nameof(ExecuteNonQuery_DbConnectionPlus),
+        ]
+    )]
+    public void ExecuteNonQuery__Setup() => this.SetupDatabase(0);
 }

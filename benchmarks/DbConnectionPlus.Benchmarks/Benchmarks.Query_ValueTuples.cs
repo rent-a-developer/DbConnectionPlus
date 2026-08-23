@@ -7,23 +7,8 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets = [
-            nameof(Query_ValueTuples_Command),
-            nameof(Query_ValueTuples_Dapper),
-            nameof(Query_ValueTuples_DbConnectionPlus),
-        ]
-    )]
-    public void Query_ValueTuples__Cleanup() => this.connection.Dispose();
-
-    [GlobalSetup(
-        Targets = [
-            nameof(Query_ValueTuples_Command),
-            nameof(Query_ValueTuples_Dapper),
-            nameof(Query_ValueTuples_DbConnectionPlus),
-        ]
-    )]
-    public void Query_ValueTuples__Setup() => this.SetupDatabase(Query_ValueTuples_EntitiesPerOperation);
+    private const string Query_ValueTuples_Category = "Query_ValueTuples";
+    private const int Query_ValueTuples_EntitiesPerOperation = 150;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_ValueTuples_Category)]
@@ -82,6 +67,21 @@ public partial class Benchmarks
             ),
         ];
 
-    private const string Query_ValueTuples_Category = "Query_ValueTuples";
-    private const int Query_ValueTuples_EntitiesPerOperation = 150;
+    [GlobalCleanup(
+        Targets = [
+            nameof(Query_ValueTuples_Command),
+            nameof(Query_ValueTuples_Dapper),
+            nameof(Query_ValueTuples_DbConnectionPlus),
+        ]
+    )]
+    public void Query_ValueTuples__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_ValueTuples_Command),
+            nameof(Query_ValueTuples_Dapper),
+            nameof(Query_ValueTuples_DbConnectionPlus),
+        ]
+    )]
+    public void Query_ValueTuples__Setup() => this.SetupDatabase(Query_ValueTuples_EntitiesPerOperation);
 }

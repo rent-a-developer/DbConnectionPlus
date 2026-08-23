@@ -16,6 +16,8 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 /// </summary>
 internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private readonly SqliteDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteTemporaryTableBuilder" /> class.
     /// </summary>
@@ -196,86 +198,6 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             () => DropTemporaryTable(name, sqliteConnection, sqliteTransaction),
             () => DropTemporaryTableAsync(name, sqliteConnection, sqliteTransaction)
         );
-    }
-
-    /// <summary>
-    /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
-    /// <paramref name="objectsType" />.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="objectsType">The type of objects with which to populate the table.</param>
-    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
-    /// <returns>The built SQL code.</returns>
-    private string BuildCreateMultiColumnTemporaryTableSqlCode(
-        string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
-        EnumSerializationMode enumSerializationMode
-    )
-    {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
-
-        sqlBuilder.Append("CREATE TEMP TABLE \"");
-        sqlBuilder.Append(tableName);
-        sqlBuilder.AppendLine("\"");
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(");
-
-        var properties = EntityHelper.GetEntityTypeMetadata(objectsType).MappedProperties.Where(a => a.CanRead);
-
-        var prependSeparator = false;
-
-        foreach (var property in properties)
-        {
-            if (prependSeparator)
-            {
-                sqlBuilder.Append(", ");
-            }
-
-            sqlBuilder.Append('"');
-            sqlBuilder.Append(property.ColumnName);
-            sqlBuilder.Append("\" ");
-
-            var propertyType = property.PropertyType;
-
-            sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
-
-            prependSeparator = true;
-        }
-
-        sqlBuilder.AppendLine(")");
-
-        return sqlBuilder.ToString();
-    }
-
-    /// <summary>
-    /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
-    /// <paramref name="valuesType" />.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="valuesType">The type of values with which the table will be populated.</param>
-    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
-    /// <returns>The built SQL code.</returns>
-    private string BuildCreateSingleColumnTemporaryTableSqlCode(
-        string tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
-        EnumSerializationMode enumSerializationMode
-    )
-    {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
-
-        sqlBuilder.Append("CREATE TEMP TABLE \"");
-        sqlBuilder.Append(tableName);
-        sqlBuilder.AppendLine("\"");
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(\"");
-        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
-        sqlBuilder.Append("\" ");
-        sqlBuilder.Append(this.databaseAdapter.GetDataType(valuesType, enumSerializationMode));
-        sqlBuilder.AppendLine(")");
-
-        return sqlBuilder.ToString();
     }
 
     /// <summary>
@@ -532,5 +454,83 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         }
     }
 
-    private readonly SqliteDatabaseAdapter databaseAdapter;
+    /// <summary>
+    /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
+    /// <paramref name="objectsType" />.
+    /// </summary>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="objectsType">The type of objects with which to populate the table.</param>
+    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
+    /// <returns>The built SQL code.</returns>
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
+        EnumSerializationMode enumSerializationMode
+    )
+    {
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
+
+        sqlBuilder.Append("CREATE TEMP TABLE \"");
+        sqlBuilder.Append(tableName);
+        sqlBuilder.AppendLine("\"");
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(");
+
+        var properties = EntityHelper.GetEntityTypeMetadata(objectsType).MappedProperties.Where(a => a.CanRead);
+
+        var prependSeparator = false;
+
+        foreach (var property in properties)
+        {
+            if (prependSeparator)
+            {
+                sqlBuilder.Append(", ");
+            }
+
+            sqlBuilder.Append('"');
+            sqlBuilder.Append(property.ColumnName);
+            sqlBuilder.Append("\" ");
+
+            var propertyType = property.PropertyType;
+
+            sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
+
+            prependSeparator = true;
+        }
+
+        sqlBuilder.AppendLine(")");
+
+        return sqlBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
+    /// <paramref name="valuesType" />.
+    /// </summary>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="valuesType">The type of values with which the table will be populated.</param>
+    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
+    /// <returns>The built SQL code.</returns>
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
+        EnumSerializationMode enumSerializationMode
+    )
+    {
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
+
+        sqlBuilder.Append("CREATE TEMP TABLE \"");
+        sqlBuilder.Append(tableName);
+        sqlBuilder.AppendLine("\"");
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(\"");
+        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+        sqlBuilder.Append("\" ");
+        sqlBuilder.Append(this.databaseAdapter.GetDataType(valuesType, enumSerializationMode));
+        sqlBuilder.AppendLine(")");
+
+        return sqlBuilder.ToString();
+    }
 }

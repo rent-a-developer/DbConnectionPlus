@@ -10,8 +10,8 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 public record BenchmarkEntity
 {
     public bool BooleanValue { get; set; }
-    public byte[] BytesValue { get; set; } = null!;
     public byte ByteValue { get; set; }
+    public byte[] BytesValue { get; set; } = null!;
     public char CharValue { get; set; }
     public DateTime DateTimeValue { get; set; }
     public decimal DecimalValue { get; set; }
