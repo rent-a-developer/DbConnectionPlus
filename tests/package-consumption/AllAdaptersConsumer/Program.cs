@@ -40,9 +40,9 @@ public static class Program
 {
     /// <summary>The entry point.</summary>
     /// <returns>Zero if every assertion passed, otherwise one.</returns>
-    public static Int32 Main()
+    public static int Main()
     {
-        Console.WriteLine(new String('=', 100));
+        Console.WriteLine(new string('=', 100));
         Console.WriteLine("DbConnectionPlus - all-adapters package consumer");
         Console.WriteLine();
         Console.WriteLine($"  runtime                          {Environment.Version}");
@@ -67,7 +67,7 @@ public static class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine(new String('=', 100));
+        Console.WriteLine(new string('=', 100));
 
         if (Check.FailureCount == 0)
         {
@@ -138,7 +138,7 @@ public static class Program
     /// <param name="adapter">The name of the adapter the driver belongs to.</param>
     /// <param name="connection">The freshly constructed, unopened connection.</param>
     /// <param name="expectedAssemblyName">The simple name of the assembly the type must come from.</param>
-    private static void AssertConnectionType(String adapter, DbConnection connection, String expectedAssemblyName)
+    private static void AssertConnectionType(string adapter, DbConnection connection, string expectedAssemblyName)
     {
         using (connection)
         {
@@ -232,8 +232,8 @@ public sealed class Widget
 {
     /// <summary>The primary key. Not database-generated, so it takes part in the INSERT.</summary>
     [Key]
-    public Int64 Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>A plain string column.</summary>
-    public String Name { get; set; } = String.Empty;
+    public string Name { get; set; } = string.Empty;
 }

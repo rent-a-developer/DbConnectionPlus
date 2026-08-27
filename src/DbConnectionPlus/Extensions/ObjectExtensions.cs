@@ -84,7 +84,7 @@ internal static class ObjectExtensions
 
             long int64Value => int64Value.ToString("G", CultureInfo.InvariantCulture),
 
-            IntPtr intPtrValue => intPtrValue.ToString("G", CultureInfo.InvariantCulture),
+            nint intPtrValue => intPtrValue.ToString("G", CultureInfo.InvariantCulture),
 
             sbyte sbyteValue => sbyteValue.ToString("G", CultureInfo.InvariantCulture),
 
@@ -100,7 +100,7 @@ internal static class ObjectExtensions
 
             ulong uint64Value => uint64Value.ToString("G", CultureInfo.InvariantCulture),
 
-            UIntPtr uintPtrValue => uintPtrValue.ToString("G", CultureInfo.InvariantCulture),
+            nuint uintPtrValue => uintPtrValue.ToString("G", CultureInfo.InvariantCulture),
 
             // Must stay below the Byte[] and String arms above, both of which are sequences that have
             // a more useful representation of their own.

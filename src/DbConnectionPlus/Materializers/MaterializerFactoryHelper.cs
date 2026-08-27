@@ -97,13 +97,13 @@ internal static class MaterializerFactoryHelper
     /// The <see cref="string.Concat(string, string, string)" /> method.
     /// </summary>
     internal static MethodInfo StringConcatMethod { get; } =
-        typeof(string).GetMethod(nameof(String.Concat), [typeof(string), typeof(string), typeof(string)])!;
+        typeof(string).GetMethod(nameof(string.Concat), [typeof(string), typeof(string), typeof(string)])!;
 
     /// <summary>
     /// The <see cref="string.Length" /> property.
     /// </summary>
     internal static PropertyInfo StringLengthProperty { get; } =
-        typeof(string).GetProperty(nameof(String.Length), BindingFlags.Instance | BindingFlags.Public)!;
+        typeof(string).GetProperty(nameof(string.Length), BindingFlags.Instance | BindingFlags.Public)!;
 
     /// <summary>
     /// Creates an <see cref="Expression" /> that gets the value of a field of the specified field type from a

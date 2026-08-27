@@ -163,10 +163,10 @@ public struct InterpolatedSqlStatement : IEquatable<InterpolatedSqlStatement>
     }
 
     /// <inheritdoc />
-    public override readonly bool Equals(object? obj) => obj is InterpolatedSqlStatement other && this.Equals(other);
+    public readonly bool Equals(InterpolatedSqlStatement other) => this.fragments.SequenceEqual(other.Fragments);
 
     /// <inheritdoc />
-    public readonly bool Equals(InterpolatedSqlStatement other) => this.fragments.SequenceEqual(other.Fragments);
+    public override readonly bool Equals(object? obj) => obj is InterpolatedSqlStatement other && this.Equals(other);
 
     /// <inheritdoc />
     public override readonly int GetHashCode()

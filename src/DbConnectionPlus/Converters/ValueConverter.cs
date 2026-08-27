@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.Converters;
@@ -129,7 +128,7 @@ internal static class ValueConverter
         (typeof(long), typeof(ushort)),
         (typeof(long), typeof(uint)),
         (typeof(long), typeof(ulong)),
-        (typeof(IntPtr), typeof(IntPtr)),
+        (typeof(nint), typeof(nint)),
         (typeof(sbyte), typeof(bool)),
         (typeof(sbyte), typeof(byte)),
         (typeof(sbyte), typeof(char)),
@@ -224,7 +223,7 @@ internal static class ValueConverter
         (typeof(ulong), typeof(ushort)),
         (typeof(ulong), typeof(uint)),
         (typeof(ulong), typeof(ulong)),
-        (typeof(UIntPtr), typeof(UIntPtr)),
+        (typeof(nuint), typeof(nuint)),
     ];
 
     /// <summary>

@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using RentADeveloper.DbConnectionPlus.Exceptions;
 using RentADeveloper.DbConnectionPlus.Extensions;
 

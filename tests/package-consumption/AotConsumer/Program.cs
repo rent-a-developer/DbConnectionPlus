@@ -30,11 +30,11 @@ public static class Program
 {
     /// <summary>The entry point.</summary>
     /// <returns>Zero if every assertion passed, otherwise one.</returns>
-    public static Int32 Main()
+    public static int Main()
     {
         var databasePath = Path.Combine(Path.GetTempPath(), $"dbconnectionplus-aot-consumer-{Guid.NewGuid():N}.db");
 
-        Console.WriteLine(new String('=', 100));
+        Console.WriteLine(new string('=', 100));
         Console.WriteLine("DbConnectionPlus - Native AOT package consumer");
         Console.WriteLine();
         var packageAssembly = typeof(DbConnectionPlusConfiguration).Assembly.GetName();
@@ -90,7 +90,7 @@ public static class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine(new String('=', 100));
+        Console.WriteLine(new string('=', 100));
 
         if (Check.FailureCount == 0)
         {

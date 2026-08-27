@@ -11,4 +11,3 @@ global using RentADeveloper.ArgumentNullGuards;
 global using RentADeveloper.DbConnectionPlus.Configuration;
 global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
 global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
-global using Xunit;

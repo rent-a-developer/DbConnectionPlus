@@ -96,10 +96,10 @@ internal sealed class EnumerableReader : DbDataReader
     /// </summary>
     /// <param name="values">The sequence of entities from which the reader will read values.</param>
     /// <param name="properties">
-    /// The metadata of the properties that become the columns of the reader, in column order. Every entry must be
+    /// The metadata of the properties that become the columns of the reader in column order. Every entry must be
     /// readable, that is, expose a <see cref="EntityPropertyMetadata.PropertyGetter" />.
     /// </param>
-    /// <param name="options">The behaviours the reader applies to the values it reads.</param>
+    /// <param name="options">The behaviors the reader applies to the values it reads.</param>
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
     ///         <item>
@@ -299,8 +299,8 @@ internal sealed class EnumerableReader : DbDataReader
 
     /// <inheritdoc />
     /// <exception cref="ArgumentOutOfRangeException">
-    /// The reader reads a single column and the specified field name <paramref name="name" /> is not the field name
-    /// that was passed to the constructor of this class.
+    /// The reader reads a single column, and the specified field name <paramref name="name" /> is not the field name
+    /// passed to the constructor of this class.
     /// </exception>
     /// <remarks>
     /// In multi-column mode an unknown name yields <c>-1</c> rather than an exception, which is what the
@@ -363,7 +363,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// The reader reads a single column and <paramref name="values" /> does not have a length of at least 1.
     /// </exception>
     /// <remarks>
-    /// In multi-column mode a buffer shorter than <see cref="FieldCount" /> is filled as far as it reaches and the
+    /// In multi-column mode a buffer shorter than <see cref="FieldCount" /> is filled as far as it reaches, and the
     /// number of values written is returned, as <see cref="DbDataReader.GetValues" /> specifies.
     /// </remarks>
     public override int GetValues(object[] values)
@@ -528,14 +528,14 @@ internal sealed class EnumerableReader : DbDataReader
             return typeof(ulong);
         }
 
-        if (propertyType == typeof(IntPtr))
+        if (propertyType == typeof(nint))
         {
-            return typeof(IntPtr);
+            return typeof(nint);
         }
 
-        if (propertyType == typeof(UIntPtr))
+        if (propertyType == typeof(nuint))
         {
-            return typeof(UIntPtr);
+            return typeof(nuint);
         }
 
         if (propertyType == typeof(string))
@@ -580,7 +580,7 @@ internal sealed class EnumerableReader : DbDataReader
     /// Resolves the type a column is reported as from the type of the property it is mapped to.
     /// </summary>
     /// <param name="propertyType">The type of the property the column is mapped to.</param>
-    /// <param name="options">The behaviours the reader applies to the values it reads.</param>
+    /// <param name="options">The behaviors the reader applies to the values it reads.</param>
     /// <returns>The type the column is reported as.</returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// The configured <see cref="DbConnectionPlusConfiguration.EnumSerializationMode" /> is not a defined value.

@@ -1,5 +1,7 @@
 // ReSharper disable ConvertToPrimaryConstructor
 
+// An explicit public constructor is the whole point of this fixture: it is what the constructor-injection
+// materializer binds to. A primary constructor would change what is under test.
 #pragma warning disable IDE0290
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;

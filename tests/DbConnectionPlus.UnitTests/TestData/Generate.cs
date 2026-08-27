@@ -38,10 +38,10 @@ public static class Generate
 
         fixture.Customize(new OmitIgnoredPropertiesCustomization());
 
-        fixture.Register<Boolean>(() => faker.Random.Bool());
-        fixture.Register<Byte>(() => faker.Random.Byte());
-        fixture.Register<Byte[]>(() => faker.Random.Bytes(SmallNumber()));
-        fixture.Register<Char>(() => characters[faker.Random.Int(0, characters.Length - 1)]);
+        fixture.Register<bool>(() => faker.Random.Bool());
+        fixture.Register<byte>(() => faker.Random.Byte());
+        fixture.Register<byte[]>(() => faker.Random.Bytes(SmallNumber()));
+        fixture.Register<char>(() => characters[faker.Random.Int(0, characters.Length - 1)]);
         fixture.Register<DateOnly>(() => faker.Date.PastDateOnly());
         fixture.Register<DateTime>(() =>
         {
@@ -73,26 +73,26 @@ public static class Generate
                 dateTimeOffset.Offset
             );
         });
-        fixture.Register<Decimal>(() =>
+        fixture.Register<decimal>(() =>
         {
             // We limit to 10 fractional digits because not all database systems support a higher precision.
             return Math.Round(faker.Random.Decimal(0, 999), 10);
         });
-        fixture.Register<Double>(() =>
+        fixture.Register<double>(() =>
         {
             // We limit to 3 fractional digits because not all database systems support a higher precision.
             return Math.Round(faker.Random.Double(0, 999), 3);
         });
         fixture.Register<Guid>(() => faker.Random.Guid());
-        fixture.Register<Int16>(() => faker.Random.Short());
-        fixture.Register<Int32>(() => faker.Random.Int());
-        fixture.Register<Int64>(() => Interlocked.Increment(ref entityId));
-        fixture.Register<Single>(() =>
+        fixture.Register<short>(() => faker.Random.Short());
+        fixture.Register<int>(() => faker.Random.Int());
+        fixture.Register<long>(() => Interlocked.Increment(ref entityId));
+        fixture.Register<float>(() =>
         {
             // We limit to 3 fractional digits because not all database systems support a higher precision.
             return (float)Math.Round(faker.Random.Float(0, 999), 3);
         });
-        fixture.Register<String>(() => faker.Lorem.Sentence());
+        fixture.Register<string>(() => faker.Lorem.Sentence());
         fixture.Register<TestEnum>(() => faker.Random.Enum<TestEnum>());
         fixture.Register<TimeOnly>(() =>
         {

@@ -335,7 +335,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
 
         method.DeclaringType.Should().Be(typeof(string));
 
-        method.Name.Should().Be(nameof(String.Concat));
+        method.Name.Should().Be(nameof(string.Concat));
 
         method
             .GetParameters()
@@ -353,7 +353,7 @@ public class MaterializerFactoryHelperTests : UnitTestsBase
 
         property.DeclaringType.Should().Be(typeof(string));
 
-        property.Name.Should().Be(nameof(String.Length));
+        property.Name.Should().Be(nameof(string.Length));
 
         property.PropertyType.Should().Be(typeof(int));
     }

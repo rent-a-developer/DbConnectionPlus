@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 #pragma warning restore IDE0130

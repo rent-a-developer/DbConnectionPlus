@@ -84,6 +84,17 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         }
     }
 
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
+        {
+            entityTypeBuilder.Freeze();
+        }
+    }
+
     /// <summary>
     /// Gets a builder for configuring the entity type <typeparamref name="TEntity" />.
     /// </summary>
@@ -172,17 +183,6 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         if (this.isFrozen)
         {
             ThrowHelper.ThrowConfigurationIsFrozenException();
-        }
-    }
-
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
-        {
-            entityTypeBuilder.Freeze();
         }
     }
 }

@@ -4,7 +4,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using RentADeveloper.DbConnectionPlus.Converters;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.Materializers;
@@ -619,18 +618,17 @@ internal static class EntityMaterializerFactory
                 && ValueConverter.CanConvert(dataReaderFieldType, p.ParameterType)
             );
 
-            constructorArgumentBindings[Array.IndexOf(constructorParameters, constructorParameter)] =
-                new ReflectionColumnBinding(
-                    dataReaderFieldName,
+            constructorArgumentBindings[Array.IndexOf(constructorParameters, constructorParameter)] = new(
+                dataReaderFieldName,
+                fieldOrdinal,
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
                     fieldOrdinal,
-                    MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                        fieldOrdinal,
-                        dataReaderFieldName,
-                        dataReaderFieldType
-                    ),
-                    dataReaderFieldType != constructorParameter.ParameterType,
-                    constructorParameter.ParameterType
-                );
+                    dataReaderFieldName,
+                    dataReaderFieldType
+                ),
+                dataReaderFieldType != constructorParameter.ParameterType,
+                constructorParameter.ParameterType
+            );
         }
 
         var entityConstructor = ConstructorInvoker.Create(compatibleConstructor);
@@ -1072,13 +1070,13 @@ internal static class EntityMaterializerFactory
         private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
 
         /// <inheritdoc />
-        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
-
-        /// <inheritdoc />
         public bool Equals(MaterializerCacheKey other) =>
             this.EntityType == other.EntityType
             && this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames)
             && this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode()

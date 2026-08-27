@@ -4,7 +4,6 @@
 using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 

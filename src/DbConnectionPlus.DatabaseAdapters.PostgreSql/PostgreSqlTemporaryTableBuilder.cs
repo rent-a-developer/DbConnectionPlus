@@ -6,7 +6,6 @@ using Npgsql;
 using NpgsqlTypes;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -209,10 +208,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new EnumerableReader(
+        return new(
             values,
             [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
             EnumerableReaderOptions.None

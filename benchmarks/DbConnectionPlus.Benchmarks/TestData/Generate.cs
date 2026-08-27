@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
 // Generates the entities the benchmarks operate on. A plain seeded generator rather than the unit test

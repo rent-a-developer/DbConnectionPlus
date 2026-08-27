@@ -80,7 +80,7 @@ public class ObjectExtensionsTests : UnitTestsBase
 
         ((long)123).ToDebugString().Should().Be("'123' (System.Int64)");
 
-        ((IntPtr)123).ToDebugString().Should().Be("'123' (System.IntPtr)");
+        ((nint)123).ToDebugString().Should().Be("'123' (System.IntPtr)");
 
         ((sbyte)123).ToDebugString().Should().Be("'123' (System.SByte)");
 
@@ -96,7 +96,7 @@ public class ObjectExtensionsTests : UnitTestsBase
 
         ((ulong)123).ToDebugString().Should().Be("'123' (System.UInt64)");
 
-        ((UIntPtr)123).ToDebugString().Should().Be("'123' (System.UIntPtr)");
+        ((nuint)123).ToDebugString().Should().Be("'123' (System.UIntPtr)");
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
         new int[] { 1, 2, 3 }
@@ -124,7 +124,7 @@ public class ObjectExtensionsTests : UnitTestsBase
         values.Add(values);
 
         // The depth bound replaces the cycle handling that the previous JsonSerializer-based implementation got
-        // from ReferenceHandler.IgnoreCycles. What matters is that this terminates at all; the exact nesting
+        // from ReferenceHandler.IgnoreCycles. What matters is that this terminates completely; the exact nesting
         // depth at which it stops is an implementation detail.
         var debugString = values.ToDebugString();
 

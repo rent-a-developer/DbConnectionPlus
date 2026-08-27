@@ -22,6 +22,17 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// <inheritdoc />
     string? IEntityTypeBuilder.TableName => this.tableName;
 
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var propertyBuilder in this.propertyBuilders.Values)
+        {
+            propertyBuilder.Freeze();
+        }
+    }
+
     /// <summary>
     /// Gets a builder for configuring the specified property.
     /// </summary>
@@ -99,17 +110,6 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
         if (this.isFrozen)
         {
             ThrowHelper.ThrowConfigurationIsFrozenException();
-        }
-    }
-
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var propertyBuilder in this.propertyBuilders.Values)
-        {
-            propertyBuilder.Freeze();
         }
     }
 }

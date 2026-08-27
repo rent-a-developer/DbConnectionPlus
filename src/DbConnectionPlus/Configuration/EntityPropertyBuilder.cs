@@ -70,6 +70,9 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// <inheritdoc />
     string IEntityPropertyBuilder.PropertyName => this.propertyName;
 
+    /// <inheritdoc />
+    void IFreezable.Freeze() => this.isFrozen = true;
+
     /// <summary>
     /// Sets the name of the column to map the property to.
     /// </summary>
@@ -213,7 +216,4 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
             ThrowHelper.ThrowConfigurationIsFrozenException();
         }
     }
-
-    /// <inheritdoc />
-    void IFreezable.Freeze() => this.isFrozen = true;
 }

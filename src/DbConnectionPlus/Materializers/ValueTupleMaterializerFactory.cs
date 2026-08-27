@@ -142,7 +142,7 @@ internal static class ValueTupleMaterializerFactory
             var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
             var targetType = valueTupleFieldTypes[fieldOrdinal];
 
-            columnBindings[fieldOrdinal] = new ReflectionColumnBinding(
+            columnBindings[fieldOrdinal] = new(
                 GetColumnNameOrPosition(fieldOrdinal, dataReaderFieldName),
                 fieldOrdinal,
                 MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
@@ -970,13 +970,13 @@ internal static class ValueTupleMaterializerFactory
         private Type[] ValueTupleFieldTypes { get; } = valueTupleFieldTypes;
 
         /// <inheritdoc />
-        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
-
-        /// <inheritdoc />
         public bool Equals(MaterializerCacheKey other) =>
             this.ValueTupleFieldTypes.SequenceEqual(other.ValueTupleFieldTypes)
             && this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames)
             && this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
 
         /// <inheritdoc />
         public override int GetHashCode()

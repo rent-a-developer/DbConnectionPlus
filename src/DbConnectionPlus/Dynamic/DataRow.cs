@@ -58,6 +58,9 @@ public class DataRow(IDictionary<string, object?> columns) : IDictionary<string,
     private static readonly Func<DataRow, string, object?, object?> writeColumn = static (row, columnName, value) =>
         row[columnName] = value;
 
+    /// <summary>
+    /// The columns of the data row, keyed by column name.
+    /// </summary>
     private readonly IDictionary<string, object?> columns = columns;
 
     /// <inheritdoc />
@@ -78,6 +81,12 @@ public class DataRow(IDictionary<string, object?> columns) : IDictionary<string,
         get => this.columns[key];
         set => this.columns[key] = value;
     }
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+    /// <inheritdoc />
+    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => this.GetMetaObject(parameter);
 
     /// <inheritdoc />
     public void Add(KeyValuePair<string, object?> item) => this.columns.Add(item);
@@ -120,12 +129,6 @@ public class DataRow(IDictionary<string, object?> columns) : IDictionary<string,
     /// access on a derived row is bound.
     /// </remarks>
     protected virtual DynamicMetaObject GetMetaObject(Expression parameter) => new DataRowMetaObject(parameter, this);
-
-    /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-    /// <inheritdoc />
-    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => this.GetMetaObject(parameter);
 
     /// <summary>
     /// Binds member access on a <see cref="DataRow" /> to the columns of the row, so that <c>row.Id</c> resolves to

@@ -4,26 +4,19 @@
 using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 
 /// <summary>
 /// The entity manipulator for MySQL.
 /// </summary>
-internal class MySqlEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class MySqlEntityManipulator(MySqlDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    private readonly MySqlDatabaseAdapter databaseAdapter;
+    private readonly MySqlDatabaseAdapter databaseAdapter = databaseAdapter;
     private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MySqlEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-#pragma warning disable IDE0290 // Use primary constructor
-    public MySqlEntityManipulator(MySqlDatabaseAdapter databaseAdapter) => this.databaseAdapter = databaseAdapter;
-#pragma warning restore IDE0290 // Use primary constructor
 
     /// <inheritdoc />
     public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(

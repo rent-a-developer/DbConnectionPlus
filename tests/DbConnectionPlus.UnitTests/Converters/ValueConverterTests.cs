@@ -24,7 +24,7 @@ public class ValueConverterTests : UnitTestsBase
     {
         var faker = new Faker();
 
-        // All numeric values are kept within the range 0-127 so they are convertible to the smallest target type
+        // All numeric values are kept within the range 0-127, so they are convertible to the smallest target type
         // (SByte) without overflow.
         var byteValue = faker.Random.Byte(0, 127);
         var charValue = faker.Random.Char('A', 'Z');
@@ -37,7 +37,7 @@ public class ValueConverterTests : UnitTestsBase
         var int16Value = faker.Random.Short(0, 127);
         var int32Value = faker.Random.Int(0, 127);
         var int64Value = faker.Random.Long(0, 127);
-        var intPtrValue = (IntPtr)faker.Random.Int(0, 127);
+        var intPtrValue = (nint)faker.Random.Int(0, 127);
         var sbyteValue = faker.Random.SByte(0);
         var singleValue = faker.Random.Float(0, 127);
         var stringValue = faker.Lorem.Sentence();
@@ -46,7 +46,7 @@ public class ValueConverterTests : UnitTestsBase
         var uint64Value = faker.Random.ULong(0, 127);
         var timeSpanValue = faker.Date.Timespan(TimeSpan.FromHours(23));
         var timeOnlyValue = faker.Date.RecentTimeOnly();
-        var uintPtrValue = (UIntPtr)faker.Random.Int(0, 127);
+        var uintPtrValue = (nuint)faker.Random.Int(0, 127);
         var enumValue = faker.Random.Enum<TestEnum>();
 
         // @formatter:off
@@ -325,8 +325,8 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(long), typeof(ushort), true, int64Value, (ushort)int64Value),
             (typeof(long), typeof(uint), true, int64Value, (uint)int64Value),
             (typeof(long), typeof(ulong), true, int64Value, (ulong)int64Value),
-            (typeof(IntPtr), typeof(IntPtr), true, intPtrValue, intPtrValue),
-            (typeof(IntPtr), typeof(object), true, intPtrValue, intPtrValue),
+            (typeof(nint), typeof(nint), true, intPtrValue, intPtrValue),
+            (typeof(nint), typeof(object), true, intPtrValue, intPtrValue),
             (typeof(sbyte), typeof(bool), true, (sbyte)1, true),
             (typeof(sbyte), typeof(byte), true, sbyteValue, (byte)sbyteValue),
             (typeof(sbyte), typeof(char), true, sbyteValue, (char)sbyteValue),
@@ -550,8 +550,8 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(ulong), typeof(ushort), true, uint64Value, (ushort)uint64Value),
             (typeof(ulong), typeof(uint), true, uint64Value, (uint)uint64Value),
             (typeof(ulong), typeof(ulong), true, uint64Value, uint64Value),
-            (typeof(UIntPtr), typeof(object), true, uintPtrValue, uintPtrValue),
-            (typeof(UIntPtr), typeof(UIntPtr), true, uintPtrValue, uintPtrValue),
+            (typeof(nuint), typeof(object), true, uintPtrValue, uintPtrValue),
+            (typeof(nuint), typeof(nuint), true, uintPtrValue, uintPtrValue),
             (typeof(char), typeof(Guid), false, charValue, null),
             (typeof(int), typeof(Guid), false, int32Value, null),
             (typeof(DateTime), typeof(Guid), false, dateTimeValue, null),
@@ -1181,7 +1181,7 @@ public class ValueConverterTests : UnitTestsBase
 
     /// <summary>
     /// Runs <paramref name="assertions" /> with the current culture set to <paramref name="cultureName" />,
-    /// and restores the previous culture afterwards.
+    /// and restores the previous culture afterward.
     /// </summary>
     /// <remarks>
     /// <see cref="UnitTestsBase" /> pins every test to en-US, and en-US is exactly the culture under which

@@ -13,6 +13,11 @@ public class DbConnectionExtensions_QueryTests : StatementMethodTestsBase
                     .QueryAsync(sql, transaction, timeout, commandType, cancellationToken)
                     .ToListAsync(cancellationToken)
                     .AsTask(),
+            // Keep this a method call. The lambda is an Action, so its body has to be a STATEMENT, and
+            // `[.. connection.Query(...)]` is a collection expression - not a valid statement, so it does
+            // not compile (CS0201). Editors and agents offer that rewrite as a one-click fix; it breaks
+            // the build. No analyzer suppression is needed - neither `dotnet format style` nor ReSharper's
+            // cleanup asks for it here, both verified.
             (connection, sql, transaction, timeout, commandType, cancellationToken) =>
                 connection.Query(sql, transaction, timeout, commandType, cancellationToken).ToList()
         )

@@ -29,7 +29,7 @@ public static class SmokeCases
     };
 
     /// <summary>The primary key of the single row the enum cases read.</summary>
-    private const Int64 EnumRowId = 1;
+    private const long EnumRowId = 1;
 
     /// <summary>
     /// Creates the tables the remaining cases read from, and writes the row the enum cases read.
@@ -95,7 +95,7 @@ public static class SmokeCases
         Check.Equal(
             "the row is readable again",
             1L,
-            connection.ExecuteScalar<Int64>("SELECT COUNT(*) FROM SmokeEntity")
+            connection.ExecuteScalar<long>("SELECT COUNT(*) FROM SmokeEntity")
         );
     }
 
@@ -184,10 +184,10 @@ public static class SmokeCases
     /// <param name="connection">The open connection to the temporary SQLite database.</param>
     public static void QueryValueTuple(DbConnection connection)
     {
-        Check.Section("5. Query<(Int64, String, Decimal)> - value tuple");
+        Check.Section("5. Query<(long, string, decimal)> - value tuple");
 
         var (id, name, balance) = connection
-            .Query<(Int64 Id, String Name, Decimal Balance)>(
+            .Query<(long Id, string Name, decimal Balance)>(
                 $"SELECT Id, Name, Balance FROM SmokeEntity WHERE Id = {ExpectedEntity.Id}"
             )
             .Single();
@@ -213,7 +213,7 @@ public static class SmokeCases
         Check.Section("6. Query<(...8 fields)> - nested value tuple (TRest)");
 
         var tuple = connection
-            .Query<(Int64 A, Int64 B, Int64 C, Int64 D, Int64 E, Int64 F, Int64 G, String H)>(
+            .Query<(long A, long B, long C, long D, long E, long F, long G, string H)>(
                 $"""
                 SELECT Id AS A, Quantity AS B, Id AS C, Quantity AS D, Id AS E, Quantity AS F, Id AS G, Name AS H
                 FROM   SmokeEntity
@@ -223,7 +223,7 @@ public static class SmokeCases
             .Single();
 
         Check.Equal("field 1", ExpectedEntity.Id, tuple.A);
-        Check.Equal("field 2", (Int64)ExpectedEntity.Quantity, tuple.B);
+        Check.Equal("field 2", (long)ExpectedEntity.Quantity, tuple.B);
         Check.Equal("field 7", ExpectedEntity.Id, tuple.G);
         Check.Equal("field 8 (nested in TRest)", ExpectedEntity.Name, tuple.H);
     }
@@ -244,7 +244,7 @@ public static class SmokeCases
         var row = connection.Query($"SELECT Id, Name FROM SmokeEntity WHERE Id = {ExpectedEntity.Id}").Single();
 
         Check.Equal("row[\"Id\"]", ExpectedEntity.Id, Convert.ToInt64(row["Id"], null));
-        Check.Equal("row[\"Name\"]", ExpectedEntity.Name, row["Name"] as String);
+        Check.Equal("row[\"Name\"]", ExpectedEntity.Name, row["Name"] as string);
     }
 
     /// <summary>Streams a single-column temporary table into the database and reads it back.</summary>
@@ -253,9 +253,9 @@ public static class SmokeCases
     {
         Check.Section("8. TemporaryTable - single column");
 
-        var values = new List<Int64> { 10, 20, 30 };
+        var values = new List<long> { 10, 20, 30 };
 
-        var read = connection.Query<Int64>($"SELECT Value FROM {TemporaryTable(values)} ORDER BY Value").ToList();
+        var read = connection.Query<long>($"SELECT Value FROM {TemporaryTable(values)} ORDER BY Value").ToList();
 
         Check.Equal("three values round-trip", 3, read.Count);
         Check.True("the values are unchanged", read.SequenceEqual(values));
@@ -332,16 +332,16 @@ public static class SmokeCases
     /// </remarks>
     public static void QueryValueTupleWithANumericEnum(DbConnection connection)
     {
-        Check.Section("11. Query<(Int64, enum)> - enum field of a flat value tuple, from an INTEGER column");
+        Check.Section("11. Query<(long, enum)> - enum field of a flat value tuple, from an INTEGER column");
 
         var (id, status) = connection
-            .Query<(Int64 Id, FlatTupleNumericEnum Status)>(
+            .Query<(long Id, FlatTupleNumericEnum Status)>(
                 $"SELECT Id, FlatNumeric AS Status FROM SmokeEnum WHERE Id = {EnumRowId}"
             )
             .Single();
 
         Check.Equal("Id", EnumRowId, id);
-        Check.Equal("the enum field binds the stored value", 71, (Int32)status);
+        Check.Equal("the enum field binds the stored value", 71, (int)status);
     }
 
     /// <summary>
@@ -361,7 +361,7 @@ public static class SmokeCases
         Check.Section("12. Query<(...8 fields)> - enum field nested in TRest, from an INTEGER column");
 
         var tuple = connection
-            .Query<(Int64 A, Int64 B, Int64 C, Int64 D, Int64 E, Int64 F, Int64 G, NestedTupleNumericEnum H)>(
+            .Query<(long A, long B, long C, long D, long E, long F, long G, NestedTupleNumericEnum H)>(
                 $"""
                 SELECT Id AS A, Id AS B, Id AS C, Id AS D, Id AS E, Id AS F, Id AS G, NestedNumeric AS H
                 FROM   SmokeEnum
@@ -371,7 +371,7 @@ public static class SmokeCases
             .Single();
 
         Check.Equal("field 1", EnumRowId, tuple.A);
-        Check.Equal("field 8 (enum nested in TRest) binds the stored value", 81, (Int32)tuple.H);
+        Check.Equal("field 8 (enum nested in TRest) binds the stored value", 81, (int)tuple.H);
     }
 
     /// <summary>
@@ -388,16 +388,16 @@ public static class SmokeCases
     /// </remarks>
     public static void QueryValueTupleWithANamedEnum(DbConnection connection)
     {
-        Check.Section("13. Query<(Int64, enum)> - enum field of a flat value tuple, parsed from a TEXT column");
+        Check.Section("13. Query<(long, enum)> - enum field of a flat value tuple, parsed from a TEXT column");
 
         var (id, status) = connection
-            .Query<(Int64 Id, FlatTupleNamedEnum Status)>(
+            .Query<(long Id, FlatTupleNamedEnum Status)>(
                 $"SELECT Id, FlatNamed AS Status FROM SmokeEnum WHERE Id = {EnumRowId}"
             )
             .Single();
 
         Check.Equal("Id", EnumRowId, id);
-        Check.Equal("the name in the column parsed to the right member", 91, (Int32)status);
+        Check.Equal("the name in the column parsed to the right member", 91, (int)status);
         Check.Equal("the member name survived trimming", "FlatNamedChosen", status.ToString());
     }
 
@@ -419,7 +419,7 @@ public static class SmokeCases
         Check.Section("14. Query<(...8 fields)> - enum field nested in TRest, parsed from a TEXT column");
 
         var tuple = connection
-            .Query<(Int64 A, Int64 B, Int64 C, Int64 D, Int64 E, Int64 F, Int64 G, NestedTupleNamedEnum H)>(
+            .Query<(long A, long B, long C, long D, long E, long F, long G, NestedTupleNamedEnum H)>(
                 $"""
                 SELECT Id AS A, Id AS B, Id AS C, Id AS D, Id AS E, Id AS F, Id AS G, NestedNamed AS H
                 FROM   SmokeEnum
@@ -429,7 +429,7 @@ public static class SmokeCases
             .Single();
 
         Check.Equal("field 1", EnumRowId, tuple.A);
-        Check.Equal("field 8 (enum nested in TRest) parsed to the right member", 101, (Int32)tuple.H);
+        Check.Equal("field 8 (enum nested in TRest) parsed to the right member", 101, (int)tuple.H);
         Check.Equal("the member name survived trimming", "NestedNamedChosen", tuple.H.ToString());
     }
 }

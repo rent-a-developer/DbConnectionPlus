@@ -5,7 +5,6 @@ using LinkDotNet.StringBuilder;
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -291,18 +290,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 switch (DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
                 {
                     case EnumSerializationMode.Integers:
-                        return new EnumerableReader(
-                            enumValues,
-                            typeof(int?),
-                            Constants.SingleColumnTemporaryTableColumnName
-                        );
+                        return new(enumValues, typeof(int?), Constants.SingleColumnTemporaryTableColumnName);
 
                     case EnumSerializationMode.Strings:
-                        return new EnumerableReader(
-                            enumValues,
-                            typeof(string),
-                            Constants.SingleColumnTemporaryTableColumnName
-                        );
+                        return new(enumValues, typeof(string), Constants.SingleColumnTemporaryTableColumnName);
 
                     default:
                         return ThrowHelper.ThrowInvalidEnumSerializationModeException<EnumerableReader>(
@@ -311,10 +302,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
                 }
             }
 
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new EnumerableReader(
+        return new(
             values,
             [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
             EnumerableReaderOptions.SerializeEnums | EnumerableReaderOptions.ReadCharsAsStrings

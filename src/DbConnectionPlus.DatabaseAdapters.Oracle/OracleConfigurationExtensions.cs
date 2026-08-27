@@ -2,6 +2,7 @@ using Oracle.ManagedDataAccess.Client;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace RentADeveloper.DbConnectionPlus.Configuration;
 
 #pragma warning restore IDE0130

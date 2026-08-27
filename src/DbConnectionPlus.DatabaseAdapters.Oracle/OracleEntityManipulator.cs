@@ -4,12 +4,11 @@
 using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 /// <summary>
-/// The entity manipulator for PostgreSQL.
+/// The entity manipulator for Oracle.
 /// </summary>
 /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
 internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : IEntityManipulator

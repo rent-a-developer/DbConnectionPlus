@@ -8,5 +8,4 @@ global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
 global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 global using RentADeveloper.DbConnectionPlus.SqlStatements;
 global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
-global using Xunit;
 global using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
