@@ -7,16 +7,28 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 ## Pull Request Process
 
-1. Branch from `main` as `feature/<issue#>-<slug>` or `bugfix/<issue#>-<slug>`, and use
-   [Conventional Commits](https://www.conventionalcommits.org/) for the messages.
+1. Branch from `main` following [Conventional Branch](https://conventionalbranch.org/):
+   `<type>/<description>`, or `<type>/issue-<issue#>-<slug>` when there is an issue — for example
+   `feature/issue-42-bulk-insert`. The types are `feature/`, `bugfix/`, `hotfix/`, `release/` and
+   `chore/`; use the long forms, not `feat/` or `fix/`. Descriptions are lowercase letters, digits and
+   hyphens, with no hyphen at the start or end and never two in a row. An AI agent working on its own
+   branch may use `claude/` or `codex/` in place of a type.
+
+   Use [Conventional Commits](https://www.conventionalcommits.org/) for the messages.
 2. Make the change, with tests. New behavior and fixed bugs need coverage; a change to one database adapter
    almost always has to be mirrored into the other four.
-3. Run the pre-commit gate. It formats, builds and runs the unit suite:
+3. Run the pre-commit gate. It applies style, formatting and member ordering, then builds and runs the
+   unit suite:
    ```shell
    pwsh -File scripts/preflight.ps1
    ```
-   `TreatWarningsAsErrors` is on for the six shipping projects, so the build is also the style, trim-analyzer
-   and public-API gate. **Never suppress an `IL2xxx` warning to get a green build** — it is the only
+   It rewrites files — review what it changed and include it in your commit. To run just the tidying:
+   `pwsh -File scripts/tidy-cs.ps1 -Scope all`.
+
+   `TreatWarningsAsErrors` is on for **every** project, so the build is also the style, member-ordering,
+   trim-analyzer and public-API gate, and `CSharpier.MsBuild` makes an unformatted file a build error too.
+   The build never rewrites your files — it fails and names them; `scripts/tidy-cs.ps1` is what fixes them.
+   **Never suppress an `IL2xxx` warning to get a green build** — it is the only
    build-time evidence that the trimming annotations are complete.
 4. If you touched a reflection path, also run the Native AOT gate. Nothing else in the repository can see
    silent trimming damage:
@@ -35,6 +47,24 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 The full working guide — layout, the adapter seam, code style, the declared public API and Native AOT — is
 [AGENTS.md](AGENTS.md). It is written for AI coding agents, but everything in it applies to people too.
+
+## Setting up a clone
+
+Two things to do once, after cloning:
+
+```shell
+dotnet tool restore
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+The first installs CSharpier, the ReSharper command line tools and docfx, which `scripts/tidy-cs.ps1` and the
+documentation build need. The second makes `git blame` skip the commits listed in `.git-blame-ignore-revs`,
+which reformatted and reordered the whole repository, so blame points at whoever wrote the logic rather than
+at the tool that moved it. GitHub already does this on its own.
+
+If you use Rider, two settings make the tooling invisible: install the **CSharpier** plugin and switch on
+Settings | Tools | CSharpier | Run on Save, and use the shared **ReorderMembers** cleanup profile (from
+`DbConnectionPlus.slnx.DotSettings`) when you want members put back in order.
 
 ## Releasing
 
