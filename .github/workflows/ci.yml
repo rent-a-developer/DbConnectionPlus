@@ -37,23 +37,80 @@ env:
   TESTINGPLATFORM_TELEMETRY_OPTOUT: true
 
 jobs:
-  # Enforce the formatting the repo ships tooling for. A style rule that is not enforced in CI drifts with
-  # the first external pull request.
+  # Enforce the style, formatting and member ordering the repo ships tooling for. A rule that is not
+  # enforced in CI drifts with the first external pull request.
   #
-  # Whitespace only: the semantic style and analyzer rules are already enforced by the build itself
-  # (EnforceCodeStyleInBuild + TreatWarningsAsErrors + Roslynator at error) in the verify job below. What
-  # that does NOT cover is tests/ and benchmarks/, which set neither property - so for those projects this
-  # job is the only formatting gate there is.
+  # This runs scripts/tidy-cs.ps1, the same entry point a developer and both AI agents use, so CI cannot
+  # disagree with what the tooling produces locally. -Check -Scope all tidies the checkout for real and
+  # then asks whether anything changed: ReSharper has no check mode, and neither it nor CSharpier is
+  # idempotent alone, so comparing before against after is the only honest question. Writing to the
+  # checkout is harmless here - it is thrown away at the end of the job.
+  #
+  # All three are also build errors in the verify job below, for every project - style and ordering through
+  # the analyzers, formatting through CSharpier.MsBuild. This job still earns its place: it is much faster to
+  # a red X, and it prints the exact diff that would fix things rather than only naming the file. It is also
+  # the only check that can see a MISPLACED member the analyzers accept, because alphabetical order within a
+  # group is a ReSharper notion that StyleCop does not model.
+  #
+  # It also guards .git-blame-ignore-revs, which is repository hygiene of the same kind: a rule nothing
+  # checks stops being true. See the step for why that file cannot report its own breakage.
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          # Full history, for the .git-blame-ignore-revs check below. At the default depth of 1 none of the
+          # revisions it names would resolve and every run would fail. Nothing else in this job needs it.
+          fetch-depth: 0
+
+      # .git-blame-ignore-revs names commits by raw SHA, and git does NOT complain about one it cannot
+      # resolve - it silently skips the entry. The file then still looks right while doing nothing, and blame
+      # goes back to pointing at the tool that reformatted a line instead of at whoever wrote it.
+      #
+      # A rebase-merge or a squash-merge rewrites every SHA on a branch, which is exactly how that happens,
+      # and it happens quietly, months after the click. This step is the only thing that makes it visible.
+      #
+      # It runs before the .NET setup on purpose: it needs nothing but the checkout, so a broken file fails in
+      # seconds instead of after the three-minute tidy run below.
+      - name: Verify .git-blame-ignore-revs
+        run: |
+          if [ ! -f .git-blame-ignore-revs ]; then
+            echo "No .git-blame-ignore-revs - nothing to check."
+            exit 0
+          fi
+
+          status=0
+          count=0
+          while read -r revision _ || [ -n "${revision}" ]; do
+            revision="${revision%$'\r'}"
+            case "${revision}" in ''|\#*) continue ;; esac
+            count=$((count + 1))
+
+            if ! git rev-parse --verify --quiet "${revision}^{commit}" > /dev/null; then
+              echo "::error file=.git-blame-ignore-revs::${revision} is not a commit in this repository. If the branch that introduced it was rebased or squash-merged, replace it with the SHA it became."
+              status=1
+            elif ! git merge-base --is-ancestor "${revision}" HEAD; then
+              echo "::error file=.git-blame-ignore-revs::${revision} is a commit, but not an ancestor of HEAD, so blame can never reach it."
+              status=1
+            fi
+          done < .git-blame-ignore-revs
+
+          if [ "${count}" -eq 0 ]; then
+            echo "::error file=.git-blame-ignore-revs::The file lists no revisions. Delete it if it is no longer wanted, rather than leaving an empty one that looks like it is doing something."
+            exit 1
+          fi
+
+          if [ "${status}" -ne 0 ]; then
+            echo "Checked ${count} revision(s); see the errors above."
+            exit 1
+          fi
+
+          echo "All ${count} revision(s) resolve and are reachable."
 
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -74,8 +131,16 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
 
-      - name: Verify C# formatting (dotnet format)
-        run: dotnet format whitespace ${{ env.SOLUTION }} --no-restore --verify-no-changes
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Verify style, formatting and member ordering
+        run: pwsh -NoProfile -NonInteractive -File scripts/tidy-cs.ps1 -Scope all -Check
+
+      # The check above only says that something is untidy. This says what.
+      - name: Show the changes that would fix it
+        if: failure()
+        run: git --no-pager diff --stat && git --no-pager diff
 
   # Build the solution, run both test suites against real databases, and hand the coverage to Codecov.
   #
