@@ -12,6 +12,15 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Assertions;
 public static class DecoratorAssertions
 {
     /// <summary>
+    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
+    /// </summary>
+    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory).GetMethod(
+        nameof(SpecimenFactory.Create),
+        BindingFlags.Public | BindingFlags.Static,
+        [typeof(ISpecimenBuilder)]
+    )!;
+
+    /// <summary>
     /// <para>
     /// Asserts that <paramref name="decorator" /> forwards all calls to <paramref name="decorated" />, meaning each
     /// public instance method of <paramref name="decorator" /> calls the respective method of
@@ -29,7 +38,7 @@ public static class DecoratorAssertions
         Fixture fixture,
         TDecorator decorator,
         TDecorator decorated,
-        HashSet<String> excludedMethods
+        HashSet<string> excludedMethods
     )
         where TDecorator : class
     {
@@ -45,7 +54,7 @@ public static class DecoratorAssertions
             {
                 var methodParameters = method.GetParameters();
 
-                var decoratorMethodArguments = new Object?[methodParameters.Length];
+                var decoratorMethodArguments = new object?[methodParameters.Length];
 
                 for (var i = 0; i < methodParameters.Length; i++)
                 {
@@ -64,7 +73,7 @@ public static class DecoratorAssertions
                     }
                 }
 
-                Object? decoratedMethodReturnValue = null;
+                object? decoratedMethodReturnValue = null;
 
                 if (method.ReturnType != typeof(void))
                 {
@@ -81,8 +90,7 @@ public static class DecoratorAssertions
                 if (method.ReturnType != typeof(void))
                 {
                     // Make sure the decorator method returned the same value as the decorated method:
-                    decoratorMethodReturnValue
-                        .Should().Be(decoratedMethodReturnValue);
+                    decoratorMethodReturnValue.Should().Be(decoratedMethodReturnValue);
                 }
 
                 // Make sure the decorated method was called with the same arguments as the decorator method:
@@ -97,25 +105,15 @@ public static class DecoratorAssertions
 
                 throw new(
                     $"""
-                     The forward call assertion failed for the following method:
-                     Type: {decoratorType.FullName}
-                     Method: {method}
+                    The forward call assertion failed for the following method:
+                    Type: {decoratorType.FullName}
+                    Method: {method}
 
-                     Failure:
-                     {ex}
-                     """
+                    Failure:
+                    {ex}
+                    """
                 );
             }
         }
     }
-
-    /// <summary>
-    /// The <see cref="SpecimenFactory.Create{T}(AutoFixture.Kernel.ISpecimenBuilder)" /> method.
-    /// </summary>
-    private static readonly MethodInfo specimenFactoryCreateMethod = typeof(SpecimenFactory)
-        .GetMethod(
-            nameof(SpecimenFactory.Create),
-            BindingFlags.Public | BindingFlags.Static,
-            [typeof(ISpecimenBuilder)]
-        )!;
 }

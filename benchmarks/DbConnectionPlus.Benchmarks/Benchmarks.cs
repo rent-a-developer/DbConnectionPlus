@@ -13,8 +13,36 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 [Config(typeof(BenchmarksConfig))]
 public partial class Benchmarks
 {
-    static Benchmarks() =>
-        DbConnectionPlusConfiguration.Instance.UseSqlite();
+    /*
+     * INTEGER PRIMARY KEY makes Id an alias for the rowid, so lookups by Id are b-tree descents instead of
+     * full table scans. Without it every "WHERE Id = ?" scanned the whole table, and that scan dominated the delete,
+     * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
+     * the code under test.
+     */
+    private const string CreateEntityTableSql = """
+        CREATE TABLE Entity
+        (
+            Id INTEGER PRIMARY KEY,
+            BooleanValue INTEGER,
+            BytesValue BLOB,
+            ByteValue INTEGER,
+            CharValue TEXT,
+            DateTimeValue TEXT,
+            DecimalValue TEXT,
+            DoubleValue REAL,
+            EnumValue TEXT,
+            Int16Value INTEGER,
+            Int32Value INTEGER,
+            Int64Value INTEGER,
+            SingleValue REAL,
+            StringValue TEXT
+        );
+        """;
+
+    private SqliteConnection connection = null!;
+    private List<BenchmarkEntity> entitiesInDb = null!;
+
+    static Benchmarks() => DbConnectionPlusConfiguration.Instance.UseSqlite();
 
     public Benchmarks()
     {
@@ -28,26 +56,7 @@ public partial class Benchmarks
         }
     }
 
-    private void SetupDatabase(Int32 numberOfEntities)
-    {
-        this.connection?.Dispose();
-
-        this.connection = new("Data Source=:memory:");
-        this.connection.Open();
-
-        using var createEntityTableCommand = this.connection.CreateCommand();
-        createEntityTableCommand.CommandText = CreateEntityTableSql;
-        createEntityTableCommand.ExecuteNonQuery();
-
-        using var transaction = this.connection.BeginTransaction();
-
-        this.entitiesInDb = Generate.Multiple(numberOfEntities);
-        this.connection.InsertEntities(this.entitiesInDb, transaction);
-
-        transaction.Commit();
-    }
-
-    private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<String, SqliteParameter> parameters)
+    private static void PopulateEntityParameters(BenchmarkEntity entity, Dictionary<string, SqliteParameter> parameters)
     {
         parameters["Id"].Value = entity.Id;
         parameters["BooleanValue"].Value = entity.BooleanValue ? 1 : 0;
@@ -67,7 +76,7 @@ public partial class Benchmarks
 
     private static BenchmarkEntity ReadEntity(IDataReader dataReader)
     {
-        var charBuffer = new Char[1];
+        var charBuffer = new char[1];
 
         var ordinal = 0;
 
@@ -75,48 +84,40 @@ public partial class Benchmarks
         {
             Id = dataReader.GetInt64(ordinal++),
             BooleanValue = dataReader.GetInt64(ordinal++) == 1,
-            BytesValue = (Byte[])dataReader.GetValue(ordinal++),
+            BytesValue = (byte[])dataReader.GetValue(ordinal++),
             ByteValue = dataReader.GetByte(ordinal++),
-            CharValue = dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1 ? charBuffer[0] : throw new InvalidOperationException(),
+            CharValue =
+                dataReader.GetChars(ordinal++, 0, charBuffer, 0, 1) == 1
+                    ? charBuffer[0]
+                    : throw new InvalidOperationException(),
             DateTimeValue = DateTime.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
-            DecimalValue = Decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
+            DecimalValue = decimal.Parse(dataReader.GetString(ordinal++), CultureInfo.InvariantCulture),
             DoubleValue = dataReader.GetDouble(ordinal++),
             EnumValue = Enum.Parse<TestEnum>(dataReader.GetString(ordinal++)),
-            Int16Value = (Int16)dataReader.GetInt64(ordinal++),
-            Int32Value = (Int32)dataReader.GetInt64(ordinal++),
+            Int16Value = (short)dataReader.GetInt64(ordinal++),
+            Int32Value = (int)dataReader.GetInt64(ordinal++),
             Int64Value = dataReader.GetInt64(ordinal++),
             SingleValue = dataReader.GetFloat(ordinal++),
-            StringValue = dataReader.GetString(ordinal)
+            StringValue = dataReader.GetString(ordinal),
         };
     }
 
-    private SqliteConnection connection = null!;
-    private List<BenchmarkEntity> entitiesInDb = null!;
+    private void SetupDatabase(int numberOfEntities)
+    {
+        this.connection?.Dispose();
 
-    /*
-     * INTEGER PRIMARY KEY makes Id an alias for the rowid, so lookups by Id are b-tree descents instead of
-     * full table scans. Without it every "WHERE Id = ?" scanned the whole table, and that scan dominated the delete,
-     * update, exists and scalar benchmarks and made their results a function of the seeded row count rather than of
-     * the code under test.
-     */
-    private const String CreateEntityTableSql =
-        """
-        CREATE TABLE Entity
-        (
-            Id INTEGER PRIMARY KEY,
-            BooleanValue INTEGER,
-            BytesValue BLOB,
-            ByteValue INTEGER,
-            CharValue TEXT,
-            DateTimeValue TEXT,
-            DecimalValue TEXT,
-            DoubleValue REAL,
-            EnumValue TEXT,
-            Int16Value INTEGER,
-            Int32Value INTEGER,
-            Int64Value INTEGER,
-            SingleValue REAL,
-            StringValue TEXT
-        );
-        """;
+        this.connection = new("Data Source=:memory:");
+        this.connection.Open();
+
+        using var createEntityTableCommand = this.connection.CreateCommand();
+        createEntityTableCommand.CommandText = CreateEntityTableSql;
+        createEntityTableCommand.ExecuteNonQuery();
+
+        using var transaction = this.connection.BeginTransaction();
+
+        this.entitiesInDb = Generate.Multiple(numberOfEntities);
+        this.connection.InsertEntities(this.entitiesInDb, transaction);
+
+        transaction.Commit();
+    }
 }

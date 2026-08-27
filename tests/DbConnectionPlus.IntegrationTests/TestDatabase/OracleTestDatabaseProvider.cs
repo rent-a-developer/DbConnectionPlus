@@ -11,124 +11,7 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class OracleTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => false;
-
-    /// <inheritdoc />
-    public IDatabaseAdapter DatabaseAdapter => new OracleDatabaseAdapter();
-
-    /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "BEGIN DBMS_LOCK.SLEEP(2); END;";
-
-    /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => false;
-
-    /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => false;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => false;
-
-    /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
-
-    /// <inheritdoc />
-    public DbConnection CreateConnection()
-    {
-        var connection = new OracleConnection(ConnectionString);
-
-        // Clear the connection we got from the pool, so that its session actually ends.
-        // Otherwise, Oracle will keep temporary tables alive for that session and we will eventually run out of them.
-        OracleConnection.ClearPool(connection);
-
-        connection.Open();
-        return connection;
-    }
-
-    /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null)
-    {
-        var quoteTemporaryTableName = this.DatabaseAdapter.QuoteTemporaryTableName(tableName, connection);
-        var unquotedTemporaryTableName = quoteTemporaryTableName[1..^1]; // Strip the quotes (").
-
-        return connection.Exists(
-            $"SELECT * FROM USER_PRIVATE_TEMP_TABLES WHERE TABLE_NAME = {Parameter(unquotedTemporaryTableName)}"
-        );
-    }
-
-    /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public void ResetDatabase()
-    {
-        using var connection = new OracleConnection(ConnectionString);
-        connection.Open();
-
-        if (!isDatabasePrepared)
-        {
-            ExecuteScript(connection, DropDatabaseObjectsSql);
-            ExecuteScript(connection, CreateDatabaseObjectsSql);
-
-            isDatabasePrepared = true;
-        }
-
-        ExecuteScript(connection, PurgeTablesSql);
-    }
-
-    /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartOracleAsync();
-
-    /// <summary>
-    /// The connection string that connects to the Oracle server running in the test container.
-    /// </summary>
-    private static String ConnectionString =>
-        TestDatabaseContainers.Oracle.ConnectionString;
-
-    private static void ExecuteScript(OracleConnection connection, String script)
-    {
-        var statements = script
-            .Split("GO", StringSplitOptions.RemoveEmptyEntries)
-            .Where(a => !String.IsNullOrWhiteSpace(a.Trim()));
-
-        foreach (var statement in statements)
-        {
-            connection.ExecuteNonQuery(statement);
-        }
-    }
-
-    private const String CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE "Entity"
         (
             "Id" NUMBER(19) NOT NULL PRIMARY KEY,
@@ -204,8 +87,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
 
         """;
 
-    private const String DropDatabaseObjectsSql =
-        """
+    private const string DropDatabaseObjectsSql = """
         DROP TABLE IF EXISTS "Entity" PURGE;
         GO
 
@@ -225,8 +107,7 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const String PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE "Entity";
         GO
 
@@ -243,5 +124,116 @@ public class OracleTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
+
+    /// <inheritdoc />
+    public bool CanRetrieveStructureOfTemporaryTables => false;
+
+    /// <inheritdoc />
+    public IDatabaseAdapter DatabaseAdapter => new OracleDatabaseAdapter();
+
+    /// <inheritdoc />
+    public string DatabaseCollation => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string DelayTwoSecondsStatement => "BEGIN DBMS_LOCK.SLEEP(2); END;";
+
+    /// <inheritdoc />
+    public bool HasUnsupportedDataType => false;
+
+    /// <inheritdoc />
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
+
+    /// <inheritdoc />
+    public bool SupportsDateTimeOffset => true;
+
+    /// <inheritdoc />
+    public bool SupportsProperCommandCancellation => false;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProcedures => true;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProceduresReturningResultSet => false;
+
+    /// <inheritdoc />
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+
+    /// <summary>
+    /// The connection string that connects to the Oracle server running in the test container.
+    /// </summary>
+    private static string ConnectionString => TestDatabaseContainers.Oracle.ConnectionString;
+
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartOracleAsync();
+
+    /// <inheritdoc />
+    public DbConnection CreateConnection()
+    {
+        var connection = new OracleConnection(ConnectionString);
+
+        // Clear the connection we got from the pool, so that its session actually ends.
+        // Otherwise, Oracle will keep temporary tables alive for that session and we will eventually run out of them.
+        OracleConnection.ClearPool(connection);
+
+        connection.Open();
+        return connection;
+    }
+
+    /// <inheritdoc />
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null)
+    {
+        var quoteTemporaryTableName = this.DatabaseAdapter.QuoteTemporaryTableName(tableName, connection);
+        var unquotedTemporaryTableName = quoteTemporaryTableName[1..^1]; // Strip the quotes (").
+
+        return connection.Exists(
+            $"SELECT * FROM USER_PRIVATE_TEMP_TABLES WHERE TABLE_NAME = {Parameter(unquotedTemporaryTableName)}"
+        );
+    }
+
+    /// <inheritdoc />
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string GetUnsupportedDataTypeLiteral() => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public void ResetDatabase()
+    {
+        using var connection = new OracleConnection(ConnectionString);
+        connection.Open();
+
+        if (!isDatabasePrepared)
+        {
+            ExecuteScript(connection, DropDatabaseObjectsSql);
+            ExecuteScript(connection, CreateDatabaseObjectsSql);
+
+            isDatabasePrepared = true;
+        }
+
+        ExecuteScript(connection, PurgeTablesSql);
+    }
+
+    private static void ExecuteScript(OracleConnection connection, string script)
+    {
+        var statements = script
+            .Split("GO", StringSplitOptions.RemoveEmptyEntries)
+            .Where(a => !string.IsNullOrWhiteSpace(a.Trim()));
+
+        foreach (var statement in statements)
+        {
+            connection.ExecuteNonQuery(statement);
+        }
+    }
 }

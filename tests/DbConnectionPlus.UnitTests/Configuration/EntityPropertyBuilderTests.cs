@@ -9,8 +9,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.HasColumnName("Identifier");
 
-        ((IEntityPropertyBuilder)builder).ColumnName
-            .Should().Be("Identifier");
+        ((IEntityPropertyBuilder)builder).ColumnName.Should().Be("Identifier");
     }
 
     [Fact]
@@ -18,8 +17,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).ColumnName
-            .Should().BeNull();
+        ((IEntityPropertyBuilder)builder).ColumnName.Should().BeNull();
     }
 
     [Fact]
@@ -30,31 +28,38 @@ public class EntityPropertyBuilderTests : UnitTestsBase
         ((IFreezable)builder).Freeze();
 
         Invoking(() => builder.HasColumnName("Identifier"))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsComputed())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsConcurrencyToken())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsIdentity())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsIgnored())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsKey())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.IsRowVersion())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 
@@ -65,8 +70,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.HasColumnName("Identifier");
 
-        ((IEntityPropertyBuilder)builder).ColumnName
-            .Should().Be("Identifier");
+        ((IEntityPropertyBuilder)builder).ColumnName.Should().Be("Identifier");
     }
 
     [Fact]
@@ -76,8 +80,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsComputed();
 
-        ((IEntityPropertyBuilder)builder).IsComputed
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsComputed.Should().BeTrue();
     }
 
     [Fact]
@@ -85,8 +88,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsComputed
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsComputed.Should().BeFalse();
     }
 
     [Fact]
@@ -96,8 +98,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsComputed();
 
-        ((IEntityPropertyBuilder)builder).IsComputed
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsComputed.Should().BeTrue();
     }
 
     [Fact]
@@ -107,8 +108,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsConcurrencyToken();
 
-        ((IEntityPropertyBuilder)builder).IsConcurrencyToken
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsConcurrencyToken.Should().BeTrue();
     }
 
     [Fact]
@@ -116,8 +116,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsConcurrencyToken
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsConcurrencyToken.Should().BeFalse();
     }
 
     [Fact]
@@ -127,8 +126,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsConcurrencyToken();
 
-        ((IEntityPropertyBuilder)builder).IsConcurrencyToken
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsConcurrencyToken.Should().BeTrue();
     }
 
     [Fact]
@@ -138,8 +136,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsIdentity();
 
-        ((IEntityPropertyBuilder)builder).IsIdentity
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsIdentity.Should().BeTrue();
     }
 
     [Fact]
@@ -147,8 +144,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsIdentity
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsIdentity.Should().BeFalse();
     }
 
     [Fact]
@@ -161,10 +157,11 @@ public class EntityPropertyBuilderTests : UnitTestsBase
         var propertyBuilder = new EntityPropertyBuilder(entityTypeBuilder, "NotId");
 
         Invoking(() => propertyBuilder.IsIdentity())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage(
-                "There is already the property 'Id' marked as an identity property for the entity type " +
-                $"{typeof(Entity)}. Only one property can be marked as identity property per entity type."
+                "There is already the property 'Id' marked as an identity property for the entity type "
+                    + $"{typeof(Entity)}. Only one property can be marked as identity property per entity type."
             );
     }
 
@@ -175,8 +172,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsIdentity();
 
-        ((IEntityPropertyBuilder)builder).IsIdentity
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsIdentity.Should().BeTrue();
     }
 
     [Fact]
@@ -186,8 +182,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsIgnored();
 
-        ((IEntityPropertyBuilder)builder).IsIgnored
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsIgnored.Should().BeTrue();
     }
 
     [Fact]
@@ -195,8 +190,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsIgnored
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsIgnored.Should().BeFalse();
     }
 
     [Fact]
@@ -206,8 +200,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsIgnored();
 
-        ((IEntityPropertyBuilder)builder).IsIgnored
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsIgnored.Should().BeTrue();
     }
 
     [Fact]
@@ -217,8 +210,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsKey();
 
-        ((IEntityPropertyBuilder)builder).IsKey
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsKey.Should().BeTrue();
     }
 
     [Fact]
@@ -226,8 +218,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsKey
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsKey.Should().BeFalse();
     }
 
     [Fact]
@@ -237,8 +228,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsKey();
 
-        ((IEntityPropertyBuilder)builder).IsKey
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsKey.Should().BeTrue();
     }
 
     [Fact]
@@ -248,8 +238,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsRowVersion();
 
-        ((IEntityPropertyBuilder)builder).IsRowVersion
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsRowVersion.Should().BeTrue();
     }
 
     [Fact]
@@ -257,8 +246,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).IsRowVersion
-            .Should().BeFalse();
+        ((IEntityPropertyBuilder)builder).IsRowVersion.Should().BeFalse();
     }
 
     [Fact]
@@ -268,8 +256,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
 
         builder.IsRowVersion();
 
-        ((IEntityPropertyBuilder)builder).IsRowVersion
-            .Should().BeTrue();
+        ((IEntityPropertyBuilder)builder).IsRowVersion.Should().BeTrue();
     }
 
     [Fact]
@@ -277,8 +264,7 @@ public class EntityPropertyBuilderTests : UnitTestsBase
     {
         var builder = new EntityPropertyBuilder(Substitute.For<IEntityTypeBuilder>(), "Property");
 
-        ((IEntityPropertyBuilder)builder).PropertyName
-            .Should().Be("Property");
+        ((IEntityPropertyBuilder)builder).PropertyName.Should().Be("Property");
     }
 
     [Fact]

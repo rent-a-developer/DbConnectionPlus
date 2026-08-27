@@ -18,6 +18,17 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public static class Generate
 {
     /// <summary>
+    /// The characters used for Char generation.
+    /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
+    /// certain characters.
+    /// </summary>
+    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
+
+    private static readonly Faker faker;
+    private static readonly Fixture fixture;
+    private static long entityId = 1;
+
+    /// <summary>
     /// Initializes the <see cref="Generate" /> class.
     /// </summary>
     static Generate()
@@ -27,83 +38,76 @@ public static class Generate
 
         fixture.Customize(new OmitIgnoredPropertiesCustomization());
 
-        fixture.Register<Boolean>(() => faker.Random.Bool());
-        fixture.Register<Byte>(() => faker.Random.Byte());
-        fixture.Register<Byte[]>(() => faker.Random.Bytes(SmallNumber()));
-        fixture.Register<Char>(() => characters[faker.Random.Int(0, characters.Length - 1)]);
+        fixture.Register<bool>(() => faker.Random.Bool());
+        fixture.Register<byte>(() => faker.Random.Byte());
+        fixture.Register<byte[]>(() => faker.Random.Bytes(SmallNumber()));
+        fixture.Register<char>(() => characters[faker.Random.Int(0, characters.Length - 1)]);
         fixture.Register<DateOnly>(() => faker.Date.PastDateOnly());
         fixture.Register<DateTime>(() =>
-            {
-                var dateTime = faker.Date.Past();
+        {
+            var dateTime = faker.Date.Past();
 
-                // We limit to seconds precision because not all database systems support a higher precision.
-                return new(
-                    dateTime.Year,
-                    dateTime.Month,
-                    dateTime.Day,
-                    dateTime.Hour,
-                    dateTime.Minute,
-                    dateTime.Second,
-                    DateTimeKind.Local
-                );
-            }
-        );
+            // We limit to seconds precision because not all database systems support a higher precision.
+            return new(
+                dateTime.Year,
+                dateTime.Month,
+                dateTime.Day,
+                dateTime.Hour,
+                dateTime.Minute,
+                dateTime.Second,
+                DateTimeKind.Local
+            );
+        });
         fixture.Register<DateTimeOffset>(() =>
-            {
-                var dateTimeOffset = faker.Date.PastOffset();
+        {
+            var dateTimeOffset = faker.Date.PastOffset();
 
-                // We limit to seconds precision because not all database systems support a higher precision.
-                return new(
-                    dateTimeOffset.Year,
-                    dateTimeOffset.Month,
-                    dateTimeOffset.Day,
-                    dateTimeOffset.Hour,
-                    dateTimeOffset.Minute,
-                    dateTimeOffset.Second,
-                    dateTimeOffset.Offset
-                );
-            }
-        );
-        fixture.Register<Decimal>(() =>
-            {
-                // We limit to 10 fractional digits because not all database systems support a higher precision.
-                return Math.Round(faker.Random.Decimal(0, 999), 10);
-            }
-        );
-        fixture.Register<Double>(() =>
-            {
-                // We limit to 3 fractional digits because not all database systems support a higher precision.
-                return Math.Round(faker.Random.Double(0, 999), 3);
-            }
-        );
+            // We limit to seconds precision because not all database systems support a higher precision.
+            return new(
+                dateTimeOffset.Year,
+                dateTimeOffset.Month,
+                dateTimeOffset.Day,
+                dateTimeOffset.Hour,
+                dateTimeOffset.Minute,
+                dateTimeOffset.Second,
+                dateTimeOffset.Offset
+            );
+        });
+        fixture.Register<decimal>(() =>
+        {
+            // We limit to 10 fractional digits because not all database systems support a higher precision.
+            return Math.Round(faker.Random.Decimal(0, 999), 10);
+        });
+        fixture.Register<double>(() =>
+        {
+            // We limit to 3 fractional digits because not all database systems support a higher precision.
+            return Math.Round(faker.Random.Double(0, 999), 3);
+        });
         fixture.Register<Guid>(() => faker.Random.Guid());
-        fixture.Register<Int16>(() => faker.Random.Short());
-        fixture.Register<Int32>(() => faker.Random.Int());
-        fixture.Register<Int64>(() => Interlocked.Increment(ref entityId));
-        fixture.Register<Single>(() =>
-            {
-                // We limit to 3 fractional digits because not all database systems support a higher precision.
-                return (Single)Math.Round(faker.Random.Float(0, 999), 3);
-            }
-        );
-        fixture.Register<String>(() => faker.Lorem.Sentence());
+        fixture.Register<short>(() => faker.Random.Short());
+        fixture.Register<int>(() => faker.Random.Int());
+        fixture.Register<long>(() => Interlocked.Increment(ref entityId));
+        fixture.Register<float>(() =>
+        {
+            // We limit to 3 fractional digits because not all database systems support a higher precision.
+            return (float)Math.Round(faker.Random.Float(0, 999), 3);
+        });
+        fixture.Register<string>(() => faker.Lorem.Sentence());
         fixture.Register<TestEnum>(() => faker.Random.Enum<TestEnum>());
         fixture.Register<TimeOnly>(() =>
-            {
-                var timeOnly = faker.Date.RecentTimeOnly();
+        {
+            var timeOnly = faker.Date.RecentTimeOnly();
 
-                // We limit to seconds precision because not all database systems support a higher precision.
-                return new(timeOnly.Hour, timeOnly.Minute, timeOnly.Second);
-            }
-        );
+            // We limit to seconds precision because not all database systems support a higher precision.
+            return new(timeOnly.Hour, timeOnly.Minute, timeOnly.Second);
+        });
         fixture.Register<TimeSpan>(() =>
-            {
-                var timeSpan = faker.Date.Timespan(new TimeSpan(0, 23, 59, 59));
+        {
+            var timeSpan = faker.Date.Timespan(new TimeSpan(0, 23, 59, 59));
 
-                // We limit to seconds precision because not all database systems support a higher precision.
-                return new(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
-            }
-        );
+            // We limit to seconds precision because not all database systems support a higher precision.
+            return new(timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+        });
 
 #pragma warning disable S2930
         var cancellationTokenSource = new CancellationTokenSource();
@@ -119,8 +123,7 @@ public static class Generate
     /// Generates an ID.
     /// </summary>
     /// <returns>An ID.</returns>
-    public static Int64 Id() =>
-        Interlocked.Increment(ref entityId);
+    public static long Id() => Interlocked.Increment(ref entityId);
 
     /// <summary>
     /// Generates the specified number of IDs.
@@ -130,7 +133,7 @@ public static class Generate
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
     /// </param>
     /// <returns>A list of IDs.</returns>
-    public static List<Int64> Ids(Int32? numberOfIds = null) =>
+    public static List<long> Ids(int? numberOfIds = null) =>
         [.. Enumerable.Range(0, numberOfIds ?? SmallNumber()).Select(_ => Interlocked.Increment(ref entityId))];
 
     /// <summary>
@@ -141,8 +144,7 @@ public static class Generate
     /// <returns>
     /// A list of <typeparamref name="TTarget" /> objects containing the same data as <paramref name="objects" />.
     /// </returns>
-    public static List<TTarget> MapTo<TTarget>(IEnumerable<Object> objects) =>
-        objects.Adapt<List<TTarget>>();
+    public static List<TTarget> MapTo<TTarget>(IEnumerable<object> objects) => objects.Adapt<List<TTarget>>();
 
     /// <summary>
     /// Maps <paramref name="obj" /> to an instance of <typeparamref name="TTarget" /> containing the same data.
@@ -152,8 +154,7 @@ public static class Generate
     /// <returns>
     /// An instance of <typeparamref name="TTarget" /> containing the same data as <paramref name="obj" />.
     /// </returns>
-    public static TTarget MapTo<TTarget>(Object obj) =>
-        obj.Adapt<TTarget>();
+    public static TTarget MapTo<TTarget>(object obj) => obj.Adapt<TTarget>();
 
     /// <summary>
     /// Generates a list of instances of the type <typeparamref name="T" /> populated with test data.
@@ -164,7 +165,7 @@ public static class Generate
     /// If omitted a small random number (<see cref="Generate.SmallNumber" />) will be used.
     /// </param>
     /// <returns>A list of instances of the type <typeparamref name="T" /> populated with test data.</returns>
-    public static List<T> Multiple<T>(Int32? numberOfObjects = null)
+    public static List<T> Multiple<T>(int? numberOfObjects = null)
     {
         fixture.RepeatCount = numberOfObjects ?? SmallNumber();
         return fixture.Create<List<T>>();
@@ -183,7 +184,7 @@ public static class Generate
     /// A list of random values of the type <typeparamref name="T" /> and <see langword="null" /> values.
     /// The list is guaranteed to have at least 50% of its values set to <see langword="null" />.
     /// </returns>
-    public static List<T?> MultipleNullable<T>(Int32? numberOfValues = null)
+    public static List<T?> MultipleNullable<T>(int? numberOfValues = null)
         where T : struct
     {
         fixture.RepeatCount = numberOfValues ?? SmallNumber();
@@ -212,24 +213,24 @@ public static class Generate
     /// or TimeSpan.
     /// </summary>
     /// <returns>A random scalar value.</returns>
-    public static Object ScalarValue() =>
+    public static object ScalarValue() =>
         faker.Random.Int(0, 14) switch
         {
-            0 => fixture.Create<Boolean>(),
-            1 => fixture.Create<Byte>(),
-            2 => fixture.Create<Char>(),
+            0 => fixture.Create<bool>(),
+            1 => fixture.Create<byte>(),
+            2 => fixture.Create<char>(),
             3 => fixture.Create<DateTimeOffset>(),
             4 => fixture.Create<DateTime>(),
-            5 => fixture.Create<Decimal>(),
-            6 => fixture.Create<Double>(),
+            5 => fixture.Create<decimal>(),
+            6 => fixture.Create<double>(),
             7 => fixture.Create<Guid>(),
-            8 => fixture.Create<Int16>(),
-            9 => fixture.Create<Int32>(),
-            10 => fixture.Create<Int64>(),
-            11 => fixture.Create<Single>(),
-            12 => fixture.Create<String>(),
+            8 => fixture.Create<short>(),
+            9 => fixture.Create<int>(),
+            10 => fixture.Create<long>(),
+            11 => fixture.Create<float>(),
+            12 => fixture.Create<string>(),
             13 => fixture.Create<TimeSpan>(),
-            _ => fixture.Create<Int32>()
+            _ => fixture.Create<int>(),
         };
 
     /// <summary>
@@ -247,8 +248,7 @@ public static class Generate
     /// Generates a random number between 5 and 15.
     /// </summary>
     /// <returns>A random number between 5 and 15.</returns>
-    public static Int32 SmallNumber() =>
-        faker.Random.Int(5, 15);
+    public static int SmallNumber() => faker.Random.Int(5, 15);
 
     /// <summary>
     /// Creates a copy of <paramref name="entity" /> where all properties except the key and concurrency token
@@ -286,8 +286,7 @@ public static class Generate
     /// A list with copies of <paramref name="entities" /> where all properties except key and concurrency token
     /// properties have new values.
     /// </returns>
-    public static List<T> UpdateFor<T>(List<T> entities) =>
-        [.. entities.Select(UpdateFor)];
+    public static List<T> UpdateFor<T>(List<T> entities) => [.. entities.Select(UpdateFor)];
 
     /// <summary>
     /// Copies the values of all key and concurrency token properties from
@@ -300,27 +299,15 @@ public static class Generate
     {
         var metadata = EntityHelper.GetEntityTypeMetadata(typeof(T));
 
-        var propertiesToCopy =
-            metadata.KeyProperties
-                .Concat(metadata.ConcurrencyTokenProperties)
-                .Concat(metadata.RowVersionProperties);
+        var propertiesToCopy = metadata
+            .KeyProperties.Concat(metadata.ConcurrencyTokenProperties)
+            .Concat(metadata.RowVersionProperties);
 
         foreach (var property in propertiesToCopy)
         {
             property.PropertySetter!(targetEntity!, property.PropertyGetter!(sourceEntity!));
         }
     }
-
-    /// <summary>
-    /// The characters used for Char generation.
-    /// We only use alphabetic characters for Char generation to avoid issues with databases that do not support
-    /// certain characters.
-    /// </summary>
-    private static readonly Char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
-
-    private static readonly Faker faker;
-    private static readonly Fixture fixture;
-    private static Int64 entityId = 1;
 
     /// <summary>
     /// An AutoFixture customization that excludes properties that are ignored in the entity model from being populated
@@ -333,7 +320,7 @@ public static class Generate
 
         private class OmitNotMappedPropertySpecimenBuilder : ISpecimenBuilder
         {
-            public Object Create(Object request, ISpecimenContext context)
+            public object Create(object request, ISpecimenContext context)
             {
                 if (request is PropertyInfo propertyInfo)
                 {
@@ -343,9 +330,7 @@ public static class Generate
                         entityTypeMetadata.AllPropertiesByPropertyName.TryGetValue(
                             propertyInfo.Name,
                             out var propertyMetadata
-                        )
-                        &&
-                        propertyMetadata.IsIgnored
+                        ) && propertyMetadata.IsIgnored
                     )
                     {
                         return new OmitSpecimen();

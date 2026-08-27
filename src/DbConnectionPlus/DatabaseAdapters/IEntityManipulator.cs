@@ -56,15 +56,12 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Int32 DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously deletes the specified entities, identified by their key property/properties, from the database.
@@ -114,9 +111,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Task<Int32> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -168,15 +163,12 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Int32 DeleteEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously deletes the specified entity, identified by its key property / properties, from the database.
@@ -226,9 +218,7 @@ public interface IEntityManipulator
     /// Use <see cref="KeyAttribute" /> or <see cref="DbConnectionExtensions.Configure" /> to configure key properties.
     /// </para>
     /// </remarks>
-    public Task<Int32> DeleteEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> DeleteEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -288,15 +278,12 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 InsertEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously inserts the specified entities into the database.
@@ -353,9 +340,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> InsertEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> InsertEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -414,15 +399,12 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously inserts the specified entity into the database.
@@ -479,9 +461,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -552,15 +532,12 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously updates the specified entities, identified by their key property / properties, in the database.
@@ -630,9 +607,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -703,15 +678,12 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Int32 UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
         CancellationToken cancellationToken
-    ) =>
-        0;
+    ) => 0;
 
     /// <summary>
     /// Asynchronously updates the specified entity, identified by its key property / properties, in the database.
@@ -780,9 +752,7 @@ public interface IEntityManipulator
     /// properties are updated accordingly.
     /// </para>
     /// </remarks>
-    public Task<Int32> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,

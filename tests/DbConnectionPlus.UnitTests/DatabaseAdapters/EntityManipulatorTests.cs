@@ -9,6 +9,15 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.DatabaseAdapters;
 
 public class EntityManipulatorTests : UnitTestsBase
 {
+    public static IEnumerable<ValueTuple<IEntityManipulator>> GetManipulators()
+    {
+        yield return new(new MySqlEntityManipulator(new()));
+        yield return new(new OracleEntityManipulator(new()));
+        yield return new(new PostgreSqlEntityManipulator(new()));
+        yield return new(new SqliteEntityManipulator(new()));
+        yield return new(new SqlServerEntityManipulator(new()));
+    }
+
     [Theory]
     [MemberData(nameof(GetManipulators))]
     public void ShouldGuardAgainstNullArguments(IEntityManipulator manipulator)
@@ -63,14 +72,5 @@ public class EntityManipulatorTests : UnitTestsBase
         ArgumentNullGuardVerifier.Verify(() =>
             manipulator.UpdateEntityAsync(this.MockDbConnection, entity, null, CancellationToken.None)
         );
-    }
-
-    public static IEnumerable<ValueTuple<IEntityManipulator>> GetManipulators()
-    {
-        yield return new(new MySqlEntityManipulator(new()));
-        yield return new(new OracleEntityManipulator(new()));
-        yield return new(new PostgreSqlEntityManipulator(new()));
-        yield return new(new SqliteEntityManipulator(new()));
-        yield return new(new SqlServerEntityManipulator(new()));
     }
 }

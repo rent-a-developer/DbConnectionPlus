@@ -5,6 +5,18 @@ namespace RentADeveloper.DbConnectionPlus.Configuration;
 /// </summary>
 public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
 {
+    private readonly IEntityTypeBuilder entityTypeBuilder;
+    private readonly string propertyName;
+
+    private string? columnName;
+    private bool isComputed;
+    private bool isConcurrencyToken;
+    private bool isFrozen;
+    private bool isIdentity;
+    private bool isIgnored;
+    private bool isKey;
+    private bool isRowVersion;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="EntityPropertyBuilder" /> class.
     /// </summary>
@@ -25,7 +37,7 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentException"><paramref name="propertyName" /> is whitespace.</exception>
-    internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, String propertyName)
+    internal EntityPropertyBuilder(IEntityTypeBuilder entityTypeBuilder, string propertyName)
     {
         ArgumentNullException.ThrowIfNull(entityTypeBuilder);
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
@@ -33,6 +45,33 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
         this.entityTypeBuilder = entityTypeBuilder;
         this.propertyName = propertyName;
     }
+
+    /// <inheritdoc />
+    string? IEntityPropertyBuilder.ColumnName => this.columnName;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsComputed => this.isComputed;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsConcurrencyToken => this.isConcurrencyToken;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsIdentity => this.isIdentity;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsIgnored => this.isIgnored;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsKey => this.isKey;
+
+    /// <inheritdoc />
+    bool IEntityPropertyBuilder.IsRowVersion => this.isRowVersion;
+
+    /// <inheritdoc />
+    string IEntityPropertyBuilder.PropertyName => this.propertyName;
+
+    /// <inheritdoc />
+    void IFreezable.Freeze() => this.isFrozen = true;
 
     /// <summary>
     /// Sets the name of the column to map the property to.
@@ -43,7 +82,7 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
     /// </exception>
     // ReSharper disable once ParameterHidesMember
-    public EntityPropertyBuilder HasColumnName(String columnName)
+    public EntityPropertyBuilder HasColumnName(string columnName)
     {
         this.EnsureNotFrozen();
 
@@ -101,17 +140,16 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
     {
         this.EnsureNotFrozen();
 
-        var otherIdentityProperty =
-            this.entityTypeBuilder.PropertyBuilders.Values.FirstOrDefault(a =>
-                a.PropertyName != this.propertyName && a.IsIdentity
-            );
+        var otherIdentityProperty = this.entityTypeBuilder.PropertyBuilders.Values.FirstOrDefault(a =>
+            a.PropertyName != this.propertyName && a.IsIdentity
+        );
 
         if (otherIdentityProperty is not null)
         {
             throw new InvalidOperationException(
-                $"There is already the property '{otherIdentityProperty.PropertyName}' marked as an identity " +
-                $"property for the entity type {this.entityTypeBuilder.EntityType}. Only one property can be marked " +
-                "as identity property per entity type."
+                $"There is already the property '{otherIdentityProperty.PropertyName}' marked as an identity "
+                    + $"property for the entity type {this.entityTypeBuilder.EntityType}. Only one property can be marked "
+                    + "as identity property per entity type."
             );
         }
 
@@ -167,33 +205,6 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
         return this;
     }
 
-    /// <inheritdoc />
-    String? IEntityPropertyBuilder.ColumnName => this.columnName;
-
-    /// <inheritdoc />
-    void IFreezable.Freeze() => this.isFrozen = true;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsComputed => this.isComputed;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsConcurrencyToken => this.isConcurrencyToken;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsIdentity => this.isIdentity;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsIgnored => this.isIgnored;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsKey => this.isKey;
-
-    /// <inheritdoc />
-    Boolean IEntityPropertyBuilder.IsRowVersion => this.isRowVersion;
-
-    /// <inheritdoc />
-    String IEntityPropertyBuilder.PropertyName => this.propertyName;
-
     /// <summary>
     /// Ensures this instance is not frozen.
     /// </summary>
@@ -205,16 +216,4 @@ public sealed class EntityPropertyBuilder : IEntityPropertyBuilder
             ThrowHelper.ThrowConfigurationIsFrozenException();
         }
     }
-
-    private readonly IEntityTypeBuilder entityTypeBuilder;
-    private readonly String propertyName;
-
-    private String? columnName;
-    private Boolean isComputed;
-    private Boolean isConcurrencyToken;
-    private Boolean isFrozen;
-    private Boolean isIdentity;
-    private Boolean isIgnored;
-    private Boolean isKey;
-    private Boolean isRowVersion;
 }

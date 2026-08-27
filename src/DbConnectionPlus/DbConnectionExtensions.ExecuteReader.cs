@@ -39,9 +39,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// using var lowStockProductsReader = connection.ExecuteReader(
     ///    $"SELECT * FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -86,9 +86,8 @@ public static partial class DbConnectionExtensions
                 cancellationToken
             );
         }
-        catch (Exception exception) when (
-            databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-        )
+        catch (Exception exception)
+            when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
         {
             dataReader?.Dispose();
             commandDisposer.Dispose();
@@ -128,9 +127,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// await using var lowStockProductsReader = await connection.ExecuteReaderAsync(
     ///    $"SELECT * FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -151,15 +150,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         DbDataReader? dataReader = null;
 
@@ -175,9 +176,8 @@ public static partial class DbConnectionExtensions
                 cancellationToken
             );
         }
-        catch (Exception exception) when (
-            databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-        )
+        catch (Exception exception)
+            when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
         {
             if (dataReader is not null)
             {

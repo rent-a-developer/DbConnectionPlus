@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -NoProfile -NonInteractive -Command \"& (Join-Path (git rev-parse --show-toplevel) '.codex/hooks/format-cs.ps1')\"",
+            "command": "pwsh -NoProfile -NonInteractive -Command \"& (Join-Path (git rev-parse --show-toplevel) '.codex/hooks/tidy-cs.ps1')\"",
             "statusMessage": "Formatting changed C# files",
             "timeout": 120
           },

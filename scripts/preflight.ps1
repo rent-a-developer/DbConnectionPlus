@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    The pre-commit gate: repo-hygiene checks, a Release build, and the unit test suite.
+    The pre-commit gate: repo-hygiene checks, style/formatting/ordering, a Release build, and the unit
+    test suite.
 
 .DESCRIPTION
     CONTRIBUTING.md requires that all tests pass and the build succeeds with no warnings. Because
@@ -18,6 +19,9 @@
       scripts/verify-package-aot.ps1 -Pack after any change to a reflection path; nothing else in the
       repository can see silent trimming damage.
 
+.PARAMETER SkipTidy
+    Skip applying style, formatting and member ordering. The build still fails on any of them.
+
 .PARAMETER SkipBuild
     Skip the Release build (implies -SkipTests).
 
@@ -34,6 +38,7 @@
 param(
     [Switch] $SkipBuild,
     [Switch] $SkipTests,
+    [Switch] $SkipTidy,
     [String] $Configuration = 'Release'
 )
 
@@ -43,6 +48,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $solution = Join-Path $repositoryRoot 'DbConnectionPlus.slnx'
 $unitTests = Join-Path $repositoryRoot 'tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj'
 $publicApiGuard = Join-Path $repositoryRoot 'scripts/public-api-guard.ps1'
+$tidy = Join-Path $repositoryRoot 'scripts/tidy-cs.ps1'
 
 $failures = New-Object System.Collections.Generic.List[String]
 
@@ -69,7 +75,52 @@ else {
     Write-Output 'Unchanged.'
 }
 
-# --- 2. Build ----------------------------------------------------------------------------------------
+# --- 2. Style, formatting and member ordering ---------------------------------------------------------
+# Applied, not just checked. All three are build errors, so leaving them to step 3 only means a slower
+# way of finding out. The editor hooks format on every edit, but they deliberately skip the two slow
+# tools - the code-style fixers and the member reordering - and this is where those run.
+#
+# It rewrites files. That is the point, and it is why this runs before the build.
+
+if (-not $SkipTidy) {
+    Write-Section 'Style, formatting and ordering'
+
+    # Snapshot the dirty .cs files BEFORE tidying. `git diff` afterwards lists your own edits too, so
+    # reporting its count would say "tidied 40 files" when the tools touched one of them. What the run
+    # actually changed is the difference between the two lists.
+    $dirtyBefore = @(& git -C $repositoryRoot diff --name-only -- '*.cs' 2>$null | Where-Object { $_ })
+
+    & pwsh -NoProfile -NonInteractive -File $tidy -Scope all
+    if ($LASTEXITCODE -ne 0) {
+        $failures.Add('tidy')
+        Write-Output 'FAIL - tidy-cs could not finish. Run `dotnet tool restore` if the tools are missing.'
+    }
+    else {
+        $dirtyAfter = @(& git -C $repositoryRoot diff --name-only -- '*.cs' 2>$null | Where-Object { $_ })
+        $tidied = @($dirtyAfter | Where-Object { $_ -notin $dirtyBefore })
+
+        Write-Output ''
+        if ($tidied) {
+            Write-Output "Tidied $($tidied.Count) file(s) that you had not already changed:"
+            $tidied | ForEach-Object { Write-Output "  $_" }
+            Write-Output 'Review the diff and include it in your commit.'
+        }
+        elseif ($dirtyBefore) {
+            # Everything the tools touched was already in your diff, so there is nothing new to point at -
+            # but the tools may still have rewritten those files, and that is worth one line.
+            Write-Output "Tidy ran clean. Your $($dirtyBefore.Count) changed .cs file(s) may have been rewritten - review the diff."
+        }
+        else {
+            Write-Output 'Already tidy.'
+        }
+    }
+}
+else {
+    Write-Section 'Style, formatting and ordering'
+    Write-Output 'Skipped (-SkipTidy).'
+}
+
+# --- 3. Build ----------------------------------------------------------------------------------------
 
 if (-not $SkipBuild) {
     Write-Section "Build ($Configuration)"
@@ -86,7 +137,7 @@ else {
     Write-Output 'Skipped (-SkipBuild).'
 }
 
-# --- 3. Unit tests -----------------------------------------------------------------------------------
+# --- 4. Unit tests -----------------------------------------------------------------------------------
 
 if (-not $SkipBuild -and -not $SkipTests -and -not $failures.Contains('build')) {
     Write-Section 'Unit tests'

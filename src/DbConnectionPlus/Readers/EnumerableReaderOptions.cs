@@ -8,7 +8,7 @@ namespace RentADeveloper.DbConnectionPlus.Readers;
 /// </summary>
 /// <remarks>
 /// These flags exist because the temporary-table builders disagree deliberately: MySQL serializes
-/// <see cref="Enum" /> and <see cref="Char" /> values while it reads them, and SQL Server, SQLite, PostgreSQL and
+/// <see cref="Enum" /> and <see cref="char" /> values while it reads them, and SQL Server, SQLite, PostgreSQL and
 /// Oracle hand the raw values to their bulk-copy APIs. That asymmetry is intentional and predates the AOT work —
 /// do not level it out here.
 /// </remarks>
@@ -27,8 +27,8 @@ internal enum EnumerableReaderOptions
     SerializeEnums = 1,
 
     /// <summary>
-    /// Report <see cref="Char" /> columns as <see cref="String" /> and return their values as
-    /// <see cref="String" />, mirroring what the data readers of the major database systems do for CHAR columns.
+    /// Report <see cref="char" /> columns as <see cref="string" /> and return their values as
+    /// <see cref="string" />, mirroring what the data readers of the major database systems do for CHAR columns.
     /// </summary>
-    ReadCharsAsStrings = 2
+    ReadCharsAsStrings = 2,
 }

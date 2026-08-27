@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
 
 namespace RentADeveloper.DbConnectionPlus;
@@ -11,6 +10,8 @@ namespace RentADeveloper.DbConnectionPlus;
 /// </summary>
 public static partial class DbConnectionExtensions
 {
+    private static readonly object configurationLockObject = new();
+
     /// <summary>
     /// Configures DbConnectionPlus.
     /// </summary>
@@ -44,8 +45,5 @@ public static partial class DbConnectionExtensions
     internal static void OnBeforeExecutingCommand(
         DbCommand command,
         IReadOnlyList<InterpolatedTemporaryTable> temporaryTables
-    ) =>
-        DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
-
-    private static readonly Object configurationLockObject = new();
+    ) => DbConnectionPlusConfiguration.Instance.InterceptDbCommand?.Invoke(command, temporaryTables);
 }

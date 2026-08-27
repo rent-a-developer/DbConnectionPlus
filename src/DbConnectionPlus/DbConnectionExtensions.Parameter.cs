@@ -12,6 +12,11 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
+    /// The maximum length for inferred parameter names. This length is supported by all major database systems.
+    /// </summary>
+    private const int MaximumParameterNameLength = 60;
+
+    /// <summary>
     /// <para>
     /// Wraps <paramref name="parameterValue" /> in an instance of <see cref="InterpolatedParameter" /> to indicate
     /// that this value should be passed as a parameter to an SQL statement.
@@ -38,9 +43,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var lowStockProductsReader = connection.ExecuteReader(
     ///    $"""
     ///     SELECT  *
@@ -66,12 +71,11 @@ public static partial class DbConnectionExtensions
     /// </para>
     /// </remarks>
     public static InterpolatedParameter Parameter(
-        Object? parameterValue,
-        [CallerArgumentExpression(nameof(parameterValue))]
-        String? parameterValueExpression = null
+        object? parameterValue,
+        [CallerArgumentExpression(nameof(parameterValue))] string? parameterValueExpression = null
     )
     {
-        String? inferredParameterName = null;
+        string? inferredParameterName = null;
 
         if (parameterValueExpression?.Length > 0)
         {
@@ -88,9 +92,4 @@ public static partial class DbConnectionExtensions
 
         return new(inferredParameterName, parameterValue);
     }
-
-    /// <summary>
-    /// The maximum length for inferred parameter names. This length is supported by all major database systems.
-    /// </summary>
-    private const Int32 MaximumParameterNameLength = 60;
 }

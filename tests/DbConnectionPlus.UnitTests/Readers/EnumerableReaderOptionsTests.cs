@@ -13,14 +13,9 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
     {
         Entity[] entities = [new()];
 
-        using var reader = CreateReader(
-            typeof(Entity),
-            entities,
-            EnumerableReaderOptions.ReadCharsAsStrings
-        );
+        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.ReadCharsAsStrings);
 
-        reader.GetFieldType(reader.GetOrdinal("CharValue"))
-            .Should().Be(typeof(String));
+        reader.GetFieldType(reader.GetOrdinal("CharValue")).Should().Be(typeof(string));
     }
 
     [Fact]
@@ -36,8 +31,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
             EnumerableReaderOptions.SerializeEnums
         );
 
-        reader.GetFieldType(0)
-            .Should().Be(typeof(Int32));
+        reader.GetFieldType(0).Should().Be(typeof(int));
     }
 
     [Fact]
@@ -53,8 +47,7 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
             EnumerableReaderOptions.SerializeEnums
         );
 
-        reader.GetFieldType(0)
-            .Should().Be(typeof(String));
+        reader.GetFieldType(0).Should().Be(typeof(string));
     }
 
     [Fact]
@@ -70,29 +63,22 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
 
         foreach (var entity in entities)
         {
-            reader.Read()
-                .Should().BeTrue();
+            reader.Read().Should().BeTrue();
 
-            reader.GetInt32(0)
-                .Should().Be((Int32)entity.Enum);
+            reader.GetInt32(0).Should().Be((int)entity.Enum);
         }
     }
 
     [Fact]
     public void GetString_CharPropertyReadAsString_ShouldConvertToString()
     {
-        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<char>() }];
 
-        using var reader = CreateReader(
-            typeof(Entity),
-            entities,
-            EnumerableReaderOptions.ReadCharsAsStrings
-        );
+        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.ReadCharsAsStrings);
 
         reader.Read();
 
-        reader.GetString(reader.GetOrdinal("CharValue"))
-            .Should().Be(entities[0].CharValue.ToString());
+        reader.GetString(reader.GetOrdinal("CharValue")).Should().Be(entities[0].CharValue.ToString());
     }
 
     [Fact]
@@ -108,33 +94,42 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
 
         foreach (var entity in entities)
         {
-            reader.Read()
-                .Should().BeTrue();
+            reader.Read().Should().BeTrue();
 
-            reader.GetString(0)
-                .Should().Be(entity.Enum.ToString());
+            reader.GetString(0).Should().Be(entity.Enum.ToString());
         }
+    }
+
+    [Fact]
+    public void GetValue_NullProperty_ShouldReturnDbNull()
+    {
+        Entity[] entities = [new() { StringValue = null! }];
+
+        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.None);
+
+        reader.Read();
+
+        var ordinal = reader.GetOrdinal("StringValue");
+
+        reader.GetValue(ordinal).Should().Be(DBNull.Value);
+
+        reader.IsDBNull(ordinal).Should().BeTrue();
     }
 
     [Fact]
     public void GetValues_CharPropertyReadAsString_ShouldConvertToString()
     {
-        Entity[] entities = [new() { CharValue = Generate.Single<Char>() }];
+        Entity[] entities = [new() { CharValue = Generate.Single<char>() }];
 
-        using var reader = CreateReader(
-            typeof(Entity),
-            entities,
-            EnumerableReaderOptions.ReadCharsAsStrings
-        );
+        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.ReadCharsAsStrings);
 
         reader.Read();
 
-        var values = new Object[reader.FieldCount];
+        var values = new object[reader.FieldCount];
 
         reader.GetValues(values);
 
-        values[reader.GetOrdinal("CharValue")]
-            .Should().Be(entities[0].CharValue.ToString());
+        values[reader.GetOrdinal("CharValue")].Should().Be(entities[0].CharValue.ToString());
     }
 
     [Fact]
@@ -152,16 +147,13 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
 
         foreach (var entity in entities)
         {
-            reader.Read()
-                .Should().BeTrue();
+            reader.Read().Should().BeTrue();
 
-            var values = new Object[reader.FieldCount];
+            var values = new object[reader.FieldCount];
 
-            reader.GetValues(values)
-                .Should().Be(reader.FieldCount);
+            reader.GetValues(values).Should().Be(reader.FieldCount);
 
-            values[0]
-                .Should().Be((Int32)entity.Enum);
+            values[0].Should().Be((int)entity.Enum);
         }
     }
 
@@ -180,58 +172,31 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
 
         foreach (var entity in entities)
         {
-            reader.Read()
-                .Should().BeTrue();
+            reader.Read().Should().BeTrue();
 
-            var values = new Object[reader.FieldCount];
+            var values = new object[reader.FieldCount];
 
-            reader.GetValues(values)
-                .Should().Be(reader.FieldCount);
+            reader.GetValues(values).Should().Be(reader.FieldCount);
 
-            values[0]
-                .Should().Be(entity.Enum.ToString());
+            values[0].Should().Be(entity.Enum.ToString());
         }
     }
 
     [Fact]
     public void GetValues_NoOptions_ShouldReturnRawEnumAndCharValues()
     {
-        var entity = new Entity
-        {
-            EnumValue = Generate.Single<TestEnum>(),
-            CharValue = Generate.Single<Char>()
-        };
+        var entity = new Entity { EnumValue = Generate.Single<TestEnum>(), CharValue = Generate.Single<char>() };
 
         using var reader = CreateReader(typeof(Entity), new[] { entity }, EnumerableReaderOptions.None);
 
         reader.Read();
 
-        var values = new Object[reader.FieldCount];
+        var values = new object[reader.FieldCount];
         reader.GetValues(values);
 
-        values[reader.GetOrdinal("EnumValue")]
-            .Should().Be(entity.EnumValue);
+        values[reader.GetOrdinal("EnumValue")].Should().Be(entity.EnumValue);
 
-        values[reader.GetOrdinal("CharValue")]
-            .Should().Be(entity.CharValue);
-    }
-
-    [Fact]
-    public void GetValue_NullProperty_ShouldReturnDbNull()
-    {
-        Entity[] entities = [new() { StringValue = null! }];
-
-        using var reader = CreateReader(typeof(Entity), entities, EnumerableReaderOptions.None);
-
-        reader.Read();
-
-        var ordinal = reader.GetOrdinal("StringValue");
-
-        reader.GetValue(ordinal)
-            .Should().Be(DBNull.Value);
-
-        reader.IsDBNull(ordinal)
-            .Should().BeTrue();
+        values[reader.GetOrdinal("CharValue")].Should().Be(entity.CharValue);
     }
 
     /// <summary>
@@ -241,7 +206,11 @@ public class EnumerableReaderOptionsTests : UnitTestsBase
     /// <param name="entities">The entities the reader reads.</param>
     /// <param name="options">The behaviours the reader applies.</param>
     /// <returns>The created reader.</returns>
-    private static EnumerableReader CreateReader(Type entityType, IEnumerable entities, EnumerableReaderOptions options) =>
+    private static EnumerableReader CreateReader(
+        Type entityType,
+        IEnumerable entities,
+        EnumerableReaderOptions options
+    ) =>
         new(
             entities,
             [.. EntityHelper.GetEntityTypeMetadata(entityType).MappedProperties.Where(a => a.CanRead)],

@@ -10,6 +10,29 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 /// </summary>
 public class MySqlDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToMySqlDataType = new()
+    {
+        { typeof(bool), "TINYINT(1)" },
+        { typeof(byte), "TINYINT UNSIGNED" },
+        { typeof(byte[]), "BLOB" },
+        { typeof(char), "CHAR(1)" },
+        { typeof(DateOnly), "DATE" },
+        { typeof(DateTime), "DATETIME" },
+        { typeof(decimal), "DECIMAL(65,30)" },
+        { typeof(double), "DOUBLE" },
+        { typeof(Guid), "CHAR(36)" },
+        { typeof(short), "SMALLINT" },
+        { typeof(int), "INT" },
+        { typeof(long), "BIGINT" },
+        { typeof(float), "FLOAT" },
+        { typeof(string), "TEXT" },
+        { typeof(TimeOnly), "TIME" },
+        { typeof(TimeSpan), "TIME" },
+    };
+
+    private readonly MySqlEntityManipulator entityManipulator;
+    private readonly MySqlTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MySqlDatabaseAdapter" /> class.
     /// </summary>
@@ -23,11 +46,10 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
     public IEntityManipulator EntityManipulator => this.entityManipulator;
 
     /// <inheritdoc />
-    public ITemporaryTableBuilder TemporaryTableBuilder =>
-        this.temporaryTableBuilder;
+    public ITemporaryTableBuilder TemporaryTableBuilder => this.temporaryTableBuilder;
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -41,16 +63,13 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -59,7 +78,7 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -71,11 +90,10 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
-        "@" + parameterName;
+    public string FormatParameterName(string parameterName) => "@" + parameterName;
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -86,13 +104,11 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "VARCHAR(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "VARCHAR(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "INT",
+                EnumSerializationMode.Integers => "INT",
 
-                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -109,46 +125,20 @@ public class MySqlDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
-        "`" + identifier + "`";
+    public string QuoteIdentifier(string identifier) => "`" + identifier + "`";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
-        "`" + tableName + "`";
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) => "`" + tableName + "`";
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
-        true;
+    public bool SupportsTemporaryTables(DbConnection connection) => true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         // MySqlConnector does not support proper statement cancellation.
         return false;
     }
-
-    private readonly MySqlEntityManipulator entityManipulator;
-    private readonly MySqlTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, String> typeToMySqlDataType = new()
-    {
-        { typeof(Boolean), "TINYINT(1)" },
-        { typeof(Byte), "TINYINT UNSIGNED" },
-        { typeof(Byte[]), "BLOB" },
-        { typeof(Char), "CHAR(1)" },
-        { typeof(DateOnly), "DATE" },
-        { typeof(DateTime), "DATETIME" },
-        { typeof(Decimal), "DECIMAL(65,30)" },
-        { typeof(Double), "DOUBLE" },
-        { typeof(Guid), "CHAR(36)" },
-        { typeof(Int16), "SMALLINT" },
-        { typeof(Int32), "INT" },
-        { typeof(Int64), "BIGINT" },
-        { typeof(Single), "FLOAT" },
-        { typeof(String), "TEXT" },
-        { typeof(TimeOnly), "TIME" },
-        { typeof(TimeSpan), "TIME" }
-    };
 }

@@ -14,10 +14,8 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 public sealed class TestDatabaseContainerCleanup : IAsyncLifetime
 {
     /// <inheritdoc />
-    public ValueTask DisposeAsync() =>
-        TestDatabaseContainers.DisposeAsync();
+    public ValueTask DisposeAsync() => TestDatabaseContainers.DisposeAsync();
 
     /// <inheritdoc />
-    public ValueTask InitializeAsync() =>
-        default;
+    public ValueTask InitializeAsync() => default;
 }

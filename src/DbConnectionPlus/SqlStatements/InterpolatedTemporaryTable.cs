@@ -16,10 +16,9 @@ namespace RentADeveloper.DbConnectionPlus.SqlStatements;
 /// property the trimmer would not see that requirement.
 /// </remarks>
 public record InterpolatedTemporaryTable(
-    String Name,
+    string Name,
     IEnumerable Values,
     [property: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
     [param: DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-    Type ValuesType
-)
-    : IInterpolatedSqlStatementFragment;
+        Type ValuesType
+) : IInterpolatedSqlStatementFragment;

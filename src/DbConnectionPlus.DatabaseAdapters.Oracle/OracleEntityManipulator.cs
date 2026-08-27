@@ -4,26 +4,22 @@
 using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 
 /// <summary>
-/// The entity manipulator for PostgreSQL.
+/// The entity manipulator for Oracle.
 /// </summary>
-internal class OracleEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OracleEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-    public OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
+    private readonly OracleDatabaseAdapter databaseAdapter = databaseAdapter;
+    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
 
     /// <inheritdoc />
-    public Int32 DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -70,11 +66,8 @@ internal class OracleEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -84,9 +77,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -119,8 +110,9 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    var numberOfAffectedRows =
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    var numberOfAffectedRows = await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (numberOfAffectedRows != 1)
                     {
@@ -134,11 +126,8 @@ internal class OracleEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -148,9 +137,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 DeleteEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -187,11 +174,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -199,9 +183,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -238,11 +220,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -250,9 +229,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -264,11 +241,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -296,9 +269,8 @@ internal class OracleEntityManipulator : IEntityManipulator
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -308,9 +280,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -322,11 +292,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -347,17 +313,17 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    totalNumberOfAffectedRows +=
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    totalNumberOfAffectedRows += await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     var outputParameters = parameters.Where(a => a.Direction == ParameterDirection.Output).ToArray();
 
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -367,9 +333,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -381,11 +345,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -405,9 +365,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -415,9 +374,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -429,11 +386,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -453,9 +406,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -463,9 +415,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -477,11 +427,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -520,9 +466,8 @@ internal class OracleEntityManipulator : IEntityManipulator
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -532,9 +477,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -546,11 +489,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -571,8 +510,9 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    var numberOfAffectedRows =
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    var numberOfAffectedRows = await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (numberOfAffectedRows != 1)
                     {
@@ -590,9 +530,8 @@ internal class OracleEntityManipulator : IEntityManipulator
                     UpdateDatabaseGeneratedProperties(entityTypeMetadata, outputParameters, entity);
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -602,9 +541,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -616,11 +553,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -649,9 +582,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -659,9 +591,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -673,11 +603,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -706,11 +632,41 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the database generated properties of the provided entity from the provided output parameters.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    private static void UpdateDatabaseGeneratedProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        DbParameter[] outputParameters,
+        object entity
+    )
+    {
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
+        {
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = outputParameters[i].Value;
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }
@@ -740,8 +696,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var parameters = new List<DbParameter>();
 
-        var whereProperties = entityTypeMetadata.KeyProperties
-            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+        var whereProperties = entityTypeMetadata
+            .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
             .Concat(entityTypeMetadata.RowVersionProperties);
 
         foreach (var property in whereProperties)
@@ -801,7 +757,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
             parameter.Direction = ParameterDirection.Output;
 
-            if (property.PropertyType == typeof(Byte[]))
+            if (property.PropertyType == typeof(byte[]))
             {
                 // Use max size for byte arrays to actually retrieve the full value:
                 parameter.Size = 32767;
@@ -839,8 +795,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
         var parameters = new List<DbParameter>();
 
-        var whereProperties = entityTypeMetadata.KeyProperties
-            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+        var whereProperties = entityTypeMetadata
+            .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
             .Concat(entityTypeMetadata.RowVersionProperties);
 
         foreach (var property in entityTypeMetadata.UpdateProperties.Concat(whereProperties))
@@ -864,7 +820,7 @@ internal class OracleEntityManipulator : IEntityManipulator
 
             parameter.Direction = ParameterDirection.Output;
 
-            if (property.PropertyType == typeof(Byte[]))
+            if (property.PropertyType == typeof(byte[]))
             {
                 // Use max size for byte arrays to actually retrieve the full value:
                 parameter.Size = 32767;
@@ -882,7 +838,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
     /// <returns>The SQL code to delete an entity of the specified type.</returns>
-    private String GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityDeleteSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -892,7 +848,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("DELETE FROM");
 
@@ -907,8 +863,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 var prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var keyProperty in whereProperties)
@@ -938,12 +894,12 @@ internal class OracleEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
     /// <returns>The SQL code to insert an entity of the specified type.</returns>
-    private String GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityInsertSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
             {
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.Append("INSERT INTO \"");
                 sqlBuilder.Append(entityTypeMetadata.TableName);
@@ -1044,7 +1000,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
     /// <returns>The SQL code to update an entity of the specified type.</returns>
-    private String GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityUpdateSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -1054,7 +1010,7 @@ internal class OracleEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("UPDATE");
                 sqlBuilder.Append(Constants.Indent);
@@ -1091,8 +1047,8 @@ internal class OracleEntityManipulator : IEntityManipulator
 
                 prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var property in whereProperties)
@@ -1172,7 +1128,7 @@ internal class OracleEntityManipulator : IEntityManipulator
     private void PopulateParametersFromEntityProperties(
         EntityTypeMetadata entityTypeMetadata,
         List<DbParameter> parameters,
-        Object entity
+        object entity
     )
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -1185,40 +1141,4 @@ internal class OracleEntityManipulator : IEntityManipulator
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    /// <summary>
-    /// Updates the database generated properties of the provided entity from the provided output parameters.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="outputParameters">The output parameters from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    private static void UpdateDatabaseGeneratedProperties(
-        EntityTypeMetadata entityTypeMetadata,
-        DbParameter[] outputParameters,
-        Object entity
-    )
-    {
-        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0)
-        {
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = outputParameters[i].Value;
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    private readonly OracleDatabaseAdapter databaseAdapter;
-    private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
 }

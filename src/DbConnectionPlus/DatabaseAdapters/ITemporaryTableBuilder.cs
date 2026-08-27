@@ -64,7 +64,7 @@ public interface ITemporaryTableBuilder
     /// <remarks>
     /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
-    /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
+    /// (e.g. <see cref="string" />, <see cref="int" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
     /// a single-column table will be built with a column named "Value" with a data type that matches the
     /// type <paramref name="valuesType" />.
     /// </para>
@@ -80,10 +80,9 @@ public interface ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     );
 
@@ -145,7 +144,7 @@ public interface ITemporaryTableBuilder
     /// <remarks>
     /// <para>
     /// If the type <paramref name="valuesType" /> is a scalar type
-    /// (e.g. <see cref="String" />, <see cref="Int32" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
+    /// (e.g. <see cref="string" />, <see cref="int" />, <see cref="DateTime" />, <see cref="Enum" /> and so on),
     /// a single-column table will be built with a column named "Value" with a data type that matches
     /// the type <paramref name="valuesType" />.
     /// </para>
@@ -161,10 +160,9 @@ public interface ITemporaryTableBuilder
     public Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     );
 }

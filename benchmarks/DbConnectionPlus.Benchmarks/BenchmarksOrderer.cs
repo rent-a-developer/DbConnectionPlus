@@ -17,36 +17,35 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 //     against AOT comparison is read from the Mean column of the two rows for the same method.
 public class BenchmarksOrderer : IOrderer
 {
-    public Boolean SeparateLogicalGroups => true;
+    public bool SeparateLogicalGroups => true;
 
     public IEnumerable<BenchmarkCase> GetExecutionOrder(
         ImmutableArray<BenchmarkCase> benchmarksCase,
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
-    ) =>
-        Sort(benchmarksCase);
+    ) => Sort(benchmarksCase);
 
-    public String? GetHighlightGroupKey(BenchmarkCase benchmarkCase) =>
+    public string? GetHighlightGroupKey(BenchmarkCase benchmarkCase) => GetLogicalGroupKey(benchmarkCase);
+
+    public string? GetLogicalGroupKey(ImmutableArray<BenchmarkCase> allBenchmarksCases, BenchmarkCase benchmarkCase) =>
         GetLogicalGroupKey(benchmarkCase);
 
-    public String? GetLogicalGroupKey(
-        ImmutableArray<BenchmarkCase> allBenchmarksCases,
-        BenchmarkCase benchmarkCase
-    ) =>
-        GetLogicalGroupKey(benchmarkCase);
-
-    public IEnumerable<IGrouping<String, BenchmarkCase>> GetLogicalGroupOrder(
-        IEnumerable<IGrouping<String, BenchmarkCase>> logicalGroups,
+    public IEnumerable<IGrouping<string, BenchmarkCase>> GetLogicalGroupOrder(
+        IEnumerable<IGrouping<string, BenchmarkCase>> logicalGroups,
         IEnumerable<BenchmarkLogicalGroupRule>? order = null
     ) =>
         logicalGroups
             .OrderBy(it => it.First().Descriptor.Categories[0], StringComparer.Ordinal)
             .ThenBy(it => GetJobRank(it.First()));
 
-    public IEnumerable<BenchmarkCase> GetSummaryOrder(
-        ImmutableArray<BenchmarkCase> benchmarksCases,
-        Summary summary
-    ) =>
+    public IEnumerable<BenchmarkCase> GetSummaryOrder(ImmutableArray<BenchmarkCase> benchmarksCases, Summary summary) =>
         Sort(benchmarksCases);
+
+    // Ranked rather than sorted by name, so that JIT is reported before AOT instead of alphabetically.
+    private static int GetJobRank(BenchmarkCase benchmarkCase) =>
+        benchmarkCase.Job.Id.Contains(BenchmarksConfig.JitJobId, StringComparison.Ordinal) ? 0 : 1;
+
+    private static string GetLogicalGroupKey(BenchmarkCase benchmarkCase) =>
+        $"{benchmarkCase.Descriptor.Categories.FirstOrDefault()}-{benchmarkCase.Job.Id}";
 
     private static IEnumerable<BenchmarkCase> Sort(ImmutableArray<BenchmarkCase> benchmarkCases) =>
         benchmarkCases
@@ -54,11 +53,4 @@ public class BenchmarksOrderer : IOrderer
             .ThenBy(GetJobRank)
             .ThenByDescending(a => a.Descriptor.Baseline)
             .ThenBy(a => a.Descriptor.WorkloadMethod.Name, StringComparer.Ordinal);
-
-    private static String GetLogicalGroupKey(BenchmarkCase benchmarkCase) =>
-        $"{benchmarkCase.Descriptor.Categories.FirstOrDefault()}-{benchmarkCase.Job.Id}";
-
-    // Ranked rather than sorted by name, so that JIT is reported before AOT instead of alphabetically.
-    private static Int32 GetJobRank(BenchmarkCase benchmarkCase) =>
-        benchmarkCase.Job.Id.Contains(BenchmarksConfig.JitJobId, StringComparison.Ordinal) ? 0 : 1;
 }

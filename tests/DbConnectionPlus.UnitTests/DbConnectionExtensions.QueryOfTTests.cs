@@ -6,36 +6,29 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 
 public class DbConnectionExtensions_QueryOfTTests : StatementMethodTestsBase
 {
-    public DbConnectionExtensions_QueryOfTTests() : base(
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.QueryAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken)
-                .ToListAsync(TestContext.Current.CancellationToken).AsTask(),
-        (
-                connection,
-                sql,
-                transaction,
-                timeout,
-                commandType,
-                cancellationToken
-            ) =>
-            connection.Query<Entity>(sql, transaction, timeout, commandType, cancellationToken).ToList()
-    )
+    public DbConnectionExtensions_QueryOfTTests()
+        : base(
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection
+                    .QueryAsync<Entity>(sql, transaction, timeout, commandType, cancellationToken)
+                    .ToListAsync(TestContext.Current.CancellationToken)
+                    .AsTask(),
+            // Keep this a method call. The lambda is an Action, so its body has to be a STATEMENT, and
+            // `[.. connection.Query(...)]` is a collection expression - not a valid statement, so it does
+            // not compile (CS0201). Editors and agents offer that rewrite as a one-click fix; it breaks
+            // the build. No analyzer suppression is needed - neither `dotnet format style` nor ReSharper's
+            // cleanup asks for it here, both verified.
+            (connection, sql, transaction, timeout, commandType, cancellationToken) =>
+                connection.Query<Entity>(sql, transaction, timeout, commandType, cancellationToken).ToList()
+        )
     {
         var mockDbDataReader = Substitute.For<DbDataReader>();
 
         mockDbDataReader.FieldCount.Returns(1);
         mockDbDataReader.GetName(0).Returns("Id");
-        mockDbDataReader.GetFieldType(0).Returns(typeof(Int64));
+        mockDbDataReader.GetFieldType(0).Returns(typeof(long));
 
-        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>())
-            .Returns(mockDbDataReader);
+        this.MockDbCommand.ExecuteReader(Arg.Any<CommandBehavior>()).Returns(mockDbDataReader);
 
         this.MockDbCommand.ExecuteReaderAsync(Arg.Any<CommandBehavior>(), Arg.Any<CancellationToken>())
             .Returns(mockDbDataReader);
@@ -44,12 +37,8 @@ public class DbConnectionExtensions_QueryOfTTests : StatementMethodTestsBase
     [Fact]
     public void ShouldGuardAgainstNullArguments()
     {
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.Query<Entity>("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.Query<Entity>("SELECT * FROM Entity"));
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            this.MockDbConnection.QueryAsync<Entity>("SELECT * FROM Entity")
-        );
+        ArgumentNullGuardVerifier.Verify(() => this.MockDbConnection.QueryAsync<Entity>("SELECT * FROM Entity"));
     }
 }

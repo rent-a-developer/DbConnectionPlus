@@ -16,5 +16,5 @@ public enum EnumSerializationMode
     /// <summary>
     /// <see cref="Enum" /> values are serialized as strings.
     /// </summary>
-    Strings = 1
+    Strings = 1,
 }

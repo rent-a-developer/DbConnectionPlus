@@ -10,6 +10,30 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 /// </summary>
 public class SqliteDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToSqliteDataType = new()
+    {
+        { typeof(bool), "INTEGER" },
+        { typeof(byte), "INTEGER" },
+        { typeof(byte[]), "BLOB" },
+        { typeof(char), "TEXT" },
+        { typeof(DateOnly), "TEXT" },
+        { typeof(DateTime), "TEXT" },
+        { typeof(DateTimeOffset), "TEXT" },
+        { typeof(decimal), "TEXT" },
+        { typeof(double), "REAL" },
+        { typeof(Guid), "TEXT" },
+        { typeof(short), "INTEGER" },
+        { typeof(int), "INTEGER" },
+        { typeof(long), "INTEGER" },
+        { typeof(float), "REAL" },
+        { typeof(string), "TEXT" },
+        { typeof(TimeOnly), "TEXT" },
+        { typeof(TimeSpan), "TEXT" },
+    };
+
+    private readonly SqliteEntityManipulator entityManipulator;
+    private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteDatabaseAdapter" /> class.
     /// </summary>
@@ -23,11 +47,10 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     public IEntityManipulator EntityManipulator => this.entityManipulator;
 
     /// <inheritdoc />
-    public ITemporaryTableBuilder TemporaryTableBuilder =>
-        this.temporaryTableBuilder;
+    public ITemporaryTableBuilder TemporaryTableBuilder => this.temporaryTableBuilder;
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -41,16 +64,13 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -59,7 +79,7 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -71,11 +91,10 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
-        "@" + parameterName;
+    public string FormatParameterName(string parameterName) => "@" + parameterName;
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -86,14 +105,11 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "TEXT",
+                EnumSerializationMode.Strings => "TEXT",
 
-                EnumSerializationMode.Integers =>
-                    "INTEGER",
+                EnumSerializationMode.Integers => "INTEGER",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -110,47 +126,20 @@ public class SqliteDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
-        "\"" + identifier + "\"";
+    public string QuoteIdentifier(string identifier) => "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
-        "temp.\"" + tableName + "\"";
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) => "temp.\"" + tableName + "\"";
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
-        true;
+    public bool SupportsTemporaryTables(DbConnection connection) => true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         // SQLite does not support proper statement cancellation.
         return false;
     }
-
-    private readonly SqliteEntityManipulator entityManipulator;
-    private readonly SqliteTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, String> typeToSqliteDataType = new()
-    {
-        { typeof(Boolean), "INTEGER" },
-        { typeof(Byte), "INTEGER" },
-        { typeof(Byte[]), "BLOB" },
-        { typeof(Char), "TEXT" },
-        { typeof(DateOnly), "TEXT" },
-        { typeof(DateTime), "TEXT" },
-        { typeof(DateTimeOffset), "TEXT" },
-        { typeof(Decimal), "TEXT" },
-        { typeof(Double), "REAL" },
-        { typeof(Guid), "TEXT" },
-        { typeof(Int16), "INTEGER" },
-        { typeof(Int32), "INTEGER" },
-        { typeof(Int64), "INTEGER" },
-        { typeof(Single), "REAL" },
-        { typeof(String), "TEXT" },
-        { typeof(TimeOnly), "TEXT" },
-        { typeof(TimeSpan), "TEXT" }
-    };
 }

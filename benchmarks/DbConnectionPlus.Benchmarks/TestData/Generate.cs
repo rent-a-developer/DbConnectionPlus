@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 
 // Generates the entities the benchmarks operate on. A plain seeded generator rather than the unit test
@@ -22,11 +20,60 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks.TestData;
 // three for Double and Single, and alphabetic characters only for Char.
 public static class Generate
 {
-    public static BenchmarkEntity Single() =>
-        Create(NextId());
+    private static readonly char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
 
-    public static List<BenchmarkEntity> Multiple(Int32 numberOfEntities) =>
+    private static readonly DateTime dateTimeBase = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Local);
+
+    // Seeded, so that every process generates the same entities.
+    private static readonly Random random = new(20260813);
+
+    // Guards random. The setup is single threaded today, but a shared unsynchronized Random silently starts
+    // returning zeroes once it is not, which would be invisible in a benchmark result.
+    private static readonly Lock syncRoot = new();
+
+    private static readonly string[] words =
+    [
+        "lorem",
+        "ipsum",
+        "dolor",
+        "sit",
+        "amet",
+        "consectetur",
+        "adipiscing",
+        "elit",
+        "sed",
+        "do",
+        "eiusmod",
+        "tempor",
+        "incididunt",
+        "ut",
+        "labore",
+        "et",
+        "dolore",
+        "magna",
+        "aliqua",
+        "enim",
+        "ad",
+        "minim",
+        "veniam",
+        "quis",
+        "nostrud",
+        "exercitation",
+        "ullamco",
+        "laboris",
+        "nisi",
+        "aliquip",
+        "ex",
+        "ea",
+        "commodo",
+    ];
+
+    private static long nextId;
+
+    public static List<BenchmarkEntity> Multiple(int numberOfEntities) =>
         [.. Enumerable.Range(0, numberOfEntities).Select(_ => Single())];
+
+    public static BenchmarkEntity Single() => Create(NextId());
 
     public static BenchmarkEntity UpdateFor(BenchmarkEntity entity)
     {
@@ -42,10 +89,9 @@ public static class Generate
         return updatedEntity;
     }
 
-    public static List<BenchmarkEntity> UpdatesFor(List<BenchmarkEntity> entities) =>
-        [.. entities.Select(UpdateFor)];
+    public static List<BenchmarkEntity> UpdatesFor(List<BenchmarkEntity> entities) => [.. entities.Select(UpdateFor)];
 
-    private static BenchmarkEntity Create(Int64 id)
+    private static BenchmarkEntity Create(long id)
     {
         lock (syncRoot)
         {
@@ -54,70 +100,46 @@ public static class Generate
                 Id = id,
                 BooleanValue = random.Next(2) == 1,
                 BytesValue = NextBytes(random.Next(1, 10)),
-                ByteValue = (Byte)random.Next(0, 256),
+                ByteValue = (byte)random.Next(0, 256),
                 CharValue = characters[random.Next(0, characters.Length)],
                 // Seconds precision, and a fixed base date so that the values do not depend on when the benchmarks
                 // are run. The span covers roughly six years.
                 DateTimeValue = dateTimeBase.AddSeconds(random.Next(0, 200_000_000)),
-                DecimalValue = Math.Round((Decimal)(random.NextDouble() * 999.0), 10),
+                DecimalValue = Math.Round((decimal)(random.NextDouble() * 999.0), 10),
                 DoubleValue = Math.Round(random.NextDouble() * 999.0, 3),
                 EnumValue = (TestEnum)random.Next(1, 6),
-                Int16Value = (Int16)random.Next(Int16.MinValue, Int16.MaxValue + 1),
-                Int32Value = random.Next(Int32.MinValue, Int32.MaxValue),
+                Int16Value = (short)random.Next(short.MinValue, short.MaxValue + 1),
+                Int32Value = random.Next(int.MinValue, int.MaxValue),
                 Int64Value = random.NextInt64(),
-                SingleValue = (Single)Math.Round(random.NextDouble() * 999.0, 3),
-                StringValue = NextSentence()
+                SingleValue = (float)Math.Round(random.NextDouble() * 999.0, 3),
+                StringValue = NextSentence(),
             };
         }
     }
 
-    private static Int64 NextId() =>
-        Interlocked.Increment(ref nextId);
-
-    private static Byte[] NextBytes(Int32 count)
+    private static byte[] NextBytes(int count)
     {
-        var bytes = new Byte[count];
+        var bytes = new byte[count];
 
         random.NextBytes(bytes);
 
         return bytes;
     }
 
-    private static String NextSentence()
+    private static long NextId() => Interlocked.Increment(ref nextId);
+
+    private static string NextSentence()
     {
         var wordCount = random.Next(4, 9);
-        var sentence = new String[wordCount];
+        var sentence = new string[wordCount];
 
         for (var i = 0; i < wordCount; i++)
         {
             sentence[i] = words[random.Next(0, words.Length)];
         }
 
-        sentence[0] = String.Concat(
-            sentence[0][..1].ToUpper(CultureInfo.InvariantCulture),
-            sentence[0].AsSpan(1)
-        );
+        sentence[0] = string.Concat(sentence[0][..1].ToUpper(CultureInfo.InvariantCulture), sentence[0].AsSpan(1));
 
-        return String.Join(' ', sentence) + '.';
+        return string.Join(' ', sentence) + '.';
     }
-
-    private static Int64 nextId;
-
-    // Seeded, so that every process generates the same entities.
-    private static readonly Random random = new(20260813);
-
-    // Guards random. The setup is single threaded today, but a shared unsynchronized Random silently starts
-    // returning zeroes once it is not, which would be invisible in a benchmark result.
-    private static readonly Lock syncRoot = new();
-
-    private static readonly Char[] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".ToCharArray();
-
-    private static readonly String[] words =
-    [
-        "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "sed", "do", "eiusmod",
-        "tempor", "incididunt", "ut", "labore", "et", "dolore", "magna", "aliqua", "enim", "ad", "minim", "veniam",
-        "quis", "nostrud", "exercitation", "ullamco", "laboris", "nisi", "aliquip", "ex", "ea", "commodo"
-    ];
-
-    private static readonly DateTime dateTimeBase = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Local);
 }

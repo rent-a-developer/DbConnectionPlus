@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -NoProfile -NonInteractive -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-cs.ps1\"",
+            "command": "pwsh -NoProfile -NonInteractive -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/tidy-cs.ps1\"",
             "timeout": 60
           },
           {

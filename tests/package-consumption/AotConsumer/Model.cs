@@ -38,7 +38,7 @@ public enum SmokeStatus
     Active = 1,
 
     /// <summary>The entity is retained for reference only.</summary>
-    Archived = 2
+    Archived = 2,
 }
 
 /// <summary>
@@ -49,16 +49,16 @@ public sealed class SmokeEntity
 {
     /// <summary>The primary key. Not database-generated, so it takes part in the INSERT.</summary>
     [Key]
-    public Int64 Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>A plain string column.</summary>
-    public String Name { get; set; } = String.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>Stored as TEXT by SQLite, so materializing it exercises a String to Decimal conversion.</summary>
-    public Decimal Balance { get; set; }
+    public decimal Balance { get; set; }
 
     /// <summary>Stored as INTEGER by SQLite, so materializing it exercises an Int64 to Boolean conversion.</summary>
-    public Boolean IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     /// <summary>Stored as TEXT by SQLite, so materializing it exercises a String to DateTime conversion.</summary>
     public DateTime CreatedAt { get; set; }
@@ -70,7 +70,7 @@ public sealed class SmokeEntity
     public SmokeStatus Status { get; set; }
 
     /// <summary>SQLite reports INTEGER columns as <see cref="Int64" />, so this narrows on materialization.</summary>
-    public Int32 Quantity { get; set; }
+    public int Quantity { get; set; }
 }
 
 /// <summary>
@@ -83,7 +83,7 @@ public sealed class ImmutableSmokeEntity
     /// <param name="id">The primary key.</param>
     /// <param name="name">The name.</param>
     /// <param name="balance">The balance.</param>
-    public ImmutableSmokeEntity(Int64 id, String name, Decimal balance)
+    public ImmutableSmokeEntity(long id, string name, decimal balance)
     {
         this.Id = id;
         this.Name = name;
@@ -91,13 +91,13 @@ public sealed class ImmutableSmokeEntity
     }
 
     /// <summary>The primary key.</summary>
-    public Int64 Id { get; }
+    public long Id { get; }
 
     /// <summary>The name.</summary>
-    public String Name { get; }
+    public string Name { get; }
 
     /// <summary>The balance.</summary>
-    public Decimal Balance { get; }
+    public decimal Balance { get; }
 }
 
 // =====================================================================================================
@@ -134,7 +134,7 @@ public enum FlatTupleNumericEnum
     FlatNumericChosen = 71,
 
     /// <summary>Never stored. Present so that an off-by-one bind is visible.</summary>
-    FlatNumericOther = 72
+    FlatNumericOther = 72,
 }
 
 /// <summary>
@@ -150,7 +150,7 @@ public enum NestedTupleNumericEnum
     NestedNumericChosen = 81,
 
     /// <summary>Never stored. Present so that an off-by-one bind is visible.</summary>
-    NestedNumericOther = 82
+    NestedNumericOther = 82,
 }
 
 /// <summary>
@@ -166,7 +166,7 @@ public enum FlatTupleNamedEnum
     FlatNamedChosen = 91,
 
     /// <summary>Never stored. Present so that a parse landing on the wrong member is visible.</summary>
-    FlatNamedOther = 92
+    FlatNamedOther = 92,
 }
 
 /// <summary>
@@ -184,7 +184,7 @@ public enum NestedTupleNamedEnum
     NestedNamedChosen = 101,
 
     /// <summary>Never stored. Present so that a parse landing on the wrong member is visible.</summary>
-    NestedNamedOther = 102
+    NestedNamedOther = 102,
 }
 
 /// <summary>
@@ -194,8 +194,8 @@ public sealed class SmokeItem
 {
     /// <summary>The primary key.</summary>
     [Key]
-    public Int64 Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>The label of the item.</summary>
-    public String Label { get; set; } = String.Empty;
+    public string Label { get; set; } = string.Empty;
 }

@@ -24,14 +24,14 @@ namespace RentADeveloper.DbConnectionPlus.PackageConsumption;
 public static class Check
 {
     /// <summary>Gets the number of assertions that failed so far.</summary>
-    public static Int32 FailureCount { get; private set; }
+    public static int FailureCount { get; private set; }
 
     /// <summary>Writes a section header, so the console output stays readable in a CI log.</summary>
     /// <param name="title">The title of the section.</param>
-    public static void Section(String title)
+    public static void Section(string title)
     {
         Console.WriteLine();
-        Console.WriteLine(new String('=', 100));
+        Console.WriteLine(new string('=', 100));
         Console.WriteLine(title);
         Console.WriteLine();
     }
@@ -41,7 +41,7 @@ public static class Check
     /// <param name="label">A description of what is being asserted.</param>
     /// <param name="expected">The expected value.</param>
     /// <param name="actual">The actual value.</param>
-    public static void Equal<T>(String label, T expected, T actual)
+    public static void Equal<T>(string label, T expected, T actual)
     {
         if (EqualityComparer<T>.Default.Equals(expected, actual))
         {
@@ -56,7 +56,7 @@ public static class Check
     /// <summary>Asserts that <paramref name="condition" /> is <see langword="true" />.</summary>
     /// <param name="label">A description of what is being asserted.</param>
     /// <param name="condition">The condition that must hold.</param>
-    public static void True(String label, Boolean condition)
+    public static void True(string label, bool condition)
     {
         if (condition)
         {
@@ -76,7 +76,7 @@ public static class Check
     /// <param name="label">A description of what is being asserted.</param>
     /// <param name="expectedMessageFragment">A fragment the exception message must contain.</param>
     /// <param name="action">The action that must throw.</param>
-    public static void Throws<TException>(String label, String expectedMessageFragment, Action action)
+    public static void Throws<TException>(string label, string expectedMessageFragment, Action action)
         where TException : Exception
     {
         try
@@ -108,10 +108,9 @@ public static class Check
         Fail(label, $"expected {typeof(TException).Name}, but nothing was thrown");
     }
 
-    private static void Pass(String label) =>
-        Console.WriteLine($"  PASS  {label}");
+    private static void Pass(string label) => Console.WriteLine($"  PASS  {label}");
 
-    private static void Fail(String label, String detail)
+    private static void Fail(string label, string detail)
     {
         FailureCount++;
 
@@ -119,12 +118,12 @@ public static class Check
         Console.WriteLine($"        {detail}");
     }
 
-    private static String Render(Object? value) =>
+    private static string Render(object? value) =>
         value switch
         {
             null => "null",
-            Byte[] bytes => Convert.ToHexString(bytes),
+            byte[] bytes => Convert.ToHexString(bytes),
             IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-            _ => value.ToString() ?? String.Empty
+            _ => value.ToString() ?? string.Empty,
         };
 }

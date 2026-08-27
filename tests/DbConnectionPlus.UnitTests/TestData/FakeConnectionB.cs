@@ -5,42 +5,34 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public class FakeConnectionB : DbConnection
 {
     /// <inheritdoc />
+    public override string DataSource => null!;
+
+    /// <inheritdoc />
+    public override string Database => null!;
+
+    /// <inheritdoc />
+    public override string ServerVersion => null!;
+
+    /// <inheritdoc />
+    public override ConnectionState State => ConnectionState.Closed;
+
+    /// <inheritdoc />
     [AllowNull]
-    public override String ConnectionString { get; set; }
+    public override string ConnectionString { get; set; }
 
     /// <inheritdoc />
-    public override String Database =>
-        null!;
+    public override void ChangeDatabase(string databaseName) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override String DataSource =>
-        null!;
+    public override void Close() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override String ServerVersion =>
-        null!;
-
-    /// <inheritdoc />
-    public override ConnectionState State =>
-        ConnectionState.Closed;
-
-    /// <inheritdoc />
-    public override void ChangeDatabase(String databaseName) =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public override void Close() =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public override void Open() =>
-        throw new NotImplementedException();
+    public override void Open() => throw new NotImplementedException();
 
     /// <inheritdoc />
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    protected override DbCommand CreateDbCommand() =>
-        throw new NotImplementedException();
+    protected override DbCommand CreateDbCommand() => throw new NotImplementedException();
 }

@@ -4,28 +4,22 @@
 using LinkDotNet.StringBuilder;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 
 namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 
 /// <summary>
 /// The entity manipulator for MySQL.
 /// </summary>
-internal class MySqlEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class MySqlEntityManipulator(MySqlDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MySqlEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-#pragma warning disable IDE0290 // Use primary constructor
-    public MySqlEntityManipulator(MySqlDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
-#pragma warning restore IDE0290 // Use primary constructor
+    private readonly MySqlDatabaseAdapter databaseAdapter = databaseAdapter;
+    private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
+    private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
 
     /// <inheritdoc />
-    public Int32 DeleteEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -72,11 +66,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -86,9 +77,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -121,8 +110,9 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                     DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
 
-                    var numberOfAffectedRows =
-                        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                    var numberOfAffectedRows = await command
+                        .ExecuteNonQueryAsync(cancellationToken)
+                        .ConfigureAwait(false);
 
                     if (numberOfAffectedRows != 1)
                     {
@@ -136,11 +126,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += numberOfAffectedRows;
                 }
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -150,9 +137,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 DeleteEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int DeleteEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -189,11 +174,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -201,9 +183,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> DeleteEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> DeleteEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -240,11 +220,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return numberOfAffectedRows;
             }
-            catch (Exception exception) when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(
-                    exception,
-                    cancellationToken
-                )
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -252,9 +229,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -266,11 +241,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -297,9 +268,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -309,9 +279,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -323,11 +291,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -350,22 +314,18 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -375,9 +335,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -389,11 +347,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -411,9 +365,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -421,9 +374,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -435,11 +386,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateInsertEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateInsertEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -453,7 +400,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
 #pragma warning disable CA2007
                 await using var reader = await command
-                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                    .ConfigureAwait(false);
 #pragma warning restore CA2007
 
                 await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
@@ -461,9 +409,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -471,9 +418,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntities<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntities<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -485,11 +430,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -531,9 +472,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -543,9 +483,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntitiesAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntitiesAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         IEnumerable<TEntity> entities,
         DbTransaction? transaction,
@@ -557,11 +495,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -584,15 +518,12 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
 #pragma warning disable CA2007
                     await using var reader = await command
-                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken).ConfigureAwait(false);
+                        .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                        .ConfigureAwait(false);
 #pragma warning restore CA2007
 
-                    await UpdateDatabaseGeneratedPropertiesAsync(
-                        entityTypeMetadata,
-                        reader,
-                        entity,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    await UpdateDatabaseGeneratedPropertiesAsync(entityTypeMetadata, reader, entity, cancellationToken)
+                        .ConfigureAwait(false);
 
                     // We must close the reader before we can access DbDataReader.RecordsAffected, because otherwise it
                     // returns -1 when we select database generated properties via the SELECT statement after the
@@ -611,9 +542,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     totalNumberOfAffectedRows += reader.RecordsAffected;
                 }
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -623,9 +553,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public Int32 UpdateEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public int UpdateEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -637,11 +565,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -673,9 +597,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -683,9 +606,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     }
 
     /// <inheritdoc />
-    public async Task<Int32> UpdateEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public async Task<int> UpdateEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         DbConnection connection,
         TEntity entity,
         DbTransaction? transaction,
@@ -697,11 +618,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var entityTypeMetadata = EntityHelper.GetEntityTypeMetadata(typeof(TEntity));
 
-        var (command, parameters) = this.CreateUpdateEntityCommand(
-            connection,
-            transaction,
-            entityTypeMetadata
-        );
+        var (command, parameters) = this.CreateUpdateEntityCommand(connection, transaction, entityTypeMetadata);
         var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
         using (command)
@@ -738,11 +655,85 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 return reader.RecordsAffected;
             }
-            catch (Exception exception) when (
-                this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (this.databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the database generated properties of the provided entity from the provided data reader.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="reader">The data reader from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    private static void UpdateDatabaseGeneratedProperties(
+        EntityTypeMetadata entityTypeMetadata,
+        DbDataReader reader,
+        object entity,
+        CancellationToken cancellationToken
+    )
+    {
+        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 && reader.Read())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously updates the database generated properties of the provided entity from the provided data
+    /// reader.
+    /// </summary>
+    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
+    /// <param name="reader">The data reader from which to read the values for the properties.</param>
+    /// <param name="entity">The entity to update.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private static async Task UpdateDatabaseGeneratedPropertiesAsync(
+        EntityTypeMetadata entityTypeMetadata,
+        DbDataReader reader,
+        object entity,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0
+            && await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+        )
+        {
+            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
+            {
+                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
+
+                if (!property.CanWrite)
+                {
+                    continue;
+                }
+
+                var value = reader.GetValue(i);
+
+                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
+
+                property.PropertySetter!(entity, value);
             }
         }
     }
@@ -772,8 +763,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
         var parameters = new List<DbParameter>();
 
-        var whereProperties = entityTypeMetadata.KeyProperties
-            .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+        var whereProperties = entityTypeMetadata
+            .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
             .Concat(entityTypeMetadata.RowVersionProperties);
 
         foreach (var property in whereProperties)
@@ -864,7 +855,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to delete.</param>
     /// <returns>The SQL code to delete an entity of the specified type.</returns>
-    private String GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetDeleteEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityDeleteSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -874,7 +865,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("DELETE FROM");
 
@@ -888,8 +879,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 var prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var keyProperty in whereProperties)
@@ -918,12 +909,12 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to insert.</param>
     /// <returns>The SQL code to insert an entity of the specified type.</returns>
-    private String GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetInsertEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityInsertSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
             {
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.Append("INSERT INTO `");
                 sqlBuilder.Append(entityTypeMetadata.TableName);
@@ -1049,7 +1040,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     /// </summary>
     /// <param name="entityTypeMetadata">The metadata for the entity type to update.</param>
     /// <returns>The SQL code to update an entity of the specified type.</returns>
-    private String GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
+    private string GetUpdateEntitySqlCode(EntityTypeMetadata entityTypeMetadata) =>
         this.entityUpdateSqlCodePerEntityType.GetOrAdd(
             entityTypeMetadata.EntityType,
             _ =>
@@ -1059,7 +1050,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     ThrowHelper.ThrowEntityTypeHasNoKeyPropertyException(entityTypeMetadata.EntityType);
                 }
 
-                using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+                using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
                 sqlBuilder.AppendLine("UPDATE");
 
@@ -1097,8 +1088,8 @@ internal class MySqlEntityManipulator : IEntityManipulator
 
                 prependSeparator = false;
 
-                var whereProperties = entityTypeMetadata.KeyProperties
-                    .Concat(entityTypeMetadata.ConcurrencyTokenProperties)
+                var whereProperties = entityTypeMetadata
+                    .KeyProperties.Concat(entityTypeMetadata.ConcurrencyTokenProperties)
                     .Concat(entityTypeMetadata.RowVersionProperties);
 
                 foreach (var property in whereProperties)
@@ -1159,7 +1150,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
                     whereProperties =
                     [
                         .. entityTypeMetadata.KeyProperties,
-                        .. entityTypeMetadata.ConcurrencyTokenProperties
+                        .. entityTypeMetadata.ConcurrencyTokenProperties,
                     ];
 
                     foreach (var keyProperty in whereProperties)
@@ -1194,7 +1185,7 @@ internal class MySqlEntityManipulator : IEntityManipulator
     private void PopulateParametersFromEntityProperties(
         EntityTypeMetadata entityTypeMetadata,
         List<DbParameter> parameters,
-        Object entity
+        object entity
     )
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -1207,84 +1198,4 @@ internal class MySqlEntityManipulator : IEntityManipulator
             this.databaseAdapter.BindParameterValue(parameter, propertyValue);
         }
     }
-
-    /// <summary>
-    /// Updates the database generated properties of the provided entity from the provided data reader.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="reader">The data reader from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    private static void UpdateDatabaseGeneratedProperties(
-        EntityTypeMetadata entityTypeMetadata,
-        DbDataReader reader,
-        Object entity,
-        CancellationToken cancellationToken
-    )
-    {
-        if (entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 && reader.Read())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = reader.GetValue(i);
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously updates the database generated properties of the provided entity from the provided data
-    /// reader.
-    /// </summary>
-    /// <param name="entityTypeMetadata">The metadata for the entity type.</param>
-    /// <param name="reader">The data reader from which to read the values for the properties.</param>
-    /// <param name="entity">The entity to update.</param>
-    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    private static async Task UpdateDatabaseGeneratedPropertiesAsync(
-        EntityTypeMetadata entityTypeMetadata,
-        DbDataReader reader,
-        Object entity,
-        CancellationToken cancellationToken
-    )
-    {
-        if (
-            entityTypeMetadata.DatabaseGeneratedProperties.Count > 0 &&
-            await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
-        )
-        {
-            for (var i = 0; i < entityTypeMetadata.DatabaseGeneratedProperties.Count; i++)
-            {
-                var property = entityTypeMetadata.DatabaseGeneratedProperties[i];
-
-                if (!property.CanWrite)
-                {
-                    continue;
-                }
-
-                var value = reader.GetValue(i);
-
-                value = ValueConverter.ConvertValueToType(value, property.PropertyType);
-
-                property.PropertySetter!(entity, value);
-            }
-        }
-    }
-
-    private readonly MySqlDatabaseAdapter databaseAdapter;
-    private readonly ConcurrentDictionary<Type, String> entityDeleteSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityInsertSqlCodePerEntityType = new();
-    private readonly ConcurrentDictionary<Type, String> entityUpdateSqlCodePerEntityType = new();
 }

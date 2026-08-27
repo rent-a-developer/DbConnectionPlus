@@ -21,20 +21,17 @@ internal static class EnumSerializer
     /// <paramref name="serializationMode" /> is not a valid <see cref="EnumSerializationMode" /> value.
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Object SerializeEnum(Enum enumValue, EnumSerializationMode serializationMode)
+    internal static object SerializeEnum(Enum enumValue, EnumSerializationMode serializationMode)
     {
         ArgumentNullException.ThrowIfNull(enumValue);
 
         return serializationMode switch
         {
-            EnumSerializationMode.Strings =>
-                enumValue.ToString(),
+            EnumSerializationMode.Strings => enumValue.ToString(),
 
-            EnumSerializationMode.Integers =>
-                Convert.ToInt32(enumValue, CultureInfo.InvariantCulture),
+            EnumSerializationMode.Integers => Convert.ToInt32(enumValue, CultureInfo.InvariantCulture),
 
-            _ =>
-                ThrowHelper.ThrowInvalidEnumSerializationModeException<Object>(serializationMode)
+            _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<object>(serializationMode),
         };
     }
 }

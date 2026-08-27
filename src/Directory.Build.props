@@ -4,11 +4,12 @@
 		Shared build properties for the shipping libraries.
 
 		The repository-root Directory.Build.props carries what every project needs (authorship, language
-		settings, the style analyzers). MSBuild uses the nearest Directory.Build.props and stops, so this file
-		imports it explicitly - without that import, the projects under src/ would silently lose all of it.
+		settings, the style analyzers, and the style gate itself - EnforceCodeStyleInBuild with
+		TreatWarningsAsErrors). MSBuild uses the nearest Directory.Build.props and stops, so this file imports
+		it explicitly - without that import, the projects under src/ would silently lose all of it.
 
-		What lives here is what only a shipping, packable library needs: multi-targeting, the AOT and public-API
-		analyzers, warnings-as-errors, and the NuGet package metadata. Per-project identity - AssemblyName,
+		What lives here is what only a shipping, packable library needs: multi-targeting, the AOT, CA and
+		public-API analyzers, and the NuGet package metadata. Per-project identity - AssemblyName,
 		AssemblyTitle, RootNamespace, PackageId, Description, PackageTags - stays in each .csproj.
 	-->
 
@@ -44,10 +45,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<!--
+			The CA quality rules, at their broadest setting, for the shipping libraries only. The style gate
+			that every project shares - EnforceCodeStyleInBuild and TreatWarningsAsErrors - lives in the
+			repository-root Directory.Build.props instead.
+		-->
 		<AnalysisLevel>latest-all</AnalysisLevel>
 		<EnableNETAnalyzers>True</EnableNETAnalyzers>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<PropertyGroup>

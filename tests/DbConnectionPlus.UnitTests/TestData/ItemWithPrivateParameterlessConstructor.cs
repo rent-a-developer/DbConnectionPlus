@@ -4,7 +4,5 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public sealed class ItemWithPrivateParameterlessConstructor
 {
-    private ItemWithPrivateParameterlessConstructor()
-    {
-    }
+    private ItemWithPrivateParameterlessConstructor() { }
 }

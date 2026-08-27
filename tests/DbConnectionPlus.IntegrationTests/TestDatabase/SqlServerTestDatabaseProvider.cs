@@ -10,149 +10,7 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
-
-    /// <inheritdoc />
-    public IDatabaseAdapter DatabaseAdapter => new SqlServerDatabaseAdapter();
-
-    /// <inheritdoc />
-    public String DatabaseCollation => "Latin1_General_CI_AS";
-
-    /// <inheritdoc />
-    public String DelayTwoSecondsStatement => "WAITFOR DELAY '00:00:02';";
-
-    /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => true;
-
-    /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => false;
-
-    /// <inheritdoc />
-    public DbConnection CreateConnection()
-    {
-        var connection = new SqlConnection(ConnectionString);
-        connection.Open();
-
-        connection.ChangeDatabase(DatabaseName);
-
-        return connection;
-    }
-
-    /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null) =>
-        connection.ExecuteScalar<Boolean>(
-            $"IF OBJECT_ID('tempdb..#{tableName}', 'U') IS NOT NULL SELECT 1 ELSE SELECT 0",
-            transaction,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        connection.ExecuteScalar<String>(
-            $"""
-             SELECT	C.collation_name AS CollationName
-             FROM	tempdb.sys.columns C
-             WHERE	c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND C.name = '{columnName}'
-             """,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        connection.QuerySingle<String>(
-            $"""
-             SELECT  t.name AS DataType
-             FROM    tempdb.sys.columns c
-             JOIN    tempdb.sys.types t ON c.user_type_id = t.user_type_id
-             WHERE   c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND c.name = '{columnName}'
-             """,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
-        "CONVERT(SQL_VARIANT, 123)";
-
-    /// <inheritdoc />
-    public void ResetDatabase()
-    {
-        using var connection = new SqlConnection(ConnectionString);
-        connection.Open();
-
-        if (!isDatabasePrepared)
-        {
-            connection.ExecuteNonQuery(
-                $"""
-                 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DatabaseName}')
-                 BEGIN
-                     ALTER DATABASE [{DatabaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                     DROP DATABASE [{DatabaseName}];
-                 END
-                 """
-            );
-
-            connection.ExecuteNonQuery($"CREATE DATABASE [{DatabaseName}] COLLATE {this.DatabaseCollation}");
-
-            connection.ChangeDatabase(DatabaseName);
-
-            ExecuteScript(connection, CreateDatabaseObjectsSql);
-
-            isDatabasePrepared = true;
-        }
-
-        connection.ChangeDatabase(DatabaseName);
-
-        ExecuteScript(connection, PurgeTablesSql);
-    }
-
-    /// <inheritdoc />
-    public static ValueTask StartDatabaseAsync() =>
-        TestDatabaseContainers.StartSqlServerAsync();
-
-    /// <summary>
-    /// The connection string that connects to the SQL Server server running in the test container.
-    /// </summary>
-    private static String ConnectionString =>
-        TestDatabaseContainers.SqlServer.ConnectionString;
-
-    private static void ExecuteScript(SqlConnection connection, String script)
-    {
-        var statements = script
-            .Split("GO", StringSplitOptions.RemoveEmptyEntries)
-            .Where(a => !String.IsNullOrWhiteSpace(a.Trim()));
-
-        foreach (var statement in statements)
-        {
-            connection.ExecuteNonQuery(statement);
-        }
-    }
-
-    private const String CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE Entity
         (
             Id BIGINT NOT NULL PRIMARY KEY,
@@ -255,10 +113,9 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private const String DatabaseName = "DbConnectionPlusTests";
+    private const string DatabaseName = "DbConnectionPlusTests";
 
-    private const String PurgeTablesSql =
-        """
+    private const string PurgeTablesSql = """
         TRUNCATE TABLE Entity;
         GO
 
@@ -275,5 +132,143 @@ public class SqlServerTestDatabaseProvider : ITestDatabaseProvider
         GO
         """;
 
-    private static Boolean isDatabasePrepared;
+    private static bool isDatabasePrepared;
+
+    /// <inheritdoc />
+    public bool CanRetrieveStructureOfTemporaryTables => true;
+
+    /// <inheritdoc />
+    public IDatabaseAdapter DatabaseAdapter => new SqlServerDatabaseAdapter();
+
+    /// <inheritdoc />
+    public string DatabaseCollation => "Latin1_General_CI_AS";
+
+    /// <inheritdoc />
+    public string DelayTwoSecondsStatement => "WAITFOR DELAY '00:00:02';";
+
+    /// <inheritdoc />
+    public bool HasUnsupportedDataType => true;
+
+    /// <inheritdoc />
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
+
+    /// <inheritdoc />
+    public bool SupportsDateTimeOffset => true;
+
+    /// <inheritdoc />
+    public bool SupportsProperCommandCancellation => true;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProcedures => true;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProceduresReturningResultSet => true;
+
+    /// <inheritdoc />
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => false;
+
+    /// <summary>
+    /// The connection string that connects to the SQL Server server running in the test container.
+    /// </summary>
+    private static string ConnectionString => TestDatabaseContainers.SqlServer.ConnectionString;
+
+    /// <inheritdoc />
+    public static ValueTask StartDatabaseAsync() => TestDatabaseContainers.StartSqlServerAsync();
+
+    /// <inheritdoc />
+    public DbConnection CreateConnection()
+    {
+        var connection = new SqlConnection(ConnectionString);
+        connection.Open();
+
+        connection.ChangeDatabase(DatabaseName);
+
+        return connection;
+    }
+
+    /// <inheritdoc />
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
+        connection.ExecuteScalar<bool>(
+            $"IF OBJECT_ID('tempdb..#{tableName}', 'U') IS NOT NULL SELECT 1 ELSE SELECT 0",
+            transaction,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) =>
+        connection.ExecuteScalar<string>(
+            $"""
+            SELECT	C.collation_name AS CollationName
+            FROM	tempdb.sys.columns C
+            WHERE	c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND C.name = '{columnName}'
+            """,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) =>
+        connection.QuerySingle<string>(
+            $"""
+            SELECT  t.name AS DataType
+            FROM    tempdb.sys.columns c
+            JOIN    tempdb.sys.types t ON c.user_type_id = t.user_type_id
+            WHERE   c.object_id = OBJECT_ID('tempdb..#{temporaryTableName}') AND c.name = '{columnName}'
+            """,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetUnsupportedDataTypeLiteral() => "CONVERT(SQL_VARIANT, 123)";
+
+    /// <inheritdoc />
+    public void ResetDatabase()
+    {
+        using var connection = new SqlConnection(ConnectionString);
+        connection.Open();
+
+        if (!isDatabasePrepared)
+        {
+            connection.ExecuteNonQuery(
+                $"""
+                IF EXISTS (SELECT name FROM sys.databases WHERE name = N'{DatabaseName}')
+                BEGIN
+                    ALTER DATABASE [{DatabaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                    DROP DATABASE [{DatabaseName}];
+                END
+                """
+            );
+
+            connection.ExecuteNonQuery($"CREATE DATABASE [{DatabaseName}] COLLATE {this.DatabaseCollation}");
+
+            connection.ChangeDatabase(DatabaseName);
+
+            ExecuteScript(connection, CreateDatabaseObjectsSql);
+
+            isDatabasePrepared = true;
+        }
+
+        connection.ChangeDatabase(DatabaseName);
+
+        ExecuteScript(connection, PurgeTablesSql);
+    }
+
+    private static void ExecuteScript(SqlConnection connection, string script)
+    {
+        var statements = script
+            .Split("GO", StringSplitOptions.RemoveEmptyEntries)
+            .Where(a => !string.IsNullOrWhiteSpace(a.Trim()));
+
+        foreach (var statement in statements)
+        {
+            connection.ExecuteNonQuery(statement);
+        }
+    }
 }

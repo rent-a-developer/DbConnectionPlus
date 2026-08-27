@@ -31,16 +31,39 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests;
 /// that before this constructor opens a connection to it.
 /// </remarks>
 public abstract class IntegrationTestsBase<TTestDatabaseProvider>
-    : IClassFixture<TestDatabaseFixture<TTestDatabaseProvider>>, IDisposable, IAsyncDisposable
+    : IClassFixture<TestDatabaseFixture<TTestDatabaseProvider>>,
+        IDisposable,
+        IAsyncDisposable
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
+    /// <summary>
+    /// The database adapter for the test database of the currently running integration test.
+    /// </summary>
+    /// <remarks>
+    /// The adapter rather than the provider: an interface that declares a static abstract member - which
+    /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
+    /// </remarks>
+#pragma warning disable S2743
+    private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
+#pragma warning restore S2743
+
+    /// <summary>
+    /// The connection to the test database for the currently running integration test.
+    /// </summary>
+#pragma warning disable S2743
+    private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
+#pragma warning restore S2743
+
+    private bool logDbCommands;
+
     protected IntegrationTestsBase()
     {
         // Ensure consistent culture for tests.
         CultureInfo.CurrentCulture =
             CultureInfo.CurrentUICulture =
-                Thread.CurrentThread.CurrentCulture =
-                    Thread.CurrentThread.CurrentUICulture = new("en-US");
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                new("en-US");
 
         this.logDbCommands = false;
 
@@ -48,12 +71,14 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
         DbConnectionPlusConfiguration.Instance = new()
         {
             EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = this.InterceptDbCommand
+            InterceptDbCommand = this.InterceptDbCommand,
         };
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<MySqlConnection>(new MySqlDatabaseAdapter());
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<OracleConnection>(new OracleDatabaseAdapter());
-        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<NpgsqlConnection>(new PostgreSqlDatabaseAdapter());
+        DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<NpgsqlConnection>(
+            new PostgreSqlDatabaseAdapter()
+        );
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqliteConnection>(new SqliteDatabaseAdapter());
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<SqlConnection>(new SqlServerDatabaseAdapter());
 
@@ -79,7 +104,52 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// DbConnectionPlus. Subsequent commands will not be delayed unless this property is set to <see langword="true" />
     /// again.
     /// </summary>
-    public Boolean DelayNextDbCommand { get; set; }
+    public bool DelayNextDbCommand { get; set; }
+
+    /// <summary>
+    /// The connection to the test database.
+    /// </summary>
+    protected DbConnection Connection { get; }
+
+    /// <summary>
+    /// The DbConnectionPlus database adapter for the test database.
+    /// </summary>
+    protected IDatabaseAdapter DatabaseAdapter => this.TestDatabaseProvider.DatabaseAdapter;
+
+    /// <summary>
+    /// The provider for the test database.
+    /// </summary>
+    protected TTestDatabaseProvider TestDatabaseProvider { get; }
+
+    /// <summary>
+    /// Returns the specified parameter name with the appropriate prefix (e.g. "@" for SQL Server or ":" for Oracle)
+    /// according to the current test database type.
+    /// </summary>
+    /// <param name="parameterName">The parameter name to format.</param>
+    /// <returns>
+    /// The formatted parameter name, including the appropriate prefix, suitable for inclusion in SQL statements.
+    /// </returns>
+    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
+    public static string P(string parameterName) => currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
+
+    /// <summary>
+    /// Returns the specified database identifier properly quoted for use in SQL statements according to the current
+    /// test database type.
+    /// </summary>
+    /// <param name="identifier">The identifier to quote.</param>
+    /// <returns>The quoted identifier, suitable for inclusion in SQL statements.</returns>
+    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
+    public static string Q(string identifier) => currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
+
+    /// <summary>
+    /// Returns the specified temporary table name properly quoted for use in SQL statements according to the current
+    /// test database type.
+    /// </summary>
+    /// <param name="tableName">The name of the temporary table to quote.</param>
+    /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
+    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
+    public static string QT(string tableName) =>
+        currentDatabaseAdapter.Value!.QuoteTemporaryTableName(tableName, currentTestDatabaseConnection.Value!);
 
     /// <inheritdoc />
     public void Dispose()
@@ -100,54 +170,17 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     }
 
     /// <summary>
-    /// Returns the specified parameter name with the appropriate prefix (e.g. "@" for SQL Server or ":" for Oracle)
-    /// according to the current test database type.
+    /// Creates a <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.
     /// </summary>
-    /// <param name="parameterName">The parameter name to format.</param>
-    /// <returns>
-    /// The formatted parameter name, including the appropriate prefix, suitable for inclusion in SQL statements.
-    /// </returns>
-    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String P(String parameterName) =>
-        currentDatabaseAdapter.Value!.FormatParameterName(parameterName);
-
-    /// <summary>
-    /// Returns the specified database identifier properly quoted for use in SQL statements according to the current
-    /// test database type.
-    /// </summary>
-    /// <param name="identifier">The identifier to quote.</param>
-    /// <returns>The quoted identifier, suitable for inclusion in SQL statements.</returns>
-    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String Q(String identifier) =>
-        currentDatabaseAdapter.Value!.QuoteIdentifier(identifier);
-
-    /// <summary>
-    /// Returns the specified temporary table name properly quoted for use in SQL statements according to the current
-    /// test database type.
-    /// </summary>
-    /// <param name="tableName">The name of the temporary table to quote.</param>
-    /// <returns>The quoted temporary table name, suitable for inclusion in SQL statements.</returns>
-    /// <remarks>The name of this method is intentionally kept very short, so test code doesn't get bloated.</remarks>
-    public static String QT(String tableName) =>
-        currentDatabaseAdapter.Value!.QuoteTemporaryTableName(
-            tableName,
-            currentTestDatabaseConnection.Value!
-        );
-
-    /// <summary>
-    /// The connection to the test database.
-    /// </summary>
-    protected DbConnection Connection { get; }
-
-    /// <summary>
-    /// The DbConnectionPlus database adapter for the test database.
-    /// </summary>
-    protected IDatabaseAdapter DatabaseAdapter => this.TestDatabaseProvider.DatabaseAdapter;
-
-    /// <summary>
-    /// The provider for the test database.
-    /// </summary>
-    protected TTestDatabaseProvider TestDatabaseProvider { get; }
+    /// <returns>A <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.</returns>
+    protected static CancellationToken CreateCancellationTokenThatIsCancelledAfter100Milliseconds()
+    {
+#pragma warning disable S2930
+        var cancellationTokenSource = new CancellationTokenSource();
+#pragma warning restore S2930
+        cancellationTokenSource.CancelAfter(100);
+        return cancellationTokenSource.Token;
+    }
 
     /// <summary>
     /// Creates the specified number of entities of the type <typeparamref name="T" /> and inserts them into the test
@@ -160,28 +193,22 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// </param>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The entities that were created and inserted.</returns>
-    protected List<T> CreateEntitiesInDb<T>(Int32? numberOfEntities = null, DbTransaction? transaction = null)
+    protected List<T> CreateEntitiesInDb<T>(int? numberOfEntities = null, DbTransaction? transaction = null)
         where T : class =>
         this.ExecuteWithoutDbCommandLogging(() =>
+        {
+            var entities = Generate.Multiple<T>(numberOfEntities);
+
+            this.Connection.InsertEntities(entities, transaction, TestContext.Current.CancellationToken);
+
+            foreach (var entity in entities)
             {
-                var entities = Generate.Multiple<T>(numberOfEntities);
-
-                this.Connection.InsertEntities(
-                    entities,
-                    transaction,
-                    TestContext.Current.CancellationToken
-                );
-
-                foreach (var entity in entities)
-                {
-                    // Verify that the entity has been inserted:
-                    this.ExistsEntityInDb(entity, transaction)
-                        .Should().BeTrue();
-                }
-
-                return entities;
+                // Verify that the entity has been inserted:
+                this.ExistsEntityInDb(entity, transaction).Should().BeTrue();
             }
-        );
+
+            return entities;
+        });
 
     /// <summary>
     /// Creates an entity of the type <typeparamref name="T" /> and inserts it into the test database.
@@ -190,25 +217,18 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="transaction">The database transaction within to perform the operation.</param>
     /// <returns>The entity that was created and inserted.</returns>
     protected T CreateEntityInDb<T>(DbTransaction? transaction = null)
-        where T : class
-        =>
-            this.ExecuteWithoutDbCommandLogging(() =>
-                {
-                    var entity = Generate.Single<T>();
+        where T : class =>
+        this.ExecuteWithoutDbCommandLogging(() =>
+        {
+            var entity = Generate.Single<T>();
 
-                    this.Connection.InsertEntity(
-                        entity,
-                        transaction,
-                        TestContext.Current.CancellationToken
-                    );
+            this.Connection.InsertEntity(entity, transaction, TestContext.Current.CancellationToken);
 
-                    // Verify that the entity has been inserted:
-                    this.ExistsEntityInDb(entity, transaction)
-                        .Should().BeTrue();
+            // Verify that the entity has been inserted:
+            this.ExistsEntityInDb(entity, transaction).Should().BeTrue();
 
-                    return entity;
-                }
-            );
+            return entity;
+        });
 
     /// <summary>
     /// Determines whether an entity having the key(s) of the specified entity exists in the test database.
@@ -221,7 +241,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <see langword="false" />.
     /// </returns>
     /// <exception cref="InvalidOperationException"></exception>
-    protected Boolean ExistsEntityInDb<T>(T entity, DbTransaction? transaction = null)
+    protected bool ExistsEntityInDb<T>(T entity, DbTransaction? transaction = null)
         where T : class
     {
         var metadata = EntityHelper.GetEntityTypeMetadata(typeof(T));
@@ -236,7 +256,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             $"""
              SELECT 1
              FROM   {Q(metadata.TableName)}
-             WHERE  {String.Join(
+             WHERE  {string.Join(
                      " AND ",
                      keyProperties.Select(p => $"{Q(p.ColumnName)} = {P(p.PropertyName)}").ToList()
                  )}
@@ -244,11 +264,8 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             keyProperties.Select(p => (p.PropertyName, p.PropertyGetter!(entity))).ToArray()!
         );
 
-        return this.ExecuteWithoutDbCommandLogging(() => this.Connection.Exists(
-                statement,
-                transaction,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
+        return this.ExecuteWithoutDbCommandLogging(() =>
+            this.Connection.Exists(statement, transaction, cancellationToken: TestContext.Current.CancellationToken)
         );
     }
 
@@ -261,13 +278,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <see langword="true" /> if a temporary table with the specified name exists in the test database;
     /// otherwise, <see langword="false" />.
     /// </returns>
-    protected Boolean ExistsTemporaryTableInDb(String tableName, DbTransaction? transaction = null) =>
+    protected bool ExistsTemporaryTableInDb(string tableName, DbTransaction? transaction = null) =>
         this.ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.ExistsTemporaryTable(
-                tableName,
-                this.Connection,
-                transaction
-            )
+            this.TestDatabaseProvider.ExistsTemporaryTable(tableName, this.Connection, transaction)
         );
 
     /// <summary>
@@ -276,7 +289,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="temporaryTableName">The name of the temporary table that contains the specified column.</param>
     /// <param name="columnName">The name of the column of which to get the collation.</param>
     /// <returns>The collation of the specified column of the specified temporary table.</returns>
-    protected String GetCollationOfTemporaryTableColumn(String temporaryTableName, String columnName) =>
+    protected string GetCollationOfTemporaryTableColumn(string temporaryTableName, string columnName) =>
         this.ExecuteWithoutDbCommandLogging(() =>
             this.TestDatabaseProvider.GetCollationOfTemporaryTableColumn(
                 temporaryTableName,
@@ -291,16 +304,9 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
     /// <param name="temporaryTableName">The name of the temporary table that contains the specified column.</param>
     /// <param name="columnName">The name of the column of which to get the data type.</param>
     /// <returns>The data type of the specified column of the specified temporary table.</returns>
-    protected String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName
-    ) =>
+    protected string GetDataTypeOfTemporaryTableColumn(string temporaryTableName, string columnName) =>
         this.ExecuteWithoutDbCommandLogging(() =>
-            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(
-                temporaryTableName,
-                columnName,
-                this.Connection
-            )
+            this.TestDatabaseProvider.GetDataTypeOfTemporaryTableColumn(temporaryTableName, columnName, this.Connection)
         );
 
     /// <summary>
@@ -327,7 +333,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
 
         if (this.logDbCommands)
         {
-            using var logMessageBuilder = new ValueStringBuilder(stackalloc Char[500]);
+            using var logMessageBuilder = new ValueStringBuilder(stackalloc char[500]);
 
             logMessageBuilder.AppendLine();
             logMessageBuilder.AppendLine("-----------------");
@@ -368,7 +374,7 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
                 {
                     logMessageBuilder.AppendLine();
                     logMessageBuilder.AppendLine(temporaryTable.Name);
-                    logMessageBuilder.AppendLine(new String('-', temporaryTable.Name.Length));
+                    logMessageBuilder.AppendLine(new string('-', temporaryTable.Name.Length));
 
                     foreach (var value in temporaryTable.Values)
                     {
@@ -380,37 +386,4 @@ public abstract class IntegrationTestsBase<TTestDatabaseProvider>
             Console.WriteLine(logMessageBuilder.ToString());
         }
     }
-
-    /// <summary>
-    /// Creates a <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.
-    /// </summary>
-    /// <returns>A <see cref="CancellationToken" /> that will be cancelled after 100 milliseconds.</returns>
-    protected static CancellationToken CreateCancellationTokenThatIsCancelledAfter100Milliseconds()
-    {
-#pragma warning disable S2930
-        var cancellationTokenSource = new CancellationTokenSource();
-#pragma warning restore S2930
-        cancellationTokenSource.CancelAfter(100);
-        return cancellationTokenSource.Token;
-    }
-
-    private Boolean logDbCommands;
-
-    /// <summary>
-    /// The connection to the test database for the currently running integration test.
-    /// </summary>
-#pragma warning disable S2743
-    private static readonly AsyncLocal<DbConnection> currentTestDatabaseConnection = new();
-#pragma warning restore S2743
-
-    /// <summary>
-    /// The database adapter for the test database of the currently running integration test.
-    /// </summary>
-    /// <remarks>
-    /// The adapter rather than the provider: an interface that declares a static abstract member - which
-    /// <see cref="ITestDatabaseProvider.StartDatabaseAsync" /> is - cannot be used as a type argument.
-    /// </remarks>
-#pragma warning disable S2743
-    private static readonly AsyncLocal<IDatabaseAdapter> currentDatabaseAdapter = new();
-#pragma warning restore S2743
 }

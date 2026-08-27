@@ -7,27 +7,66 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets =
-        [
-            nameof(TemporaryTable_ComplexObjects_Command),
-            nameof(TemporaryTable_ComplexObjects_Dapper),
-            nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
-        ]
-    )]
-    public void TemporaryTable_ComplexObjects__Cleanup() =>
-        this.connection.Dispose();
+    private const string CreateTempEntitiesTableSql = """
+        CREATE TEMP TABLE Entities (
+            Id INTEGER,
+            BooleanValue INTEGER,
+            BytesValue BLOB,
+            ByteValue INTEGER,
+            CharValue TEXT,
+            DateTimeValue TEXT,
+            DecimalValue TEXT,
+            DoubleValue REAL,
+            EnumValue TEXT,
+            Int16Value INTEGER,
+            Int32Value INTEGER,
+            Int64Value INTEGER,
+            SingleValue REAL,
+            StringValue TEXT
+        )
+        """;
 
-    [GlobalSetup(
-        Targets =
-        [
-            nameof(TemporaryTable_ComplexObjects_Command),
-            nameof(TemporaryTable_ComplexObjects_Dapper),
-            nameof(TemporaryTable_ComplexObjects_DbConnectionPlus)
-        ]
-    )]
-    public void TemporaryTable_ComplexObjects__Setup() =>
-        this.SetupDatabase(TemporaryTable_ComplexObjects_EntitiesPerOperation);
+    private const string InsertIntoTempEntities = """
+        INSERT INTO temp.Entities (
+            Id,
+            BooleanValue,
+            BytesValue,
+            ByteValue,
+            CharValue,
+            DateTimeValue,
+            DecimalValue,
+            DoubleValue,
+            EnumValue,
+            Int16Value,
+            Int32Value,
+            Int64Value,
+            SingleValue,
+            StringValue
+        )
+        VALUES (
+            @Id,
+            @BooleanValue,
+            @BytesValue,
+            @ByteValue,
+            @CharValue,
+            @DateTimeValue,
+            @DecimalValue,
+            @DoubleValue,
+            @EnumValue,
+            @Int16Value,
+            @Int32Value,
+            @Int64Value,
+            @SingleValue,
+            @StringValue
+        )
+        """;
+
+    private const string TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
+    private const int TemporaryTable_ComplexObjects_EntitiesPerOperation = 250;
+
+    private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities = Generate.Multiple(
+        TemporaryTable_ComplexObjects_EntitiesPerOperation
+    );
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
@@ -43,7 +82,7 @@ public partial class Benchmarks
 
         insertCommand.CommandText = InsertIntoTempEntities;
 
-        var parameters = new Dictionary<String, SqliteParameter>
+        var parameters = new Dictionary<string, SqliteParameter>
         {
             { "Id", new("Id", null) },
             { "BooleanValue", new("BooleanValue", null) },
@@ -58,7 +97,7 @@ public partial class Benchmarks
             { "Int32Value", new("Int32Value", null) },
             { "Int64Value", new("Int64Value", null) },
             { "SingleValue", new("SingleValue", null) },
-            { "StringValue", new("StringValue", null) }
+            { "StringValue", new("StringValue", null) },
         };
 
         insertCommand.Parameters.AddRange(parameters.Values);
@@ -124,65 +163,28 @@ public partial class Benchmarks
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ComplexObjects_Category)]
     public List<BenchmarkEntity> TemporaryTable_ComplexObjects_DbConnectionPlus() =>
-        [.. this.connection.Query<BenchmarkEntity>($"SELECT * FROM {TemporaryTable(this.temporaryTable_ComplexObjects_Entities)}")];
+        [
+            .. this.connection.Query<BenchmarkEntity>(
+                $"SELECT * FROM {TemporaryTable(this.temporaryTable_ComplexObjects_Entities)}"
+            ),
+        ];
 
-    private readonly List<BenchmarkEntity> temporaryTable_ComplexObjects_Entities =
-        Generate.Multiple(TemporaryTable_ComplexObjects_EntitiesPerOperation);
+    [GlobalCleanup(
+        Targets = [
+            nameof(TemporaryTable_ComplexObjects_Command),
+            nameof(TemporaryTable_ComplexObjects_Dapper),
+            nameof(TemporaryTable_ComplexObjects_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ComplexObjects__Cleanup() => this.connection.Dispose();
 
-    private const String CreateTempEntitiesTableSql = """
-                                                      CREATE TEMP TABLE Entities (
-                                                          Id INTEGER,
-                                                          BooleanValue INTEGER,
-                                                          BytesValue BLOB,
-                                                          ByteValue INTEGER,
-                                                          CharValue TEXT,
-                                                          DateTimeValue TEXT,
-                                                          DecimalValue TEXT,
-                                                          DoubleValue REAL,
-                                                          EnumValue TEXT,
-                                                          Int16Value INTEGER,
-                                                          Int32Value INTEGER,
-                                                          Int64Value INTEGER,
-                                                          SingleValue REAL,
-                                                          StringValue TEXT
-                                                      )
-                                                      """;
-
-    private const String InsertIntoTempEntities = """
-                                                  INSERT INTO temp.Entities (
-                                                      Id,
-                                                      BooleanValue,
-                                                      BytesValue,
-                                                      ByteValue,
-                                                      CharValue,
-                                                      DateTimeValue,
-                                                      DecimalValue,
-                                                      DoubleValue,
-                                                      EnumValue,
-                                                      Int16Value,
-                                                      Int32Value,
-                                                      Int64Value,
-                                                      SingleValue,
-                                                      StringValue
-                                                  )
-                                                  VALUES (
-                                                      @Id,
-                                                      @BooleanValue,
-                                                      @BytesValue,
-                                                      @ByteValue,
-                                                      @CharValue,
-                                                      @DateTimeValue,
-                                                      @DecimalValue,
-                                                      @DoubleValue,
-                                                      @EnumValue,
-                                                      @Int16Value,
-                                                      @Int32Value,
-                                                      @Int64Value,
-                                                      @SingleValue,
-                                                      @StringValue
-                                                  )
-                                                  """;
-
-    private const String TemporaryTable_ComplexObjects_Category = "TemporaryTable_ComplexObjects";
-    private const Int32 TemporaryTable_ComplexObjects_EntitiesPerOperation = 250;
+    [GlobalSetup(
+        Targets = [
+            nameof(TemporaryTable_ComplexObjects_Command),
+            nameof(TemporaryTable_ComplexObjects_Dapper),
+            nameof(TemporaryTable_ComplexObjects_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ComplexObjects__Setup() =>
+        this.SetupDatabase(TemporaryTable_ComplexObjects_EntitiesPerOperation);
 }

@@ -2,7 +2,9 @@ using Npgsql;
 using RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 
 #pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace
 namespace RentADeveloper.DbConnectionPlus.Configuration;
+
 #pragma warning restore IDE0130
 
 /// <summary>

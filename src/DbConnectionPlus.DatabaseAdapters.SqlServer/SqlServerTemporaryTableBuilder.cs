@@ -4,7 +4,6 @@
 using LinkDotNet.StringBuilder;
 using Microsoft.Data;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -15,6 +14,16 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 /// </summary>
 internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private const string GetCurrentDatabaseCollationQuery =
+        "SELECT CONVERT (VARCHAR(256), DATABASEPROPERTYEX(DB_NAME(), 'collation'))";
+
+    private static readonly ConcurrentDictionary<
+        (string DataSource, string Database),
+        string
+    > databaseCollationPerDatabase = [];
+
+    private readonly SqlServerDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerTemporaryTableBuilder" /> class.
     /// </summary>
@@ -33,10 +42,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -76,8 +84,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -95,8 +105,10 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -143,10 +155,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -188,8 +199,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             createCommand.Transaction = transaction;
 #pragma warning restore CA2007
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -209,8 +221,9 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -262,6 +275,128 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         );
     }
 
+    /// <summary>
+    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
+    /// </summary>
+    /// <param name="values">The sequence containing the values to be read.</param>
+    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
+    /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
+    {
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+        }
+
+        return new(
+            values,
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
+        );
+    }
+
+    /// <summary>
+    /// Drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    private static void DropTemporaryTable(string name, SqlConnection connection, SqlTransaction? transaction)
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Asynchronously drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private static async ValueTask DropTemporaryTableAsync(
+        string name,
+        SqlConnection connection,
+        SqlTransaction? transaction
+    )
+    {
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+
+        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the collation of the database the specified connection is currently connected to.
+    /// </summary>
+    /// <param name="connection">The connection to the database of which to get the collation.</param>
+    /// <param name="transaction">The database transaction within to perform the operation.</param>
+    /// <returns>The collation of the database the specified connection is currently connected to.</returns>
+    private static string GetCurrentDatabaseCollation(SqlConnection connection, SqlTransaction? transaction = null) =>
+        databaseCollationPerDatabase.GetOrAdd(
+            (connection.DataSource, connection.Database),
+            static (_, args) =>
+            {
+                using var command = args.connection.CreateCommand();
+
+                command.CommandText = GetCurrentDatabaseCollationQuery;
+                command.Transaction = args.transaction;
+
+                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+                return (string)command.ExecuteScalar()!;
+            },
+            (connection, transaction)
+        );
+
+    /// <summary>
+    /// Asynchronously gets the collation of the database the specified connection is currently connected to.
+    /// </summary>
+    /// <param name="connection">The connection to the database of which to get the collation.</param>
+    /// <param name="transaction">The database transaction within to perform the operation.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation.
+    /// <see cref="ValueTask{TResult}.Result" /> will contain the collation of the database the specified connection is
+    /// currently connected to.
+    /// </returns>
+    private static async ValueTask<string> GetCurrentDatabaseCollationAsync(
+        SqlConnection connection,
+        SqlTransaction? transaction = null
+    )
+    {
+        if (databaseCollationPerDatabase.TryGetValue((connection.DataSource, connection.Database), out var collation))
+        {
+            return collation;
+        }
+
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+
+        command.CommandText = GetCurrentDatabaseCollationQuery;
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        collation = (string)(await command.ExecuteScalarAsync().ConfigureAwait(false))!;
+
+        return databaseCollationPerDatabase.GetOrAdd((connection.DataSource, connection.Database), collation);
+    }
 
     /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
@@ -272,15 +407,14 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
-        String collation,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
+        string collation,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TABLE [#");
         sqlBuilder.Append(tableName);
@@ -309,12 +443,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
             sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
 
             if (
-                propertyType == typeof(String)
-                ||
-                (
-                    propertyType.IsEnumOrNullableEnumType() &&
-                    enumSerializationMode == EnumSerializationMode.Strings
-                )
+                propertyType == typeof(string)
+                || (propertyType.IsEnumOrNullableEnumType() && enumSerializationMode == EnumSerializationMode.Strings)
             )
             {
                 sqlBuilder.Append(" COLLATE ");
@@ -339,16 +469,15 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="collation">The collation to use for text columns.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
-        String collation,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
+        string collation,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TABLE [#");
         sqlBuilder.Append(tableName);
@@ -359,11 +488,11 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
         sqlBuilder.Append("] ");
 
-        if (valuesType == typeof(String))
+        if (valuesType == typeof(string))
         {
             var maxLength = 0;
 
-            foreach (String? value in values)
+            foreach (string? value in values)
             {
                 if (value?.Length > maxLength)
                 {
@@ -394,12 +523,8 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
         }
 
         if (
-            valuesType == typeof(String)
-            ||
-            (
-                valuesType.IsEnumOrNullableEnumType() &&
-                enumSerializationMode == EnumSerializationMode.Strings
-            )
+            valuesType == typeof(string)
+            || (valuesType.IsEnumOrNullableEnumType() && enumSerializationMode == EnumSerializationMode.Strings)
         )
         {
             sqlBuilder.Append(" COLLATE ");
@@ -410,138 +535,4 @@ internal class SqlServerTemporaryTableBuilder : ITemporaryTableBuilder
 
         return sqlBuilder.ToString();
     }
-
-    /// <summary>
-    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
-    /// </summary>
-    /// <param name="values">The sequence containing the values to be read.</param>
-    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
-    /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
-    private static EnumerableReader CreateValuesDataReader(
-        IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
-    {
-        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
-        {
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
-        }
-
-        return new EnumerableReader(
-            values,
-            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
-            EnumerableReaderOptions.None
-        );
-    }
-
-    /// <summary>
-    /// Drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, SqlConnection connection, SqlTransaction? transaction)
-    {
-        using var command = connection.CreateCommand();
-
-        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        command.ExecuteNonQuery();
-    }
-
-    /// <summary>
-    /// Asynchronously drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private static async ValueTask DropTemporaryTableAsync(
-        String name,
-        SqlConnection connection,
-        SqlTransaction? transaction
-    )
-    {
-#pragma warning disable CA2007
-        await using var command = connection.CreateCommand();
-#pragma warning restore CA2007
-
-        command.CommandText = $"IF OBJECT_ID('tempdb..#{name}', 'U') IS NOT NULL DROP TABLE [#{name}]";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Gets the collation of the database the specified connection is currently connected to.
-    /// </summary>
-    /// <param name="connection">The connection to the database of which to get the collation.</param>
-    /// <param name="transaction">The database transaction within to perform the operation.</param>
-    /// <returns>The collation of the database the specified connection is currently connected to.</returns>
-    private static String GetCurrentDatabaseCollation(
-        SqlConnection connection,
-        SqlTransaction? transaction = null
-    ) =>
-        databaseCollationPerDatabase.GetOrAdd(
-            (connection.DataSource, connection.Database),
-            static (_, args) =>
-            {
-                using var command = args.connection.CreateCommand();
-
-                command.CommandText = GetCurrentDatabaseCollationQuery;
-                command.Transaction = args.transaction;
-
-                DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-                return (String)command.ExecuteScalar()!;
-            },
-            (connection, transaction)
-        );
-
-    /// <summary>
-    /// Asynchronously gets the collation of the database the specified connection is currently connected to.
-    /// </summary>
-    /// <param name="connection">The connection to the database of which to get the collation.</param>
-    /// <param name="transaction">The database transaction within to perform the operation.</param>
-    /// <returns>
-    /// A task representing the asynchronous operation.
-    /// <see cref="ValueTask{TResult}.Result" /> will contain the collation of the database the specified connection is
-    /// currently connected to.
-    /// </returns>
-    private static async ValueTask<String> GetCurrentDatabaseCollationAsync(
-        SqlConnection connection,
-        SqlTransaction? transaction = null
-    )
-    {
-        if (databaseCollationPerDatabase.TryGetValue((connection.DataSource, connection.Database), out var collation))
-        {
-            return collation;
-        }
-
-#pragma warning disable CA2007
-        await using var command = connection.CreateCommand();
-#pragma warning restore CA2007
-
-        command.CommandText = GetCurrentDatabaseCollationQuery;
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        collation = (String)(await command.ExecuteScalarAsync().ConfigureAwait(false))!;
-
-        return databaseCollationPerDatabase.GetOrAdd((connection.DataSource, connection.Database), collation);
-    }
-
-    private readonly SqlServerDatabaseAdapter databaseAdapter;
-
-    private const String GetCurrentDatabaseCollationQuery =
-        "SELECT CONVERT (VARCHAR(256), DATABASEPROPERTYEX(DB_NAME(), 'collation'))";
-
-    private static readonly ConcurrentDictionary<(String DataSource, String Database), String>
-        databaseCollationPerDatabase = [];
 }

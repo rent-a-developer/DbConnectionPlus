@@ -11,10 +11,10 @@ public static class Constants
     /// <summary>
     /// The string to use to indent parts of SQL statements.
     /// </summary>
-    public const String Indent = "    ";
+    public const string Indent = "    ";
 
     /// <summary>
     /// The name to use for the single column of single column temporary tables.
     /// </summary>
-    public const String SingleColumnTemporaryTableColumnName = "Value";
+    public const string SingleColumnTemporaryTableColumnName = "Value";
 }

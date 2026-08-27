@@ -1,12 +1,11 @@
 global using System.Data;
-global using Xunit;
 global using AwesomeAssertions;
+global using static AwesomeAssertions.FluentActions;
 global using Microsoft.Data.SqlClient;
 global using RentADeveloper.DbConnectionPlus.Configuration;
 global using RentADeveloper.DbConnectionPlus.DbCommands;
+global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
 global using RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 global using RentADeveloper.DbConnectionPlus.SqlStatements;
 global using RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 global using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
-global using static AwesomeAssertions.FluentActions;
-global using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;

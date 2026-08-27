@@ -12,7 +12,7 @@ namespace RentADeveloper.DbConnectionPlus;
 public static partial class DbConnectionExtensions
 {
     /// <summary>
-    /// Executes the specified SQL statement and returns a <see cref="Boolean" /> value indicating whether the result
+    /// Executes the specified SQL statement and returns a <see cref="bool" /> value indicating whether the result
     /// set returned by the statement contains at least one row.
     /// This method is intended to check for the existence of rows matching certain criteria, e.g. checking whether a
     /// Product with a specific Id exists.
@@ -38,16 +38,16 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var existLowStockProducts = connection.Exists(
     ///    $"SELECT 1 FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
     /// ]]>
     /// </code>
     /// </example>
-    public static Boolean Exists(
+    public static bool Exists(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -78,9 +78,8 @@ public static partial class DbConnectionExtensions
                 using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
                 return reader.Read();
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -88,7 +87,7 @@ public static partial class DbConnectionExtensions
     }
 
     /// <summary>
-    /// Asynchronously executes the specified SQL statement and returns a <see cref="Boolean" /> value indicating
+    /// Asynchronously executes the specified SQL statement and returns a <see cref="bool" /> value indicating
     /// whether the result set returned by the statement contains at least one row.
     /// This method is intended to check for the existence of rows matching certain criteria, e.g. checking whether a
     /// Product with a specific Id exists.
@@ -116,16 +115,16 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var existLowStockProducts = await connection.ExistsAsync(
     ///    $"SELECT 1 FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
     /// ]]>
     /// </code>
     /// </example>
-    public static async Task<Boolean> ExistsAsync(
+    public static async Task<bool> ExistsAsync(
         this DbConnection connection,
         InterpolatedSqlStatement statement,
         DbTransaction? transaction = null,
@@ -138,15 +137,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         await using (commandDisposer)
         {
@@ -154,17 +155,15 @@ public static partial class DbConnectionExtensions
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
 #pragma warning disable CA2007
-                await using var reader = await command.ExecuteReaderAsync(
-                    CommandBehavior.SingleResult | CommandBehavior.SingleRow,
-                    cancellationToken
-                ).ConfigureAwait(false);
+                await using var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow, cancellationToken)
+                    .ConfigureAwait(false);
 #pragma warning restore CA2007
 
                 return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }

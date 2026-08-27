@@ -11,6 +11,11 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Readers;
 
 public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
 {
+    private readonly DbCommandDisposer commandDisposer;
+
+    private readonly DbDataReader decoratedReader;
+    private readonly CommandDisposingDataReaderDecorator decorator;
+
     /// <inheritdoc />
     public CommandDisposingDataReaderDecoratorTests()
     {
@@ -29,14 +34,6 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
     }
 
     [Fact]
-    public void Dispose_ShouldDisposeCommandDisposer()
-    {
-        this.decorator.Dispose();
-
-        this.commandDisposer.Received().Dispose();
-    }
-
-    [Fact]
     public async Task DisposeAsync_ShouldDisposeCommandDisposer()
     {
         await this.decorator.DisposeAsync();
@@ -45,17 +42,11 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
     }
 
     [Fact]
-    public void GetFieldValue_ShouldForwardToDecoratedReader()
+    public void Dispose_ShouldDisposeCommandDisposer()
     {
-        var ordinal = Generate.SmallNumber();
-        var returnValue = Generate.SmallNumber();
+        this.decorator.Dispose();
 
-        this.decoratedReader.GetFieldValue<Int32>(ordinal).Returns(returnValue);
-
-        this.decorator.GetFieldValue<Int32>(ordinal)
-            .Should().Be(returnValue);
-
-        this.decoratedReader.Received().GetFieldValue<Int32>(ordinal);
+        this.commandDisposer.Received().Dispose();
     }
 
     [Fact]
@@ -64,37 +55,44 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
         var ordinal = Generate.SmallNumber();
         var returnValue = Generate.SmallNumber();
 
-        this.decoratedReader.GetFieldValueAsync<Int32>(ordinal, CancellationToken.None)
+        this.decoratedReader.GetFieldValueAsync<int>(ordinal, CancellationToken.None)
             .Returns(Task.FromResult(returnValue));
 
-        (await this.decorator.GetFieldValueAsync<Int32>(ordinal, CancellationToken.None))
-            .Should().Be(returnValue);
+        (await this.decorator.GetFieldValueAsync<int>(ordinal, CancellationToken.None)).Should().Be(returnValue);
 
-        await this.decoratedReader.Received().GetFieldValueAsync<Int32>(ordinal, CancellationToken.None);
+        await this.decoratedReader.Received().GetFieldValueAsync<int>(ordinal, CancellationToken.None);
+    }
+
+    [Fact]
+    public void GetFieldValue_ShouldForwardToDecoratedReader()
+    {
+        var ordinal = Generate.SmallNumber();
+        var returnValue = Generate.SmallNumber();
+
+        this.decoratedReader.GetFieldValue<int>(ordinal).Returns(returnValue);
+
+        this.decorator.GetFieldValue<int>(ordinal).Should().Be(returnValue);
+
+        this.decoratedReader.Received().GetFieldValue<int>(ordinal);
     }
 
     [Fact]
     public void ShouldForwardAllMethodCallsToDecoratedReader()
     {
-        var exceptions = new HashSet<String>
+        var exceptions = new HashSet<string>
         {
             nameof(CommandDisposingDataReaderDecorator.Dispose),
             nameof(CommandDisposingDataReaderDecorator.DisposeAsync),
             nameof(CommandDisposingDataReaderDecorator.GetData),
             nameof(CommandDisposingDataReaderDecorator.GetFieldValue),
-            nameof(CommandDisposingDataReaderDecorator.GetFieldValueAsync)
+            nameof(CommandDisposingDataReaderDecorator.GetFieldValueAsync),
         };
 
         var fixture = new Fixture();
         fixture.Customize(new AutoNSubstituteCustomization());
         fixture.Register(() => new DataTable());
 
-        DecoratorAssertions.AssertDecoratorForwardsAllCalls(
-            fixture,
-            this.decorator,
-            this.decoratedReader,
-            exceptions
-        );
+        DecoratorAssertions.AssertDecoratorForwardsAllCalls(fixture, this.decorator, this.decoratedReader, exceptions);
     }
 
     [Fact]
@@ -107,9 +105,4 @@ public class CommandDisposingDataReaderDecoratorTests : UnitTestsBase
                 CancellationToken.None
             )
         );
-
-    private readonly DbCommandDisposer commandDisposer;
-
-    private readonly DbDataReader decoratedReader;
-    private readonly CommandDisposingDataReaderDecorator decorator;
 }

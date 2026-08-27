@@ -22,9 +22,9 @@ public class UnitTestsBase
         // Ensure consistent culture for tests.
         CultureInfo.CurrentCulture =
             CultureInfo.CurrentUICulture =
-                Thread.CurrentThread.CurrentCulture =
-                    Thread.CurrentThread.CurrentUICulture =
-                        new("en-US");
+            Thread.CurrentThread.CurrentCulture =
+            Thread.CurrentThread.CurrentUICulture =
+                new("en-US");
 
         this.MockDatabaseAdapter = Substitute.For<IDatabaseAdapter>();
         this.MockEntityManipulator = Substitute.For<IEntityManipulator>();
@@ -50,73 +50,67 @@ public class UnitTestsBase
         this.MockTemporaryTableBuilder = Substitute.For<ITemporaryTableBuilder>();
 
         this.MockTemporaryTableBuilder.BuildTemporaryTable(
-            Arg.Any<DbConnection>(),
-            Arg.Any<DbTransaction?>(),
-            Arg.Any<String>(),
-            Arg.Any<IEnumerable>(),
-            Arg.Any<Type>(),
-            Arg.Any<CancellationToken>()
-        ).Returns(new TemporaryTableDisposer(Substitute.For<Action>(), Substitute.For<Func<ValueTask>>()));
+                Arg.Any<DbConnection>(),
+                Arg.Any<DbTransaction?>(),
+                Arg.Any<string>(),
+                Arg.Any<IEnumerable>(),
+                Arg.Any<Type>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(new TemporaryTableDisposer(Substitute.For<Action>(), Substitute.For<Func<ValueTask>>()));
 
         this.MockTemporaryTableBuilder.BuildTemporaryTableAsync(
-            Arg.Any<DbConnection>(),
-            Arg.Any<DbTransaction?>(),
-            Arg.Any<String>(),
-            Arg.Any<IEnumerable>(),
-            Arg.Any<Type>(),
-            Arg.Any<CancellationToken>()
-        ).Returns(new TemporaryTableDisposer(Substitute.For<Action>(), Substitute.For<Func<ValueTask>>()));
+                Arg.Any<DbConnection>(),
+                Arg.Any<DbTransaction?>(),
+                Arg.Any<string>(),
+                Arg.Any<IEnumerable>(),
+                Arg.Any<Type>(),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns(new TemporaryTableDisposer(Substitute.For<Action>(), Substitute.For<Func<ValueTask>>()));
 
         this.MockDatabaseAdapter.SupportsTemporaryTables(Arg.Any<DbConnection>()).Returns(true);
 
         this.MockDatabaseAdapter.TemporaryTableBuilder.Returns(this.MockTemporaryTableBuilder);
 
-        this.MockDatabaseAdapter.QuoteIdentifier(Arg.Any<String>())
-            .Returns(info => $"[{info.ArgAt<String>(0)}]");
+        this.MockDatabaseAdapter.QuoteIdentifier(Arg.Any<string>()).Returns(info => $"[{info.ArgAt<string>(0)}]");
 
-        this.MockDatabaseAdapter.QuoteTemporaryTableName(Arg.Any<String>(), this.MockDbConnection)
-            .Returns(info => $"[#{info.ArgAt<String>(0)}]");
+        this.MockDatabaseAdapter.QuoteTemporaryTableName(Arg.Any<string>(), this.MockDbConnection)
+            .Returns(info => $"[#{info.ArgAt<string>(0)}]");
 
-        this.MockDatabaseAdapter.FormatParameterName(Arg.Any<String>())
-            .Returns(info => $"@{info.ArgAt<String>(0)}");
+        this.MockDatabaseAdapter.FormatParameterName(Arg.Any<string>()).Returns(info => $"@{info.ArgAt<string>(0)}");
 
-        this.MockDatabaseAdapter
-            .When(a => a.BindParameterValue(Arg.Any<DbParameter>(), Arg.Any<Object?>()))
+        this.MockDatabaseAdapter.When(a => a.BindParameterValue(Arg.Any<DbParameter>(), Arg.Any<object?>()))
             .Do(info =>
+            {
+                var parameter = info.ArgAt<DbParameter>(0);
+                var value = info.ArgAt<object?>(1);
+
+                if (value is Enum enumValue)
                 {
-                    var parameter = info.ArgAt<DbParameter>(0);
-                    var value = info.ArgAt<Object?>(1);
-
-                    if (value is Enum enumValue)
+                    parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                     {
-                        parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
-                        {
-                            EnumSerializationMode.Integers =>
-                                DbType.Int32,
+                        EnumSerializationMode.Integers => DbType.Int32,
 
-                            EnumSerializationMode.Strings =>
-                                DbType.String,
+                        EnumSerializationMode.Strings => DbType.String,
 
-                            _ =>
-                                throw new NotSupportedException(
-                                    $"The {nameof(EnumSerializationMode)} " +
-                                    $"{DbConnectionPlusConfiguration.Instance.EnumSerializationMode.ToDebugString()} " +
-                                    "is not supported."
-                                )
-                        };
+                        _ => throw new NotSupportedException(
+                            $"The {nameof(EnumSerializationMode)} "
+                                + $"{DbConnectionPlusConfiguration.Instance.EnumSerializationMode.ToDebugString()} "
+                                + "is not supported."
+                        ),
+                    };
 
-                        parameter.Value =
-                            EnumSerializer.SerializeEnum(
-                                enumValue,
-                                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                            );
-                    }
-                    else
-                    {
-                        parameter.Value = value ?? DBNull.Value;
-                    }
+                    parameter.Value = EnumSerializer.SerializeEnum(
+                        enumValue,
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    );
                 }
-            );
+                else
+                {
+                    parameter.Value = value ?? DBNull.Value;
+                }
+            });
 
         this.MockDatabaseAdapter.EntityManipulator.Returns(this.MockEntityManipulator);
 
@@ -126,12 +120,13 @@ public class UnitTestsBase
         DbConnectionPlusConfiguration.Instance = new()
         {
             EnumSerializationMode = EnumSerializationMode.Strings,
-            InterceptDbCommand = this.MockInterceptDbCommand
+            InterceptDbCommand = this.MockInterceptDbCommand,
         };
         EntityHelper.ResetEntityTypeMetadataCache();
         OracleDatabaseAdapter.AllowTemporaryTables = false;
 
-        typeof(DbConnectionPlusConfiguration).GetMethod(nameof(DbConnectionPlusConfiguration.RegisterDatabaseAdapter))!
+        typeof(DbConnectionPlusConfiguration)
+            .GetMethod(nameof(DbConnectionPlusConfiguration.RegisterDatabaseAdapter))!
             .MakeGenericMethod(this.MockDbConnection.GetType())
             .Invoke(DbConnectionPlusConfiguration.Instance, [this.MockDatabaseAdapter]);
     }

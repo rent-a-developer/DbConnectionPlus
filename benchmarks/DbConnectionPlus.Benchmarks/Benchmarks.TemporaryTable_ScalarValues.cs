@@ -7,31 +7,17 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets =
-        [
-            nameof(TemporaryTable_ScalarValues_Command),
-            nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
-        ]
-    )]
-    public void TemporaryTable_ScalarValues__Cleanup() =>
-        this.connection.Dispose();
+    private const string TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
+    private const int TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
 
-    [GlobalSetup(
-        Targets =
-        [
-            nameof(TemporaryTable_ScalarValues_Command),
-            nameof(TemporaryTable_ScalarValues_Dapper),
-            nameof(TemporaryTable_ScalarValues_DbConnectionPlus)
-        ]
-    )]
-    public void TemporaryTable_ScalarValues__Setup() =>
-        this.SetupDatabase(0);
+    private readonly List<long> temporaryTable_ScalarValues_Values =
+    [
+        .. Enumerable.Range(0, TemporaryTable_ScalarValues_ValuesPerOperation).Select(a => (long)a),
+    ];
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_Command()
+    public List<long> TemporaryTable_ScalarValues_Command()
     {
         using var createTableCommand = this.connection.CreateCommand();
         createTableCommand.CommandText = "CREATE TEMP TABLE \"Values\" (Value INTEGER)";
@@ -40,10 +26,7 @@ public partial class Benchmarks
         using var insertCommand = this.connection.CreateCommand();
         insertCommand.CommandText = "INSERT INTO temp.\"Values\" (Value) VALUES (@Value)";
 
-        var valueParameter = new SqliteParameter
-        {
-            ParameterName = "@Value"
-        };
+        var valueParameter = new SqliteParameter { ParameterName = "@Value" };
 
         insertCommand.Parameters.Add(valueParameter);
 
@@ -60,7 +43,7 @@ public partial class Benchmarks
 
         using var dataReader = selectCommand.ExecuteReader();
 
-        var result = new List<Int64>();
+        var result = new List<long>();
 
         while (dataReader.Read())
         {
@@ -76,7 +59,7 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_Dapper()
+    public List<long> TemporaryTable_ScalarValues_Dapper()
     {
         SqlMapper.Execute(this.connection, "CREATE TEMP TABLE \"Values\" (Value INTEGER)");
 
@@ -87,7 +70,7 @@ public partial class Benchmarks
             this.temporaryTable_ScalarValues_Values.Select(a => new { Value = a })
         );
 
-        var result = SqlMapper.Query<Int64>(this.connection, "SELECT Value FROM temp.\"Values\"").ToList();
+        var result = SqlMapper.Query<long>(this.connection, "SELECT Value FROM temp.\"Values\"").ToList();
 
         SqlMapper.Execute(this.connection, "DROP TABLE temp.\"Values\"");
 
@@ -96,13 +79,28 @@ public partial class Benchmarks
 
     [Benchmark(Baseline = false)]
     [BenchmarkCategory(TemporaryTable_ScalarValues_Category)]
-    public List<Int64> TemporaryTable_ScalarValues_DbConnectionPlus() =>
-        [.. this.connection.Query<Int64>($"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}")];
+    public List<long> TemporaryTable_ScalarValues_DbConnectionPlus() =>
+        [
+            .. this.connection.Query<long>(
+                $"SELECT Value FROM {TemporaryTable(this.temporaryTable_ScalarValues_Values)}"
+            ),
+        ];
 
-    private readonly List<Int64> temporaryTable_ScalarValues_Values = [.. Enumerable
-        .Range(0, TemporaryTable_ScalarValues_ValuesPerOperation)
-        .Select(a => (Int64)a)];
+    [GlobalCleanup(
+        Targets = [
+            nameof(TemporaryTable_ScalarValues_Command),
+            nameof(TemporaryTable_ScalarValues_Dapper),
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ScalarValues__Cleanup() => this.connection.Dispose();
 
-    private const String TemporaryTable_ScalarValues_Category = "TemporaryTable_ScalarValues";
-    private const Int32 TemporaryTable_ScalarValues_ValuesPerOperation = 5000;
+    [GlobalSetup(
+        Targets = [
+            nameof(TemporaryTable_ScalarValues_Command),
+            nameof(TemporaryTable_ScalarValues_Dapper),
+            nameof(TemporaryTable_ScalarValues_DbConnectionPlus),
+        ]
+    )]
+    public void TemporaryTable_ScalarValues__Setup() => this.SetupDatabase(0);
 }

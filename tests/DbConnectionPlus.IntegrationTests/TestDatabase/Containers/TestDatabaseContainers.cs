@@ -17,31 +17,35 @@ internal static class TestDatabaseContainers
     /// <summary>
     /// The password of the administrative database user in every container.
     /// </summary>
-    public const String Password = "TestTest123!";
+    public const string Password = "TestTest123!";
+
+    private static readonly TestDatabaseContainer<MySqlContainerFixture> mySql = new("MySQL");
+
+    private static readonly TestDatabaseContainer<OracleContainerFixture> oracle = new("Oracle");
+
+    private static readonly TestDatabaseContainer<PostgreSqlContainerFixture> postgreSql = new("PostgreSQL");
+
+    private static readonly TestDatabaseContainer<SqlServerContainerFixture> sqlServer = new("SQL Server");
 
     /// <summary>
     /// The container running the MySQL server.
     /// </summary>
-    public static MySqlContainerFixture MySql =>
-        mySql.Fixture;
+    public static MySqlContainerFixture MySql => mySql.Fixture;
 
     /// <summary>
     /// The container running the Oracle server.
     /// </summary>
-    public static OracleContainerFixture Oracle =>
-        oracle.Fixture;
+    public static OracleContainerFixture Oracle => oracle.Fixture;
 
     /// <summary>
     /// The container running the PostgreSQL server.
     /// </summary>
-    public static PostgreSqlContainerFixture PostgreSql =>
-        postgreSql.Fixture;
+    public static PostgreSqlContainerFixture PostgreSql => postgreSql.Fixture;
 
     /// <summary>
     /// The container running the SQL Server server.
     /// </summary>
-    public static SqlServerContainerFixture SqlServer =>
-        sqlServer.Fixture;
+    public static SqlServerContainerFixture SqlServer => sqlServer.Fixture;
 
     /// <summary>
     /// Stops and removes every container that was started during the test run.
@@ -57,32 +61,20 @@ internal static class TestDatabaseContainers
     /// <summary>
     /// Starts the MySQL container and waits until it accepts connections.
     /// </summary>
-    public static ValueTask StartMySqlAsync() =>
-        mySql.StartAsync();
+    public static ValueTask StartMySqlAsync() => mySql.StartAsync();
 
     /// <summary>
     /// Starts the Oracle container and waits until it accepts connections.
     /// </summary>
-    public static ValueTask StartOracleAsync() =>
-        oracle.StartAsync();
+    public static ValueTask StartOracleAsync() => oracle.StartAsync();
 
     /// <summary>
     /// Starts the PostgreSQL container and waits until it accepts connections.
     /// </summary>
-    public static ValueTask StartPostgreSqlAsync() =>
-        postgreSql.StartAsync();
+    public static ValueTask StartPostgreSqlAsync() => postgreSql.StartAsync();
 
     /// <summary>
     /// Starts the SQL Server container and waits until it accepts connections.
     /// </summary>
-    public static ValueTask StartSqlServerAsync() =>
-        sqlServer.StartAsync();
-
-    private static readonly TestDatabaseContainer<MySqlContainerFixture> mySql = new("MySQL");
-
-    private static readonly TestDatabaseContainer<OracleContainerFixture> oracle = new("Oracle");
-
-    private static readonly TestDatabaseContainer<PostgreSqlContainerFixture> postgreSql = new("PostgreSQL");
-
-    private static readonly TestDatabaseContainer<SqlServerContainerFixture> sqlServer = new("SQL Server");
+    public static ValueTask StartSqlServerAsync() => sqlServer.StartAsync();
 }

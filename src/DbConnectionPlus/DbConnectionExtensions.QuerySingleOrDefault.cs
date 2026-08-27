@@ -3,8 +3,8 @@
 
 using RentADeveloper.DbConnectionPlus.Materializers;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
-using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
 using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
+using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
 
 namespace RentADeveloper.DbConnectionPlus;
 
@@ -119,9 +119,8 @@ public static partial class DbConnectionExtensions
                     return dataRow;
                 }
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -202,25 +201,25 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         using (commandDisposer)
         {
             try
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
-                var reader = await command.ExecuteReaderAsync(
-                        CommandBehavior.SingleResult,
-                        cancellationToken
-                    )
+                var reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken)
                     .ConfigureAwait(false);
 
                 await using (reader)
@@ -240,9 +239,8 @@ public static partial class DbConnectionExtensions
                     return dataRow;
                 }
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }

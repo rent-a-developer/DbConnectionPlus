@@ -149,12 +149,13 @@ internal static class DbCommandBuilder
         if (statement.TemporaryTables.Count > 0)
         {
             temporaryTableDisposers = await BuildTemporaryTablesAsync(
-                statement.TemporaryTables,
-                databaseAdapter,
-                connection,
-                transaction,
-                cancellationToken
-            ).ConfigureAwait(false);
+                    statement.TemporaryTables,
+                    databaseAdapter,
+                    connection,
+                    transaction,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
 
         return (command, new(command, temporaryTableDisposers, cancellationTokenRegistration));
@@ -185,9 +186,9 @@ internal static class DbCommandBuilder
         CancellationToken cancellationToken = default
     )
     {
-        using var codeBuilder = new ValueStringBuilder(stackalloc Char[512]);
+        using var codeBuilder = new ValueStringBuilder(stackalloc char[512]);
 
-        var parameterNameOccurrences = new Dictionary<String, Int16>(
+        var parameterNameOccurrences = new Dictionary<string, short>(
             statement.Fragments.Count,
             StringComparer.OrdinalIgnoreCase
         );
@@ -201,7 +202,7 @@ internal static class DbCommandBuilder
 
         if (commandTimeout is not null)
         {
-            command.CommandTimeout = (Int32)commandTimeout.Value.TotalSeconds;
+            command.CommandTimeout = (int)commandTimeout.Value.TotalSeconds;
         }
 
         var dbParameters = command.Parameters;
@@ -215,39 +216,38 @@ internal static class DbCommandBuilder
                     break;
 
                 case InterpolatedParameter interpolatedParameter:
+                {
+                    var parameterName = interpolatedParameter.InferredName ?? "Parameter_" + (parameterCount + 1);
+
+                    if (!parameterNameOccurrences.TryAdd(parameterName, 1))
                     {
-                        var parameterName = interpolatedParameter.InferredName ??
-                                            "Parameter_" + (parameterCount + 1);
-
-                        if (!parameterNameOccurrences.TryAdd(parameterName, 1))
-                        {
-                            // Parameter name is already used, so we append a suffix to make it unique.
-                            var count = ++parameterNameOccurrences[parameterName];
-                            parameterName += count;
-                        }
-
-                        var dbParameter = command.CreateParameter();
-                        dbParameter.ParameterName = parameterName;
-                        databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
-                        dbParameters.Add(dbParameter);
-
-                        codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
-
-                        parameterCount++;
-                        break;
+                        // Parameter name is already used, so we append a suffix to make it unique.
+                        var count = ++parameterNameOccurrences[parameterName];
+                        parameterName += count;
                     }
+
+                    var dbParameter = command.CreateParameter();
+                    dbParameter.ParameterName = parameterName;
+                    databaseAdapter.BindParameterValue(dbParameter, interpolatedParameter.Value);
+                    dbParameters.Add(dbParameter);
+
+                    codeBuilder.Append(databaseAdapter.FormatParameterName(parameterName));
+
+                    parameterCount++;
+                    break;
+                }
 
                 case Parameter parameter:
-                    {
-                        var dbParameter = command.CreateParameter();
-                        dbParameter.ParameterName = parameter.Name;
-                        databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
-                        dbParameters.Add(dbParameter);
+                {
+                    var dbParameter = command.CreateParameter();
+                    dbParameter.ParameterName = parameter.Name;
+                    databaseAdapter.BindParameterValue(dbParameter, parameter.Value);
+                    dbParameters.Add(dbParameter);
 
-                        parameterNameOccurrences[parameter.Name] = 1;
-                        parameterCount++;
-                        break;
-                    }
+                    parameterNameOccurrences[parameter.Name] = 1;
+                    parameterCount++;
+                    break;
+                }
 
                 case InterpolatedTemporaryTable interpolatedTemporaryTable:
                     codeBuilder.Append(
@@ -313,9 +313,8 @@ internal static class DbCommandBuilder
                 );
             }
         }
-        catch (Exception exception) when (
-            databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-        )
+        catch (Exception exception)
+            when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
         {
             foreach (var temporaryTableDisposer in temporaryTableDisposers)
             {
@@ -368,19 +367,20 @@ internal static class DbCommandBuilder
             {
                 var interpolatedTemporaryTable = temporaryTables[i];
 
-                temporaryTableDisposers[i] = await databaseAdapter.TemporaryTableBuilder.BuildTemporaryTableAsync(
-                    connection,
-                    transaction,
-                    interpolatedTemporaryTable.Name,
-                    interpolatedTemporaryTable.Values,
-                    interpolatedTemporaryTable.ValuesType,
-                    cancellationToken
-                ).ConfigureAwait(false);
+                temporaryTableDisposers[i] = await databaseAdapter
+                    .TemporaryTableBuilder.BuildTemporaryTableAsync(
+                        connection,
+                        transaction,
+                        interpolatedTemporaryTable.Name,
+                        interpolatedTemporaryTable.Values,
+                        interpolatedTemporaryTable.ValuesType,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
             }
         }
-        catch (Exception exception) when (
-            databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-        )
+        catch (Exception exception)
+            when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
         {
             foreach (var temporaryTableDisposer in temporaryTableDisposers)
             {

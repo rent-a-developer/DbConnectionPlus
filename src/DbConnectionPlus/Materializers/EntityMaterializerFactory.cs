@@ -4,7 +4,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using RentADeveloper.DbConnectionPlus.Converters;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.Materializers;
@@ -24,10 +23,90 @@ internal static class EntityMaterializerFactory
     /// <see cref="RuntimeFeature.IsDynamicCodeSupported" /> branch; the attribute exists so that the analyzer
     /// verifies that guard rather than so that a warning propagates.
     /// </remarks>
-    private const String MaterializerRequiresDynamicCodeMessage =
-        "Materializing entities compiles an expression tree at run time, which is not supported when the " +
-        "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported " +
-        "branch.";
+    private const string MaterializerRequiresDynamicCodeMessage =
+        "Materializing entities compiles an expression tree at run time, which is not supported when the "
+        + "application is published with Native AOT. Reach this only from a RuntimeFeature.IsDynamicCodeSupported "
+        + "branch.";
+
+    private static readonly ConcurrentDictionary<MaterializerCacheKey, Delegate> materializerCache = [];
+
+    /// <summary>
+    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
+    /// the type <typeparamref name="TEntity" /> using reflection instead of a compiled expression tree.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
+    /// <typeparamref name="TEntity" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReader" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReaderFieldNames" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 <paramref name="dataReaderFieldTypes" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// This is the materializer for applications published with Native AOT, where no run-time code generation is
+    /// available. It mirrors the two strategies of <see cref="CreateExpressionMaterializer{TEntity}" /> and picks
+    /// between them the same way: constructor injection when the type has a constructor that matches the result
+    /// set, and a parameterless constructor followed by property setters otherwise.
+    /// </para>
+    /// <para>
+    /// Everything that depends only on the shape of the result set - the field ordinals, the target types, whether a
+    /// field value needs to be converted, and the property setters - is resolved once, exactly as the compiled
+    /// expression tree bakes it in. Per row the materializer only walks an array, reads the fields and writes them.
+    /// The materializer cache is keyed by that shape, so the resolution happens once per shape.
+    /// </para>
+    /// <para>
+    /// The exception types and the exception messages are identical to the ones of the compiled expression tree, so
+    /// that the behaviour a consumer observes does not depend on how the application was published.
+    /// </para>
+    /// </remarks>
+    internal static Func<DbDataReader, TEntity> CreateReflectionMaterializer<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
+    {
+        ArgumentNullException.ThrowIfNull(dataReader);
+        ArgumentNullException.ThrowIfNull(dataReaderFieldNames);
+        ArgumentNullException.ThrowIfNull(dataReaderFieldTypes);
+
+        var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
+            typeof(TEntity),
+            [.. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
+        );
+
+        return compatibleConstructor is null
+            ? CreateReflectionPropertyMaterializer<TEntity>(dataReader, dataReaderFieldNames, dataReaderFieldTypes)
+            : CreateReflectionConstructorMaterializer<TEntity>(
+                dataReader,
+                dataReaderFieldNames,
+                dataReaderFieldTypes,
+                compatibleConstructor
+            );
+    }
 
     /// <summary>
     /// Gets a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of the
@@ -128,413 +207,6 @@ internal static class EntityMaterializerFactory
 
     /// <summary>
     /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
-    /// the type <typeparamref name="TEntity" /> using reflection instead of a compiled expression tree.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
-    /// <typeparamref name="TEntity" />.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReader" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReaderFieldNames" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///         <item>
-    ///             <description>
-    ///                 <paramref name="dataReaderFieldTypes" /> is <see langword="null" />.
-    ///             </description>
-    ///         </item>
-    ///     </list>
-    /// </exception>
-    /// <remarks>
-    /// <para>
-    /// This is the materializer for applications published with Native AOT, where no run-time code generation is
-    /// available. It mirrors the two strategies of <see cref="CreateExpressionMaterializer{TEntity}" /> and picks
-    /// between them the same way: constructor injection when the type has a constructor that matches the result
-    /// set, and a parameterless constructor followed by property setters otherwise.
-    /// </para>
-    /// <para>
-    /// Everything that depends only on the shape of the result set - the field ordinals, the target types, whether a
-    /// field value needs to be converted, and the property setters - is resolved once, exactly as the compiled
-    /// expression tree bakes it in. Per row the materializer only walks an array, reads the fields and writes them.
-    /// The materializer cache is keyed by that shape, so the resolution happens once per shape.
-    /// </para>
-    /// <para>
-    /// The exception types and the exception messages are identical to the ones of the compiled expression tree, so
-    /// that the behaviour a consumer observes does not depend on how the application was published.
-    /// </para>
-    /// </remarks>
-    internal static Func<DbDataReader, TEntity> CreateReflectionMaterializer<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
-        DbDataReader dataReader,
-        String[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
-    {
-        ArgumentNullException.ThrowIfNull(dataReader);
-        ArgumentNullException.ThrowIfNull(dataReaderFieldNames);
-        ArgumentNullException.ThrowIfNull(dataReaderFieldTypes);
-
-        var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
-            typeof(TEntity),
-            [
-                .. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))
-            ]
-        );
-
-        return compatibleConstructor is null
-            ? CreateReflectionPropertyMaterializer<TEntity>(
-                dataReader,
-                dataReaderFieldNames,
-                dataReaderFieldTypes
-            )
-            : CreateReflectionConstructorMaterializer<TEntity>(
-                dataReader,
-                dataReaderFieldNames,
-                dataReaderFieldTypes,
-                compatibleConstructor
-            );
-    }
-
-    /// <summary>
-    /// Creates a reflection-based materializer function that materializes the data in a <see cref="DbDataReader" />
-    /// to an instance of the type <typeparamref name="TEntity" /> by passing the fields of the result set to
-    /// <paramref name="compatibleConstructor" />.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="compatibleConstructor">
-    /// The constructor of the type <typeparamref name="TEntity" /> whose parameters match the fields of the result
-    /// set, as returned by <see cref="EntityHelper.FindCompatibleConstructor" />.
-    /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
-    /// <typeparamref name="TEntity" />.
-    /// </returns>
-    /// <remarks>
-    /// This is the strategy that materializes entities using constructor injection. Each field of the result set is
-    /// matched to the constructor parameter of the same name, exactly as the compiled expression tree matches it,
-    /// and the resulting bindings are stored in constructor-argument order. Per row the arguments are therefore
-    /// read left to right, which is also the order in which the expression tree evaluates them - so when more than
-    /// one field is unusable, both paths report the same one.
-    /// </remarks>
-    private static Func<DbDataReader, TEntity> CreateReflectionConstructorMaterializer<TEntity>(
-        DbDataReader dataReader,
-        String[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes,
-        ConstructorInfo compatibleConstructor
-    )
-    {
-        var entityType = typeof(TEntity);
-
-        var constructorParameters = compatibleConstructor.GetParameters();
-        var constructorArgumentBindings = new ReflectionColumnBinding[constructorParameters.Length];
-
-        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
-        {
-            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
-            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
-
-            var constructorParameter = constructorParameters.First(p =>
-                !String.IsNullOrWhiteSpace(p.Name) &&
-                p.Name.Equals(dataReaderFieldName, StringComparison.OrdinalIgnoreCase) &&
-                ValueConverter.CanConvert(dataReaderFieldType, p.ParameterType)
-            );
-
-            constructorArgumentBindings[Array.IndexOf(constructorParameters, constructorParameter)] =
-                new ReflectionColumnBinding(
-                    dataReaderFieldName,
-                    fieldOrdinal,
-                    MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                        fieldOrdinal,
-                        dataReaderFieldName,
-                        dataReaderFieldType
-                    ),
-                    dataReaderFieldType != constructorParameter.ParameterType,
-                    constructorParameter.ParameterType
-                );
-        }
-
-        var entityConstructor = ConstructorInvoker.Create(compatibleConstructor);
-
-        return rowDataReader => MaterializeEntityThroughConstructor<TEntity>(
-            rowDataReader,
-            entityType,
-            entityConstructor,
-            constructorArgumentBindings
-        );
-    }
-
-    /// <summary>
-    /// Creates a reflection-based materializer function that materializes the data in a <see cref="DbDataReader" />
-    /// to an instance of the type <typeparamref name="TEntity" /> by constructing it with its parameterless
-    /// constructor and then writing each field of the result set to the property it maps to.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
-    /// <typeparamref name="TEntity" />.
-    /// </returns>
-    /// <remarks>
-    /// Callers must have established that the type <typeparamref name="TEntity" /> has a parameterless constructor
-    /// and no constructor compatible with the result set - <see cref="ValidateDataReader" /> does both. Fields
-    /// without a matching property are never read, which the compiled expression tree does as well.
-    /// </remarks>
-    private static Func<DbDataReader, TEntity> CreateReflectionPropertyMaterializer<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
-        DbDataReader dataReader,
-        String[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
-    {
-        var entityType = typeof(TEntity);
-
-        var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)
-            .MappedProperties.Where(a => a.CanWrite)
-            .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
-
-        var entityConstructor = ConstructorInvoker.Create(EntityHelper.FindParameterlessConstructor(entityType)!);
-
-        var propertyBindings = new List<ReflectionPropertyBinding>(dataReader.FieldCount);
-
-        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
-        {
-            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
-
-            if (!entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
-            {
-                // No need to read the field when there is no matching property for it. The expression tree skips
-                // these fields as well, and tests assert that the field is never touched.
-                continue;
-            }
-
-            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
-            var targetType = entityProperty.PropertyType;
-
-            propertyBindings.Add(
-                new ReflectionPropertyBinding(
-                    new ReflectionColumnBinding(
-                        dataReaderFieldName,
-                        fieldOrdinal,
-                        MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
-                            fieldOrdinal,
-                            dataReaderFieldName,
-                            dataReaderFieldType
-                        ),
-                        dataReaderFieldType != targetType,
-                        targetType
-                    ),
-                    // entityPropertiesByColumnName only contains writable properties, so the setter always exists.
-                    entityProperty.PropertySetter!
-                )
-            );
-        }
-
-        var resolvedPropertyBindings = propertyBindings.ToArray();
-
-        return rowDataReader => MaterializeEntityThroughProperties<TEntity>(
-            rowDataReader,
-            entityType,
-            entityConstructor,
-            resolvedPropertyBindings
-        );
-    }
-
-    /// <summary>
-    /// Throws if none of the fields of the result set can be mapped to a writable property of
-    /// <paramref name="entityType" />.
-    /// </summary>
-    /// <param name="entityType">The entity type the result set is being materialized to.</param>
-    /// <param name="dataReaderFieldNames">The field names of the result set.</param>
-    /// <param name="entityPropertiesByColumnName">The writable properties of the entity type, by column name.</param>
-    /// <exception cref="InvalidOperationException">
-    /// The result set has fields, but none of them maps to a writable property of <paramref name="entityType" />.
-    /// </exception>
-    /// <remarks>
-    /// <para>
-    /// Without this check, materialization silently succeeds and returns entities whose properties are all left at
-    /// their default values, which is indistinguishable from a query that legitimately returned default data.
-    /// </para>
-    /// <para>
-    /// The check matters most in an application that is trimmed or published with Native AOT. If a
-    /// <see cref="DynamicallyAccessedMembersAttribute" /> annotation is missing anywhere on the call path, the
-    /// trimmer removes the entity's properties, reflection then reports fewer members than the type really has, and
-    /// every column silently fails to bind. Failing loudly here is the backstop for that.
-    /// </para>
-    /// </remarks>
-    private static void GuardAgainstResultSetBindingNoProperties(
-        Type entityType,
-        String[] dataReaderFieldNames,
-        Dictionary<String, EntityPropertyMetadata> entityPropertiesByColumnName
-    )
-    {
-        if (dataReaderFieldNames.Length == 0)
-        {
-            return;
-        }
-
-        if (dataReaderFieldNames.Any(entityPropertiesByColumnName.ContainsKey))
-        {
-            return;
-        }
-
-        throw new InvalidOperationException(
-            $"None of the {dataReaderFieldNames.Length} field(s) of the result set " +
-            $"({String.Join(", ", dataReaderFieldNames)}) could be mapped to a writable property of the entity " +
-            $"type {entityType}. Materializing the result set would return entities whose properties are all left " +
-            "at their default values. Check that the field names of the result set match the property names, or " +
-            "the mapped column names, of the entity type. If the application is trimmed or published with Native " +
-            "AOT, this usually means the properties of the entity type were removed by the trimmer because a " +
-            "[DynamicallyAccessedMembers] annotation is missing on the call path."
-        );
-    }
-
-    /// <summary>
-    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
-    /// the type <typeparamref name="TEntity" />.
-    /// </summary>
-    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
-    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
-    /// <param name="dataReaderFieldNames">
-    /// The names of the fields in <paramref name="dataReader" />.
-    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <param name="dataReaderFieldTypes">
-    /// The field types of the fields in <paramref name="dataReader" />.
-    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
-    /// </param>
-    /// <returns>
-    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
-    /// <typeparamref name="TEntity" />.
-    /// </returns>
-    /// <remarks>
-    /// <para>The type <typeparamref name="TEntity" /> must either:</para>
-    /// <para>
-    /// 1. Have a constructor whose parameters match the fields in <paramref name="dataReader" />.
-    ///    The names of the parameters must match the names of the fields (case-insensitive).
-    ///    The types of the parameters must be compatible with the types of the fields.
-    ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    ///    The parameters can be in any order.
-    /// </para>
-    /// <para>Or</para>
-    /// <para>
-    /// 2. Have a parameterless constructor and instance properties (with public setters) that match the fields in
-    /// <paramref name="dataReader" />.
-    /// </para>
-    /// <para>   The names of the properties must match the names of the fields (case-insensitive).</para>
-    /// <para>
-    ///    The types of the properties must be compatible with the types of the fields.
-    ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
-    /// </para>
-    /// <para>   Fields without a matching property will be ignored.</para>
-    /// <para>
-    /// If a constructor parameter or a property cannot be set to the value of the corresponding field of
-    /// <paramref name="dataReader" /> (for example, due to a type mismatch), the returned function throws an
-    /// <see cref="InvalidCastException" />.
-    /// </para>
-    /// <para>
-    /// Which of the two implementations builds the materializer is decided here, by
-    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" />: the compiled expression tree when the runtime can
-    /// generate code, and the reflection-based materializer when it cannot. The AOT compiler folds that check to a
-    /// constant and removes the branch it does not need, so an application published with Native AOT does not
-    /// carry the expression-tree implementation at all.
-    /// </para>
-    /// </remarks>
-#if !NET9_0_OR_GREATER
-    // The dispatch below is what keeps the generic query methods free of [RequiresDynamicCode], and therefore what
-    // keeps a consumer's Native AOT publish free of IL3050. .NET 9 annotated
-    // RuntimeFeature.IsDynamicCodeSupported as a [FeatureGuard], so from net9.0 onwards the analyzer recognizes the
-    // branch as unreachable under Native AOT and reports nothing here. net8.0's reference assembly does not carry
-    // that annotation, so the same, correct code warns there and only there.
-    //
-    // This suppression is therefore not an assertion - it is a transcription. The net10.0 inner build compiles this
-    // file WITHOUT it, which is what proves the reasoning; net8.0 borrows the result. Both target frameworks stay in
-    // scripts/verify-package-aot.ps1 so that remains true rather than becoming folklore.
-    [UnconditionalSuppressMessage(
-        "AOT",
-        "IL3050:Requires dynamic code",
-        Justification =
-            "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds " +
-            "to false and removes together with the expression-tree implementation. The net9.0+ analyzer " +
-            "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on " +
-            "IsDynamicCodeSupported that lets it do so."
-    )]
-#endif
-    private static Delegate CreateMaterializer<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
-        DbDataReader dataReader,
-        String[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
-    {
-        var entityType = typeof(TEntity);
-
-        var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
-            entityType,
-            [.. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
-        );
-
-        if (compatibleConstructor is null)
-        {
-            // Constructor injection already fails loudly when nothing matches, so the guard only has to cover the
-            // property-setter strategy. It runs before the dispatch below and is therefore shared by both
-            // implementations.
-            GuardAgainstResultSetBindingNoProperties(
-                entityType,
-                dataReaderFieldNames,
-                EntityHelper.GetEntityTypeMetadata(entityType)
-                    .MappedProperties.Where(a => a.CanWrite)
-                    .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase)
-            );
-        }
-
-        if (RuntimeFeature.IsDynamicCodeSupported)
-        {
-            return CreateExpressionMaterializer<TEntity>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
-        }
-
-        return CreateReflectionMaterializer<TEntity>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
-    }
-
-    /// <summary>
-    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
     /// the type <typeparamref name="TEntity" /> by compiling an expression tree.
     /// </summary>
     /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
@@ -562,11 +234,7 @@ internal static class EntityMaterializerFactory
     [RequiresDynamicCode(MaterializerRequiresDynamicCodeMessage)]
     private static Delegate CreateExpressionMaterializer<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
-        DbDataReader dataReader,
-        String[] dataReaderFieldNames,
-        Type[] dataReaderFieldTypes
-    )
+    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
     {
         var entityType = typeof(TEntity);
 
@@ -580,15 +248,16 @@ internal static class EntityMaterializerFactory
         var dataReaderParameterExpression = Expression.Parameter(typeof(DbDataReader), "dataReader");
         var dataReaderFieldValueExpressions = new Expression[dataReader.FieldCount];
 
-        var fieldOrdinalToTargetType = new Dictionary<Int32, Type>(dataReader.FieldCount);
-        var fieldOrdinalToConstructorParameterIndex = new Dictionary<Int32, Int32>(dataReader.FieldCount);
+        var fieldOrdinalToTargetType = new Dictionary<int, Type>(dataReader.FieldCount);
+        var fieldOrdinalToConstructorParameterIndex = new Dictionary<int, int>(dataReader.FieldCount);
 
         var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
             entityType,
             [.. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
         );
 
-        var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)
+        var entityPropertiesByColumnName = EntityHelper
+            .GetEntityTypeMetadata(entityType)
             .MappedProperties.Where(a => a.CanWrite)
             .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
 
@@ -599,9 +268,9 @@ internal static class EntityMaterializerFactory
             for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
             {
                 var constructorParameter = constructorParameters.First(p =>
-                    !String.IsNullOrWhiteSpace(p.Name) &&
-                    p.Name.Equals(dataReaderFieldNames[fieldOrdinal], StringComparison.OrdinalIgnoreCase) &&
-                    ValueConverter.CanConvert(dataReaderFieldTypes[fieldOrdinal], p.ParameterType)
+                    !string.IsNullOrWhiteSpace(p.Name)
+                    && p.Name.Equals(dataReaderFieldNames[fieldOrdinal], StringComparison.OrdinalIgnoreCase)
+                    && ValueConverter.CanConvert(dataReaderFieldTypes[fieldOrdinal], p.ParameterType)
                 );
 
                 fieldOrdinalToConstructorParameterIndex.Add(
@@ -620,17 +289,11 @@ internal static class EntityMaterializerFactory
 
                 if (entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
                 {
-                    fieldOrdinalToTargetType.Add(
-                        fieldOrdinal,
-                        entityProperty.PropertyType
-                    );
+                    fieldOrdinalToTargetType.Add(fieldOrdinal, entityProperty.PropertyType);
                 }
                 else
                 {
-                    fieldOrdinalToTargetType.Add(
-                        fieldOrdinal,
-                        dataReaderFieldTypes[fieldOrdinal]
-                    );
+                    fieldOrdinalToTargetType.Add(fieldOrdinal, dataReaderFieldTypes[fieldOrdinal]);
                 }
             }
         }
@@ -701,11 +364,11 @@ internal static class EntityMaterializerFactory
                 ? Expression.Default(targetType)
                 : Expression.Throw(
                     Expression.New(
-                        typeof(InvalidCastException).GetConstructor([typeof(String)])!,
+                        typeof(InvalidCastException).GetConstructor([typeof(string)])!,
                         Expression.Constant(
-                            $"The column '{dataReaderFieldName}' returned by the SQL statement contains a " +
-                            $"NULL value, but the corresponding property of the type {entityType} is " +
-                            "non-nullable."
+                            $"The column '{dataReaderFieldName}' returned by the SQL statement contains a "
+                                + $"NULL value, but the corresponding property of the type {entityType} is "
+                                + "non-nullable."
                         )
                     ),
                     targetType
@@ -713,14 +376,12 @@ internal static class EntityMaterializerFactory
 
             var throwInvalidCastExceptionExpression = Expression.Throw(
                 Expression.New(
-                    typeof(InvalidCastException).GetConstructor(
-                        [typeof(String), typeof(Exception)]
-                    )!,
+                    typeof(InvalidCastException).GetConstructor([typeof(string), typeof(Exception)])!,
                     Expression.Constant(
-                        $"The column '{dataReaderFieldName}' returned by the SQL statement " +
-                        $"contains a value that could not be converted to the type {targetType} " +
-                        $"of the corresponding property of the type {entityType}. See inner " +
-                        "exception for details."
+                        $"The column '{dataReaderFieldName}' returned by the SQL statement "
+                            + $"contains a value that could not be converted to the type {targetType} "
+                            + $"of the corresponding property of the type {entityType}. See inner "
+                            + "exception for details."
                     ),
                     exceptionParameterExpression
                 ),
@@ -732,30 +393,25 @@ internal static class EntityMaterializerFactory
                     Expression.Call(
                         null,
                         MaterializerFactoryHelper.MakeValueConverterConvertValueToTypeMethod(targetType),
-                        Expression.Convert(getFieldValueCallExpression, typeof(Object))
+                        Expression.Convert(getFieldValueCallExpression, typeof(object))
                     ),
                     targetType
                 ),
-                Expression.Catch(
-                    exceptionParameterExpression,
-                    throwInvalidCastExceptionExpression
-                )
+                Expression.Catch(exceptionParameterExpression, throwInvalidCastExceptionExpression)
             );
 
-            var isNotDbNullBranchExpression = dataReaderFieldType != targetType
-                ? convertFieldValueExpression
-                : getFieldValueCallExpression;
+            var isNotDbNullBranchExpression =
+                dataReaderFieldType != targetType ? convertFieldValueExpression : getFieldValueCallExpression;
 
-            dataReaderFieldValueExpressions[fieldOrdinal] =
-                Expression.Condition(
-                    Expression.Call(
-                        dataReaderParameterExpression,
-                        MaterializerFactoryHelper.DbDataReaderIsDBNullMethod,
-                        fieldOrdinalExpression
-                    ),
-                    isDbNullBranchExpression,
-                    isNotDbNullBranchExpression
-                );
+            dataReaderFieldValueExpressions[fieldOrdinal] = Expression.Condition(
+                Expression.Call(
+                    dataReaderParameterExpression,
+                    MaterializerFactoryHelper.DbDataReaderIsDBNullMethod,
+                    fieldOrdinalExpression
+                ),
+                isDbNullBranchExpression,
+                isNotDbNullBranchExpression
+            );
         }
 
         Expression bodyExpression;
@@ -768,8 +424,9 @@ internal static class EntityMaterializerFactory
             {
                 var constructorArgumentIndex = fieldOrdinalToConstructorParameterIndex[fieldOrdinal];
 
-                constructorArgumentExpressions[constructorArgumentIndex] =
-                    dataReaderFieldValueExpressions[fieldOrdinal];
+                constructorArgumentExpressions[constructorArgumentIndex] = dataReaderFieldValueExpressions[
+                    fieldOrdinal
+                ];
             }
 
             // Basically:
@@ -803,6 +460,321 @@ internal static class EntityMaterializerFactory
     }
 
     /// <summary>
+    /// Creates a materializer function that materializes the data in a <see cref="DbDataReader" /> to an instance of
+    /// the type <typeparamref name="TEntity" />.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
+    /// <typeparamref name="TEntity" />.
+    /// </returns>
+    /// <remarks>
+    /// <para>The type <typeparamref name="TEntity" /> must either:</para>
+    /// <para>
+    /// 1. Have a constructor whose parameters match the fields in <paramref name="dataReader" />.
+    ///    The names of the parameters must match the names of the fields (case-insensitive).
+    ///    The types of the parameters must be compatible with the types of the fields.
+    ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
+    ///    The parameters can be in any order.
+    /// </para>
+    /// <para>Or</para>
+    /// <para>
+    /// 2. Have a parameterless constructor and instance properties (with public setters) that match the fields in
+    /// <paramref name="dataReader" />.
+    /// </para>
+    /// <para>   The names of the properties must match the names of the fields (case-insensitive).</para>
+    /// <para>
+    ///    The types of the properties must be compatible with the types of the fields.
+    ///    The compatibility is determined using <see cref="ValueConverter.CanConvert" />.
+    /// </para>
+    /// <para>   Fields without a matching property will be ignored.</para>
+    /// <para>
+    /// If a constructor parameter or a property cannot be set to the value of the corresponding field of
+    /// <paramref name="dataReader" /> (for example, due to a type mismatch), the returned function throws an
+    /// <see cref="InvalidCastException" />.
+    /// </para>
+    /// <para>
+    /// Which of the two implementations builds the materializer is decided here, by
+    /// <see cref="RuntimeFeature.IsDynamicCodeSupported" />: the compiled expression tree when the runtime can
+    /// generate code, and the reflection-based materializer when it cannot. The AOT compiler folds that check to a
+    /// constant and removes the branch it does not need, so an application published with Native AOT does not
+    /// carry the expression-tree implementation at all.
+    /// </para>
+    /// </remarks>
+#if !NET9_0_OR_GREATER
+    // The dispatch below is what keeps the generic query methods free of [RequiresDynamicCode], and therefore what
+    // keeps a consumer's Native AOT publish free of IL3050. .NET 9 annotated
+    // RuntimeFeature.IsDynamicCodeSupported as a [FeatureGuard], so from net9.0 onwards the analyzer recognizes the
+    // branch as unreachable under Native AOT and reports nothing here. net8.0's reference assembly does not carry
+    // that annotation, so the same, correct code warns there and only there.
+    //
+    // This suppression is therefore not an assertion - it is a transcription. The net10.0 inner build compiles this
+    // file WITHOUT it, which is what proves the reasoning; net8.0 borrows the result. Both target frameworks stay in
+    // scripts/verify-package-aot.ps1 so that remains true rather than becoming folklore.
+    [UnconditionalSuppressMessage(
+        "AOT",
+        "IL3050:Requires dynamic code",
+        Justification = "The call is inside an if (RuntimeFeature.IsDynamicCodeSupported) branch, which the AOT compiler folds "
+            + "to false and removes together with the expression-tree implementation. The net9.0+ analyzer "
+            + "recognizes that guard and reports nothing here; net8.0 lacks the [FeatureGuard] annotation on "
+            + "IsDynamicCodeSupported that lets it do so."
+    )]
+#endif
+    private static Delegate CreateMaterializer<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
+        DbDataReader dataReader,
+        string[] dataReaderFieldNames,
+        Type[] dataReaderFieldTypes
+    )
+    {
+        var entityType = typeof(TEntity);
+
+        var compatibleConstructor = EntityHelper.FindCompatibleConstructor(
+            entityType,
+            [.. dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => (name, type))]
+        );
+
+        if (compatibleConstructor is null)
+        {
+            // Constructor injection already fails loudly when nothing matches, so the guard only has to cover the
+            // property-setter strategy. It runs before the dispatch below and is therefore shared by both
+            // implementations.
+            GuardAgainstResultSetBindingNoProperties(
+                entityType,
+                dataReaderFieldNames,
+                EntityHelper
+                    .GetEntityTypeMetadata(entityType)
+                    .MappedProperties.Where(a => a.CanWrite)
+                    .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase)
+            );
+        }
+
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            return CreateExpressionMaterializer<TEntity>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
+        }
+
+        return CreateReflectionMaterializer<TEntity>(dataReader, dataReaderFieldNames, dataReaderFieldTypes);
+    }
+
+    /// <summary>
+    /// Creates a reflection-based materializer function that materializes the data in a <see cref="DbDataReader" />
+    /// to an instance of the type <typeparamref name="TEntity" /> by passing the fields of the result set to
+    /// <paramref name="compatibleConstructor" />.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="compatibleConstructor">
+    /// The constructor of the type <typeparamref name="TEntity" /> whose parameters match the fields of the result
+    /// set, as returned by <see cref="EntityHelper.FindCompatibleConstructor" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
+    /// <typeparamref name="TEntity" />.
+    /// </returns>
+    /// <remarks>
+    /// This is the strategy that materializes entities using constructor injection. Each field of the result set is
+    /// matched to the constructor parameter of the same name, exactly as the compiled expression tree matches it,
+    /// and the resulting bindings are stored in constructor-argument order. Per row the arguments are therefore
+    /// read left to right, which is also the order in which the expression tree evaluates them - so when more than
+    /// one field is unusable, both paths report the same one.
+    /// </remarks>
+    private static Func<DbDataReader, TEntity> CreateReflectionConstructorMaterializer<TEntity>(
+        DbDataReader dataReader,
+        string[] dataReaderFieldNames,
+        Type[] dataReaderFieldTypes,
+        ConstructorInfo compatibleConstructor
+    )
+    {
+        var entityType = typeof(TEntity);
+
+        var constructorParameters = compatibleConstructor.GetParameters();
+        var constructorArgumentBindings = new ReflectionColumnBinding[constructorParameters.Length];
+
+        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
+        {
+            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
+            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
+
+            var constructorParameter = constructorParameters.First(p =>
+                !string.IsNullOrWhiteSpace(p.Name)
+                && p.Name.Equals(dataReaderFieldName, StringComparison.OrdinalIgnoreCase)
+                && ValueConverter.CanConvert(dataReaderFieldType, p.ParameterType)
+            );
+
+            constructorArgumentBindings[Array.IndexOf(constructorParameters, constructorParameter)] = new(
+                dataReaderFieldName,
+                fieldOrdinal,
+                MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
+                    fieldOrdinal,
+                    dataReaderFieldName,
+                    dataReaderFieldType
+                ),
+                dataReaderFieldType != constructorParameter.ParameterType,
+                constructorParameter.ParameterType
+            );
+        }
+
+        var entityConstructor = ConstructorInvoker.Create(compatibleConstructor);
+
+        return rowDataReader =>
+            MaterializeEntityThroughConstructor<TEntity>(
+                rowDataReader,
+                entityType,
+                entityConstructor,
+                constructorArgumentBindings
+            );
+    }
+
+    /// <summary>
+    /// Creates a reflection-based materializer function that materializes the data in a <see cref="DbDataReader" />
+    /// to an instance of the type <typeparamref name="TEntity" /> by constructing it with its parameterless
+    /// constructor and then writing each field of the result set to the property it maps to.
+    /// </summary>
+    /// <typeparam name="TEntity">The type of entity to materialize.</typeparam>
+    /// <param name="dataReader">The <see cref="DbDataReader" /> for which to create the materializer function.</param>
+    /// <param name="dataReaderFieldNames">
+    /// The names of the fields in <paramref name="dataReader" />.
+    /// The order of the names must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <param name="dataReaderFieldTypes">
+    /// The field types of the fields in <paramref name="dataReader" />.
+    /// The order of the types must match the order of the fields in <paramref name="dataReader" />.
+    /// </param>
+    /// <returns>
+    /// A function that materializes the data in a <see cref="DbDataReader" /> to an instance of the type
+    /// <typeparamref name="TEntity" />.
+    /// </returns>
+    /// <remarks>
+    /// Callers must have established that the type <typeparamref name="TEntity" /> has a parameterless constructor
+    /// and no constructor compatible with the result set - <see cref="ValidateDataReader" /> does both. Fields
+    /// without a matching property are never read, which the compiled expression tree does as well.
+    /// </remarks>
+    private static Func<DbDataReader, TEntity> CreateReflectionPropertyMaterializer<
+        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
+    >(DbDataReader dataReader, string[] dataReaderFieldNames, Type[] dataReaderFieldTypes)
+    {
+        var entityType = typeof(TEntity);
+
+        var entityPropertiesByColumnName = EntityHelper
+            .GetEntityTypeMetadata(entityType)
+            .MappedProperties.Where(a => a.CanWrite)
+            .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
+
+        var entityConstructor = ConstructorInvoker.Create(EntityHelper.FindParameterlessConstructor(entityType)!);
+
+        var propertyBindings = new List<ReflectionPropertyBinding>(dataReader.FieldCount);
+
+        for (var fieldOrdinal = 0; fieldOrdinal < dataReader.FieldCount; fieldOrdinal++)
+        {
+            var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
+
+            if (!entityPropertiesByColumnName.TryGetValue(dataReaderFieldName, out var entityProperty))
+            {
+                // No need to read the field when there is no matching property for it. The expression tree skips
+                // these fields as well, and tests assert that the field is never touched.
+                continue;
+            }
+
+            var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
+            var targetType = entityProperty.PropertyType;
+
+            propertyBindings.Add(
+                new ReflectionPropertyBinding(
+                    new ReflectionColumnBinding(
+                        dataReaderFieldName,
+                        fieldOrdinal,
+                        MaterializerFactoryHelper.CreateGetDbDataReaderFieldValueFunction(
+                            fieldOrdinal,
+                            dataReaderFieldName,
+                            dataReaderFieldType
+                        ),
+                        dataReaderFieldType != targetType,
+                        targetType
+                    ),
+                    // entityPropertiesByColumnName only contains writable properties, so the setter always exists.
+                    entityProperty.PropertySetter!
+                )
+            );
+        }
+
+        var resolvedPropertyBindings = propertyBindings.ToArray();
+
+        return rowDataReader =>
+            MaterializeEntityThroughProperties<TEntity>(
+                rowDataReader,
+                entityType,
+                entityConstructor,
+                resolvedPropertyBindings
+            );
+    }
+
+    /// <summary>
+    /// Throws if none of the fields of the result set can be mapped to a writable property of
+    /// <paramref name="entityType" />.
+    /// </summary>
+    /// <param name="entityType">The entity type the result set is being materialized to.</param>
+    /// <param name="dataReaderFieldNames">The field names of the result set.</param>
+    /// <param name="entityPropertiesByColumnName">The writable properties of the entity type, by column name.</param>
+    /// <exception cref="InvalidOperationException">
+    /// The result set has fields, but none of them maps to a writable property of <paramref name="entityType" />.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Without this check, materialization silently succeeds and returns entities whose properties are all left at
+    /// their default values, which is indistinguishable from a query that legitimately returned default data.
+    /// </para>
+    /// <para>
+    /// The check matters most in an application that is trimmed or published with Native AOT. If a
+    /// <see cref="DynamicallyAccessedMembersAttribute" /> annotation is missing anywhere on the call path, the
+    /// trimmer removes the entity's properties, reflection then reports fewer members than the type really has, and
+    /// every column silently fails to bind. Failing loudly here is the backstop for that.
+    /// </para>
+    /// </remarks>
+    private static void GuardAgainstResultSetBindingNoProperties(
+        Type entityType,
+        string[] dataReaderFieldNames,
+        Dictionary<string, EntityPropertyMetadata> entityPropertiesByColumnName
+    )
+    {
+        if (dataReaderFieldNames.Length == 0)
+        {
+            return;
+        }
+
+        if (dataReaderFieldNames.Any(entityPropertiesByColumnName.ContainsKey))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"None of the {dataReaderFieldNames.Length} field(s) of the result set "
+                + $"({string.Join(", ", dataReaderFieldNames)}) could be mapped to a writable property of the entity "
+                + $"type {entityType}. Materializing the result set would return entities whose properties are all left "
+                + "at their default values. Check that the field names of the result set match the property names, or "
+                + "the mapped column names, of the entity type. If the application is trimmed or published with Native "
+                + "AOT, this usually means the properties of the entity type were removed by the trimmer because a "
+                + "[DynamicallyAccessedMembers] annotation is missing on the call path."
+        );
+    }
+
+    /// <summary>
     /// Materializes the current row of <paramref name="dataReader" /> to an instance of the type
     /// <typeparamref name="TEntity" /> by passing the fields of the result set to its constructor.
     /// </summary>
@@ -827,12 +799,15 @@ internal static class EntityMaterializerFactory
         ReflectionColumnBinding[] constructorArgumentBindings
     )
     {
-        var constructorArguments = new Object?[constructorArgumentBindings.Length];
+        var constructorArguments = new object?[constructorArgumentBindings.Length];
 
         for (var argumentIndex = 0; argumentIndex < constructorArgumentBindings.Length; argumentIndex++)
         {
-            constructorArguments[argumentIndex] =
-                ReadFieldValue(dataReader, entityType, constructorArgumentBindings[argumentIndex]);
+            constructorArguments[argumentIndex] = ReadFieldValue(
+                dataReader,
+                entityType,
+                constructorArgumentBindings[argumentIndex]
+            );
         }
 
         return (TEntity)entityConstructor.Invoke(constructorArguments.AsSpan());
@@ -890,7 +865,7 @@ internal static class EntityMaterializerFactory
     ///         </item>
     ///     </list>
     /// </exception>
-    private static Object? ReadFieldValue(
+    private static object? ReadFieldValue(
         DbDataReader dataReader,
         Type entityType,
         ReflectionColumnBinding columnBinding
@@ -904,8 +879,8 @@ internal static class EntityMaterializerFactory
             }
 
             throw new InvalidCastException(
-                $"The column '{columnBinding.FieldName}' returned by the SQL statement contains a NULL value, but " +
-                $"the corresponding property of the type {entityType} is non-nullable."
+                $"The column '{columnBinding.FieldName}' returned by the SQL statement contains a NULL value, but "
+                    + $"the corresponding property of the type {entityType} is non-nullable."
             );
         }
 
@@ -923,9 +898,9 @@ internal static class EntityMaterializerFactory
         catch (Exception exception)
         {
             throw new InvalidCastException(
-                $"The column '{columnBinding.FieldName}' returned by the SQL statement contains a value that could " +
-                $"not be converted to the type {columnBinding.TargetType} of the corresponding property of the " +
-                $"type {entityType}. See inner exception for details.",
+                $"The column '{columnBinding.FieldName}' returned by the SQL statement contains a value that could "
+                    + $"not be converted to the type {columnBinding.TargetType} of the corresponding property of the "
+                    + $"type {entityType}. See inner exception for details.",
                 exception
             );
         }
@@ -973,7 +948,7 @@ internal static class EntityMaterializerFactory
     private static void ValidateDataReader(
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] Type entityType,
         DbDataReader dataReader,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
     )
     {
@@ -987,11 +962,11 @@ internal static class EntityMaterializerFactory
             var dataReaderFieldName = dataReaderFieldNames[fieldOrdinal];
             var dataReaderFieldType = dataReaderFieldTypes[fieldOrdinal];
 
-            if (String.IsNullOrWhiteSpace(dataReaderFieldName))
+            if (string.IsNullOrWhiteSpace(dataReaderFieldName))
             {
                 throw new ArgumentException(
-                    $"The {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the SQL statement does not " +
-                    "have a name. Make sure that all columns the statement returns have a name.",
+                    $"The {(fieldOrdinal + 1).OrdinalizeEnglish()} column returned by the SQL statement does not "
+                        + "have a name. Make sure that all columns the statement returns have a name.",
                     nameof(dataReader)
                 );
             }
@@ -999,8 +974,8 @@ internal static class EntityMaterializerFactory
             if (!MaterializerFactoryHelper.IsDbDataReaderTypedGetMethodAvailable(dataReaderFieldType))
             {
                 throw new ArgumentException(
-                    $"The data type {dataReaderFieldType} of the column '{dataReaderFieldName}' returned by the " +
-                    "SQL statement is not supported.",
+                    $"The data type {dataReaderFieldType} of the column '{dataReaderFieldName}' returned by the "
+                        + "SQL statement is not supported.",
                     nameof(dataReader)
                 );
             }
@@ -1023,23 +998,24 @@ internal static class EntityMaterializerFactory
         if (parameterlessConstructor is null)
         {
             var exampleConstructorSignature =
-                "(" +
-                String.Join(
+                "("
+                + string.Join(
                     ", ",
                     dataReaderFieldNames.Zip(dataReaderFieldTypes, (name, type) => $"{type.Name} {name}")
-                ) +
-                ")";
+                )
+                + ")";
 
             throw new ArgumentException(
-                $"Could not materialize an instance of the type {entityType}. The type either needs to have a " +
-                "parameterless constructor or a constructor whose parameters match the columns returned by the SQL " +
-                $"statement, e.g. a constructor that has the following signature:{Environment.NewLine}" +
-                $"{exampleConstructorSignature}.",
+                $"Could not materialize an instance of the type {entityType}. The type either needs to have a "
+                    + "parameterless constructor or a constructor whose parameters match the columns returned by the SQL "
+                    + $"statement, e.g. a constructor that has the following signature:{Environment.NewLine}"
+                    + $"{exampleConstructorSignature}.",
                 nameof(entityType)
             );
         }
 
-        var entityPropertiesByColumnName = EntityHelper.GetEntityTypeMetadata(entityType)
+        var entityPropertiesByColumnName = EntityHelper
+            .GetEntityTypeMetadata(entityType)
             .MappedProperties.Where(a => a.CanWrite)
             .ToDictionary(a => a.ColumnName, StringComparer.OrdinalIgnoreCase);
 
@@ -1058,16 +1034,14 @@ internal static class EntityMaterializerFactory
             if (!ValueConverter.CanConvert(dataReaderFieldType, entityPropertyType))
             {
                 throw new ArgumentException(
-                    $"The data type {dataReaderFieldType} of the column '{dataReaderFieldName}' returned by the " +
-                    $"SQL statement is not compatible with the property type {entityPropertyType} of the " +
-                    $"corresponding property of the type {entityType}.",
+                    $"The data type {dataReaderFieldType} of the column '{dataReaderFieldName}' returned by the "
+                        + $"SQL statement is not compatible with the property type {entityPropertyType} of the "
+                        + $"corresponding property of the type {entityType}.",
                     nameof(dataReader)
                 );
             }
         }
     }
-
-    private static readonly ConcurrentDictionary<MaterializerCacheKey, Delegate> materializerCache = [];
 
     /// <summary>
     /// A cache key used to uniquely identify an entity materializer.
@@ -1083,28 +1057,29 @@ internal static class EntityMaterializerFactory
     /// </param>
     private readonly struct MaterializerCacheKey(
         Type entityType,
-        String[] dataReaderFieldNames,
+        string[] dataReaderFieldNames,
         Type[] dataReaderFieldTypes
-    )
-        : IEquatable<MaterializerCacheKey>
+    ) : IEquatable<MaterializerCacheKey>
     {
         /// <summary>
         /// The type of entity the materializer materializes.
         /// </summary>
         public Type EntityType { get; } = entityType;
 
-        /// <inheritdoc />
-        public Boolean Equals(MaterializerCacheKey other) =>
-            this.EntityType == other.EntityType &&
-            this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames) &&
-            this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
+        private string[] DataReaderFieldNames { get; } = dataReaderFieldNames;
+        private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
 
         /// <inheritdoc />
-        public override Boolean Equals(Object? obj) =>
-            obj is MaterializerCacheKey other && this.Equals(other);
+        public bool Equals(MaterializerCacheKey other) =>
+            this.EntityType == other.EntityType
+            && this.DataReaderFieldNames.SequenceEqual(other.DataReaderFieldNames)
+            && this.DataReaderFieldTypes.SequenceEqual(other.DataReaderFieldTypes);
 
         /// <inheritdoc />
-        public override Int32 GetHashCode()
+        public override bool Equals(object? obj) => obj is MaterializerCacheKey other && this.Equals(other);
+
+        /// <inheritdoc />
+        public override int GetHashCode()
         {
             var hashCode = new HashCode();
 
@@ -1122,9 +1097,6 @@ internal static class EntityMaterializerFactory
 
             return hashCode.ToHashCode();
         }
-
-        private String[] DataReaderFieldNames { get; } = dataReaderFieldNames;
-        private Type[] DataReaderFieldTypes { get; } = dataReaderFieldTypes;
     }
 
     /// <summary>
@@ -1146,10 +1118,10 @@ internal static class EntityMaterializerFactory
     /// constructor parameter it is passed to.
     /// </param>
     private readonly record struct ReflectionColumnBinding(
-        String FieldName,
-        Int32 FieldOrdinal,
-        Func<DbDataReader, Object?> GetFieldValue,
-        Boolean NeedsConversion,
+        string FieldName,
+        int FieldOrdinal,
+        Func<DbDataReader, object?> GetFieldValue,
+        bool NeedsConversion,
         Type TargetType
     );
 
@@ -1163,6 +1135,6 @@ internal static class EntityMaterializerFactory
     /// </param>
     private readonly record struct ReflectionPropertyBinding(
         ReflectionColumnBinding Column,
-        Action<Object, Object?> PropertySetter
+        Action<object, object?> PropertySetter
     );
 }

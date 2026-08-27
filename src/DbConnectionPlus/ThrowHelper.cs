@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using RentADeveloper.DbConnectionPlus.Exceptions;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
@@ -36,9 +35,9 @@ public static class ThrowHelper
     public static void ThrowDatabaseAdapterDoesNotSupportTemporaryTablesException(IDatabaseAdapter databaseAdapter) =>
         throw new NotSupportedException(
 #pragma warning disable CA1062
-            $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) " +
-            "temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with " +
-            "this database."
+            $"The database adapter {databaseAdapter.GetType()} does not support (local / session-scoped) "
+                + "temporary tables. Therefore the temporary tables feature of DbConnectionPlus can not be used with "
+                + "this database."
 #pragma warning restore CA1062
         );
 
@@ -55,15 +54,15 @@ public static class ThrowHelper
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     public static void ThrowDatabaseOperationAffectedUnexpectedNumberOfRowsException(
-        Int32 expectedNumberOfAffectedRows,
-        Int32 actualNumberOfAffectedRows,
-        Object entity
+        int expectedNumberOfAffectedRows,
+        int actualNumberOfAffectedRows,
+        object entity
     ) =>
         throw new DbUpdateConcurrencyException(
-            $"The database operation was expected to affect {expectedNumberOfAffectedRows} row(s), but actually " +
-            $"affected {actualNumberOfAffectedRows} row(s). Data in the database may have been modified or deleted " +
-            $"since entities were loaded. See {nameof(DbUpdateConcurrencyException)}." +
-            $"{nameof(DbUpdateConcurrencyException.Entity)} for the entity that was involved in the operation.",
+            $"The database operation was expected to affect {expectedNumberOfAffectedRows} row(s), but actually "
+                + $"affected {actualNumberOfAffectedRows} row(s). Data in the database may have been modified or deleted "
+                + $"since entities were loaded. See {nameof(DbUpdateConcurrencyException)}."
+                + $"{nameof(DbUpdateConcurrencyException.Entity)} for the entity that was involved in the operation.",
             entity
         );
 
@@ -76,8 +75,8 @@ public static class ThrowHelper
     [DoesNotReturn]
     public static void ThrowEntityTypeHasNoKeyPropertyException(Type entityType) =>
         throw new ArgumentException(
-            $"No property of the type {entityType} is configured as a key property. Make sure that at least one " +
-            "instance property of that type is configured as key property."
+            $"No property of the type {entityType} is configured as a key property. Make sure that at least one "
+                + "instance property of that type is configured as key property."
         );
 
     /// <summary>
@@ -134,13 +133,12 @@ public static class ThrowHelper
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     public static T ThrowWrongConnectionTypeException<TExpectedConnectionType, T>()
-        where TExpectedConnectionType : DbConnection
-        =>
-            throw new ArgumentOutOfRangeException(
-                // ReSharper disable once NotResolvedInText
-                "connection",
-                $"The provided connection is not of the type {typeof(TExpectedConnectionType)}."
-            );
+        where TExpectedConnectionType : DbConnection =>
+        throw new ArgumentOutOfRangeException(
+            // ReSharper disable once NotResolvedInText
+            "connection",
+            $"The provided connection is not of the type {typeof(TExpectedConnectionType)}."
+        );
 
     /// <summary>
     /// Throws an <see cref="ArgumentOutOfRangeException" /> indicating that the specified transaction is not of the
@@ -156,11 +154,10 @@ public static class ThrowHelper
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     public static T ThrowWrongTransactionTypeException<TExpectedTransactionType, T>()
-        where TExpectedTransactionType : DbTransaction
-        =>
-            throw new ArgumentOutOfRangeException(
-                // ReSharper disable once NotResolvedInText
-                "transaction",
-                $"The provided transaction is not of the type {typeof(TExpectedTransactionType)}."
-            );
+        where TExpectedTransactionType : DbTransaction =>
+        throw new ArgumentOutOfRangeException(
+            // ReSharper disable once NotResolvedInText
+            "transaction",
+            $"The provided transaction is not of the type {typeof(TExpectedTransactionType)}."
+        );
 }

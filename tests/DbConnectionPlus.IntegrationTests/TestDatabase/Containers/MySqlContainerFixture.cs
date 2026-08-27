@@ -12,10 +12,15 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// Runs the MySQL server the MySQL integration tests use in a Docker container.
 /// </summary>
 internal sealed class MySqlContainerFixture()
-    : DbContainerFixture<MySqlBuilder, MySqlContainer>(TestDatabaseDiagnosticMessageSink.Instance), ITestDatabaseContainerFixture
+    : DbContainerFixture<MySqlBuilder, MySqlContainer>(TestDatabaseDiagnosticMessageSink.Instance),
+        ITestDatabaseContainerFixture
 {
+    private const string Image = "mysql:latest";
+
+    private const string RootUsername = "root";
+
     /// <inheritdoc />
-    public override String ConnectionString =>
+    public override string ConnectionString =>
         new MySqlConnectionStringBuilder
         {
             Server = this.Container.Hostname,
@@ -25,12 +30,11 @@ internal sealed class MySqlContainerFixture()
 
             // MySqlTemporaryTableBuilder fills temporary tables with MySqlBulkCopy, which is LOAD DATA LOCAL
             // INFILE underneath and refuses to run unless the client allows it.
-            AllowLoadLocalInfile = true
+            AllowLoadLocalInfile = true,
         }.ConnectionString;
 
     /// <inheritdoc />
-    public override DbProviderFactory DbProviderFactory =>
-        MySqlConnectorFactory.Instance;
+    public override DbProviderFactory DbProviderFactory => MySqlConnectorFactory.Instance;
 
     /// <inheritdoc />
     protected override MySqlBuilder Configure() =>
@@ -39,8 +43,4 @@ internal sealed class MySqlContainerFixture()
         new MySqlBuilder(Image)
             .WithUsername(RootUsername)
             .WithPassword(TestDatabaseContainers.Password);
-
-    private const String Image = "mysql:latest";
-
-    private const String RootUsername = "root";
 }

@@ -24,7 +24,7 @@ internal static class NameHelper
     /// The first character of the resulting name is converted to uppercase if it is a lowercase letter.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static String CreateNameFromCallerArgumentExpression(ReadOnlySpan<Char> expression, Int32 maximumLength)
+    internal static string CreateNameFromCallerArgumentExpression(ReadOnlySpan<char> expression, int maximumLength)
     {
         // Remove common prefixes:
 
@@ -45,7 +45,7 @@ internal static class NameHelper
 
         var bufferLength = Math.Min(expression.Length, maximumLength);
 
-        var buffer = bufferLength <= 512 ? stackalloc Char[bufferLength] : new Char[bufferLength];
+        var buffer = bufferLength <= 512 ? stackalloc char[bufferLength] : new char[bufferLength];
 
         ref var expressionPointer = ref MemoryMarshal.GetReference(expression);
         ref var bufferPointer = ref MemoryMarshal.GetReference(buffer);
@@ -57,9 +57,12 @@ internal static class NameHelper
             var character = Unsafe.Add(ref expressionPointer, i);
 
             if (
-                (UInt32)(character - '0') <= 9 || // Digits
-                (UInt32)(character - 'A') <= 25 || // Uppercase letters
-                (UInt32)(character - 'a') <= 25 || // Lowercase letters
+                (uint)(character - '0') <= 9
+                || // Digits
+                (uint)(character - 'A') <= 25
+                || // Uppercase letters
+                (uint)(character - 'a') <= 25
+                || // Lowercase letters
                 character == '_'
             )
             {
@@ -73,9 +76,9 @@ internal static class NameHelper
         }
 
         // Convert the first character to uppercase if necessary.
-        if (count != 0 && (UInt32)(buffer[0] - 'a') <= 25)
+        if (count != 0 && (uint)(buffer[0] - 'a') <= 25)
         {
-            buffer[0] = (Char)(buffer[0] - 32);
+            buffer[0] = (char)(buffer[0] - 32);
         }
 
         return new(buffer[..count]);

@@ -3,8 +3,8 @@
 
 using RentADeveloper.DbConnectionPlus.Materializers;
 using RentADeveloper.DbConnectionPlus.SqlStatements;
-using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
 using DataRow = RentADeveloper.DbConnectionPlus.Dynamic.DataRow;
+using DbCommandBuilder = RentADeveloper.DbConnectionPlus.DbCommands.DbCommandBuilder;
 
 namespace RentADeveloper.DbConnectionPlus;
 
@@ -102,9 +102,8 @@ public static partial class DbConnectionExtensions
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
                 reader = command.ExecuteReader(CommandBehavior.SequentialAccess);
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 reader?.Dispose();
 
@@ -126,9 +125,8 @@ public static partial class DbConnectionExtensions
                             yield break;
                         }
                     }
-                    catch (Exception exception) when (
-                        databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-                    )
+                    catch (Exception exception)
+                        when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
                     {
                         throw new OperationCanceledException(cancellationToken);
                     }
@@ -211,15 +209,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         await using (commandDisposer)
         {
@@ -228,12 +228,12 @@ public static partial class DbConnectionExtensions
             try
             {
                 OnBeforeExecutingCommand(command, statement.TemporaryTables);
-                reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
+                reader = await command
+                    .ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 if (reader is not null)
                 {
@@ -256,9 +256,8 @@ public static partial class DbConnectionExtensions
                             yield break;
                         }
                     }
-                    catch (Exception exception) when (
-                        databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-                    )
+                    catch (Exception exception)
+                        when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
                     {
                         throw new OperationCanceledException(cancellationToken);
                     }

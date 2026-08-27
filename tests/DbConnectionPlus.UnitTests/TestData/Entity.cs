@@ -2,27 +2,27 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 
 public record Entity
 {
-    public Boolean BooleanValue { get; set; }
-    public Byte[] BytesValue { get; set; } = null!;
-    public Byte ByteValue { get; set; }
-    public Char CharValue { get; set; }
+    public bool BooleanValue { get; set; }
+    public byte ByteValue { get; set; }
+    public byte[] BytesValue { get; set; } = null!;
+    public char CharValue { get; set; }
     public DateOnly DateOnlyValue { get; set; }
     public DateTime DateTimeValue { get; set; }
-    public Decimal DecimalValue { get; set; }
-    public Double DoubleValue { get; set; }
+    public decimal DecimalValue { get; set; }
+    public double DoubleValue { get; set; }
     public TestEnum EnumValue { get; set; }
     public Guid GuidValue { get; set; }
 
     [Key]
-    public Int64 Id { get; set; }
+    public long Id { get; set; }
 
-    public Int16 Int16Value { get; set; }
-    public Int32 Int32Value { get; set; }
-    public Int64 Int64Value { get; set; }
+    public short Int16Value { get; set; }
+    public int Int32Value { get; set; }
+    public long Int64Value { get; set; }
 
-    public Boolean? NullableBooleanValue { get; set; }
-    public Single SingleValue { get; set; }
-    public String StringValue { get; set; } = null!;
+    public bool? NullableBooleanValue { get; set; }
+    public float SingleValue { get; set; }
+    public string StringValue { get; set; } = null!;
     public TimeOnly TimeOnlyValue { get; set; }
     public TimeSpan TimeSpanValue { get; set; }
 }

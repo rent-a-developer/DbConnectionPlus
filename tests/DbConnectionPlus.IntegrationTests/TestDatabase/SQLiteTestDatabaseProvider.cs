@@ -12,124 +12,7 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase;
 /// </summary>
 public class SqliteTestDatabaseProvider : ITestDatabaseProvider
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteTestDatabaseProvider" /> class.
-    /// </summary>
-    public SqliteTestDatabaseProvider()
-    {
-        this.connection = new("Data Source=:memory:");
-        this.connection.Open();
-    }
-
-    /// <inheritdoc />
-    public Boolean CanRetrieveStructureOfTemporaryTables => true;
-
-    /// <inheritdoc />
-    public IDatabaseAdapter DatabaseAdapter => new SqliteDatabaseAdapter();
-
-    /// <inheritdoc />
-    public String DatabaseCollation => throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public String DelayTwoSecondsStatement =>
-        """
-        WITH RECURSIVE delay(x) AS (
-          SELECT 1
-          UNION ALL
-          SELECT x + 1 FROM delay WHERE x < 5000000
-        )
-        SELECT x FROM delay WHERE x = 5000000;
-        """;
-
-    /// <inheritdoc />
-    public Boolean HasUnsupportedDataType => false;
-
-    /// <inheritdoc />
-    public Boolean SupportsCommandExecutionWhileDataReaderIsOpen => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsDateTimeOffset => true;
-
-    /// <inheritdoc />
-    public Boolean SupportsProperCommandCancellation => false;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProcedures => false;
-
-    /// <inheritdoc />
-    public Boolean SupportsStoredProceduresReturningResultSet => false;
-
-    /// <inheritdoc />
-    public Boolean TemporaryTableTextColumnInheritsCollationFromDatabase => true;
-
-    /// <inheritdoc />
-    public DbConnection CreateConnection() =>
-        this.connection;
-
-    /// <inheritdoc />
-    public Boolean ExistsTemporaryTable(String tableName, DbConnection connection, DbTransaction? transaction = null) =>
-        this.connection.Exists(
-            $"""
-             SELECT 1
-             FROM sqlite_temp_master
-             WHERE type = 'table'
-             AND name = '{tableName}'
-             """,
-            transaction,
-            cancellationToken: TestContext.Current.CancellationToken
-        );
-
-    /// <inheritdoc />
-    public String GetCollationOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public String GetDataTypeOfTemporaryTableColumn(
-        String temporaryTableName,
-        String columnName,
-        DbConnection connection
-    ) =>
-        this.connection
-            .Query<(Int32 cid, String name, String Type, Boolean notnull, Object dflt_value, Int32 pk)>(
-                $"""
-                 PRAGMA table_info("{temporaryTableName}");
-                 """,
-                cancellationToken: TestContext.Current.CancellationToken
-            )
-            .Where(a => a.name == columnName)
-            .Select(a => a.Type)
-            .Single();
-
-    /// <inheritdoc />
-    public String GetUnsupportedDataTypeLiteral() =>
-        throw new NotImplementedException();
-
-    /// <inheritdoc />
-    public void ResetDatabase()
-    {
-        if (!this.isDatabasePrepared)
-        {
-            this.connection.ExecuteNonQuery(CreateDatabaseObjectsSql);
-
-            this.isDatabasePrepared = true;
-        }
-    }
-
-    /// <inheritdoc />
-    /// <remarks>SQLite runs in-process, in memory, so there is no server and nothing to start.</remarks>
-    public static ValueTask StartDatabaseAsync() =>
-        default;
-
-    private readonly SqliteConnection connection;
-
-    private Boolean isDatabasePrepared;
-
-    private const String CreateDatabaseObjectsSql =
-        """
+    private const string CreateDatabaseObjectsSql = """
         CREATE TABLE Entity
         (
             Id INTEGER,
@@ -190,4 +73,116 @@ public class SqliteTestDatabaseProvider : ITestDatabaseProvider
         	UPDATE MappingTestEntity SET RowVersion = randomblob(8) WHERE Key1 = OLD.Key1 AND Key2 = OLD.Key2;
         END;
         """;
+
+    private readonly SqliteConnection connection;
+
+    private bool isDatabasePrepared;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteTestDatabaseProvider" /> class.
+    /// </summary>
+    public SqliteTestDatabaseProvider()
+    {
+        this.connection = new("Data Source=:memory:");
+        this.connection.Open();
+    }
+
+    /// <inheritdoc />
+    public bool CanRetrieveStructureOfTemporaryTables => true;
+
+    /// <inheritdoc />
+    public IDatabaseAdapter DatabaseAdapter => new SqliteDatabaseAdapter();
+
+    /// <inheritdoc />
+    public string DatabaseCollation => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string DelayTwoSecondsStatement =>
+        """
+            WITH RECURSIVE delay(x) AS (
+              SELECT 1
+              UNION ALL
+              SELECT x + 1 FROM delay WHERE x < 5000000
+            )
+            SELECT x FROM delay WHERE x = 5000000;
+            """;
+
+    /// <inheritdoc />
+    public bool HasUnsupportedDataType => false;
+
+    /// <inheritdoc />
+    public bool SupportsCommandExecutionWhileDataReaderIsOpen => true;
+
+    /// <inheritdoc />
+    public bool SupportsDateTimeOffset => true;
+
+    /// <inheritdoc />
+    public bool SupportsProperCommandCancellation => false;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProcedures => false;
+
+    /// <inheritdoc />
+    public bool SupportsStoredProceduresReturningResultSet => false;
+
+    /// <inheritdoc />
+    public bool TemporaryTableTextColumnInheritsCollationFromDatabase => true;
+
+    /// <inheritdoc />
+    /// <remarks>SQLite runs in-process, in memory, so there is no server and nothing to start.</remarks>
+    public static ValueTask StartDatabaseAsync() => default;
+
+    /// <inheritdoc />
+    public DbConnection CreateConnection() => this.connection;
+
+    /// <inheritdoc />
+    public bool ExistsTemporaryTable(string tableName, DbConnection connection, DbTransaction? transaction = null) =>
+        this.connection.Exists(
+            $"""
+            SELECT 1
+            FROM sqlite_temp_master
+            WHERE type = 'table'
+            AND name = '{tableName}'
+            """,
+            transaction,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
+
+    /// <inheritdoc />
+    public string GetCollationOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public string GetDataTypeOfTemporaryTableColumn(
+        string temporaryTableName,
+        string columnName,
+        DbConnection connection
+    ) =>
+        this
+            .connection.Query<(int cid, string name, string Type, bool notnull, object dflt_value, int pk)>(
+                $"""
+                PRAGMA table_info("{temporaryTableName}");
+                """,
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+            .Where(a => a.name == columnName)
+            .Select(a => a.Type)
+            .Single();
+
+    /// <inheritdoc />
+    public string GetUnsupportedDataTypeLiteral() => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public void ResetDatabase()
+    {
+        if (!this.isDatabasePrepared)
+        {
+            this.connection.ExecuteNonQuery(CreateDatabaseObjectsSql);
+
+            this.isDatabasePrepared = true;
+        }
+    }
 }

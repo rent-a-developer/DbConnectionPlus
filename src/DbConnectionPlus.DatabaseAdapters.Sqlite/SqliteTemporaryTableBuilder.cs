@@ -5,7 +5,6 @@ using LinkDotNet.StringBuilder;
 using Microsoft.Data.Sqlite;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -16,6 +15,8 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 /// </summary>
 internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private readonly SqliteDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteTemporaryTableBuilder" /> class.
     /// </summary>
@@ -34,10 +35,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -69,8 +69,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -87,8 +89,10 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -109,10 +113,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -146,8 +149,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -166,8 +170,9 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -195,102 +200,19 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     }
 
     /// <summary>
-    /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
-    /// <paramref name="objectsType" />.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="objectsType">The type of objects with which to populate the table.</param>
-    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
-    /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
-        EnumSerializationMode enumSerializationMode
-    )
-    {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
-
-        sqlBuilder.Append("CREATE TEMP TABLE \"");
-        sqlBuilder.Append(tableName);
-        sqlBuilder.AppendLine("\"");
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(");
-
-        var properties = EntityHelper.GetEntityTypeMetadata(objectsType).MappedProperties.Where(a => a.CanRead);
-
-        var prependSeparator = false;
-
-        foreach (var property in properties)
-        {
-            if (prependSeparator)
-            {
-                sqlBuilder.Append(", ");
-            }
-
-            sqlBuilder.Append('"');
-            sqlBuilder.Append(property.ColumnName);
-            sqlBuilder.Append("\" ");
-
-            var propertyType = property.PropertyType;
-
-            sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
-
-            prependSeparator = true;
-        }
-
-        sqlBuilder.AppendLine(")");
-
-        return sqlBuilder.ToString();
-    }
-
-    /// <summary>
-    /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
-    /// <paramref name="valuesType" />.
-    /// </summary>
-    /// <param name="tableName">The name of the table to create.</param>
-    /// <param name="valuesType">The type of values with which the table will be populated.</param>
-    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
-    /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
-        EnumSerializationMode enumSerializationMode
-    )
-    {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
-
-        sqlBuilder.Append("CREATE TEMP TABLE \"");
-        sqlBuilder.Append(tableName);
-        sqlBuilder.AppendLine("\"");
-
-        sqlBuilder.Append(Constants.Indent);
-        sqlBuilder.Append("(\"");
-        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
-        sqlBuilder.Append("\" ");
-        sqlBuilder.Append(this.databaseAdapter.GetDataType(valuesType, enumSerializationMode));
-        sqlBuilder.AppendLine(")");
-
-        return sqlBuilder.ToString();
-    }
-
-    /// <summary>
     /// Builds an SQL code to insert data from the specified data reader into the specified temporary table.
     /// </summary>
     /// <param name="tableName">The name of the table to insert data into.</param>
     /// <param name="valuesType">The type of values with which to populate the table.</param>
     /// <param name="dataReader">The data reader to read data from.</param>
     /// <returns>A tuple containing the insert SQL code and the parameters to use.</returns>
-    private static (String SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+    private static (string SqlCode, SqliteParameter[] Parameters) BuildInsertSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("INSERT INTO temp.\"");
         sqlBuilder.Append(tableName);
@@ -306,14 +228,13 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         {
             sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
 
-            parameters[0] = new()
-            {
-                ParameterName = Constants.SingleColumnTemporaryTableColumnName
-            };
+            parameters[0] = new() { ParameterName = Constants.SingleColumnTemporaryTableColumnName };
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -329,10 +250,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
                 sqlBuilder.Append(property.ColumnName);
                 sqlBuilder.Append('"');
 
-                parameters[i] = new()
-                {
-                    ParameterName = property.PropertyName
-                };
+                parameters[i] = new() { ParameterName = property.PropertyName };
             }
         }
 
@@ -367,15 +285,15 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.</returns>
     private static EnumerableReader CreateValuesDataReader(
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
         {
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
         }
 
-        return new EnumerableReader(
+        return new(
             values,
             [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
             EnumerableReaderOptions.None
@@ -388,7 +306,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="name">The name of the table to drop.</param>
     /// <param name="connection">The connection to use to drop the table.</param>
     /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, SqliteConnection connection, SqliteTransaction? transaction)
+    private static void DropTemporaryTable(string name, SqliteConnection connection, SqliteTransaction? transaction)
     {
         using var command = connection.CreateCommand();
 
@@ -408,7 +326,7 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="transaction">The transaction within to drop the table.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private static async ValueTask DropTemporaryTableAsync(
-        String name,
+        string name,
         SqliteConnection connection,
         SqliteTransaction? transaction
     )
@@ -437,9 +355,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     private static void PopulateTemporaryTable(
         SqliteConnection connection,
         SqliteTransaction? transaction,
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -493,9 +410,8 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
     private static async Task PopulateTemporaryTableAsync(
         SqliteConnection connection,
         SqliteTransaction? transaction,
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -537,5 +453,83 @@ internal class SqliteTemporaryTableBuilder : ITemporaryTableBuilder
         }
     }
 
-    private readonly SqliteDatabaseAdapter databaseAdapter;
+    /// <summary>
+    /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
+    /// <paramref name="objectsType" />.
+    /// </summary>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="objectsType">The type of objects with which to populate the table.</param>
+    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
+    /// <returns>The built SQL code.</returns>
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
+        EnumSerializationMode enumSerializationMode
+    )
+    {
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
+
+        sqlBuilder.Append("CREATE TEMP TABLE \"");
+        sqlBuilder.Append(tableName);
+        sqlBuilder.AppendLine("\"");
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(");
+
+        var properties = EntityHelper.GetEntityTypeMetadata(objectsType).MappedProperties.Where(a => a.CanRead);
+
+        var prependSeparator = false;
+
+        foreach (var property in properties)
+        {
+            if (prependSeparator)
+            {
+                sqlBuilder.Append(", ");
+            }
+
+            sqlBuilder.Append('"');
+            sqlBuilder.Append(property.ColumnName);
+            sqlBuilder.Append("\" ");
+
+            var propertyType = property.PropertyType;
+
+            sqlBuilder.Append(this.databaseAdapter.GetDataType(propertyType, enumSerializationMode));
+
+            prependSeparator = true;
+        }
+
+        sqlBuilder.AppendLine(")");
+
+        return sqlBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Builds an SQL code to create a single-column temporary table to be populated with values of the type
+    /// <paramref name="valuesType" />.
+    /// </summary>
+    /// <param name="tableName">The name of the table to create.</param>
+    /// <param name="valuesType">The type of values with which the table will be populated.</param>
+    /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
+    /// <returns>The built SQL code.</returns>
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
+        EnumSerializationMode enumSerializationMode
+    )
+    {
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
+
+        sqlBuilder.Append("CREATE TEMP TABLE \"");
+        sqlBuilder.Append(tableName);
+        sqlBuilder.AppendLine("\"");
+
+        sqlBuilder.Append(Constants.Indent);
+        sqlBuilder.Append("(\"");
+        sqlBuilder.Append(Constants.SingleColumnTemporaryTableColumnName);
+        sqlBuilder.Append("\" ");
+        sqlBuilder.Append(this.databaseAdapter.GetDataType(valuesType, enumSerializationMode));
+        sqlBuilder.AppendLine(")");
+
+        return sqlBuilder.ToString();
+    }
 }

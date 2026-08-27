@@ -23,10 +23,8 @@ public sealed class TestDatabaseFixture<TTestDatabaseProvider> : IAsyncLifetime
     where TTestDatabaseProvider : ITestDatabaseProvider, new()
 {
     /// <inheritdoc />
-    public ValueTask DisposeAsync() =>
-        default;
+    public ValueTask DisposeAsync() => default;
 
     /// <inheritdoc />
-    public ValueTask InitializeAsync() =>
-        TTestDatabaseProvider.StartDatabaseAsync();
+    public ValueTask InitializeAsync() => TTestDatabaseProvider.StartDatabaseAsync();
 }

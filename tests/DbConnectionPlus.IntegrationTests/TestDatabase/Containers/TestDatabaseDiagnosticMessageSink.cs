@@ -26,7 +26,7 @@ internal sealed class TestDatabaseDiagnosticMessageSink : IMessageSink
     public static readonly TestDatabaseDiagnosticMessageSink Instance = new();
 
     /// <inheritdoc />
-    public Boolean OnMessage(IMessageSinkMessage message)
+    public bool OnMessage(IMessageSinkMessage message)
     {
         if (message is IDiagnosticMessage diagnosticMessage)
         {

@@ -19,10 +19,8 @@ public class NameHelperTests : UnitTestsBase
     [InlineData("..........1234567890", 10, "1234567890")]
     [InlineData(".....12345.....67890", 10, "1234567890")]
     public void CreateNameFromCallerArgumentExpression_ShouldCreateName(
-        String expression,
-        Int32 maximumLength,
-        String expectedName
-    ) =>
-        NameHelper.CreateNameFromCallerArgumentExpression(expression, maximumLength)
-            .Should().Be(expectedName);
+        string expression,
+        int maximumLength,
+        string expectedName
+    ) => NameHelper.CreateNameFromCallerArgumentExpression(expression, maximumLength).Should().Be(expectedName);
 }

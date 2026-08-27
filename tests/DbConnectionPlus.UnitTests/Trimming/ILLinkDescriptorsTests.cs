@@ -22,10 +22,14 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.Trimming;
 /// </remarks>
 public class ILLinkDescriptorsTests : UnitTestsBase
 {
+    private const string ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
+
     [Fact]
     public void CoreAssembly_ShouldEmbedTheILLinkDescriptor() =>
-        typeof(DbConnectionExtensions).Assembly.GetManifestResourceNames()
-            .Should().Contain(ILLinkDescriptorsResourceName);
+        typeof(DbConnectionExtensions)
+            .Assembly.GetManifestResourceNames()
+            .Should()
+            .Contain(ILLinkDescriptorsResourceName);
 
     [Theory]
     [InlineData(1)]
@@ -36,25 +40,23 @@ public class ILLinkDescriptorsTests : UnitTestsBase
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
-    public void ILLinkDescriptor_ShouldPreserveAllMembersOfEveryValueTupleArity(Int32 arity)
+    public void ILLinkDescriptor_ShouldPreserveAllMembersOfEveryValueTupleArity(int arity)
     {
         var preservedTypes = ReadDescriptor()
             .Descendants("type")
-            .Where(a => (String?)a.Attribute("preserve") == "all")
-            .Select(a => (String?)a.Attribute("fullname"))
+            .Where(a => (string?)a.Attribute("preserve") == "all")
+            .Select(a => (string?)a.Attribute("fullname"))
             .ToList();
 
-        preservedTypes
-            .Should().Contain($"System.ValueTuple`{arity}");
+        preservedTypes.Should().Contain($"System.ValueTuple`{arity}");
     }
 
     private static XDocument ReadDescriptor()
     {
-        using var stream = typeof(DbConnectionExtensions).Assembly
-            .GetManifestResourceStream(ILLinkDescriptorsResourceName)!;
+        using var stream = typeof(DbConnectionExtensions).Assembly.GetManifestResourceStream(
+            ILLinkDescriptorsResourceName
+        )!;
 
         return XDocument.Load(stream);
     }
-
-    private const String ILLinkDescriptorsResourceName = "ILLink.Descriptors.xml";
 }

@@ -1,0 +1,39 @@
+# Commits that rewrote lines across most of the repository without changing what the code does.
+# `git blame` skips them, so it points at whoever wrote the logic rather than at the tool that
+# reformatted it.
+#
+# GitHub reads this file automatically. Locally you have to opt in, once per clone:
+#
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Add a commit here when its effect on SOURCE files is entirely tool output. A commit that also carries
+# hand-written configuration or documentation still qualifies - blame on the code is what this file is
+# protecting - but say so in its note.
+#
+# The SHAs below are load-bearing, and git does NOT warn about one it cannot resolve: it skips the entry,
+# and blame quietly goes back to pointing at the tool. "Rebase and merge" and "Squash and merge" rewrite
+# every SHA on a branch, so merge a branch that adds an entry here with a MERGE COMMIT. CI's lint job
+# fails if any revision below stops resolving, which is what turns that mistake into something visible.
+
+# style: use C# keywords instead of BCL type names
+# dotnet format style --diagnostics IDE0049. 207 files.
+89bc6d82d1dcb8033083af45553d32d06cbc6fd8
+
+# style: convert eligible constructors to primary constructors
+# dotnet format style --diagnostics IDE0290, six sites. MIXED: also removes 23 stale
+# "Initializes a new instance" doc lines the fixer leaves behind.
+3c4793070f06013f6bfe28cf1b921b464e845e45
+
+# style: reformat every C# file with CSharpier
+# csharpier format . - the first run, after which nobody places a line break by hand.
+f80b2f75fa4a8331c1b63aef1686144560d1e904
+
+# style: reorder type members into StyleCop order
+# jb cleanupcode --profile=ReorderMembers, then csharpier. Fields moved to the top of each type.
+48c97d6088a601ee461bf0546150f4672b47f471
+
+# style: satisfy the gates the previous commit turned on
+# dotnet format (IDE0005, RCS1250) and jb cleanupcode. MIXED: the keyword conversions under
+# tests/package-consumption/ and the MySql primary constructor were applied by hand, because no tool
+# in the pipeline reaches them.
+70f9ea67d055d9932c1ff9f5bf3204af9e1c78c4

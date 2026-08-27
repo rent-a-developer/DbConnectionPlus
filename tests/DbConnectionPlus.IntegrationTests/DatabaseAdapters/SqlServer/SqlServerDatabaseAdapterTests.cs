@@ -6,10 +6,11 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.DatabaseAdapters.SqlS
 
 public class SqlServerDatabaseAdapterTests : IntegrationTestsBase<SqlServerTestDatabaseProvider>
 {
+    private readonly SqlServerDatabaseAdapter adapter = new();
+
     [Fact]
     public void SupportsTemporaryTables_ShouldReturnTrue() =>
-        this.adapter.SupportsTemporaryTables(this.Connection)
-            .Should().BeTrue();
+        this.adapter.SupportsTemporaryTables(this.Connection).Should().BeTrue();
 
     [Fact]
     public void WasSqlStatementCancelledByCancellationToken_StatementWasCancelled_ShouldReturnTrue()
@@ -21,11 +22,9 @@ public class SqlServerDatabaseAdapterTests : IntegrationTestsBase<SqlServerTestD
 
         using var registration = DbCommandHelper.RegisterDbCommandCancellation(command, cancellationToken);
 
-        var exception = Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<SqlException>().Subject.First();
+        var exception = Invoking(() => command.ExecuteNonQuery()).Should().Throw<SqlException>().Subject.First();
 
-        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            .Should().BeTrue();
+        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken).Should().BeTrue();
     }
 
     [Fact]
@@ -34,12 +33,8 @@ public class SqlServerDatabaseAdapterTests : IntegrationTestsBase<SqlServerTestD
         using var command = this.Connection.CreateCommand();
         command.CommandText = "InvalidStatement";
 
-        var exception = Invoking(() => command.ExecuteNonQuery())
-            .Should().Throw<SqlException>().Subject.First();
+        var exception = Invoking(() => command.ExecuteNonQuery()).Should().Throw<SqlException>().Subject.First();
 
-        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None)
-            .Should().BeFalse();
+        this.adapter.WasSqlStatementCancelledByCancellationToken(exception, CancellationToken.None).Should().BeFalse();
     }
-
-    private readonly SqlServerDatabaseAdapter adapter = new();
 }

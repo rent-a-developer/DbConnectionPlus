@@ -9,6 +9,30 @@ namespace RentADeveloper.DbConnectionPlus.Configuration;
 /// <typeparam name="TEntity">The type of the entity being configured.</typeparam>
 public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
 {
+    private readonly ConcurrentDictionary<string, IEntityPropertyBuilder> propertyBuilders = new();
+    private bool isFrozen;
+    private string? tableName;
+
+    /// <inheritdoc />
+    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
+
+    /// <inheritdoc />
+    IReadOnlyDictionary<string, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders => this.propertyBuilders;
+
+    /// <inheritdoc />
+    string? IEntityTypeBuilder.TableName => this.tableName;
+
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var propertyBuilder in this.propertyBuilders.Values)
+        {
+            propertyBuilder.Freeze();
+        }
+    }
+
     /// <summary>
     /// Gets a builder for configuring the specified property.
     /// </summary>
@@ -34,11 +58,12 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
 
         var propertyName = GetPropertyNameFromPropertyExpression(propertyExpression);
 
-        return (EntityPropertyBuilder)this.propertyBuilders.GetOrAdd(
-            propertyName,
-            static (propertyName2, self) => new EntityPropertyBuilder(self, propertyName2),
-            this
-        );
+        return (EntityPropertyBuilder)
+            this.propertyBuilders.GetOrAdd(
+                propertyName,
+                static (propertyName2, self) => new EntityPropertyBuilder(self, propertyName2),
+                this
+            );
     }
 
     /// <summary>
@@ -50,7 +75,7 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
     /// The configuration of DbConnectionPlus is already frozen and can no longer be modified.
     /// </exception>
     // ReSharper disable once ParameterHidesMember
-    public EntityTypeBuilder<TEntity> ToTable(String tableName)
+    public EntityTypeBuilder<TEntity> ToTable(string tableName)
     {
         this.EnsureNotFrozen();
 
@@ -59,26 +84,22 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
         return this;
     }
 
-    /// <inheritdoc />
-    Type IEntityTypeBuilder.EntityType => typeof(TEntity);
-
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var propertyBuilder in this.propertyBuilders.Values)
-        {
-            propertyBuilder.Freeze();
-        }
-    }
-
-    /// <inheritdoc />
-    IReadOnlyDictionary<String, IEntityPropertyBuilder> IEntityTypeBuilder.PropertyBuilders =>
-        this.propertyBuilders;
-
-    /// <inheritdoc />
-    String? IEntityTypeBuilder.TableName => this.tableName;
+    /// <summary>
+    /// Gets the name of the property accessed in the specified property access expression.
+    /// </summary>
+    /// <param name="propertyExpression">The property access expression to get the property name from.</param>
+    /// <returns>The name of the property accessed in <paramref name="propertyExpression" />.</returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="propertyExpression" /> is not a valid property access expression.
+    /// </exception>
+    private static string GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression) =>
+        propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }
+            ? propertyInfo.Name
+            : throw new ArgumentException(
+                $"The expression '{propertyExpression}' is not a valid property access expression. The expression should "
+                    + "represent a simple property access: 'a => a.MyProperty'.",
+                nameof(propertyExpression)
+            );
 
     /// <summary>
     /// Ensures this instance is not frozen.
@@ -91,25 +112,4 @@ public sealed class EntityTypeBuilder<TEntity> : IEntityTypeBuilder
             ThrowHelper.ThrowConfigurationIsFrozenException();
         }
     }
-
-    /// <summary>
-    /// Gets the name of the property accessed in the specified property access expression.
-    /// </summary>
-    /// <param name="propertyExpression">The property access expression to get the property name from.</param>
-    /// <returns>The name of the property accessed in <paramref name="propertyExpression" />.</returns>
-    /// <exception cref="ArgumentException">
-    /// <paramref name="propertyExpression" /> is not a valid property access expression.
-    /// </exception>
-    private static String GetPropertyNameFromPropertyExpression(LambdaExpression propertyExpression) =>
-        propertyExpression.Body is MemberExpression { Member: PropertyInfo propertyInfo }
-            ? propertyInfo.Name
-            : throw new ArgumentException(
-                $"The expression '{propertyExpression}' is not a valid property access expression. The expression should " +
-                "represent a simple property access: 'a => a.MyProperty'.",
-                nameof(propertyExpression)
-            );
-
-    private readonly ConcurrentDictionary<String, IEntityPropertyBuilder> propertyBuilders = new();
-    private Boolean isFrozen;
-    private String? tableName;
 }

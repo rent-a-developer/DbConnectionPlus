@@ -11,6 +11,52 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// </summary>
 public class OracleDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, DbType> typeToDbType = new()
+    {
+        { typeof(bool), DbType.Boolean },
+        { typeof(byte), DbType.Byte },
+        { typeof(byte[]), DbType.Binary },
+        { typeof(char), DbType.StringFixedLength },
+        { typeof(DateOnly), DbType.Date },
+        { typeof(DateTime), DbType.DateTime },
+        { typeof(DateTimeOffset), DbType.DateTimeOffset },
+        { typeof(decimal), DbType.Decimal },
+        { typeof(double), DbType.Double },
+        { typeof(Guid), DbType.Guid },
+        { typeof(short), DbType.Int16 },
+        { typeof(int), DbType.Int32 },
+        { typeof(long), DbType.Int64 },
+        { typeof(float), DbType.Single },
+        { typeof(string), DbType.String },
+        { typeof(TimeOnly), DbType.Time },
+        { typeof(TimeSpan), DbType.Time },
+    };
+
+    private static readonly Dictionary<Type, string> typeToOracleDataType = new()
+    {
+        { typeof(bool), "NUMBER(1)" },
+        { typeof(byte), "NUMBER(3)" },
+        { typeof(byte[]), "RAW(2000)" },
+        { typeof(char), "CHAR(1)" },
+        { typeof(DateOnly), "DATE" },
+        { typeof(DateTime), "TIMESTAMP" },
+        { typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE" },
+        { typeof(decimal), "NUMBER(28,10)" },
+        { typeof(double), "BINARY_DOUBLE" },
+        { typeof(Guid), "RAW(16)" },
+        { typeof(short), "NUMBER(5)" },
+        { typeof(int), "NUMBER(10)" },
+        { typeof(long), "NUMBER(19)" },
+        { typeof(float), "BINARY_FLOAT" },
+        { typeof(string), "NVARCHAR2(2000)" },
+        { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
+        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" },
+    };
+
+    private readonly OracleEntityManipulator entityManipulator;
+    private readonly ConcurrentDictionary<string, bool> supportsTemporaryTablesPerConnectionString = [];
+    private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OracleDatabaseAdapter" /> class.
     /// </summary>
@@ -19,6 +65,34 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         this.entityManipulator = new(this);
         this.temporaryTableBuilder = new(this);
     }
+
+    /// <summary>
+    /// <para>
+    /// Determines whether the temporary tables feature of DbConnectionPlus
+    /// (<see cref="DbConnectionExtensions.TemporaryTable{T}" />) is allowed to be used with Oracle databases.
+    /// Disabled by default.
+    /// </para>
+    /// <para>
+    /// WARNING:
+    /// Before enabling this feature, read the following note:
+    /// When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
+    /// following implications:
+    /// The temporary tables feature of DbConnectionPlus creates private temporary tables and drops them after use.
+    /// Unfortunately DDL statements (like creating and dropping a private temporary table) cause an implicit commit of
+    /// the current transaction in an Oracle database.
+    /// That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
+    /// committed when the temporary table is created and again when it is dropped!
+    /// </para>
+    /// <para>
+    /// Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
+    /// explicit transactions or at least be aware of the implications.
+    /// You have been warned!
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
+    /// </remarks>
+    public static bool AllowTemporaryTables { get; set; }
 
     /// <inheritdoc />
     public IEntityManipulator EntityManipulator => this.entityManipulator;
@@ -38,7 +112,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -57,16 +131,13 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -75,7 +146,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -98,11 +169,10 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
-        ":\"" + parameterName + "\"";
+    public string FormatParameterName(string parameterName) => ":\"" + parameterName + "\"";
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -113,14 +183,11 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "NVARCHAR2(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "NVARCHAR2(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "NUMBER(10)",
+                EnumSerializationMode.Integers => "NUMBER(10)",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -174,14 +241,11 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    DbType.String,
+                EnumSerializationMode.Strings => DbType.String,
 
-                EnumSerializationMode.Integers =>
-                    DbType.Int32,
+                EnumSerializationMode.Integers => DbType.Int32,
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(enumSerializationMode),
             };
         }
 
@@ -198,13 +262,12 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
-        "\"" + identifier + "\"";
+    public string QuoteIdentifier(string identifier) => "\"" + identifier + "\"";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection)
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection)
     {
-        var prefix = connection.ExecuteScalar<String>(
+        var prefix = connection.ExecuteScalar<string>(
             "SELECT VALUE FROM v$parameter WHERE NAME = 'private_temp_table_prefix'"
         );
 
@@ -212,7 +275,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection)
+    public bool SupportsTemporaryTables(DbConnection connection)
     {
         ArgumentNullException.ThrowIfNull(connection);
 
@@ -224,10 +287,7 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    )
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -253,89 +313,15 @@ public class OracleDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <summary>
-    /// <para>
-    /// Determines whether the temporary tables feature of DbConnectionPlus
-    /// (<see cref="DbConnectionExtensions.TemporaryTable{T}" />) is allowed to be used with Oracle databases.
-    /// Disabled by default.
-    /// </para>
-    /// <para>
-    /// WARNING:
-    /// Before enabling this feature, read the following note:
-    /// When using the temporary tables feature of DbConnectionPlus with an Oracle database, please be aware of the
-    /// following implications:
-    /// The temporary tables feature of DbConnectionPlus creates private temporary tables and drops them after use.
-    /// Unfortunately DDL statements (like creating and dropping a private temporary table) cause an implicit commit of
-    /// the current transaction in an Oracle database.
-    /// That means if you use the temporary tables feature inside an explicit transaction, the transaction will be
-    /// committed when the temporary table is created and again when it is dropped!
-    /// </para>
-    /// <para>
-    /// Therefore, when using DbConnectionPlus with Oracle databases, avoid using the temporary tables feature inside
-    /// explicit transactions or at least be aware of the implications.
-    /// You have been warned!
-    /// </para>
-    /// </summary>
-    /// <remarks>
-    /// If set to <see langword="false" />, attempting to use the temporary tables feature will throw an exception.
-    /// </remarks>
-    public static Boolean AllowTemporaryTables { get; set; }
-
-    /// <summary>
     /// Throws an <see cref="InvalidOperationException" /> indicating that the temporary tables feature of
     /// DbConnectionPlus is disabled for Oracle databases.
     /// </summary>
     /// <exception cref="InvalidOperationException">Always thrown.</exception>
     internal static void ThrowTemporaryTablesFeatureIsDisabledException() =>
         throw new InvalidOperationException(
-            "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. " +
-            $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} " +
-            "to true, but be sure to read the documentation first, because enabling this feature has implications " +
-            "for transaction management."
+            "The temporary tables feature of DbConnectionPlus is currently disabled for Oracle databases. "
+                + $"To enable it set {typeof(OracleDatabaseAdapter)}.{nameof(AllowTemporaryTables)} "
+                + "to true, but be sure to read the documentation first, because enabling this feature has implications "
+                + "for transaction management."
         );
-
-    private readonly OracleEntityManipulator entityManipulator;
-    private readonly ConcurrentDictionary<String, Boolean> supportsTemporaryTablesPerConnectionString = [];
-    private readonly OracleTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, DbType> typeToDbType = new()
-    {
-        { typeof(Boolean), DbType.Boolean },
-        { typeof(Byte), DbType.Byte },
-        { typeof(Byte[]), DbType.Binary },
-        { typeof(Char), DbType.StringFixedLength },
-        { typeof(DateOnly), DbType.Date },
-        { typeof(DateTime), DbType.DateTime },
-        { typeof(DateTimeOffset), DbType.DateTimeOffset },
-        { typeof(Decimal), DbType.Decimal },
-        { typeof(Double), DbType.Double },
-        { typeof(Guid), DbType.Guid },
-        { typeof(Int16), DbType.Int16 },
-        { typeof(Int32), DbType.Int32 },
-        { typeof(Int64), DbType.Int64 },
-        { typeof(Single), DbType.Single },
-        { typeof(String), DbType.String },
-        { typeof(TimeOnly), DbType.Time },
-        { typeof(TimeSpan), DbType.Time }
-    };
-
-    private static readonly Dictionary<Type, String> typeToOracleDataType = new()
-    {
-        { typeof(Boolean), "NUMBER(1)" },
-        { typeof(Byte), "NUMBER(3)" },
-        { typeof(Byte[]), "RAW(2000)" },
-        { typeof(Char), "CHAR(1)" },
-        { typeof(DateOnly), "DATE" },
-        { typeof(DateTime), "TIMESTAMP" },
-        { typeof(DateTimeOffset), "TIMESTAMP WITH TIME ZONE" },
-        { typeof(Decimal), "NUMBER(28,10)" },
-        { typeof(Double), "BINARY_DOUBLE" },
-        { typeof(Guid), "RAW(16)" },
-        { typeof(Int16), "NUMBER(5)" },
-        { typeof(Int32), "NUMBER(10)" },
-        { typeof(Int64), "NUMBER(19)" },
-        { typeof(Single), "BINARY_FLOAT" },
-        { typeof(String), "NVARCHAR2(2000)" },
-        { typeof(TimeOnly), "INTERVAL DAY TO SECOND" },
-        { typeof(TimeSpan), "INTERVAL DAY TO SECOND" }
-    };
 }

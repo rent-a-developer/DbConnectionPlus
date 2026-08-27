@@ -39,78 +39,84 @@ namespace RentADeveloper.DbConnectionPlus.Dynamic;
 /// var name = product.Name;
 /// </code>
 /// </example>
+/// <param name="columns">
+/// The columns of the data row.
+/// The keys are expected to be the column names, and the values are expected to be the corresponding column values.
+/// </param>
 #pragma warning disable CA1710
-public class DataRow : IDictionary<String, Object?>, IDynamicMetaObjectProvider
+public class DataRow(IDictionary<string, object?> columns) : IDictionary<string, object?>, IDynamicMetaObjectProvider
 #pragma warning restore CA1710
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DataRow" /> class.
+    /// Reads the value of a column, used as the target of a bound dynamic member read.
     /// </summary>
-    /// <param name="columns">
-    /// The columns of the data row.
-    /// The keys are expected to be the column names, and the values are expected to be the corresponding column values.
-    /// </param>
-    public DataRow(IDictionary<String, Object?> columns) =>
-        this.columns = columns;
+    private static readonly Func<DataRow, string, object?> readColumn = static (row, columnName) => row[columnName];
+
+    /// <summary>
+    /// Writes the value of a column and returns it, used as the target of a bound dynamic member write.
+    /// </summary>
+    private static readonly Func<DataRow, string, object?, object?> writeColumn = static (row, columnName, value) =>
+        row[columnName] = value;
+
+    /// <summary>
+    /// The columns of the data row, keyed by column name.
+    /// </summary>
+    private readonly IDictionary<string, object?> columns = columns;
 
     /// <inheritdoc />
-    public Int32 Count => this.columns.Count;
+    public int Count => this.columns.Count;
 
     /// <inheritdoc />
-    public Boolean IsReadOnly => this.columns.IsReadOnly;
+    public bool IsReadOnly => this.columns.IsReadOnly;
 
     /// <inheritdoc />
-    public Object? this[String key]
+    public ICollection<string> Keys => this.columns.Keys;
+
+    /// <inheritdoc />
+    public ICollection<object?> Values => this.columns.Values;
+
+    /// <inheritdoc />
+    public object? this[string key]
     {
         get => this.columns[key];
         set => this.columns[key] = value;
     }
 
     /// <inheritdoc />
-    public ICollection<String> Keys => this.columns.Keys;
+    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
     /// <inheritdoc />
-    public ICollection<Object?> Values => this.columns.Values;
+    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => this.GetMetaObject(parameter);
 
     /// <inheritdoc />
-    public void Add(KeyValuePair<String, Object?> item) =>
-        this.columns.Add(item);
+    public void Add(KeyValuePair<string, object?> item) => this.columns.Add(item);
 
     /// <inheritdoc />
-    public void Add(String key, Object? value) =>
-        this.columns.Add(key, value);
+    public void Add(string key, object? value) => this.columns.Add(key, value);
 
     /// <inheritdoc />
-    public void Clear() =>
-        this.columns.Clear();
+    public void Clear() => this.columns.Clear();
 
     /// <inheritdoc />
-    public Boolean Contains(KeyValuePair<String, Object?> item) =>
-        this.columns.Contains(item);
+    public bool Contains(KeyValuePair<string, object?> item) => this.columns.Contains(item);
 
     /// <inheritdoc />
-    public Boolean ContainsKey(String key) =>
-        this.columns.ContainsKey(key);
+    public bool ContainsKey(string key) => this.columns.ContainsKey(key);
 
     /// <inheritdoc />
-    public void CopyTo(KeyValuePair<String, Object?>[] array, Int32 arrayIndex) =>
-        this.columns.CopyTo(array, arrayIndex);
+    public void CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex) => this.columns.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
-    public IEnumerator<KeyValuePair<String, Object?>> GetEnumerator() =>
-        this.columns.GetEnumerator();
+    public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() => this.columns.GetEnumerator();
 
     /// <inheritdoc />
-    public Boolean Remove(KeyValuePair<String, Object?> item) =>
-        this.columns.Remove(item);
+    public bool Remove(KeyValuePair<string, object?> item) => this.columns.Remove(item);
 
     /// <inheritdoc />
-    public Boolean Remove(String key) =>
-        this.columns.Remove(key);
+    public bool Remove(string key) => this.columns.Remove(key);
 
     /// <inheritdoc />
-    public Boolean TryGetValue(String key, out Object? value) =>
-        this.columns.TryGetValue(key, out value);
+    public bool TryGetValue(string key, out object? value) => this.columns.TryGetValue(key, out value);
 
     /// <summary>
     /// Returns the <see cref="DynamicMetaObject" /> that binds member access on this row to its columns.
@@ -122,30 +128,7 @@ public class DataRow : IDictionary<String, Object?>, IDynamicMetaObjectProvider
     /// <see langword="dynamic" /> reference. It is not meant to be called directly. Override it to change how member
     /// access on a derived row is bound.
     /// </remarks>
-    protected virtual DynamicMetaObject GetMetaObject(Expression parameter) =>
-        new DataRowMetaObject(parameter, this);
-
-    /// <inheritdoc />
-    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) =>
-        this.GetMetaObject(parameter);
-
-    /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator() =>
-        this.GetEnumerator();
-
-    /// <summary>
-    /// Reads the value of a column, used as the target of a bound dynamic member read.
-    /// </summary>
-    private static readonly Func<DataRow, String, Object?> readColumn =
-        static (row, columnName) => row[columnName];
-
-    /// <summary>
-    /// Writes the value of a column and returns it, used as the target of a bound dynamic member write.
-    /// </summary>
-    private static readonly Func<DataRow, String, Object?, Object?> writeColumn =
-        static (row, columnName, value) => row[columnName] = value;
-
-    private readonly IDictionary<String, Object?> columns;
+    protected virtual DynamicMetaObject GetMetaObject(Expression parameter) => new DataRowMetaObject(parameter, this);
 
     /// <summary>
     /// Binds member access on a <see cref="DataRow" /> to the columns of the row, so that <c>row.Id</c> resolves to
@@ -175,9 +158,7 @@ public class DataRow : IDictionary<String, Object?>, IDynamicMetaObjectProvider
         /// <param name="expression">The expression representing the <see cref="DataRow" /> at the call site.</param>
         /// <param name="row">The <see cref="DataRow" /> the member access is bound against.</param>
         internal DataRowMetaObject(Expression expression, DataRow row)
-            : base(expression, BindingRestrictions.Empty, row)
-        {
-        }
+            : base(expression, BindingRestrictions.Empty, row) { }
 
         /// <inheritdoc />
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
@@ -215,22 +196,20 @@ public class DataRow : IDictionary<String, Object?>, IDynamicMetaObjectProvider
                     Expression.Constant(writeColumn),
                     this.GetRowExpression(),
                     Expression.Constant(binder.Name),
-                    Expression.Convert(value.Expression, typeof(Object))
+                    Expression.Convert(value.Expression, typeof(object))
                 ),
                 this.GetTypeRestriction().Merge(value.Restrictions)
             );
         }
 
         /// <inheritdoc />
-        public override IEnumerable<String> GetDynamicMemberNames() =>
-            ((DataRow)this.Value!).Keys;
+        public override IEnumerable<string> GetDynamicMemberNames() => ((DataRow)this.Value!).Keys;
 
         /// <summary>
         /// Gets the call-site expression converted to <see cref="DataRow" />.
         /// </summary>
         /// <returns>The call-site expression converted to <see cref="DataRow" />.</returns>
-        private UnaryExpression GetRowExpression() =>
-            Expression.Convert(this.Expression, typeof(DataRow));
+        private UnaryExpression GetRowExpression() => Expression.Convert(this.Expression, typeof(DataRow));
 
         /// <summary>
         /// Gets the binding restriction that limits the bound call site to the runtime type of the row.

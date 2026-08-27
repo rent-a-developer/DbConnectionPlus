@@ -1,5 +1,7 @@
 // ReSharper disable ConvertToPrimaryConstructor
 
+// An explicit public constructor is the whole point of this fixture: it is what the constructor-injection
+// materializer binds to. A primary constructor would change what is under test.
 #pragma warning disable IDE0290
 
 namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
@@ -7,23 +9,23 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests.TestData;
 public record EntityWithPublicConstructor : Entity
 {
     public EntityWithPublicConstructor(
-        Byte[] bytesValue,
-        Boolean booleanValue,
-        Byte byteValue,
-        Char charValue,
+        byte[] bytesValue,
+        bool booleanValue,
+        byte byteValue,
+        char charValue,
         DateOnly dateOnlyValue,
         DateTime dateTimeValue,
-        Decimal decimalValue,
-        Double doubleValue,
+        decimal decimalValue,
+        double doubleValue,
         TestEnum enumValue,
         Guid guidValue,
-        Int64 id,
-        Int16 int16Value,
-        Int32 int32Value,
-        Int64 int64Value,
-        Boolean? nullableBooleanValue,
-        Single singleValue,
-        String stringValue,
+        long id,
+        short int16Value,
+        int int32Value,
+        long int64Value,
+        bool? nullableBooleanValue,
+        float singleValue,
+        string stringValue,
         TimeOnly timeOnlyValue,
         TimeSpan timeSpanValue
     )

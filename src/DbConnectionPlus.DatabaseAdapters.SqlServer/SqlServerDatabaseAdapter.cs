@@ -10,6 +10,31 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 /// </summary>
 public class SqlServerDatabaseAdapter : IDatabaseAdapter
 {
+    private static readonly Dictionary<Type, string> typeToSqlDataType = new()
+    {
+        { typeof(bool), "bit" },
+        { typeof(byte), "tinyint" },
+        { typeof(byte[]), "varbinary(max)" },
+        { typeof(char), "char(1)" },
+        { typeof(DateOnly), "date" },
+        { typeof(DateTime), "datetime2" },
+        { typeof(DateTimeOffset), "datetimeoffset" },
+        { typeof(decimal), "decimal(28,10)" },
+        { typeof(double), "float" },
+        { typeof(Guid), "uniqueidentifier" },
+        { typeof(short), "smallint" },
+        { typeof(int), "int" },
+        { typeof(long), "bigint" },
+        { typeof(object), "sql_variant" },
+        { typeof(float), "real" },
+        { typeof(string), "nvarchar(max)" },
+        { typeof(TimeOnly), "time" },
+        { typeof(TimeSpan), "time" },
+    };
+
+    private readonly SqlServerEntityManipulator entityManipulator;
+    private readonly SqlServerTemporaryTableBuilder temporaryTableBuilder;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerDatabaseAdapter" /> class.
     /// </summary>
@@ -23,11 +48,10 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     public IEntityManipulator EntityManipulator => this.entityManipulator;
 
     /// <inheritdoc />
-    public ITemporaryTableBuilder TemporaryTableBuilder =>
-        this.temporaryTableBuilder;
+    public ITemporaryTableBuilder TemporaryTableBuilder => this.temporaryTableBuilder;
 
     /// <inheritdoc />
-    public void BindParameterValue(DbParameter parameter, Object? value)
+    public void BindParameterValue(DbParameter parameter, object? value)
     {
         ArgumentNullException.ThrowIfNull(parameter);
 
@@ -41,16 +65,13 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
             case Enum enumValue:
                 parameter.DbType = DbConnectionPlusConfiguration.Instance.EnumSerializationMode switch
                 {
-                    EnumSerializationMode.Integers =>
-                        DbType.Int32,
+                    EnumSerializationMode.Integers => DbType.Int32,
 
-                    EnumSerializationMode.Strings =>
-                        DbType.String,
+                    EnumSerializationMode.Strings => DbType.String,
 
-                    _ =>
-                        ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        )
+                    _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<DbType>(
+                        DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                    ),
                 };
 
                 parameter.Value = EnumSerializer.SerializeEnum(
@@ -59,7 +80,7 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
                 );
                 break;
 
-            case Byte[]:
+            case byte[]:
                 parameter.DbType = DbType.Binary;
                 parameter.Value = value;
                 break;
@@ -71,11 +92,10 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String FormatParameterName(String parameterName) =>
-        "@" + parameterName;
+    public string FormatParameterName(string parameterName) => "@" + parameterName;
 
     /// <inheritdoc />
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode)
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode)
     {
         ArgumentNullException.ThrowIfNull(type);
 
@@ -86,14 +106,11 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
         {
             return enumSerializationMode switch
             {
-                EnumSerializationMode.Strings =>
-                    "nvarchar(200)", // 200 should be enough for most enum names
+                EnumSerializationMode.Strings => "nvarchar(200)", // 200 should be enough for most enum names
 
-                EnumSerializationMode.Integers =>
-                    "int",
+                EnumSerializationMode.Integers => "int",
 
-                _ =>
-                    ThrowHelper.ThrowInvalidEnumSerializationModeException<String>(enumSerializationMode)
+                _ => ThrowHelper.ThrowInvalidEnumSerializationModeException<string>(enumSerializationMode),
             };
         }
 
@@ -110,22 +127,16 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
     }
 
     /// <inheritdoc />
-    public String QuoteIdentifier(String identifier) =>
-        "[" + identifier + "]";
+    public string QuoteIdentifier(string identifier) => "[" + identifier + "]";
 
     /// <inheritdoc />
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection) =>
-        "[#" + tableName + "]";
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection) => "[#" + tableName + "]";
 
     /// <inheritdoc />
-    public Boolean SupportsTemporaryTables(DbConnection connection) =>
-        true;
+    public bool SupportsTemporaryTables(DbConnection connection) => true;
 
     /// <inheritdoc />
-    public Boolean WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    )
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
@@ -154,29 +165,4 @@ public class SqlServerDatabaseAdapter : IDatabaseAdapter
 
         return false;
     }
-
-    private readonly SqlServerEntityManipulator entityManipulator;
-    private readonly SqlServerTemporaryTableBuilder temporaryTableBuilder;
-
-    private static readonly Dictionary<Type, String> typeToSqlDataType = new()
-    {
-        { typeof(Boolean), "bit" },
-        { typeof(Byte), "tinyint" },
-        { typeof(Byte[]), "varbinary(max)" },
-        { typeof(Char), "char(1)" },
-        { typeof(DateOnly), "date" },
-        { typeof(DateTime), "datetime2" },
-        { typeof(DateTimeOffset), "datetimeoffset" },
-        { typeof(Decimal), "decimal(28,10)" },
-        { typeof(Double), "float" },
-        { typeof(Guid), "uniqueidentifier" },
-        { typeof(Int16), "smallint" },
-        { typeof(Int32), "int" },
-        { typeof(Int64), "bigint" },
-        { typeof(Object), "sql_variant" },
-        { typeof(Single), "real" },
-        { typeof(String), "nvarchar(max)" },
-        { typeof(TimeOnly), "time" },
-        { typeof(TimeSpan), "time" }
-    };
 }

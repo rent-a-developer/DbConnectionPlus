@@ -1,47 +1,161 @@
-﻿root = true
+root = true
+
+# ======================================================================================================
+# Every file
+#
+# Line endings are deliberately NOT set here. .gitattributes owns them: it normalizes to LF in the
+# repository and checks each file out with the ending that file type needs. An end_of_line here would
+# fight that on Windows.
+# ======================================================================================================
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{csproj,props,targets,DotSettings}]
+indent_style = tab
+tab_width = 4
+
+[*.{slnx,config,xml,json,yml,yaml}]
+indent_size = 2
+
+# Two trailing spaces are a hard line break in Markdown, so they must survive.
+[*.md]
+trim_trailing_whitespace = false
+
+# ======================================================================================================
+# C#
+#
+# Three tools share this file, and each one owns exactly one concern:
+#
+#   CSharpier             whitespace, line breaks, wrapping.  Reads max_line_length and indent_size.
+#   Roslyn analyzers      code style (the settings below).    Fixed by `dotnet format style`.
+#   NewStyleCop.Analyzers member ordering (checking only).    Fixed by ReSharper, see the ordering
+#                                                             section further down.
+#
+# Run scripts/tidy-cs.ps1 to apply all three.
+# ======================================================================================================
 
 [*.cs]
-max_line_length = 120
-charset = utf-8
 
-csharp_using_directive_placement = outside_namespace:error
-csharp_prefer_simple_using_statement = true:suggestion
-csharp_prefer_braces = true:error
-csharp_style_namespace_declarations = file_scoped:error
-csharp_style_prefer_method_group_conversion = true:suggestion
-csharp_style_prefer_top_level_statements = true:suggestion
-csharp_style_prefer_primary_constructors = true:error
-csharp_prefer_system_threading_lock = false:silent
-csharp_style_prefer_simple_property_accessors = true:error
-csharp_style_expression_bodied_methods = true:error
-csharp_style_expression_bodied_constructors = true:error
-csharp_style_expression_bodied_operators = true:error
-csharp_style_expression_bodied_properties = true:error
-csharp_style_expression_bodied_indexers = true:error
-csharp_style_expression_bodied_accessors = true:error
-csharp_style_expression_bodied_lambdas = true:error
-csharp_style_expression_bodied_local_functions = true:error
-csharp_style_throw_expression = true:error
-csharp_style_prefer_null_check_over_type_check = true:error
-csharp_prefer_simple_default_expression = true:error
-csharp_style_prefer_local_over_anonymous_function = true:suggestion
-csharp_style_prefer_index_operator = true:error
-csharp_style_implicit_object_creation_when_type_is_apparent = true:error
-csharp_style_prefer_implicitly_typed_lambda_expression = true:error
-csharp_style_prefer_unbound_generic_type_in_nameof = true:error
-csharp_style_prefer_not_pattern = true:error
+#### Layout ####
+
+indent_size = 4
+tab_width = 4
+
+# CSharpier reads this as its print width. It is the ONLY place the line width is configured.
+max_line_length = 120
+
+#### Types: C# keywords, never BCL type names ####
+
+# `string`, `int`, `bool` - not `String`, `Int32`, `Boolean`. Both settings are IDE0049.
+dotnet_style_predefined_type_for_locals_parameters_members = true:error
+dotnet_style_predefined_type_for_member_access = true:error
+
+# `var` wherever the type is obvious from the right-hand side.
 csharp_style_var_for_built_in_types = true:error
 csharp_style_var_when_type_is_apparent = true:error
+
+#### Member access: always `this.` ####
+
+# Instance members are always read and written through `this.`, and fields are never `_camelCase`.
+#
+# A primary constructor parameter is assigned to a `private readonly` backing field and read through
+# `this.field`, never used directly in a member body. Nothing below enforces that - a parameter is not an
+# instance member, so these four rules cannot see it - but a captured parameter compiles to a field with no
+# `readonly`, and using one directly would silently drop the guarantee that it cannot be reassigned.
+dotnet_style_qualification_for_event = true:error
+dotnet_style_qualification_for_field = true:error
+dotnet_style_qualification_for_method = true:error
+dotnet_style_qualification_for_property = true:error
+
+#### Expression-bodied members ####
+
+# Use `=>` wherever a member is a single expression.
+csharp_style_expression_bodied_accessors = true:error
+csharp_style_expression_bodied_constructors = true:error
+csharp_style_expression_bodied_indexers = true:error
+csharp_style_expression_bodied_lambdas = true:error
+csharp_style_expression_bodied_local_functions = true:error
+csharp_style_expression_bodied_methods = true:error
+csharp_style_expression_bodied_operators = true:error
+csharp_style_expression_bodied_properties = true:error
+csharp_style_prefer_simple_property_accessors = true:error
+
+#### Namespaces and using directives ####
+
+# An unused using is a build error. This needs the documentation file that Directory.Build.props turns
+# on for every project - without one, IDE0005 is simply never reported at build time.
+dotnet_diagnostic.IDE0005.severity = error
+
+csharp_style_namespace_declarations = file_scoped:error
+csharp_using_directive_placement = outside_namespace:error
+dotnet_style_namespace_match_folder = true:error
+
+#### Declarations ####
+
+csharp_prefer_braces = true:error
+csharp_style_prefer_primary_constructors = true:error
+csharp_style_prefer_top_level_statements = true:suggestion
+dotnet_style_prefer_auto_properties = true:error
+
+#### Modern language features ####
+
+csharp_prefer_simple_default_expression = true:error
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_system_threading_lock = false:silent
+# `new()` wherever the compiler can infer the type. IDE0090 covers only the case where the type is
+# written next to it - `EnumerableReader r = new EnumerableReader(...)` - which the `var` rule above
+# makes impossible anyway, so on its own it has almost nothing to fire on here.
+#
+# RCS1250 covers what IDE0090 does not: `return new T(...)`, an argument, and an assignment to an
+# already-typed target. Not everything - it stays quiet on a `new` nested inside another `new` that is
+# itself an argument, as in EntityMaterializerFactory's propertyBindings.Add(...). Rider flags those;
+# the build does not, so they are on the author.
+csharp_style_implicit_object_creation_when_type_is_apparent = true:error
+roslynator_object_creation_type_style = implicit
+dotnet_diagnostic.RCS1250.severity = error
+csharp_style_inlined_variable_declaration = true:error
+csharp_style_prefer_implicitly_typed_lambda_expression = true:error
+csharp_style_prefer_index_operator = true:error
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+csharp_style_prefer_method_group_conversion = true:suggestion
+csharp_style_prefer_not_pattern = true:error
 csharp_style_prefer_range_operator = true:error
 csharp_style_prefer_tuple_swap = true:error
+csharp_style_prefer_unbound_generic_type_in_nameof = true:error
 csharp_style_prefer_utf8_string_literals = true:error
-csharp_style_inlined_variable_declaration = true:error
+csharp_style_throw_expression = true:error
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_loosely_match:error
+dotnet_style_prefer_compound_assignment = true:error
+dotnet_style_prefer_simplified_interpolation = true:error
+
+#### Null handling ####
+
+csharp_style_prefer_null_check_over_type_check = true:error
+dotnet_style_coalesce_expression = true:error
+dotnet_style_null_propagation = true:error
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
+
+#### Expressions ####
+
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:error
 csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
-dotnet_analyzer_diagnostic.category-roslynator.severity = error
+dotnet_style_explicit_tuple_names = true:suggestion
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = true:suggestion
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:error
+dotnet_style_prefer_inferred_tuple_names = true:error
+dotnet_style_prefer_simplified_boolean_expressions = true:error
 
-#### Naming styles ####
+#### Naming ####
 
 # Naming rules
 
@@ -49,14 +163,9 @@ dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
 dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 
-dotnet_naming_style.pascal_with_underscores.capitalization = pascal_case
-dotnet_naming_style.pascal_with_underscores.required_prefix =
-dotnet_naming_style.pascal_with_underscores.required_suffix =
-dotnet_naming_style.pascal_with_underscores.word_separator = _
-
+dotnet_naming_rule.types_should_be_pascal_with_underscores.severity = warning
 dotnet_naming_rule.types_should_be_pascal_with_underscores.symbols = types
 dotnet_naming_rule.types_should_be_pascal_with_underscores.style = pascal_with_underscores
-dotnet_naming_rule.types_should_be_pascal_with_underscores.severity = warning
 
 dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
@@ -66,73 +175,154 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.interface.required_modifiers = 
+dotnet_naming_symbols.interface.required_modifiers =
 
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.types.required_modifiers = 
+dotnet_naming_symbols.types.required_modifiers =
 
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.non_field_members.required_modifiers = 
+dotnet_naming_symbols.non_field_members.required_modifiers =
 
 # Naming styles
 
 dotnet_naming_style.begins_with_i.required_prefix = I
-dotnet_naming_style.begins_with_i.required_suffix = 
-dotnet_naming_style.begins_with_i.word_separator = 
+dotnet_naming_style.begins_with_i.required_suffix =
+dotnet_naming_style.begins_with_i.word_separator =
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix = 
-dotnet_naming_style.pascal_case.required_suffix = 
-dotnet_naming_style.pascal_case.word_separator = 
+dotnet_naming_style.pascal_case.required_prefix =
+dotnet_naming_style.pascal_case.required_suffix =
+dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-dotnet_style_operator_placement_when_wrapping = beginning_of_line
-tab_width = 4
-indent_size = 4
-dotnet_style_coalesce_expression = true:error
-dotnet_style_null_propagation = true:error
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:error
-dotnet_style_prefer_auto_properties = true:error
-dotnet_style_object_initializer = true:suggestion
-dotnet_style_collection_initializer = true:suggestion
-dotnet_style_prefer_simplified_boolean_expressions = true:error
-dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
-dotnet_style_prefer_conditional_expression_over_return = true:suggestion
-dotnet_style_explicit_tuple_names = true:suggestion
-dotnet_style_prefer_inferred_tuple_names = true:error
-dotnet_style_prefer_inferred_anonymous_type_member_names = true:error
-dotnet_style_prefer_compound_assignment = true:error
-dotnet_style_prefer_simplified_interpolation = true:error
-dotnet_style_prefer_collection_expression = when_types_loosely_match:error
-dotnet_style_namespace_match_folder = true:error
-dotnet_style_predefined_type_for_locals_parameters_members = false:silent
-dotnet_style_predefined_type_for_member_access = false:silent
+dotnet_naming_style.pascal_with_underscores.required_prefix =
+dotnet_naming_style.pascal_with_underscores.required_suffix =
+dotnet_naming_style.pascal_with_underscores.word_separator = _
+dotnet_naming_style.pascal_with_underscores.capitalization = pascal_case
 
-# RCS1037: Remove trailing white-space
+#### Formatting is CSharpier's job ####
+
+# IDE0055 is "fix formatting" - every whitespace rule Roslyn has, under one ID. A number of its options
+# disagree with CSharpier, and CSharpier is the tool that owns whitespace here, so this stays off.
+# CSharpier's own documentation recommends exactly this.
+dotnet_diagnostic.IDE0055.severity = none
+
+# RCS1037: Remove trailing white-space. Same reason - CSharpier removes it, and trim_trailing_whitespace
+# in the [*] section above tells the editor to.
 dotnet_diagnostic.RCS1037.severity = none
 
-# RCS1227: Validate arguments correctly
-dotnet_diagnostic.RCS1227.severity = none
+#### Member ordering: NewStyleCop.Analyzers ####
+
+# StyleCop is here for ONE job: reporting types and members that are in the wrong order. Everything else
+# it does is either CSharpier's concern or already covered by the Roslyn, Roslynator and Sonar rules in
+# this file, so every category is switched off first and only the rules we want are switched back on.
+# Adding a StyleCop rule to this repository means adding it explicitly below.
+#
+# StyleCop can only REPORT a wrong order - its ordering code fix is disabled upstream. ReSharper does the
+# fixing: in Rider through Code Cleanup, and on the command line through scripts/tidy-cs.ps1. So the
+# order is defined twice, and the two definitions have to stay in step:
+#   stylecop.json                     -> what is checked
+#   DbConnectionPlus.slnx.DotSettings -> what is applied
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.DocumentationRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.LayoutRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.MaintainabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.NamingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.OrderingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
+
+# SA1208, SA1209, SA1210, SA1211, SA1217: the order of using directives.
+#
+# CSharpier already sorts using directives, so these five do not fix anything - they CHECK that what
+# CSharpier produced is what we want, and catch a file that reached the repository without it. All five
+# report zero violations across the 283 files, which is what says CSharpier and StyleCop agree here.
+#
+# SA1208 is also what makes `systemUsingDirectivesFirst` in stylecop.json mean something. With the rule
+# off, that setting was read by nothing.
+#
+# SA1216 (using static placed after the regular usings) is deliberately ABSENT: it is the one CSharpier
+# contradicts. CSharpier sorts by namespace and ignores the `static` keyword, so it writes
+#
+#     global using AwesomeAssertions;
+#     global using static AwesomeAssertions.FluentActions;
+#     global using Microsoft.Data.SqlClient;
+#
+# where SA1216 wants both `using static` lines grouped at the end. Enabling it makes the build
+# unsatisfiable, because CSharpier runs last and always has the final say - verified by sorting the file
+# StyleCop's way and watching CSharpier put it straight back.
+#
+# SA1200 is absent for a different reason: `csharp_using_directive_placement` above already requires
+# usings outside the namespace, and two rules for one decision is how they end up disagreeing.
+dotnet_diagnostic.SA1208.severity = error
+dotnet_diagnostic.SA1209.severity = error
+dotnet_diagnostic.SA1210.severity = error
+dotnet_diagnostic.SA1211.severity = error
+dotnet_diagnostic.SA1217.severity = error
+
+# SA1201: Elements should appear in the correct order (by kind).
+dotnet_diagnostic.SA1201.severity = error
+
+# SA1202: Elements should be ordered by access.
+#
+# Explicit interface implementations need a word, because the checker and the fixer classify them
+# differently. ReSharper ranks one below private, since in C# it carries no access modifier, so left
+# alone it lands at the bottom of its kind group.
+#
+# StyleCop disagrees, but NOT uniformly - which is why the file layout has one entry per kind rather
+# than one shared entry:
+#
+#   properties, indexers, methods   counted as public, so they must come FIRST in their group.
+#                                   The layout has an "Explicit interface <kind>" entry for each.
+#   events                          counted as private, so ReSharper's default placement is already
+#                                   right. Giving events an entry actively breaks the build - it puts
+#                                   the explicit event ahead of a public one, which is SA1202.
+#
+# The entries match on ImplementsInterface AND Access Is="Private", and both halves matter.
+# ImplementsInterface on its own also matches IMPLICIT implementations, which drags Equals(T) away
+# from Equals(object) and trips Sonar's S4136. An implicit implementation has to be public, so the
+# access test is what narrows each entry to the explicit ones.
+#
+# One shared entry across the kinds would not work either: it would sit an explicit property next to
+# an explicit method and break SA1201's kind order.
+dotnet_diagnostic.SA1202.severity = error
+
+# SA1203: Constants should appear before fields.
+dotnet_diagnostic.SA1203.severity = error
+
+# SA1204: Static elements should appear before instance elements.
+dotnet_diagnostic.SA1204.severity = error
+
+# SA1214: Readonly fields should appear before non-readonly fields.
+dotnet_diagnostic.SA1214.severity = error
+
+# SA1309: Field names should not begin with an underscore. Nothing else enforces this, and it is the
+# other half of the "always `this.`" decision - see the member access section above.
+dotnet_diagnostic.SA1309.severity = error
+
+#### Roslynator ####
+
+dotnet_analyzer_diagnostic.category-roslynator.severity = error
 
 # RCS1124: Inline local variable
 dotnet_diagnostic.RCS1124.severity = suggestion
 
-# IDE0290: Use primary constructor
-dotnet_diagnostic.IDE0290.severity = none
-
-# CA2100: Review SQL queries for security vulnerabilities
-dotnet_diagnostic.CA2100.severity = none
-
 # RCS1222: Merge preprocessor directives
 dotnet_diagnostic.RCS1222.severity = none
+
+# RCS1227: Validate arguments correctly
+dotnet_diagnostic.RCS1227.severity = none
 
 # RCS1237: Use bit shift operator
 dotnet_diagnostic.RCS1237.severity = none
 
-# xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
-dotnet_diagnostic.xUnit1051.severity = none
+#### .NET analyzers ####
+
+# CA2100: Review SQL queries for security vulnerabilities
+# Running SQL the caller wrote is what this library does. Same reason S2077 is off below.
+dotnet_diagnostic.CA2100.severity = none
 
 #### SonarAnalyzer.CSharp ####
 
@@ -141,6 +331,16 @@ dotnet_diagnostic.xUnit1051.severity = none
 # S125: Sections of code should not be commented out
 # The two hits are deliberate pseudo-code explaining the expression trees the materializer factories emit.
 dotnet_diagnostic.S125.severity = none
+
+# S2077: Formatting SQL queries is security-sensitive
+# The temporary table builders emit DDL, where a table or column name can never be a bound parameter. Same
+# reason CA2100 is off above; the identifiers are quoted per adapter, not interpolated user input.
+dotnet_diagnostic.S2077.severity = none
+
+# S2325: Methods and properties that don't access instance data should be static
+# CA1822 already covers this and correctly skips public members. S2325 does not: both hits are shipped public
+# API listed in PublicAPI.Shipped.txt, where going static is a breaking change.
+dotnet_diagnostic.S2325.severity = none
 
 # S3011: Reflection should not be used to increase accessibility of classes, methods, or fields
 # Binding non-public constructors and members is what an entity materializer does; the sites are documented.
@@ -158,35 +358,68 @@ dotnet_diagnostic.S3881.severity = none
 # The generic throw helpers name the CALLER's parameter, which by design is not in their own signature.
 dotnet_diagnostic.S3928.severity = none
 
-# S2077: Formatting SQL queries is security-sensitive
-# The temporary table builders emit DDL, where a table or column name can never be a bound parameter. Same
-# reason CA2100 is off above; the identifiers are quoted per adapter, not interpolated user input.
-dotnet_diagnostic.S2077.severity = none
-
-# S2325: Methods and properties that don't access instance data should be static
-# CA1822 already covers this and correctly skips public members. S2325 does not: both hits are shipped public
-# API listed in PublicAPI.Shipped.txt, where going static is a breaking change.
-dotnet_diagnostic.S2325.severity = none
-
 # S4456: Parameter validation in yielding methods should be wrapped
 # The public Query overloads validate their arguments inside the iterator, so the exception surfaces on the
 # first MoveNext instead of at the call. Fixing it means splitting four public methods.
 dotnet_diagnostic.S4456.severity = none
 
-[*.ps1]
-end_of_line = crlf
+#### xUnit ####
+
+# xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken
+dotnet_diagnostic.xUnit1051.severity = none
+
+# ======================================================================================================
+# Tests and benchmarks
+#
+# Held to the same style, formatting and ordering as the shipping libraries. What they are NOT held to is
+# XML documentation, and a handful of Sonar rules that only make sense for library code.
+# ======================================================================================================
 
 [{tests,benchmarks}/**/*.cs]
 
-dotnet_diagnostic.S2344.severity = none
-dotnet_diagnostic.S3010.severity = none
-dotnet_diagnostic.S4144.severity = none
-dotnet_diagnostic.S3459.severity = none
-dotnet_diagnostic.S3453.severity = none
+# CS1591: Missing XML comment for publicly visible type or member
+# CS1574: XML comment has a cref attribute that could not be resolved
+#
+# Every project generates a documentation file, because IDE0005 does not work without one - see the
+# comment in Directory.Build.props. That switches these two compiler diagnostics on everywhere as a side
+# effect, and with TreatWarningsAsErrors they are 3202 errors here. Nothing consumes the tests or the
+# benchmarks as an API and they use plain `//` comments by design, so both are off for them. In src/ they
+# stay errors, which is what actually keeps the public API documented.
+dotnet_diagnostic.CS1574.severity = none
+dotnet_diagnostic.CS1591.severity = none
+
+# S1144: Unused private types or members should be removed
 dotnet_diagnostic.S1144.severity = none
+
+# S1172: Unused method parameters should be removed
 dotnet_diagnostic.S1172.severity = none
-dotnet_diagnostic.S3963.severity = none
-dotnet_diagnostic.S6562.severity = none
-dotnet_diagnostic.S2925.severity = none
-dotnet_diagnostic.S5034.severity = none
+
+# S2344: Enumeration type names should not have "Flags" or "Enum" suffixes
+dotnet_diagnostic.S2344.severity = none
+
+# S2696: Instance members should not write to "static" fields
 dotnet_diagnostic.S2696.severity = none
+
+# S2925: "Thread.Sleep" should not be used in tests
+dotnet_diagnostic.S2925.severity = none
+
+# S3010: Static fields should not be updated in constructors
+dotnet_diagnostic.S3010.severity = none
+
+# S3453: Classes should not have only "private" constructors
+dotnet_diagnostic.S3453.severity = none
+
+# S3459: Unassigned members should be removed
+dotnet_diagnostic.S3459.severity = none
+
+# S3963: "static" fields should be initialized inline
+dotnet_diagnostic.S3963.severity = none
+
+# S4144: Methods should not have identical implementations
+dotnet_diagnostic.S4144.severity = none
+
+# S5034: "ValueTask" should be consumed correctly
+dotnet_diagnostic.S5034.severity = none
+
+# S6562: Always set the "DateTimeKind" when creating new "DateTime" instances
+dotnet_diagnostic.S6562.severity = none

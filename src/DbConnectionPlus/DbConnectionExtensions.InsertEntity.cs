@@ -65,7 +65,7 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class Product
     /// {
     ///     public Int64 Id { get; set; }
@@ -74,15 +74,13 @@ public static partial class DbConnectionExtensions
     ///     public Decimal UnitPrice { get; set; }
     ///     public Int32 UnitsInStock { get; set; }
     /// }
-    /// 
+    ///
     /// var newProduct = GetNewProduct();
-    /// 
+    ///
     /// connection.InsertEntity(newProduct);
     /// </code>
     /// </example>
-    public static Int32 InsertEntity<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static int InsertEntity<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -95,12 +93,7 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.InsertEntity(
-            connection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.InsertEntity(connection, entity, transaction, cancellationToken);
     }
 
     /// <summary>
@@ -161,7 +154,7 @@ public static partial class DbConnectionExtensions
     /// <example>
     /// <code>
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// class Product
     /// {
     ///     public Int64 Id { get; set; }
@@ -170,15 +163,13 @@ public static partial class DbConnectionExtensions
     ///     public Decimal UnitPrice { get; set; }
     ///     public Int32 UnitsInStock { get; set; }
     /// }
-    /// 
+    ///
     /// var newProduct = await GetNewProductAsync();
-    /// 
+    ///
     /// await connection.InsertEntityAsync(newProduct);
     /// </code>
     /// </example>
-    public static Task<Int32> InsertEntityAsync<
-        [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
-    >(
+    public static Task<int> InsertEntityAsync<[DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity>(
         this DbConnection connection,
         TEntity entity,
         DbTransaction? transaction = null,
@@ -191,11 +182,6 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        return databaseAdapter.EntityManipulator.InsertEntityAsync(
-            connection,
-            entity,
-            transaction,
-            cancellationToken
-        );
+        return databaseAdapter.EntityManipulator.InsertEntityAsync(connection, entity, transaction, cancellationToken);
     }
 }

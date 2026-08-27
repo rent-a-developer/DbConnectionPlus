@@ -21,18 +21,16 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         DbParameter? interceptedDbParameter = null;
 
-        DbConnectionPlusConfiguration.Instance.InterceptDbCommand =
-            (command, _) => interceptedDbParameter = command.Parameters[0];
+        DbConnectionPlusConfiguration.Instance.InterceptDbCommand = (command, _) =>
+            interceptedDbParameter = command.Parameters[0];
 
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Integers;
 
         this.MockDbConnection.ExecuteNonQuery($"SELECT {Parameter(enumValue)}");
 
-        interceptedDbParameter
-            .Should().NotBeNull();
+        interceptedDbParameter.Should().NotBeNull();
 
-        interceptedDbParameter.Value
-            .Should().Be((Int32)enumValue);
+        interceptedDbParameter.Value.Should().Be((int)enumValue);
     }
 
     [Fact]
@@ -42,18 +40,16 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         DbParameter? interceptedDbParameter = null;
 
-        DbConnectionPlusConfiguration.Instance.InterceptDbCommand =
-            (command, _) => interceptedDbParameter = command.Parameters[0];
+        DbConnectionPlusConfiguration.Instance.InterceptDbCommand = (command, _) =>
+            interceptedDbParameter = command.Parameters[0];
 
         DbConnectionPlusConfiguration.Instance.EnumSerializationMode = EnumSerializationMode.Strings;
 
         this.MockDbConnection.ExecuteNonQuery($"SELECT {Parameter(enumValue)}");
 
-        interceptedDbParameter
-            .Should().NotBeNull();
+        interceptedDbParameter.Should().NotBeNull();
 
-        interceptedDbParameter.Value
-            .Should().Be(enumValue.ToString());
+        interceptedDbParameter.Value.Should().Be(enumValue.ToString());
     }
 
     [Fact]
@@ -72,40 +68,47 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         ((IFreezable)configuration).Freeze();
 
         Invoking(() => configuration.EnumSerializationMode = EnumSerializationMode.Integers)
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => configuration.InterceptDbCommand = null)
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => configuration.Entity<Entity>())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => entityTypeBuilder.ToTable("Entities"))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => entityTypeBuilder.Property(a => a.Id))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => entityPropertyBuilder.IsKey())
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
     }
 
     [Fact]
     public void GetDatabaseAdapter_NoAdapterRegisteredForConnectionType_ShouldThrow() =>
         Invoking(() => DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionC)))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage(
-                "No database adapter is registered for the database connection of the type " +
-                $"{typeof(FakeConnectionC)}. Please install the corresponding adapter NuGet package " +
-                "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) " +
-                "and register it by calling the appropriate UseXxx() extension method via " +
-                $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
+                "No database adapter is registered for the database connection of the type "
+                    + $"{typeof(FakeConnectionC)}. Please install the corresponding adapter NuGet package "
+                    + "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) "
+                    + "and register it by calling the appropriate UseXxx() extension method via "
+                    + $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
             );
 
     [Fact]
@@ -117,11 +120,9 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionB>(adapterB);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
-            .Should().BeSameAs(adapterA);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA)).Should().BeSameAs(adapterA);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB))
-            .Should().BeSameAs(adapterB);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB)).Should().BeSameAs(adapterB);
     }
 
     [Fact]
@@ -133,20 +134,30 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         DbConnectionPlusConfiguration.Instance.UseSqlite();
         DbConnectionPlusConfiguration.Instance.UseSqlServer();
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(MySqlConnection))
-            .Should().BeOfType<MySqlDatabaseAdapter>();
+        DbConnectionPlusConfiguration
+            .Instance.GetDatabaseAdapter(typeof(MySqlConnection))
+            .Should()
+            .BeOfType<MySqlDatabaseAdapter>();
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(OracleConnection))
-            .Should().BeOfType<OracleDatabaseAdapter>();
+        DbConnectionPlusConfiguration
+            .Instance.GetDatabaseAdapter(typeof(OracleConnection))
+            .Should()
+            .BeOfType<OracleDatabaseAdapter>();
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(NpgsqlConnection))
-            .Should().BeOfType<PostgreSqlDatabaseAdapter>();
+        DbConnectionPlusConfiguration
+            .Instance.GetDatabaseAdapter(typeof(NpgsqlConnection))
+            .Should()
+            .BeOfType<PostgreSqlDatabaseAdapter>();
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(SqliteConnection))
-            .Should().BeOfType<SqliteDatabaseAdapter>();
+        DbConnectionPlusConfiguration
+            .Instance.GetDatabaseAdapter(typeof(SqliteConnection))
+            .Should()
+            .BeOfType<SqliteDatabaseAdapter>();
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(SqlConnection))
-            .Should().BeOfType<SqlServerDatabaseAdapter>();
+        DbConnectionPlusConfiguration
+            .Instance.GetDatabaseAdapter(typeof(SqlConnection))
+            .Should()
+            .BeOfType<SqlServerDatabaseAdapter>();
     }
 
     [Fact]
@@ -159,17 +170,11 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         var entityTypeBuilders = configuration.GetEntityTypeBuilders();
 
-        entityTypeBuilders
-            .Should().ContainKeys(
-                typeof(Entity),
-                typeof(MappingTestEntityFluentApi)
-            );
+        entityTypeBuilders.Should().ContainKeys(typeof(Entity), typeof(MappingTestEntityFluentApi));
 
-        entityTypeBuilders[typeof(Entity)]
-            .Should().BeSameAs(entityBuilder);
+        entityTypeBuilders[typeof(Entity)].Should().BeSameAs(entityBuilder);
 
-        entityTypeBuilders[typeof(MappingTestEntityFluentApi)]
-            .Should().BeSameAs(mappingTestEntityFluentApiBuilder);
+        entityTypeBuilders[typeof(MappingTestEntityFluentApi)].Should().BeSameAs(mappingTestEntityFluentApiBuilder);
     }
 
     [Fact]
@@ -182,17 +187,13 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         interceptor
             .WhenForAnyArgs(interceptor2 =>
-                interceptor2.Invoke(
-                    Arg.Any<DbCommand>(),
-                    Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-                )
+                interceptor2.Invoke(Arg.Any<DbCommand>(), Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>())
             )
             .Do(info =>
-                {
-                    interceptedDbCommand = info.Arg<DbCommand>();
-                    interceptedTemporaryTables = info.Arg<IReadOnlyList<InterpolatedTemporaryTable>>();
-                }
-            );
+            {
+                interceptedDbCommand = info.Arg<DbCommand>();
+                interceptedTemporaryTables = info.Arg<IReadOnlyList<InterpolatedTemporaryTable>>();
+            });
 
         DbConnectionPlusConfiguration.Instance.InterceptDbCommand = interceptor;
 
@@ -200,12 +201,11 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         var entityIds = Generate.Ids();
         var stringValue = entities[0].StringValue;
 
-        InterpolatedSqlStatement statement =
-            $"""
-             SELECT Id, StringValue
-             FROM   {TemporaryTable(entities)} TEntity
-             WHERE  TEntity.Id IN ({TemporaryTable(entityIds)}) OR StringValue = {Parameter(stringValue)}
-             """;
+        InterpolatedSqlStatement statement = $"""
+            SELECT Id, StringValue
+            FROM   {TemporaryTable(entities)} TEntity
+            WHERE  TEntity.Id IN ({TemporaryTable(entityIds)}) OR StringValue = {Parameter(stringValue)}
+            """;
 
         var temporaryTables = statement.TemporaryTables;
 
@@ -213,54 +213,45 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
         var timeout = Generate.Single<TimeSpan>();
         var cancellationToken = Generate.Single<CancellationToken>();
 
-        _ = this.MockDbConnection.Query<Int32>(
-            statement,
-            transaction,
-            timeout,
-            CommandType.StoredProcedure,
-            cancellationToken
-        ).ToList();
+        _ = this
+            .MockDbConnection.Query<int>(
+                statement,
+                transaction,
+                timeout,
+                CommandType.StoredProcedure,
+                cancellationToken
+            )
+            .ToList();
 
-        interceptor.Received().Invoke(
-            Arg.Any<DbCommand>(),
-            Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>()
-        );
+        interceptor.Received().Invoke(Arg.Any<DbCommand>(), Arg.Any<IReadOnlyList<InterpolatedTemporaryTable>>());
+
+        interceptedDbCommand.Should().NotBeNull();
 
         interceptedDbCommand
-            .Should().NotBeNull();
-
-        interceptedDbCommand.CommandText
-            .Should().Be(
+            .CommandText.Should()
+            .Be(
                 $"""
-                 SELECT Id, StringValue
-                 FROM   [#{temporaryTables[0].Name}] TEntity
-                 WHERE  TEntity.Id IN ([#{temporaryTables[1].Name}]) OR StringValue = @StringValue
-                 """
+                SELECT Id, StringValue
+                FROM   [#{temporaryTables[0].Name}] TEntity
+                WHERE  TEntity.Id IN ([#{temporaryTables[1].Name}]) OR StringValue = @StringValue
+                """
             );
 
-        interceptedDbCommand.Transaction
-            .Should().Be(transaction);
+        interceptedDbCommand.Transaction.Should().Be(transaction);
 
-        interceptedDbCommand.CommandType
-            .Should().Be(CommandType.StoredProcedure);
+        interceptedDbCommand.CommandType.Should().Be(CommandType.StoredProcedure);
 
-        interceptedDbCommand.CommandTimeout
-            .Should().Be((Int32)timeout.TotalSeconds);
+        interceptedDbCommand.CommandTimeout.Should().Be((int)timeout.TotalSeconds);
 
-        interceptedDbCommand.Parameters.Count
-            .Should().Be(1);
+        interceptedDbCommand.Parameters.Count.Should().Be(1);
 
-        interceptedDbCommand.Parameters[0].ParameterName
-            .Should().Be("StringValue");
+        interceptedDbCommand.Parameters[0].ParameterName.Should().Be("StringValue");
 
-        interceptedDbCommand.Parameters[0].Value
-            .Should().Be(stringValue);
+        interceptedDbCommand.Parameters[0].Value.Should().Be(stringValue);
 
-        interceptedTemporaryTables
-            .Should().NotBeNull();
+        interceptedTemporaryTables.Should().NotBeNull();
 
-        interceptedTemporaryTables
-            .Should().BeEquivalentTo(temporaryTables);
+        interceptedTemporaryTables.Should().BeEquivalentTo(temporaryTables);
     }
 
     [Fact]
@@ -270,15 +261,13 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
-            .Should().BeSameAs(adapterA);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA)).Should().BeSameAs(adapterA);
 
         var adapterB = Substitute.For<IDatabaseAdapter>();
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionB>(adapterB);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB))
-            .Should().BeSameAs(adapterB);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionB)).Should().BeSameAs(adapterB);
     }
 
     [Fact]
@@ -288,15 +277,13 @@ public class DbConnectionPlusConfigurationTests : UnitTestsBase
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterA);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
-            .Should().BeSameAs(adapterA);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA)).Should().BeSameAs(adapterA);
 
         var adapterB = Substitute.For<IDatabaseAdapter>();
 
         DbConnectionPlusConfiguration.Instance.RegisterDatabaseAdapter<FakeConnectionA>(adapterB);
 
-        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA))
-            .Should().BeSameAs(adapterB);
+        DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(typeof(FakeConnectionA)).Should().BeSameAs(adapterB);
     }
 
     [Fact]

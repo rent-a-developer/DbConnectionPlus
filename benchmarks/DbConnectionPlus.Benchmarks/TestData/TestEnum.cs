@@ -6,5 +6,5 @@ public enum TestEnum
     Value2 = 2,
     Value3 = 3,
     Value4 = 4,
-    Value5 = 5
+    Value5 = 5,
 }

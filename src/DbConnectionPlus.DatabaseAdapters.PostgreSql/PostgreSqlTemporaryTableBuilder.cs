@@ -6,7 +6,6 @@ using Npgsql;
 using NpgsqlTypes;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -17,6 +16,8 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 /// </summary>
 internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private readonly PostgreSqlDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgreSqlTemporaryTableBuilder" /> class.
     /// </summary>
@@ -35,10 +36,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -70,8 +70,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -88,8 +90,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -110,10 +114,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -147,8 +150,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -167,8 +171,9 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken).ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -189,6 +194,74 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     }
 
     /// <summary>
+    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
+    /// </summary>
+    /// <param name="values">The sequence containing the values to be read.</param>
+    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
+    /// <returns>
+    /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
+    /// </returns>
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
+    {
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+        }
+
+        return new(
+            values,
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.None
+        );
+    }
+
+    /// <summary>
+    /// Drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    private static void DropTemporaryTable(string name, NpgsqlConnection connection, NpgsqlTransaction? transaction)
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"DROP TABLE IF EXISTS \"{name}\"";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Asynchronously drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private static async ValueTask DropTemporaryTableAsync(
+        string name,
+        NpgsqlConnection connection,
+        NpgsqlTransaction? transaction
+    )
+    {
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+
+        command.CommandText = $"DROP TABLE IF EXISTS \"{name}\"";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
     /// <paramref name="objectsType" />.
     /// </summary>
@@ -196,14 +269,13 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -247,14 +319,13 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TEMP TABLE \"");
         sqlBuilder.Append(tableName);
@@ -285,8 +356,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <see cref="Type" />, so reading the property types here is warning-free and yields the same values.
     /// </remarks>
     private NpgsqlDbType[] GetColumnDbTypes(
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
     {
         var enumSerializationMode = DbConnectionPlusConfiguration.Instance.EnumSerializationMode;
 
@@ -297,8 +368,10 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         return
         [
-            .. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
-                .Select(a => this.databaseAdapter.GetDbType(a.PropertyType, enumSerializationMode))
+            .. EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
+                .Select(a => this.databaseAdapter.GetDbType(a.PropertyType, enumSerializationMode)),
         ];
     }
 
@@ -312,9 +385,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     private void PopulateTemporaryTable(
         NpgsqlConnection connection,
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -367,9 +439,8 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task PopulateTemporaryTableAsync(
         NpgsqlConnection connection,
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         DbDataReader dataReader,
         CancellationToken cancellationToken
     )
@@ -414,74 +485,4 @@ internal class PostgreSqlTemporaryTableBuilder : ITemporaryTableBuilder
         await importer.CompleteAsync(cancellationToken).ConfigureAwait(false);
         await importer.CloseAsync(cancellationToken).ConfigureAwait(false);
     }
-
-    /// <summary>
-    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
-    /// </summary>
-    /// <param name="values">The sequence containing the values to be read.</param>
-    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
-    /// <returns>
-    /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
-    /// </returns>
-    private static EnumerableReader CreateValuesDataReader(
-        IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
-    {
-        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
-        {
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
-        }
-
-        return new EnumerableReader(
-            values,
-            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
-            EnumerableReaderOptions.None
-        );
-    }
-
-    /// <summary>
-    /// Drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, NpgsqlConnection connection, NpgsqlTransaction? transaction)
-    {
-        using var command = connection.CreateCommand();
-
-        command.CommandText = $"DROP TABLE IF EXISTS \"{name}\"";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        command.ExecuteNonQuery();
-    }
-
-    /// <summary>
-    /// Asynchronously drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private static async ValueTask DropTemporaryTableAsync(
-        String name,
-        NpgsqlConnection connection,
-        NpgsqlTransaction? transaction
-    )
-    {
-#pragma warning disable CA2007
-        await using var command = connection.CreateCommand();
-#pragma warning restore CA2007
-
-        command.CommandText = $"DROP TABLE IF EXISTS \"{name}\"";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    private readonly PostgreSqlDatabaseAdapter databaseAdapter;
 }

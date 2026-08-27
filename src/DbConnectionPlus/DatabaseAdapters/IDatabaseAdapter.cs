@@ -30,7 +30,7 @@ public interface IDatabaseAdapter
     /// <param name="parameter">The parameter to bind <paramref name="value" /> to.</param>
     /// <param name="value">The value to bind to <paramref name="parameter" />.</param>
     /// <exception cref="ArgumentNullException"><paramref name="parameter" /> is <see langword="null" />.</exception>
-    public void BindParameterValue(DbParameter parameter, Object? value);
+    public void BindParameterValue(DbParameter parameter, object? value);
 
     /// <summary>
     /// Returns <paramref name="parameterName" /> with the appropriate prefix
@@ -41,7 +41,7 @@ public interface IDatabaseAdapter
     /// <paramref name="parameterName" /> formatted with the appropriate prefix, suitable for inclusion in SQL
     /// statements.
     /// </returns>
-    public String FormatParameterName(String parameterName);
+    public string FormatParameterName(string parameterName);
 
     /// <summary>
     /// Gets the corresponding database specific data type for the type <paramref name="type" />.
@@ -67,7 +67,7 @@ public interface IDatabaseAdapter
     ///         </item>
     ///     </list>
     /// </exception>
-    public String GetDataType(Type type, EnumSerializationMode enumSerializationMode);
+    public string GetDataType(Type type, EnumSerializationMode enumSerializationMode);
 
     /// <summary>
     /// Returns <paramref name="identifier" /> properly quoted for use in SQL statements.
@@ -76,7 +76,7 @@ public interface IDatabaseAdapter
     /// <returns>
     /// A string containing the quoted version of <paramref name="identifier" />, suitable for use in SQL statements.
     /// </returns>
-    public String QuoteIdentifier(String identifier);
+    public string QuoteIdentifier(string identifier);
 
     /// <summary>
     /// Returns the specified name of a temporary table properly quoted for use in SQL statements.
@@ -86,7 +86,7 @@ public interface IDatabaseAdapter
     /// <returns>
     /// A string containing the quoted version of <paramref name="tableName" />, suitable for use in SQL statements.
     /// </returns>
-    public String QuoteTemporaryTableName(String tableName, DbConnection connection);
+    public string QuoteTemporaryTableName(string tableName, DbConnection connection);
 
     /// <summary>
     /// Determines whether the database system this adapter supports has support for (local/session scoped) temporary
@@ -107,7 +107,7 @@ public interface IDatabaseAdapter
     /// <see cref="NotSupportedException" /> from the <see cref="TemporaryTableBuilder" /> property.
     /// </para>
     /// </remarks>
-    public Boolean SupportsTemporaryTables(DbConnection connection);
+    public bool SupportsTemporaryTables(DbConnection connection);
 
     /// <summary>
     /// Determines whether <paramref name="exception" /> was thrown because an SQL statement was cancelled via
@@ -120,8 +120,5 @@ public interface IDatabaseAdapter
     /// <paramref name="cancellationToken" />; otherwise, <see langword="false" />.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="exception" /> is <see langword="null" />.</exception>
-    public Boolean WasSqlStatementCancelledByCancellationToken(
-        Exception exception,
-        CancellationToken cancellationToken
-    );
+    public bool WasSqlStatementCancelledByCancellationToken(Exception exception, CancellationToken cancellationToken);
 }

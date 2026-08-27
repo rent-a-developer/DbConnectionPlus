@@ -16,9 +16,18 @@ namespace RentADeveloper.DbConnectionPlus.IntegrationTests.TestDatabase.Containe
 /// and SQL Server never starts the MySQL, Oracle or PostgreSQL containers. Sharing is what keeps it to one
 /// container per database system - every test class asks for the same instance.
 /// </remarks>
-internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
+internal sealed class TestDatabaseContainer<TFixture>(string databaseSystemName)
     where TFixture : class, ITestDatabaseContainerFixture, new()
 {
+    /// <summary>
+    /// The started - or currently starting - fixture.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Lazy{T}" /> defaults to <see cref="LazyThreadSafetyMode.ExecutionAndPublication" />, so the
+    /// task - and with it the container - is created once, no matter how many test classes ask for it.
+    /// </remarks>
+    private readonly Lazy<Task<TFixture>> fixture = new(() => CreateAndStartAsync(databaseSystemName));
+
     /// <summary>
     /// The fixture that runs the database server.
     /// </summary>
@@ -28,8 +37,8 @@ internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
             ? this.fixture.Value.GetAwaiter().GetResult()
             : throw new InvalidOperationException(
                 $"The {databaseSystemName} container has not been started. Tests reach a database through "
-                + $"{nameof(IntegrationTestsBase<>)}, which starts the container it needs before the first test "
-                + "of a test class runs."
+                    + $"{nameof(IntegrationTestsBase<>)}, which starts the container it needs before the first test "
+                    + "of a test class runs."
             );
 
     /// <summary>
@@ -54,10 +63,9 @@ internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
     /// Starts the container and waits until the database server inside it accepts connections. Does nothing if the
     /// container is already starting or started.
     /// </summary>
-    public ValueTask StartAsync() =>
-        new(this.fixture.Value);
+    public ValueTask StartAsync() => new(this.fixture.Value);
 
-    private static async Task<TFixture> CreateAndStartAsync(String databaseSystemName)
+    private static async Task<TFixture> CreateAndStartAsync(string databaseSystemName)
     {
         TestContext.Current.SendDiagnosticMessage($"Starting the {databaseSystemName} container ...");
 
@@ -75,18 +83,9 @@ internal sealed class TestDatabaseContainer<TFixture>(String databaseSystemName)
 
         TestContext.Current.SendDiagnosticMessage(
             $"The {databaseSystemName} container is ready after {elapsedSeconds} seconds and is using the "
-            + $"following connection string: {connectionString}"
+                + $"following connection string: {connectionString}"
         );
 
         return fixture;
     }
-
-    /// <summary>
-    /// The started - or currently starting - fixture.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Lazy{T}" /> defaults to <see cref="LazyThreadSafetyMode.ExecutionAndPublication" />, so the
-    /// task - and with it the container - is created once, no matter how many test classes ask for it.
-    /// </remarks>
-    private readonly Lazy<Task<TFixture>> fixture = new(() => CreateAndStartAsync(databaseSystemName));
 }

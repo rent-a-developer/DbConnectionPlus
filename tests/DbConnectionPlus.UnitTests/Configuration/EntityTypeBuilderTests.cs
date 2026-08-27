@@ -14,43 +14,19 @@ public class EntityTypeBuilderTests : UnitTestsBase
         ((IFreezable)builder).Freeze();
 
         Invoking(() => builder.ToTable("Entities2"))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.Property(a => a.Id).HasColumnName("Identifier"))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
 
         Invoking(() => builder.Property(a => a.StringValue).HasColumnName("String"))
-            .Should().Throw<InvalidOperationException>()
+            .Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("The configuration of DbConnectionPlus is frozen and can no longer be modified.");
-    }
-
-    [Fact]
-    public void Property_InvalidExpression_ShouldThrow()
-    {
-        var builder = new EntityTypeBuilder<Entity>();
-
-        Invoking(() => builder.Property(a => a.Id.ToString()))
-            .Should().Throw<ArgumentException>()
-            .WithMessage(
-                "The expression 'a => a.Id.ToString()' is not a valid property access expression. The expression " +
-                "should represent a simple property access: 'a => a.MyProperty'.*"
-            );
-    }
-
-    [Fact]
-    public void Property_ShouldGetPropertyBuilder()
-    {
-        var builder = new EntityTypeBuilder<Entity>();
-
-        var propertyBuilder = builder.Property(a => a.Id);
-
-        propertyBuilder
-            .Should().NotBeNull();
-
-        builder.Property(a => a.Id)
-            .Should().BeSameAs(propertyBuilder);
     }
 
     [Fact]
@@ -64,20 +40,41 @@ public class EntityTypeBuilderTests : UnitTestsBase
 
         var propertyBuilders = ((IEntityTypeBuilder)builder).PropertyBuilders;
 
-        propertyBuilders
-            .Should().HaveCount(3);
+        propertyBuilders.Should().HaveCount(3);
 
-        propertyBuilders
-            .Should().ContainKeys("Id", "StringValue", "Int64Value");
+        propertyBuilders.Should().ContainKeys("Id", "StringValue", "Int64Value");
 
-        propertyBuilders["Id"]
-            .Should().BeSameAs(builder.Property(a => a.Id));
+        propertyBuilders["Id"].Should().BeSameAs(builder.Property(a => a.Id));
 
-        propertyBuilders["StringValue"]
-            .Should().BeSameAs(builder.Property(a => a.StringValue));
+        propertyBuilders["StringValue"].Should().BeSameAs(builder.Property(a => a.StringValue));
 
-        propertyBuilders["Int64Value"]
-            .Should().BeSameAs(builder.Property(a => a.Int64Value));
+        propertyBuilders["Int64Value"].Should().BeSameAs(builder.Property(a => a.Int64Value));
+    }
+
+    [Fact]
+    public void Property_InvalidExpression_ShouldThrow()
+    {
+        var builder = new EntityTypeBuilder<Entity>();
+
+        Invoking(() => builder.Property(a => a.Id.ToString()))
+            .Should()
+            .Throw<ArgumentException>()
+            .WithMessage(
+                "The expression 'a => a.Id.ToString()' is not a valid property access expression. The expression "
+                    + "should represent a simple property access: 'a => a.MyProperty'.*"
+            );
+    }
+
+    [Fact]
+    public void Property_ShouldGetPropertyBuilder()
+    {
+        var builder = new EntityTypeBuilder<Entity>();
+
+        var propertyBuilder = builder.Property(a => a.Id);
+
+        propertyBuilder.Should().NotBeNull();
+
+        builder.Property(a => a.Id).Should().BeSameAs(propertyBuilder);
     }
 
     [Fact]
@@ -85,9 +82,7 @@ public class EntityTypeBuilderTests : UnitTestsBase
     {
         var builder = new EntityTypeBuilder<Entity>();
 
-        ArgumentNullGuardVerifier.Verify(() =>
-            builder.Property(a => a.Id)
-        );
+        ArgumentNullGuardVerifier.Verify(() => builder.Property(a => a.Id));
     }
 
     [Fact]
@@ -95,8 +90,7 @@ public class EntityTypeBuilderTests : UnitTestsBase
     {
         var builder = new EntityTypeBuilder<Entity>();
 
-        ((IEntityTypeBuilder)builder).TableName
-            .Should().BeNull();
+        ((IEntityTypeBuilder)builder).TableName.Should().BeNull();
     }
 
     [Fact]
@@ -106,8 +100,7 @@ public class EntityTypeBuilderTests : UnitTestsBase
 
         builder.ToTable("Entities");
 
-        ((IEntityTypeBuilder)builder).TableName
-            .Should().Be("Entities");
+        ((IEntityTypeBuilder)builder).TableName.Should().Be("Entities");
     }
 
     [Fact]
@@ -117,7 +110,6 @@ public class EntityTypeBuilderTests : UnitTestsBase
 
         builder.ToTable("Entities");
 
-        ((IEntityTypeBuilder)builder).TableName
-            .Should().Be("Entities");
+        ((IEntityTypeBuilder)builder).TableName.Should().Be("Entities");
     }
 }

@@ -47,9 +47,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var numberOfLowStockProducts = connection.ExecuteScalar<Int32>(
     ///    $"SELECT COUNT(*) FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -90,12 +90,11 @@ public static partial class DbConnectionExtensions
                 {
                     null => default!, // If the result set is empty, we get null and must return default of TTarget.
                     TTarget alreadyTargetTypeValue => alreadyTargetTypeValue,
-                    _ => ConvertValueForExecuteScalar<TTarget>(value)
+                    _ => ConvertValueForExecuteScalar<TTarget>(value),
                 };
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -139,9 +138,9 @@ public static partial class DbConnectionExtensions
     /// <code>
     /// <![CDATA[
     /// using static RentADeveloper.DbConnectionPlus.DbConnectionExtensions;
-    /// 
+    ///
     /// var lowStockThreshold = configuration.Thresholds.LowStock;
-    /// 
+    ///
     /// var numberOfLowStockProducts = await connection.ExecuteScalarAsync<Int32>(
     ///    $"SELECT COUNT(*) FROM Product WHERE UnitsInStock < {Parameter(lowStockThreshold)}"
     /// );
@@ -161,15 +160,17 @@ public static partial class DbConnectionExtensions
 
         var databaseAdapter = DbConnectionPlusConfiguration.Instance.GetDatabaseAdapter(connection.GetType());
 
-        var (command, commandDisposer) = await DbCommandBuilder.BuildDbCommandAsync(
-            statement,
-            databaseAdapter,
-            connection,
-            transaction,
-            commandTimeout,
-            commandType,
-            cancellationToken
-        ).ConfigureAwait(false);
+        var (command, commandDisposer) = await DbCommandBuilder
+            .BuildDbCommandAsync(
+                statement,
+                databaseAdapter,
+                connection,
+                transaction,
+                commandTimeout,
+                commandType,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         await using (commandDisposer)
         {
@@ -182,12 +183,11 @@ public static partial class DbConnectionExtensions
                 {
                     null => default!, // If the result set is empty, we get null and must return default of TTarget.
                     TTarget alreadyTargetTypeValue => alreadyTargetTypeValue,
-                    _ => ConvertValueForExecuteScalar<TTarget>(value)
+                    _ => ConvertValueForExecuteScalar<TTarget>(value),
                 };
             }
-            catch (Exception exception) when (
-                databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken)
-            )
+            catch (Exception exception)
+                when (databaseAdapter.WasSqlStatementCancelledByCancellationToken(exception, cancellationToken))
             {
                 throw new OperationCanceledException(cancellationToken);
             }
@@ -205,7 +205,7 @@ public static partial class DbConnectionExtensions
     /// <exception cref="InvalidCastException">
     /// <paramref name="value" /> could not be converted to the type <typeparamref name="TTarget" />.
     /// </exception>
-    private static TTarget ConvertValueForExecuteScalar<TTarget>(Object? value)
+    private static TTarget ConvertValueForExecuteScalar<TTarget>(object? value)
     {
         try
         {
@@ -214,17 +214,17 @@ public static partial class DbConnectionExtensions
         catch (Exception exception) when (value is null or DBNull)
         {
             throw new InvalidCastException(
-                "The first column of the first row in the result set returned by the SQL statement contains a NULL " +
-                $"value, which could not be converted to the type {typeof(TTarget)}. See inner exception for details.",
+                "The first column of the first row in the result set returned by the SQL statement contains a NULL "
+                    + $"value, which could not be converted to the type {typeof(TTarget)}. See inner exception for details.",
                 exception
             );
         }
         catch (Exception exception) when (value is not null)
         {
             throw new InvalidCastException(
-                "The first column of the first row in the result set returned by the SQL statement contains " +
-                $"the value {value.ToDebugString()}, which could not be converted to the type {typeof(TTarget)}. " +
-                "See inner exception for details.",
+                "The first column of the first row in the result set returned by the SQL statement contains "
+                    + $"the value {value.ToDebugString()}, which could not be converted to the type {typeof(TTarget)}. "
+                    + "See inner exception for details.",
                 exception
             );
         }

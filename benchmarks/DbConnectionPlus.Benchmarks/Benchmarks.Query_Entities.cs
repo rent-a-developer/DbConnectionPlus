@@ -7,29 +7,8 @@ namespace RentADeveloper.DbConnectionPlus.Benchmarks;
 
 public partial class Benchmarks
 {
-    [GlobalCleanup(
-        Targets =
-        [
-            nameof(Query_Entities_Command),
-            nameof(Query_Entities_Dapper),
-            nameof(Query_Entities_Dapper_Aot),
-            nameof(Query_Entities_DbConnectionPlus)
-        ]
-    )]
-    public void Query_Entities__Cleanup() =>
-        this.connection.Dispose();
-
-    [GlobalSetup(
-        Targets =
-        [
-            nameof(Query_Entities_Command),
-            nameof(Query_Entities_Dapper),
-            nameof(Query_Entities_Dapper_Aot),
-            nameof(Query_Entities_DbConnectionPlus)
-        ]
-    )]
-    public void Query_Entities__Setup() =>
-        this.SetupDatabase(Query_Entities_EntitiesPerOperation);
+    private const string Query_Entities_Category = "Query_Entities";
+    private const int Query_Entities_EntitiesPerOperation = 100;
 
     [Benchmark(Baseline = true)]
     [BenchmarkCategory(Query_Entities_Category)]
@@ -71,6 +50,23 @@ public partial class Benchmarks
     public List<BenchmarkEntity> Query_Entities_DbConnectionPlus() =>
         [.. this.connection.Query<BenchmarkEntity>("SELECT * FROM Entity")];
 
-    private const String Query_Entities_Category = "Query_Entities";
-    private const Int32 Query_Entities_EntitiesPerOperation = 100;
+    [GlobalCleanup(
+        Targets = [
+            nameof(Query_Entities_Command),
+            nameof(Query_Entities_Dapper),
+            nameof(Query_Entities_Dapper_Aot),
+            nameof(Query_Entities_DbConnectionPlus),
+        ]
+    )]
+    public void Query_Entities__Cleanup() => this.connection.Dispose();
+
+    [GlobalSetup(
+        Targets = [
+            nameof(Query_Entities_Command),
+            nameof(Query_Entities_Dapper),
+            nameof(Query_Entities_Dapper_Aot),
+            nameof(Query_Entities_DbConnectionPlus),
+        ]
+    )]
+    public void Query_Entities__Setup() => this.SetupDatabase(Query_Entities_EntitiesPerOperation);
 }

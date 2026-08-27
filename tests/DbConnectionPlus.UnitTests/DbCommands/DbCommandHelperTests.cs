@@ -12,11 +12,9 @@ public class DbCommandHelperTests : UnitTestsBase
 
         var registration = DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, cancellationToken);
 
-        registration
-            .Should().NotBe(default(CancellationTokenRegistration));
+        registration.Should().NotBe(default(CancellationTokenRegistration));
 
-        registration.Token
-            .Should().Be(cancellationToken);
+        registration.Token.Should().Be(cancellationToken);
     }
 
     [Fact]
@@ -24,11 +22,9 @@ public class DbCommandHelperTests : UnitTestsBase
     {
         var registration = DbCommandHelper.RegisterDbCommandCancellation(this.MockDbCommand, CancellationToken.None);
 
-        registration
-            .Should().Be(default(CancellationTokenRegistration));
+        registration.Should().Be(default(CancellationTokenRegistration));
 
-        registration.Token
-            .Should().Be(CancellationToken.None);
+        registration.Token.Should().Be(CancellationToken.None);
     }
 
     [Fact]

@@ -1,7 +1,6 @@
 // Copyright (c) 2026 David Liebeherr
 // Licensed under the MIT License. See LICENSE.md in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using RentADeveloper.DbConnectionPlus.Extensions;
 
 namespace RentADeveloper.DbConnectionPlus.Converters;
@@ -82,7 +81,7 @@ internal static class EnumConverter
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static TTarget? ConvertValueToEnumMember<TTarget>(Object? value)
+    internal static TTarget? ConvertValueToEnumMember<TTarget>(object? value)
     {
         var targetType = typeof(TTarget);
 
@@ -99,18 +98,19 @@ internal static class EnumConverter
             case null or DBNull when default(TTarget) is null:
                 return default;
 
-            case null or DBNull when default(TTarget) is not null:
+            case null
+            or DBNull when default(TTarget) is not null:
                 ThrowCouldNotConvertNullToNonNullableEnumTypeException(targetType);
                 return default; // Just to satisfy the compiler.
 
             case TTarget alreadyTargetTypeValue:
                 return alreadyTargetTypeValue;
 
-            case String stringValue when String.IsNullOrWhiteSpace(stringValue):
+            case string stringValue when string.IsNullOrWhiteSpace(stringValue):
                 ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
                 return default; // Just to satisfy the compiler.
 
-            case String stringValue:
+            case string stringValue:
                 if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
                 {
                     ThrowCouldNotConvertStringToEnumTypeException(stringValue, targetType);
@@ -118,7 +118,17 @@ internal static class EnumConverter
 
                 return (TTarget?)result;
 
-            case Byte or SByte or Int16 or UInt16 or Int32 or UInt32 or Int64 or UInt64 or Double or Single or Decimal:
+            case byte
+            or sbyte
+            or short
+            or ushort
+            or int
+            or uint
+            or long
+            or ulong
+            or double
+            or float
+            or decimal:
                 var enumUnderlyingType = Enum.GetUnderlyingType(effectiveTargetType);
 
                 var valueConvertedToEnumUnderlyingType = Convert.ChangeType(
@@ -132,16 +142,10 @@ internal static class EnumConverter
                     ThrowCouldNotConvertNumericValueToEnumType(value, targetType);
                 }
 
-                return (TTarget?)Enum.ToObject(
-                    effectiveTargetType,
-                    valueConvertedToEnumUnderlyingType
-                );
+                return (TTarget?)Enum.ToObject(effectiveTargetType, valueConvertedToEnumUnderlyingType);
 
             default:
-                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
-                    value,
-                    targetType
-                );
+                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(value, targetType);
                 return default; // Just to satisfy the compiler.
         }
     }
@@ -218,7 +222,7 @@ internal static class EnumConverter
     ///     </list>
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Object? ConvertValueToEnumMember(Object? value, Type targetType)
+    internal static object? ConvertValueToEnumMember(object? value, Type targetType)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -235,18 +239,19 @@ internal static class EnumConverter
             case null or DBNull when targetType.IsReferenceTypeOrNullableType():
                 return null;
 
-            case null or DBNull when !targetType.IsReferenceTypeOrNullableType():
+            case null
+            or DBNull when !targetType.IsReferenceTypeOrNullableType():
                 ThrowCouldNotConvertNullToNonNullableEnumTypeException(targetType);
                 return null; // Just to satisfy the compiler.
 
             case not null when value.GetType().IsAssignableTo(effectiveTargetType):
                 return value;
 
-            case String stringValue when String.IsNullOrWhiteSpace(stringValue):
+            case string stringValue when string.IsNullOrWhiteSpace(stringValue):
                 ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(targetType);
                 return null; // Just to satisfy the compiler.
 
-            case String stringValue:
+            case string stringValue:
                 if (!Enum.TryParse(effectiveTargetType, stringValue, true, out var result))
                 {
                     ThrowCouldNotConvertStringToEnumTypeException(stringValue, targetType);
@@ -254,7 +259,17 @@ internal static class EnumConverter
 
                 return result;
 
-            case Byte or SByte or Int16 or UInt16 or Int32 or UInt32 or Int64 or UInt64 or Double or Single or Decimal:
+            case byte
+            or sbyte
+            or short
+            or ushort
+            or int
+            or uint
+            or long
+            or ulong
+            or double
+            or float
+            or decimal:
                 var enumUnderlyingType = Enum.GetUnderlyingType(effectiveTargetType);
 
                 var valueConvertedToEnumUnderlyingType = Convert.ChangeType(
@@ -268,16 +283,10 @@ internal static class EnumConverter
                     ThrowCouldNotConvertNumericValueToEnumType(value, targetType);
                 }
 
-                return Enum.ToObject(
-                    effectiveTargetType,
-                    valueConvertedToEnumUnderlyingType
-                );
+                return Enum.ToObject(effectiveTargetType, valueConvertedToEnumUnderlyingType);
 
             default:
-                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
-                    value,
-                    targetType
-                );
+                ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(value, targetType);
                 return null; // Just to satisfy the compiler.
         }
     }
@@ -286,54 +295,48 @@ internal static class EnumConverter
     [DoesNotReturn]
     private static void ThrowCouldNotConvertEmptyOrWhitespaceStringToEnumTypeException(Type enumType) =>
         throw new InvalidCastException(
-            "Could not convert an empty string or a string that consists only of white-space characters to an enum " +
-            $"member of the type {enumType}."
+            "Could not convert an empty string or a string that consists only of white-space characters to an enum "
+                + $"member of the type {enumType}."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowCouldNotConvertNullToNonNullableEnumTypeException(Type enumType) =>
+        throw new InvalidCastException($"Could not convert {{null}} to an enum member of the type {enumType}.");
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    [DoesNotReturn]
+    private static void ThrowCouldNotConvertNumericValueToEnumType(object value, Type enumType) =>
         throw new InvalidCastException(
-            $"Could not convert {{null}} to an enum member of the type {enumType}."
+            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}. That "
+                + "value does not match any of the values of the enum's members."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
-    private static void
-        ThrowCouldNotConvertNumericValueToEnumType(Object value, Type enumType) =>
+    private static void ThrowCouldNotConvertStringToEnumTypeException(string value, Type enumType) =>
         throw new InvalidCastException(
-            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}. That " +
-            "value does not match any of the values of the enum's members."
+            $"Could not convert the string '{value}' to an enum member of the type {enumType}. That string does "
+                + "not match any of the names of the enum's members."
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
-    private static void ThrowCouldNotConvertStringToEnumTypeException(
-        String value,
-        Type enumType
-    ) =>
-        throw new InvalidCastException(
-            $"Could not convert the string '{value}' to an enum member of the type {enumType}. That string does " +
-            "not match any of the names of the enum's members."
-        );
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    [DoesNotReturn]
-    private static void ThrowTypeIsNeitherEnumNorNullableEnumTypeException(Object? value, Type enumType) =>
+    private static void ThrowTypeIsNeitherEnumNorNullableEnumTypeException(object? value, Type enumType) =>
         throw new ArgumentException(
-            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}, because " +
-            $"the type {enumType} is not an enum type.",
+            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {enumType}, because "
+                + $"the type {enumType} is not an enum type.",
             nameof(enumType)
         );
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [DoesNotReturn]
     private static void ThrowValueIsNeitherEnumValueNorStringNorNumericValueException(
-        Object? value,
+        object? value,
         Type originalEnumType
     ) =>
         throw new InvalidCastException(
-            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {originalEnumType}. " +
-            "The value must either be an enum value of that type or a string or a numeric value."
+            $"Could not convert the value {value.ToDebugString()} to an enum member of the type {originalEnumType}. "
+                + "The value must either be an enum value of that type or a string or a numeric value."
         );
 }

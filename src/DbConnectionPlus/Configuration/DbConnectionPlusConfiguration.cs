@@ -5,12 +5,19 @@ namespace RentADeveloper.DbConnectionPlus.Configuration;
 /// </summary>
 public sealed class DbConnectionPlusConfiguration : IFreezable
 {
+    private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
+    private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = [];
+    private bool isFrozen;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DbConnectionPlusConfiguration" /> class.
     /// </summary>
-    internal DbConnectionPlusConfiguration()
-    {
-    }
+    internal DbConnectionPlusConfiguration() { }
+
+    /// <summary>
+    /// The singleton instance of <see cref="DbConnectionPlusConfiguration" />.
+    /// </summary>
+    public static DbConnectionPlusConfiguration Instance { get; internal set; } = new();
 
     /// <summary>
     /// <para>
@@ -77,6 +84,17 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         }
     }
 
+    /// <inheritdoc />
+    void IFreezable.Freeze()
+    {
+        this.isFrozen = true;
+
+        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
+        {
+            entityTypeBuilder.Freeze();
+        }
+    }
+
     /// <summary>
     /// Gets a builder for configuring the entity type <typeparamref name="TEntity" />.
     /// </summary>
@@ -119,22 +137,6 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         this.databaseAdapters[typeof(TConnection)] = adapter;
     }
 
-    /// <inheritdoc />
-    void IFreezable.Freeze()
-    {
-        this.isFrozen = true;
-
-        foreach (var entityTypeBuilder in this.entityTypeBuilders.Values)
-        {
-            entityTypeBuilder.Freeze();
-        }
-    }
-
-    /// <summary>
-    /// The singleton instance of <see cref="DbConnectionPlusConfiguration" />.
-    /// </summary>
-    public static DbConnectionPlusConfiguration Instance { get; internal set; } = new();
-
     /// <summary>
     /// Retrieves the database adapter associated with the connection type <paramref name="connectionType" />.
     /// </summary>
@@ -158,11 +160,11 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
         return this.databaseAdapters.TryGetValue(connectionType, out var adapter)
             ? adapter
             : throw new InvalidOperationException(
-                $"No database adapter is registered for the database connection of the type {connectionType}. " +
-                "Please install the corresponding adapter NuGet package " +
-                "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) " +
-                "and register it by calling the appropriate UseXxx() extension method via " +
-                $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
+                $"No database adapter is registered for the database connection of the type {connectionType}. "
+                    + "Please install the corresponding adapter NuGet package "
+                    + "(e.g., RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer) "
+                    + "and register it by calling the appropriate UseXxx() extension method via "
+                    + $"{nameof(DbConnectionExtensions)}.{nameof(DbConnectionExtensions.Configure)}."
             );
     }
 
@@ -183,8 +185,4 @@ public sealed class DbConnectionPlusConfiguration : IFreezable
             ThrowHelper.ThrowConfigurationIsFrozenException();
         }
     }
-
-    private readonly Dictionary<Type, IDatabaseAdapter> databaseAdapters = [];
-    private readonly Dictionary<Type, IEntityTypeBuilder> entityTypeBuilders = [];
-    private Boolean isFrozen;
 }

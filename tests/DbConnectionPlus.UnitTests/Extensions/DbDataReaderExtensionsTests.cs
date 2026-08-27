@@ -9,7 +9,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
     [Fact]
     public void GetFieldNames_ShouldReturnFieldNames()
     {
-        String[] fieldNames = ["FieldA", "FieldB", "FieldC"];
+        string[] fieldNames = ["FieldA", "FieldB", "FieldC"];
 
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -19,14 +19,13 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
         dataReader.GetName(1).Returns(fieldNames[1]);
         dataReader.GetName(2).Returns(fieldNames[2]);
 
-        dataReader.GetFieldNames()
-            .Should().BeEquivalentTo(fieldNames);
+        dataReader.GetFieldNames().Should().BeEquivalentTo(fieldNames);
     }
 
     [Fact]
     public void GetFieldTypes_ShouldReturnFieldTypes()
     {
-        Type[] fieldTypes = [typeof(Int32), typeof(String), typeof(DateTime)];
+        Type[] fieldTypes = [typeof(int), typeof(string), typeof(DateTime)];
 
         var dataReader = Substitute.For<DbDataReader>();
 
@@ -36,8 +35,7 @@ public class DbDataReaderExtensionsTests : UnitTestsBase
         dataReader.GetFieldType(1).Returns(fieldTypes[1]);
         dataReader.GetFieldType(2).Returns(fieldTypes[2]);
 
-        dataReader.GetFieldTypes()
-            .Should().BeEquivalentTo(fieldTypes);
+        dataReader.GetFieldTypes().Should().BeEquivalentTo(fieldTypes);
     }
 
     [Fact]

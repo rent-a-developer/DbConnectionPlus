@@ -5,7 +5,6 @@ using LinkDotNet.StringBuilder;
 using MySqlConnector;
 using RentADeveloper.DbConnectionPlus.Converters;
 using RentADeveloper.DbConnectionPlus.DbCommands;
-using RentADeveloper.DbConnectionPlus.Entities;
 using RentADeveloper.DbConnectionPlus.Extensions;
 using RentADeveloper.DbConnectionPlus.Readers;
 
@@ -16,6 +15,8 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql;
 /// </summary>
 internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 {
+    private readonly MySqlDatabaseAdapter databaseAdapter;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MySqlTemporaryTableBuilder" /> class.
     /// </summary>
@@ -34,10 +35,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     public TemporaryTableDisposer BuildTemporaryTable(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -69,8 +69,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -87,8 +89,10 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
             );
             createCommand.Transaction = transaction;
 
-            using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            using var cancellationTokenRegistration = DbCommandHelper.RegisterDbCommandCancellation(
+                createCommand,
+                cancellationToken
+            );
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -100,7 +104,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         var mySqlBulkCopy = new MySqlBulkCopy(mySqlConnection, mySqlTransaction)
         {
             BulkCopyTimeout = 0,
-            DestinationTableName = $"`{name}`"
+            DestinationTableName = $"`{name}`",
         };
 
         mySqlBulkCopy.ColumnMappings.Clear();
@@ -111,7 +115,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -134,10 +140,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     public async Task<TemporaryTableDisposer> BuildTemporaryTableAsync(
         DbConnection connection,
         DbTransaction? transaction,
-        String name,
+        string name,
         IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         CancellationToken cancellationToken = default
     )
     {
@@ -173,7 +178,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
             await using var cancellationTokenRegistration =
 #pragma warning disable CA2007
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
+            DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken);
 #pragma warning restore CA2007
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
@@ -194,9 +199,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
             createCommand.Transaction = transaction;
 
-            await using var cancellationTokenRegistration =
-                DbCommandHelper.RegisterDbCommandCancellation(createCommand, cancellationToken)
-                    .ConfigureAwait(false);
+            await using var cancellationTokenRegistration = DbCommandHelper
+                .RegisterDbCommandCancellation(createCommand, cancellationToken)
+                .ConfigureAwait(false);
 
             DbConnectionExtensions.OnBeforeExecutingCommand(createCommand, []);
 
@@ -210,7 +215,7 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         var mySqlBulkCopy = new MySqlBulkCopy(mySqlConnection, mySqlTransaction)
         {
             BulkCopyTimeout = 0,
-            DestinationTableName = $"`{name}`"
+            DestinationTableName = $"`{name}`",
         };
 
         mySqlBulkCopy.ColumnMappings.Clear();
@@ -221,7 +226,9 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         }
         else
         {
-            var properties = EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)
+            var properties = EntityHelper
+                .GetEntityTypeMetadata(valuesType)
+                .MappedProperties.Where(a => a.CanRead)
                 .ToList();
 
             for (var i = 0; i < properties.Count; i++)
@@ -240,6 +247,113 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
         );
     }
 
+    /// <summary>
+    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
+    /// </summary>
+    /// <param name="values">The sequence containing the values to be read.</param>
+    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
+    /// <returns>
+    /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
+    /// </returns>
+    private static EnumerableReader CreateValuesDataReader(
+        IEnumerable values,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType
+    )
+    {
+        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
+        {
+            if (valuesType.IsEnumOrNullableEnumType())
+            {
+                var enumValues = new List<object>();
+
+                foreach (var value in values)
+                {
+                    if (value is Enum enumValue)
+                    {
+                        enumValues.Add(
+                            EnumSerializer.SerializeEnum(
+                                enumValue,
+                                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                            )
+                        );
+                    }
+                    else
+                    {
+                        enumValues.Add(value);
+                    }
+                }
+
+                // The reader is built per branch instead of first resolving the type into a local: that keeps the
+                // fully known typeof(...) values flowing straight into EnumerableReader, whose valuesType
+                // parameter is annotated. Routing them through a switch expression would launder the annotation
+                // away, because the throw helper's generic return value carries none.
+                switch (DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
+                {
+                    case EnumSerializationMode.Integers:
+                        return new(enumValues, typeof(int?), Constants.SingleColumnTemporaryTableColumnName);
+
+                    case EnumSerializationMode.Strings:
+                        return new(enumValues, typeof(string), Constants.SingleColumnTemporaryTableColumnName);
+
+                    default:
+                        return ThrowHelper.ThrowInvalidEnumSerializationModeException<EnumerableReader>(
+                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
+                        );
+                }
+            }
+
+            return new(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
+        }
+
+        return new(
+            values,
+            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
+            EnumerableReaderOptions.SerializeEnums | EnumerableReaderOptions.ReadCharsAsStrings
+        );
+    }
+
+    /// <summary>
+    /// Drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    private static void DropTemporaryTable(string name, MySqlConnection connection, MySqlTransaction? transaction)
+    {
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        command.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Asynchronously drops the temporary table with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the table to drop.</param>
+    /// <param name="connection">The connection to use to drop the table.</param>
+    /// <param name="transaction">The transaction within to drop the table.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private static async ValueTask DropTemporaryTableAsync(
+        string name,
+        MySqlConnection connection,
+        MySqlTransaction? transaction
+    )
+    {
+#pragma warning disable CA2007
+        await using var command = connection.CreateCommand();
+#pragma warning restore CA2007
+
+        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
+        command.Transaction = transaction;
+
+        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
+
+        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Builds an SQL code to create a multi-column temporary table to be populated with objects of the type
@@ -249,14 +363,13 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="objectsType">The type of objects with which to populate the table.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateMultiColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type objectsType,
+    private string BuildCreateMultiColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type objectsType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[500]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[500]);
 
         sqlBuilder.Append("CREATE TEMPORARY TABLE `");
         sqlBuilder.Append(tableName);
@@ -300,14 +413,13 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
     /// <param name="valuesType">The type of values with which the table will be populated.</param>
     /// <param name="enumSerializationMode">The mode to use to serialize <see cref="Enum" /> values.</param>
     /// <returns>The built SQL code.</returns>
-    private String BuildCreateSingleColumnTemporaryTableSqlCode(
-        String tableName,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType,
+    private string BuildCreateSingleColumnTemporaryTableSqlCode(
+        string tableName,
+        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)] Type valuesType,
         EnumSerializationMode enumSerializationMode
     )
     {
-        using var sqlBuilder = new ValueStringBuilder(stackalloc Char[100]);
+        using var sqlBuilder = new ValueStringBuilder(stackalloc char[100]);
 
         sqlBuilder.Append("CREATE TEMPORARY TABLE `");
         sqlBuilder.Append(tableName);
@@ -322,122 +434,4 @@ internal class MySqlTemporaryTableBuilder : ITemporaryTableBuilder
 
         return sqlBuilder.ToString();
     }
-
-    /// <summary>
-    /// Creates a <see cref="DbDataReader" /> that reads data from the specified sequence of values.
-    /// </summary>
-    /// <param name="values">The sequence containing the values to be read.</param>
-    /// <param name="valuesType">The type of values in <paramref name="values" />.</param>
-    /// <returns>
-    /// A <see cref="DbDataReader" /> that provides access to the data in <paramref name="values" />.
-    /// </returns>
-    private static EnumerableReader CreateValuesDataReader(
-        IEnumerable values,
-        [DynamicallyAccessedMembers(EntityHelper.TemporaryTableValueMemberTypes)]
-        Type valuesType)
-    {
-        if (valuesType.IsBuiltInTypeOrNullableBuiltInType() || valuesType.IsEnumOrNullableEnumType())
-        {
-            if (valuesType.IsEnumOrNullableEnumType())
-            {
-                var enumValues = new List<Object>();
-
-                foreach (var value in values)
-                {
-                    if (value is Enum enumValue)
-                    {
-                        enumValues.Add(
-                            EnumSerializer.SerializeEnum(
-                                enumValue,
-                                DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                            )
-                        );
-                    }
-                    else
-                    {
-                        enumValues.Add(value);
-                    }
-                }
-
-                // The reader is built per branch instead of first resolving the type into a local: that keeps the
-                // fully known typeof(...) values flowing straight into EnumerableReader, whose valuesType
-                // parameter is annotated. Routing them through a switch expression would launder the annotation
-                // away, because the throw helper's generic return value carries none.
-                switch (DbConnectionPlusConfiguration.Instance.EnumSerializationMode)
-                {
-                    case EnumSerializationMode.Integers:
-                        return new EnumerableReader(
-                            enumValues,
-                            typeof(Int32?),
-                            Constants.SingleColumnTemporaryTableColumnName
-                        );
-
-                    case EnumSerializationMode.Strings:
-                        return new EnumerableReader(
-                            enumValues,
-                            typeof(String),
-                            Constants.SingleColumnTemporaryTableColumnName
-                        );
-
-                    default:
-                        return ThrowHelper.ThrowInvalidEnumSerializationModeException<EnumerableReader>(
-                            DbConnectionPlusConfiguration.Instance.EnumSerializationMode
-                        );
-                }
-            }
-
-            return new EnumerableReader(values, valuesType, Constants.SingleColumnTemporaryTableColumnName);
-        }
-
-        return new EnumerableReader(
-            values,
-            [.. EntityHelper.GetEntityTypeMetadata(valuesType).MappedProperties.Where(a => a.CanRead)],
-            EnumerableReaderOptions.SerializeEnums | EnumerableReaderOptions.ReadCharsAsStrings
-        );
-    }
-
-    /// <summary>
-    /// Drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    private static void DropTemporaryTable(String name, MySqlConnection connection, MySqlTransaction? transaction)
-    {
-        using var command = connection.CreateCommand();
-
-        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        command.ExecuteNonQuery();
-    }
-
-    /// <summary>
-    /// Asynchronously drops the temporary table with the specified name.
-    /// </summary>
-    /// <param name="name">The name of the table to drop.</param>
-    /// <param name="connection">The connection to use to drop the table.</param>
-    /// <param name="transaction">The transaction within to drop the table.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private static async ValueTask DropTemporaryTableAsync(
-        String name,
-        MySqlConnection connection,
-        MySqlTransaction? transaction
-    )
-    {
-#pragma warning disable CA2007
-        await using var command = connection.CreateCommand();
-#pragma warning restore CA2007
-
-        command.CommandText = $"DROP TEMPORARY TABLE IF EXISTS `{name}`";
-        command.Transaction = transaction;
-
-        DbConnectionExtensions.OnBeforeExecutingCommand(command, []);
-
-        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-    }
-
-    private readonly MySqlDatabaseAdapter databaseAdapter;
 }
