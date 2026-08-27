@@ -15,25 +15,16 @@ indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# MSBuild and ReSharper settings files are tab-indented, which is what is already in the repository.
 [*.{csproj,props,targets,DotSettings}]
 indent_style = tab
 tab_width = 4
 
-# The solution file, the NuGet configs and the trimmer descriptor use two spaces, also matching what is
-# already there.
-[*.{slnx,config,xml}]
-indent_size = 2
-
-[*.{json,yml,yaml}]
+[*.{slnx,config,xml,json,yml,yaml}]
 indent_size = 2
 
 # Two trailing spaces are a hard line break in Markdown, so they must survive.
 [*.md]
 trim_trailing_whitespace = false
-
-[*.ps1]
-end_of_line = crlf
 
 # ======================================================================================================
 # C#
@@ -71,8 +62,11 @@ csharp_style_var_when_type_is_apparent = true:error
 #### Member access: always `this.` ####
 
 # Instance members are always read and written through `this.`, and fields are never `_camelCase`.
-# Primary constructor parameters are the one thing this does not cover, and that is not an exception:
-# in C# they are parameters, not instance members, so `this.` cannot be applied to them at all.
+#
+# A primary constructor parameter is assigned to a `private readonly` backing field and read through
+# `this.field`, never used directly in a member body. Nothing below enforces that - a parameter is not an
+# instance member, so these four rules cannot see it - but a captured parameter compiles to a field with no
+# `readonly`, and using one directly would silently drop the guarantee that it cannot be reassigned.
 dotnet_style_qualification_for_event = true:error
 dotnet_style_qualification_for_field = true:error
 dotnet_style_qualification_for_method = true:error
@@ -93,6 +87,10 @@ csharp_style_prefer_simple_property_accessors = true:error
 
 #### Namespaces and using directives ####
 
+# An unused using is a build error. This needs the documentation file that Directory.Build.props turns
+# on for every project - without one, IDE0005 is simply never reported at build time.
+dotnet_diagnostic.IDE0005.severity = error
+
 csharp_style_namespace_declarations = file_scoped:error
 csharp_using_directive_placement = outside_namespace:error
 dotnet_style_namespace_match_folder = true:error
@@ -109,7 +107,17 @@ dotnet_style_prefer_auto_properties = true:error
 csharp_prefer_simple_default_expression = true:error
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_system_threading_lock = false:silent
+# `new()` wherever the compiler can infer the type. IDE0090 covers only the case where the type is
+# written next to it - `EnumerableReader r = new EnumerableReader(...)` - which the `var` rule above
+# makes impossible anyway, so on its own it has almost nothing to fire on here.
+#
+# RCS1250 covers what IDE0090 does not: `return new T(...)`, an argument, and an assignment to an
+# already-typed target. Not everything - it stays quiet on a `new` nested inside another `new` that is
+# itself an argument, as in EntityMaterializerFactory's propertyBindings.Add(...). Rider flags those;
+# the build does not, so they are on the author.
 csharp_style_implicit_object_creation_when_type_is_apparent = true:error
+roslynator_object_creation_type_style = implicit
+dotnet_diagnostic.RCS1250.severity = error
 csharp_style_inlined_variable_declaration = true:error
 csharp_style_prefer_implicitly_typed_lambda_expression = true:error
 csharp_style_prefer_index_operator = true:error
@@ -226,29 +234,60 @@ dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = 
 dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
 dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
 
+# SA1208, SA1209, SA1210, SA1211, SA1217: the order of using directives.
+#
+# CSharpier already sorts using directives, so these five do not fix anything - they CHECK that what
+# CSharpier produced is what we want, and catch a file that reached the repository without it. All five
+# report zero violations across the 283 files, which is what says CSharpier and StyleCop agree here.
+#
+# SA1208 is also what makes `systemUsingDirectivesFirst` in stylecop.json mean something. With the rule
+# off, that setting was read by nothing.
+#
+# SA1216 (using static placed after the regular usings) is deliberately ABSENT: it is the one CSharpier
+# contradicts. CSharpier sorts by namespace and ignores the `static` keyword, so it writes
+#
+#     global using AwesomeAssertions;
+#     global using static AwesomeAssertions.FluentActions;
+#     global using Microsoft.Data.SqlClient;
+#
+# where SA1216 wants both `using static` lines grouped at the end. Enabling it makes the build
+# unsatisfiable, because CSharpier runs last and always has the final say - verified by sorting the file
+# StyleCop's way and watching CSharpier put it straight back.
+#
+# SA1200 is absent for a different reason: `csharp_using_directive_placement` above already requires
+# usings outside the namespace, and two rules for one decision is how they end up disagreeing.
+dotnet_diagnostic.SA1208.severity = error
+dotnet_diagnostic.SA1209.severity = error
+dotnet_diagnostic.SA1210.severity = error
+dotnet_diagnostic.SA1211.severity = error
+dotnet_diagnostic.SA1217.severity = error
+
 # SA1201: Elements should appear in the correct order (by kind).
 dotnet_diagnostic.SA1201.severity = error
 
-# SA1202: Elements should be ordered by access. OFF, and this is the one place where the checker and the
-# fixer genuinely disagree.
+# SA1202: Elements should be ordered by access.
 #
-# The two tools classify an explicit interface implementation differently. StyleCop counts
-# `void IFreezable.Freeze()` as public; ReSharper sorts it with the private members, because in C# it
-# carries no access modifier. So ReSharper puts it last inside its kind group and StyleCop then reports
-# a public member sitting after a private one - on four members here, and on every explicit interface
-# implementation anyone writes from now on.
+# Explicit interface implementations need a word, because the checker and the fixer classify them
+# differently. ReSharper ranks one below private, since in C# it carries no access modifier, so left
+# alone it lands at the bottom of its kind group.
 #
-# There is no setting that reconciles them. Sorting interface members first in the file layout does not
-# do it (ReSharper sorts them last, not first) and it separates the Equals overloads, which trips Sonar's
-# S4136. That leaves a rule the fixer cannot satisfy: scripts/tidy-cs.ps1 would produce code the build
-# rejects, and the next run would produce the same code again. A rule nothing can fix is worse than no
-# rule, so it is off.
+# StyleCop disagrees, but NOT uniformly - which is why the file layout has one entry per kind rather
+# than one shared entry:
 #
-# What is lost: accessibility order is still APPLIED - the file layout in the .DotSettings sorts by access
-# before anything else - it is just not VERIFIED by the build. Kind order (SA1201), constants (SA1203),
-# static (SA1204) and readonly (SA1214) are all still checked, and all four keep accessibility as their
-# higher-priority trait, so they only pass if the accessibility order is right anyway.
-dotnet_diagnostic.SA1202.severity = none
+#   properties, indexers, methods   counted as public, so they must come FIRST in their group.
+#                                   The layout has an "Explicit interface <kind>" entry for each.
+#   events                          counted as private, so ReSharper's default placement is already
+#                                   right. Giving events an entry actively breaks the build - it puts
+#                                   the explicit event ahead of a public one, which is SA1202.
+#
+# The entries match on ImplementsInterface AND Access Is="Private", and both halves matter.
+# ImplementsInterface on its own also matches IMPLICIT implementations, which drags Equals(T) away
+# from Equals(object) and trips Sonar's S4136. An implicit implementation has to be public, so the
+# access test is what narrows each entry to the explicit ones.
+#
+# One shared entry across the kinds would not work either: it would sit an explicit property next to
+# an explicit method and break SA1201's kind order.
+dotnet_diagnostic.SA1202.severity = error
 
 # SA1203: Constants should appear before fields.
 dotnet_diagnostic.SA1203.severity = error
@@ -333,20 +372,54 @@ dotnet_diagnostic.xUnit1051.severity = none
 # Tests and benchmarks
 #
 # Held to the same style, formatting and ordering as the shipping libraries. What they are NOT held to is
-# a handful of Sonar rules that only make sense for library code.
+# XML documentation, and a handful of Sonar rules that only make sense for library code.
 # ======================================================================================================
 
 [{tests,benchmarks}/**/*.cs]
 
+# CS1591: Missing XML comment for publicly visible type or member
+# CS1574: XML comment has a cref attribute that could not be resolved
+#
+# Every project generates a documentation file, because IDE0005 does not work without one - see the
+# comment in Directory.Build.props. That switches these two compiler diagnostics on everywhere as a side
+# effect, and with TreatWarningsAsErrors they are 3202 errors here. Nothing consumes the tests or the
+# benchmarks as an API and they use plain `//` comments by design, so both are off for them. In src/ they
+# stay errors, which is what actually keeps the public API documented.
+dotnet_diagnostic.CS1574.severity = none
+dotnet_diagnostic.CS1591.severity = none
+
+# S1144: Unused private types or members should be removed
 dotnet_diagnostic.S1144.severity = none
+
+# S1172: Unused method parameters should be removed
 dotnet_diagnostic.S1172.severity = none
+
+# S2344: Enumeration type names should not have "Flags" or "Enum" suffixes
 dotnet_diagnostic.S2344.severity = none
+
+# S2696: Instance members should not write to "static" fields
 dotnet_diagnostic.S2696.severity = none
+
+# S2925: "Thread.Sleep" should not be used in tests
 dotnet_diagnostic.S2925.severity = none
+
+# S3010: Static fields should not be updated in constructors
 dotnet_diagnostic.S3010.severity = none
+
+# S3453: Classes should not have only "private" constructors
 dotnet_diagnostic.S3453.severity = none
+
+# S3459: Unassigned members should be removed
 dotnet_diagnostic.S3459.severity = none
+
+# S3963: "static" fields should be initialized inline
 dotnet_diagnostic.S3963.severity = none
+
+# S4144: Methods should not have identical implementations
 dotnet_diagnostic.S4144.severity = none
+
+# S5034: "ValueTask" should be consumed correctly
 dotnet_diagnostic.S5034.severity = none
+
+# S6562: Always set the "DateTimeKind" when creating new "DateTime" instances
 dotnet_diagnostic.S6562.severity = none
