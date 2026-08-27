@@ -40,6 +40,14 @@
 		-->
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+		<!--
+			SA0001 says XML comment analysis is off because the project does not generate a documentation
+			file, which is true and deliberate for tests/ and benchmarks/. It cannot be switched off in
+			.editorconfig with the rest of the StyleCop rules: it is reported against the compilation with
+			no file location, and an .editorconfig section can only reach a diagnostic that has one.
+		-->
+		<NoWarn>$(NoWarn);SA0001</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -55,10 +63,29 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<!--
+			The member-ordering checker. It is here for that one job - see the ordering section of
+			.editorconfig, which switches every StyleCop category off and turns only the ordering rules
+			plus SA1309 back on.
+
+			This is the NewStyleCop.Analyzers fork, not StyleCop.Analyzers. Upstream's last release is
+			1.2.0-beta.556 from December 2023 and predates the C# this repository writes; the fork ships
+			stable releases and handles C# 14 extension declarations and collection expressions. The rule
+			IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
+		-->
+		<PackageReference Include="NewStyleCop.Analyzers" Version="1.2.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.33.0.1635">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- One stylecop.json for the whole repository; $(MSBuildThisFileDirectory) is the repository root. -->
+		<AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
 	</ItemGroup>
 
 </Project>

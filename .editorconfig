@@ -229,8 +229,26 @@ dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
 # SA1201: Elements should appear in the correct order (by kind).
 dotnet_diagnostic.SA1201.severity = error
 
-# SA1202: Elements should be ordered by access.
-dotnet_diagnostic.SA1202.severity = error
+# SA1202: Elements should be ordered by access. OFF, and this is the one place where the checker and the
+# fixer genuinely disagree.
+#
+# The two tools classify an explicit interface implementation differently. StyleCop counts
+# `void IFreezable.Freeze()` as public; ReSharper sorts it with the private members, because in C# it
+# carries no access modifier. So ReSharper puts it last inside its kind group and StyleCop then reports
+# a public member sitting after a private one - on four members here, and on every explicit interface
+# implementation anyone writes from now on.
+#
+# There is no setting that reconciles them. Sorting interface members first in the file layout does not
+# do it (ReSharper sorts them last, not first) and it separates the Equals overloads, which trips Sonar's
+# S4136. That leaves a rule the fixer cannot satisfy: scripts/tidy-cs.ps1 would produce code the build
+# rejects, and the next run would produce the same code again. A rule nothing can fix is worse than no
+# rule, so it is off.
+#
+# What is lost: accessibility order is still APPLIED - the file layout in the .DotSettings sorts by access
+# before anything else - it is just not VERIFIED by the build. Kind order (SA1201), constants (SA1203),
+# static (SA1204) and readonly (SA1214) are all still checked, and all four keep accessibility as their
+# higher-priority trait, so they only pass if the accessibility order is right anyway.
+dotnet_diagnostic.SA1202.severity = none
 
 # SA1203: Constants should appear before fields.
 dotnet_diagnostic.SA1203.severity = error
