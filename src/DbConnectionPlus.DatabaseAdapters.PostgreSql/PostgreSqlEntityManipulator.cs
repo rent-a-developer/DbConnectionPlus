@@ -11,15 +11,9 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql;
 /// <summary>
 /// The entity manipulator for PostgreSQL.
 /// </summary>
-internal class PostgreSqlEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class PostgreSqlEntityManipulator(PostgreSqlDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PostgreSqlEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-    public PostgreSqlEntityManipulator(PostgreSqlDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
-
     /// <inheritdoc />
     public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
@@ -1197,7 +1191,7 @@ internal class PostgreSqlEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly PostgreSqlDatabaseAdapter databaseAdapter;
+    private readonly PostgreSqlDatabaseAdapter databaseAdapter = databaseAdapter;
     private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();

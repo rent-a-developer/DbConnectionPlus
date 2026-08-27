@@ -39,20 +39,14 @@ namespace RentADeveloper.DbConnectionPlus.Dynamic;
 /// var name = product.Name;
 /// </code>
 /// </example>
+/// <param name="columns">
+/// The columns of the data row.
+/// The keys are expected to be the column names, and the values are expected to be the corresponding column values.
+/// </param>
 #pragma warning disable CA1710
-public class DataRow : IDictionary<string, object?>, IDynamicMetaObjectProvider
+public class DataRow(IDictionary<string, object?> columns) : IDictionary<string, object?>, IDynamicMetaObjectProvider
 #pragma warning restore CA1710
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DataRow" /> class.
-    /// </summary>
-    /// <param name="columns">
-    /// The columns of the data row.
-    /// The keys are expected to be the column names, and the values are expected to be the corresponding column values.
-    /// </param>
-    public DataRow(IDictionary<string, object?> columns) =>
-        this.columns = columns;
-
     /// <inheritdoc />
     public int Count => this.columns.Count;
 
@@ -145,7 +139,7 @@ public class DataRow : IDictionary<string, object?>, IDynamicMetaObjectProvider
     private static readonly Func<DataRow, string, object?, object?> writeColumn =
         static (row, columnName, value) => row[columnName] = value;
 
-    private readonly IDictionary<string, object?> columns;
+    private readonly IDictionary<string, object?> columns = columns;
 
     /// <summary>
     /// Binds member access on a <see cref="DataRow" /> to the columns of the row, so that <c>row.Id</c> resolves to

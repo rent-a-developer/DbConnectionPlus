@@ -11,15 +11,9 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Sqlite;
 /// <summary>
 /// The entity manipulator for SQLite.
 /// </summary>
-internal class SqliteEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-    public SqliteEntityManipulator(SqliteDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
-
     /// <inheritdoc />
     public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
@@ -1287,7 +1281,7 @@ internal class SqliteEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly SqliteDatabaseAdapter databaseAdapter;
+    private readonly SqliteDatabaseAdapter databaseAdapter = databaseAdapter;
     private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();

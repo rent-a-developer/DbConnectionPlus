@@ -11,15 +11,9 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle;
 /// <summary>
 /// The entity manipulator for PostgreSQL.
 /// </summary>
-internal class OracleEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OracleEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-    public OracleEntityManipulator(OracleDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
-
     /// <inheritdoc />
     public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
@@ -1217,7 +1211,7 @@ internal class OracleEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly OracleDatabaseAdapter databaseAdapter;
+    private readonly OracleDatabaseAdapter databaseAdapter = databaseAdapter;
     private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();

@@ -7,24 +7,15 @@ namespace RentADeveloper.DbConnectionPlus.UnitTests;
 /// <summary>
 /// Base class for unit tests of methods that execute SQL statements.
 /// </summary>
-public abstract class StatementMethodTestsBase : UnitTestsBase
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StatementMethodTestsBase" /> class.
-    /// </summary>
-    /// <param name="asyncTestMethod">The asynchronous version of the statement method to test.</param>
-    /// <param name="syncTestMethod">The synchronous version of the statement method to test.</param>
-    protected StatementMethodTestsBase(
-        Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
+/// <param name="asyncTestMethod">The asynchronous version of the statement method to test.</param>
+/// <param name="syncTestMethod">The synchronous version of the statement method to test.</param>
+public abstract class StatementMethodTestsBase(
+    Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
             asyncTestMethod,
-        Action<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken>
+    Action<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken>
             syncTestMethod
-    )
-    {
-        this.asyncTestMethod = asyncTestMethod;
-        this.syncTestMethod = syncTestMethod;
-    }
-
+    ) : UnitTestsBase
+{
     [Fact]
     public async Task AsyncMethod_ShouldUseCommandTimeout()
     {
@@ -143,9 +134,9 @@ public abstract class StatementMethodTestsBase : UnitTestsBase
 
     private readonly
         Func<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken, Task>
-        asyncTestMethod;
+        asyncTestMethod = asyncTestMethod;
 
     private readonly
         Action<DbConnection, InterpolatedSqlStatement, DbTransaction?, TimeSpan?, CommandType, CancellationToken>
-        syncTestMethod;
+        syncTestMethod = syncTestMethod;
 }

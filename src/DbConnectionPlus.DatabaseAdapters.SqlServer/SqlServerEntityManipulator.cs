@@ -11,15 +11,9 @@ namespace RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer;
 /// <summary>
 /// The entity manipulator for SQL Server.
 /// </summary>
-internal class SqlServerEntityManipulator : IEntityManipulator
+/// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
+internal class SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapter) : IEntityManipulator
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerEntityManipulator" /> class.
-    /// </summary>
-    /// <param name="databaseAdapter">The database adapter to use to manipulate entities.</param>
-    public SqlServerEntityManipulator(SqlServerDatabaseAdapter databaseAdapter) =>
-        this.databaseAdapter = databaseAdapter;
-
     /// <inheritdoc />
     public int DeleteEntities<
         [DynamicallyAccessedMembers(EntityHelper.EntityMemberTypes)] TEntity
@@ -1197,7 +1191,7 @@ internal class SqlServerEntityManipulator : IEntityManipulator
         }
     }
 
-    private readonly SqlServerDatabaseAdapter databaseAdapter;
+    private readonly SqlServerDatabaseAdapter databaseAdapter = databaseAdapter;
     private readonly ConcurrentDictionary<Type, string> entityDeleteSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityInsertSqlCodePerEntityType = new();
     private readonly ConcurrentDictionary<Type, string> entityUpdateSqlCodePerEntityType = new();
