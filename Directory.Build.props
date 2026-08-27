@@ -23,11 +23,29 @@
 		<TieredCompilation>true</TieredCompilation>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<!--
+			The style gate, and it applies to EVERY project - the shipping libraries, the tests and the
+			benchmarks alike. Style, formatting and member ordering are not something test code is exempt
+			from; a slip is a build error there too.
+
+			EnforceCodeStyleInBuild is what makes the IDExxxx code-style rules and the StyleCop ordering
+			rules run during the build rather than only in the IDE, and TreatWarningsAsErrors turns them
+			into build breaks. Where a rule genuinely does not fit test code it is switched off for tests/
+			and benchmarks/ in .editorconfig, not by weakening the gate here.
+
+			The CA quality rules are a separate matter and stay in src/Directory.Build.props. Holding test
+			code to them is a much bigger change than holding it to a style - CA1707 alone fires 2100 times
+			on the Method_ShouldDoSomething naming the test suite is built around.
+		-->
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!--
 			The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
-			consumer of the packages. Only the shipping projects turn their diagnostics into errors
-			(TreatWarningsAsErrors in src/Directory.Build.props).
+			consumer of the packages.
 		-->
 		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
 			<PrivateAssets>all</PrivateAssets>

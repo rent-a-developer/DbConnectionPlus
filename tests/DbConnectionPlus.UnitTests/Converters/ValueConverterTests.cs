@@ -689,14 +689,8 @@ public class ValueConverterTests : UnitTestsBase
 
         // @formatter:off
 
-        return new List<(
-            Type SourceType,
-            Type TargetType,
-            bool ExpectedCanConvert,
-            object? SourceValue,
-            object? ExpectedTargetValue
-            )>
-        {
+        return
+        [
             (typeof(bool), typeof(bool), true, true, true),
             (typeof(bool), typeof(byte), true, true, (byte)1),
             (typeof(bool), typeof(decimal), true, true, (decimal)1),
@@ -963,8 +957,8 @@ public class ValueConverterTests : UnitTestsBase
             (typeof(DateOnly), typeof(DateTime), false, dateOnlyValue, null),
             (typeof(TimeOnly), typeof(TimeSpan), false, timeOnlyValue, null),
             (typeof(DateOnly), typeof(Guid), false, dateOnlyValue, null),
-            (typeof(TimeOnly), typeof(Guid), false, timeOnlyValue, null)
-        };
+            (typeof(TimeOnly), typeof(Guid), false, timeOnlyValue, null),
+        ];
 
         // @formatter:on
     }

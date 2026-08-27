@@ -15,10 +15,15 @@ indent_size = 4
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# MSBuild and project files are tab-indented, which is what is already in the repository.
-[*.{csproj,props,targets,slnx,config,resx,DotSettings}]
+# MSBuild and ReSharper settings files are tab-indented, which is what is already in the repository.
+[*.{csproj,props,targets,DotSettings}]
 indent_style = tab
 tab_width = 4
+
+# The solution file, the NuGet configs and the trimmer descriptor use two spaces, also matching what is
+# already there.
+[*.{slnx,config,xml}]
+indent_size = 2
 
 [*.{json,yml,yaml}]
 indent_size = 2
