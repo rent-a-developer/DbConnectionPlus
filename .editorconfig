@@ -3,13 +3,14 @@ root = true
 # ======================================================================================================
 # Every file
 #
-# Line endings are deliberately NOT set here. .gitattributes owns them: it normalizes to LF in the
-# repository and checks each file out with the ending that file type needs. An end_of_line here would
-# fight that on Windows.
+# Line endings are LF everywhere, on every OS. .gitattributes stores LF and checks out LF - that is the
+# guarantee, and it holds whatever core.autocrlf a contributor has. end_of_line below is what makes the
+# editors and formatters write LF too, so the working tree never drifts.
 # ======================================================================================================
 
 [*]
 charset = utf-8
+end_of_line = lf
 indent_style = space
 indent_size = 4
 insert_final_newline = true

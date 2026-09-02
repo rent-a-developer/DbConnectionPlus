@@ -174,6 +174,9 @@ constraints must not be broken:
   [the `commit` skill](.agents/skills/commit/SKILL.md). `CHANGELOG.md` follows
   [Keep a Changelog](https://keepachangelog.com/); versioning is SemVer.
 - Pull request process: [CONTRIBUTING.md](CONTRIBUTING.md#pull-request-process).
+- Line endings are LF everywhere; `.gitattributes` and `.editorconfig` enforce this and CI verifies it.
+  Never hand-convert line endings, and never compare a multi-line source literal against
+  `Environment.NewLine` - the literal carries the file's bytes, `Environment.NewLine` carries the host's.
 
 ### Releases
 

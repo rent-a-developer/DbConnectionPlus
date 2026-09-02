@@ -66,6 +66,27 @@ If you use Rider, two settings make the tooling invisible: install the **CSharpi
 Settings | Tools | CSharpier | Run on Save, and use the shared **ReorderMembers** cleanup profile (from
 `DbConnectionPlus.slnx.DotSettings`) when you want members put back in order.
 
+## Line endings
+
+Every text file is LF, in the repository and in the working tree, on every OS. `.gitattributes`
+enforces this whatever your `core.autocrlf` is set to, so there is nothing to configure, and CI fails
+if a wrongly stored file lands anyway.
+
+`.editorconfig` also asks editors and formatters to write LF. If one does not, git still stores LF, but
+`git status` lists the file as modified while `git diff` shows nothing. Run
+`pwsh -File scripts/tidy-code.ps1` to fix it, or `git checkout -- <path>`.
+
+If you have set `git config core.safecrlf true`, git refuses to add such a file with "CRLF would be
+replaced by LF". Run the tidy script first, or use `core.safecrlf warn`.
+
+To refresh a clone made before this policy (commit or stash your changes first - the second command
+discards uncommitted work):
+
+```shell
+git rm -r --cached . -q
+git reset --hard
+```
+
 ## Releasing
 
 Releases are cut by CI from a pushed tag; nothing is packed or pushed by hand. The versioning scheme is

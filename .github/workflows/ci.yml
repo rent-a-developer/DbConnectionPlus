@@ -112,6 +112,19 @@ jobs:
 
           echo "All ${count} revision(s) resolve and are reachable."
 
+      # .gitattributes only applies when a file is ADDED. A file committed past it, or a rule added
+      # after the file, stays wrong forever and nothing complains - and commits created server-side on GitHub,
+      # such as a bot's, bypass the filter entirely. Renormalizing and asking whether anything changed
+      # is the exact question, and it needs no toolchain.
+      - name: Verify line endings are normalized
+        run: |
+          git add --renormalize .
+          if ! git diff --cached --quiet; then
+            git --no-pager diff --cached --name-only
+            echo "::error title=Line endings::The files above are not stored as .gitattributes requires. Run 'git add --renormalize .' and commit the result."
+            exit 1
+          fi
+
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
