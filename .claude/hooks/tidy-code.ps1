@@ -1,6 +1,6 @@
 # PostToolUse hook: format an edited C# file with CSharpier.
 #
-# The logic itself lives in scripts/tidy-cs.ps1, so that Codex's hook and a human run exactly the same
+# The logic itself lives in scripts/tidy-code.ps1, so that Codex's hook and a human run exactly the same
 # thing. This file is only the hook wiring: read the tool payload off stdin, pull the edited path out of
 # it, and delegate.
 #
@@ -21,9 +21,9 @@ try {
     if ([System.IO.Path]::GetExtension($filePath) -ne '.cs') { exit 0 }
     if (-not (Test-Path -LiteralPath $filePath)) { exit 0 }
 
-    $script = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'scripts/tidy-cs.ps1'
+    $script = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'scripts/tidy-code.ps1'
     if (-not (Test-Path -LiteralPath $script)) {
-        Write-Output "tidy-cs hook: scripts/tidy-cs.ps1 not found at $script"
+        Write-Output "tidy-code hook: scripts/tidy-code.ps1 not found at $script"
         exit 0
     }
 
@@ -36,7 +36,7 @@ try {
     }
 }
 catch {
-    Write-Output "tidy-cs hook error: $($_.Exception.Message)"
+    Write-Output "tidy-code hook error: $($_.Exception.Message)"
 }
 
 exit 0

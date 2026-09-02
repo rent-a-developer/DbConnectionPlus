@@ -22,7 +22,7 @@ methods on `DbConnection`, with per-database dialect support from pluggable adap
 | `docs/` | docfx config, the site landing page and implementation plans. |
 | `.agents/`, `.codex/`, `.claude/` | Canonical skills and references, plus each tool's agent metadata and hook wiring. |
 | `.github/workflows/` | `ci.yml` (lint → build/test → package + docs → package-consumption gates → publish), `codeql.yml`, `dependency-review.yml`. |
-| `scripts/` | The commands you type: `preflight`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-cs` and `public-api-guard`, which the editor hooks run for you. |
+| `scripts/` | The commands you type: `preflight`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
 
 The solution file is `DbConnectionPlus.slnx` (XML `.slnx`, not `.sln`). **New projects must be added to it.**
 
@@ -118,9 +118,9 @@ something surprising: [the code-style reference](.agents/references/code-style.m
 One entry point applies all of it, in three scopes:
 
 ```bash
-pwsh -File scripts/tidy-cs.ps1              # ~1s   formatting, on the files git reports as changed
-pwsh -File scripts/tidy-cs.ps1 -Scope style # ~15s  + the code-style fixers
-pwsh -File scripts/tidy-cs.ps1 -Scope all   # ~3min + member ordering, whole solution
+pwsh -File scripts/tidy-code.ps1              # ~1s   formatting, on the files git reports as changed
+pwsh -File scripts/tidy-code.ps1 -Scope style # ~15s  + the code-style fixers
+pwsh -File scripts/tidy-code.ps1 -Scope all   # ~3min + member ordering, whole solution
 ```
 
 **Before you commit, run `-Scope all`** — or `scripts/preflight.ps1`, which does it for you. That is the only scope
@@ -189,7 +189,7 @@ Two skills and two review agents are checked in, each under a Codex and a Claude
 
 Claude Code (`.claude/settings.json`) and Codex (`.codex/hooks.json`) fire the same two PostToolUse hooks —
 formatting and the public-API reminder — and both delegate to `scripts/`. Codex needs those hooks trusted once per
-clone (`/hooks`); until then nothing fires and you run `scripts/tidy-cs.ps1` yourself.
+clone (`/hooks`); until then nothing fires and you run `scripts/tidy-code.ps1` yourself.
 
 Reusable skills and reference material belong in `.agents/`, executable checks in `scripts/`, and only metadata and
 hook wiring in `.codex/` and `.claude/`. Never fork a procedure or a check into a tool-specific copy — both

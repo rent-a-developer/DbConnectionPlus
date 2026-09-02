@@ -41,13 +41,13 @@
     tree you are not ready to have tidied.
 
 .EXAMPLE
-    pwsh -File scripts/tidy-cs.ps1
+    pwsh -File scripts/tidy-code.ps1
 
 .EXAMPLE
-    pwsh -File scripts/tidy-cs.ps1 -Scope all
+    pwsh -File scripts/tidy-code.ps1 -Scope all
 
 .EXAMPLE
-    pwsh -File scripts/tidy-cs.ps1 src/DbConnectionPlus/Entities/EntityHelper.cs
+    pwsh -File scripts/tidy-code.ps1 src/DbConnectionPlus/Entities/EntityHelper.cs
 #>
 [CmdletBinding()]
 param(
@@ -150,7 +150,7 @@ function Invoke-StyleFix {
     $consumers = [System.IO.Path]::Combine($repositoryRoot, 'tests', 'package-consumption')
     $skipped = @($Files) | Where-Object { $_.StartsWith($consumers, [StringComparison]::OrdinalIgnoreCase) }
     if ($skipped) {
-        Write-Output "tidy-cs: $($skipped.Count) file(s) under tests/package-consumption - no style pass, see AGENTS.md."
+        Write-Output "tidy-code: $($skipped.Count) file(s) under tests/package-consumption - no style pass, see AGENTS.md."
     }
 
     $Files = @($Files) | Where-Object { -not $_.StartsWith($consumers, [StringComparison]::OrdinalIgnoreCase) }
@@ -160,7 +160,7 @@ function Invoke-StyleFix {
     $Files | Group-Object { Get-OwningProject -FilePath $_ } | ForEach-Object {
         $project = $_.Name
         if ([String]::IsNullOrWhiteSpace($project) -or -not (Test-Path -LiteralPath $project)) {
-            Write-Output "tidy-cs: no owning .csproj for $($_.Group -join ', ') - skipped."
+            Write-Output "tidy-code: no owning .csproj for $($_.Group -join ', ') - skipped."
             return
         }
 
@@ -221,7 +221,7 @@ function Get-CSharpFingerprint {
     # equal, which would make -Check report a tidy tree without having looked at a single file. This is CI's
     # only formatting gate; it must not be able to pass by accident.
     if (-not $relativePaths) {
-        throw 'tidy-cs: git listed no .cs files. Is this a git repository, and is git on PATH?'
+        throw 'tidy-code: git listed no .cs files. Is this a git repository, and is git on PATH?'
     }
 
     $sha = [System.Security.Cryptography.SHA256]::Create()
@@ -267,7 +267,7 @@ function Invoke-Format {
 # --- Run ------------------------------------------------------------------------------------------
 
 if ($Scope -eq 'all') {
-    if ($Path) { Write-Output 'tidy-cs: -Scope all covers the whole solution; the paths given are ignored.' }
+    if ($Path) { Write-Output 'tidy-code: -Scope all covers the whole solution; the paths given are ignored.' }
 
     # -Check does not reach the individual tools here, because two of them are not idempotent on their
     # own: cleanupcode re-indents the content of raw string literals and CSharpier puts it back. Asking
@@ -280,11 +280,11 @@ if ($Scope -eq 'all') {
     Invoke-Format -Files @() -VerifyOnly $false
 
     if ($Check -and -not $failures.Count -and (Get-CSharpFingerprint) -ne $before) {
-        $failures.Add('the tree is not tidy. Run: pwsh -File scripts/tidy-cs.ps1 -Scope all')
+        $failures.Add('the tree is not tidy. Run: pwsh -File scripts/tidy-code.ps1 -Scope all')
     }
 
     if (-not $failures.Count) {
-        Write-Output "tidy-cs: solution $(if ($Check) { 'checked' } else { 'tidied' })."
+        Write-Output "tidy-code: solution $(if ($Check) { 'checked' } else { 'tidied' })."
     }
 }
 else {
@@ -292,7 +292,7 @@ else {
 
     $files = Resolve-TargetFile -Candidates $Path
     if (-not $files) {
-        Write-Output 'tidy-cs: nothing to do.'
+        Write-Output 'tidy-code: nothing to do.'
         exit 0
     }
 
@@ -300,12 +300,12 @@ else {
     Invoke-Format -Files $files -VerifyOnly $Check.IsPresent
 
     if (-not $failures.Count) {
-        Write-Output "tidy-cs: $($files.Count) file(s) $(if ($Check) { 'checked' } else { 'tidied' })."
+        Write-Output "tidy-code: $($files.Count) file(s) $(if ($Check) { 'checked' } else { 'tidied' })."
     }
 }
 
 if ($failures.Count) {
-    $failures | ForEach-Object { Write-Output "tidy-cs: $_" }
+    $failures | ForEach-Object { Write-Output "tidy-code: $_" }
     exit 1
 }
 

@@ -40,7 +40,7 @@ jobs:
   # Enforce the style, formatting and member ordering the repo ships tooling for. A rule that is not
   # enforced in CI drifts with the first external pull request.
   #
-  # This runs scripts/tidy-cs.ps1, the same entry point a developer and both AI agents use, so CI cannot
+  # This runs scripts/tidy-code.ps1, the same entry point a developer and both AI agents use, so CI cannot
   # disagree with what the tooling produces locally. -Check -Scope all tidies the checkout for real and
   # then asks whether anything changed: ReSharper has no check mode, and neither it nor CSharpier is
   # idempotent alone, so comparing before against after is the only honest question. Writing to the
@@ -135,7 +135,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Verify style, formatting and member ordering
-        run: pwsh -NoProfile -NonInteractive -File scripts/tidy-cs.ps1 -Scope all -Check
+        run: pwsh -NoProfile -NonInteractive -File scripts/tidy-code.ps1 -Scope all -Check
 
       # The check above only says that something is untidy. This says what.
       - name: Show the changes that would fix it
