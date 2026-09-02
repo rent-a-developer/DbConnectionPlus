@@ -40,7 +40,7 @@ jobs:
   # Enforce the style, formatting and member ordering the repo ships tooling for. A rule that is not
   # enforced in CI drifts with the first external pull request.
   #
-  # This runs scripts/tidy-cs.ps1, the same entry point a developer and both AI agents use, so CI cannot
+  # This runs scripts/tidy-code.ps1, the same entry point a developer and both AI agents use, so CI cannot
   # disagree with what the tooling produces locally. -Check -Scope all tidies the checkout for real and
   # then asks whether anything changed: ReSharper has no check mode, and neither it nor CSharpier is
   # idempotent alone, so comparing before against after is the only honest question. Writing to the
@@ -112,6 +112,19 @@ jobs:
 
           echo "All ${count} revision(s) resolve and are reachable."
 
+      # .gitattributes only applies when a file is ADDED. A file committed past it, or a rule added
+      # after the file, stays wrong forever and nothing complains - and commits created server-side on GitHub,
+      # such as a bot's, bypass the filter entirely. Renormalizing and asking whether anything changed
+      # is the exact question, and it needs no toolchain.
+      - name: Verify line endings are normalized
+        run: |
+          git add --renormalize .
+          if ! git diff --cached --quiet; then
+            git --no-pager diff --cached --name-only
+            echo "::error title=Line endings::The files above are not stored as .gitattributes requires. Run 'git add --renormalize .' and commit the result."
+            exit 1
+          fi
+
       - name: Setup .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
@@ -135,7 +148,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Verify style, formatting and member ordering
-        run: pwsh -NoProfile -NonInteractive -File scripts/tidy-cs.ps1 -Scope all -Check
+        run: pwsh -NoProfile -NonInteractive -File scripts/tidy-code.ps1 -Scope all -Check
 
       # The check above only says that something is untidy. This says what.
       - name: Show the changes that would fix it

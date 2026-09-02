@@ -48,7 +48,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $solution = Join-Path $repositoryRoot 'DbConnectionPlus.slnx'
 $unitTests = Join-Path $repositoryRoot 'tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj'
 $publicApiGuard = Join-Path $repositoryRoot 'scripts/public-api-guard.ps1'
-$tidy = Join-Path $repositoryRoot 'scripts/tidy-cs.ps1'
+$tidy = Join-Path $repositoryRoot 'scripts/tidy-code.ps1'
 
 $failures = New-Object System.Collections.Generic.List[String]
 
@@ -93,7 +93,7 @@ if (-not $SkipTidy) {
     & pwsh -NoProfile -NonInteractive -File $tidy -Scope all
     if ($LASTEXITCODE -ne 0) {
         $failures.Add('tidy')
-        Write-Output 'FAIL - tidy-cs could not finish. Run `dotnet tool restore` if the tools are missing.'
+        Write-Output 'FAIL - tidy-code could not finish. Run `dotnet tool restore` if the tools are missing.'
     }
     else {
         $dirtyAfter = @(& git -C $repositoryRoot diff --name-only -- '*.cs' 2>$null | Where-Object { $_ })

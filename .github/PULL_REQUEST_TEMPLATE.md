@@ -15,6 +15,6 @@
 - [ ] Public API changes are declared in the affected `PublicAPI.Unshipped.txt` (`scripts/update-public-api.ps1`).
 - [ ] XML docs and `README.md` updated for public API changes.
 - [ ] `CHANGELOG.md` updated, and the version in `src/Directory.Build.props` bumped if this release-bound change needs it.
-- [ ] Style, formatting and member ordering applied (`pwsh -File scripts/tidy-cs.ps1 -Scope all`, which
+- [ ] Style, formatting and member ordering applied (`pwsh -File scripts/tidy-code.ps1 -Scope all`, which
       `preflight.ps1` also runs).
 - [ ] Branch name follows [Conventional Branch](https://conventionalbranch.org/): `<type>/issue-<issue#>-<slug>`.

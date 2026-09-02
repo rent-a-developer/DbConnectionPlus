@@ -23,11 +23,11 @@ Please note we have a code of conduct, please follow it in all your interactions
    pwsh -File scripts/preflight.ps1
    ```
    It rewrites files — review what it changed and include it in your commit. To run just the tidying:
-   `pwsh -File scripts/tidy-cs.ps1 -Scope all`.
+   `pwsh -File scripts/tidy-code.ps1 -Scope all`.
 
    `TreatWarningsAsErrors` is on for **every** project, so the build is also the style, member-ordering,
    trim-analyzer and public-API gate, and `CSharpier.MsBuild` makes an unformatted file a build error too.
-   The build never rewrites your files — it fails and names them; `scripts/tidy-cs.ps1` is what fixes them.
+   The build never rewrites your files — it fails and names them; `scripts/tidy-code.ps1` is what fixes them.
    **Never suppress an `IL2xxx` warning to get a green build** — it is the only
    build-time evidence that the trimming annotations are complete.
 4. If you touched a reflection path, also run the Native AOT gate. Nothing else in the repository can see
@@ -57,7 +57,7 @@ dotnet tool restore
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
-The first installs CSharpier, the ReSharper command line tools and docfx, which `scripts/tidy-cs.ps1` and the
+The first installs CSharpier, the ReSharper command line tools and docfx, which `scripts/tidy-code.ps1` and the
 documentation build need. The second makes `git blame` skip the commits listed in `.git-blame-ignore-revs`,
 which reformatted and reordered the whole repository, so blame points at whoever wrote the logic rather than
 at the tool that moved it. GitHub already does this on its own.
@@ -65,6 +65,27 @@ at the tool that moved it. GitHub already does this on its own.
 If you use Rider, two settings make the tooling invisible: install the **CSharpier** plugin and switch on
 Settings | Tools | CSharpier | Run on Save, and use the shared **ReorderMembers** cleanup profile (from
 `DbConnectionPlus.slnx.DotSettings`) when you want members put back in order.
+
+## Line endings
+
+Every text file is LF, in the repository and in the working tree, on every OS. `.gitattributes`
+enforces this whatever your `core.autocrlf` is set to, so there is nothing to configure, and CI fails
+if a wrongly stored file lands anyway.
+
+`.editorconfig` also asks editors and formatters to write LF. If one does not, git still stores LF, but
+`git status` lists the file as modified while `git diff` shows nothing. Run
+`pwsh -File scripts/tidy-code.ps1` to fix it, or `git checkout -- <path>`.
+
+If you have set `git config core.safecrlf true`, git refuses to add such a file with "CRLF would be
+replaced by LF". Run the tidy script first, or use `core.safecrlf warn`.
+
+To refresh a clone made before this policy (commit or stash your changes first - the second command
+discards uncommitted work):
+
+```shell
+git rm -r --cached . -q
+git reset --hard
+```
 
 ## Releasing
 

@@ -1,6 +1,6 @@
 # Codex PostToolUse hook: format the C# files an edit just touched, with CSharpier.
 #
-# The logic itself lives in scripts/tidy-cs.ps1, which Claude Code's hook runs too. This file is only
+# The logic itself lives in scripts/tidy-code.ps1, which Claude Code's hook runs too. This file is only
 # the hook wiring.
 #
 # Why it does not read a path out of the payload: for a file edit Codex reports tool_name "apply_patch" and
@@ -45,9 +45,9 @@ try {
         $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
     }
 
-    $script = Join-Path $repositoryRoot 'scripts/tidy-cs.ps1'
+    $script = Join-Path $repositoryRoot 'scripts/tidy-code.ps1'
     if (-not (Test-Path -LiteralPath $script)) {
-        Write-HookResult -AdditionalContext "tidy-cs hook: scripts/tidy-cs.ps1 not found at $script"
+        Write-HookResult -AdditionalContext "tidy-code hook: scripts/tidy-code.ps1 not found at $script"
         exit 0
     }
 
@@ -63,7 +63,7 @@ try {
     }
 }
 catch {
-    Write-HookResult -AdditionalContext "tidy-cs hook error: $($_.Exception.Message)"
+    Write-HookResult -AdditionalContext "tidy-code hook error: $($_.Exception.Message)"
 }
 
 exit 0

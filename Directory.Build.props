@@ -50,7 +50,7 @@
 			Check, not format. Left at its default the package REWRITES source files during the build, which
 			turns building into editing: the file on disk stops being the file you asked the compiler to
 			compile. With Check the build fails instead and names the file, and fixing it stays a deliberate
-			act - scripts/tidy-cs.ps1, or the editor hook that already runs on every agent edit.
+			act - scripts/tidy-code.ps1, or the editor hook that already runs on every agent edit.
 
 			CSharpier_Bypass=true skips it, for the rare case of needing a build out of a tree mid-edit.
 		-->

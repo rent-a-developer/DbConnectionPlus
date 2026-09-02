@@ -3,13 +3,14 @@ root = true
 # ======================================================================================================
 # Every file
 #
-# Line endings are deliberately NOT set here. .gitattributes owns them: it normalizes to LF in the
-# repository and checks each file out with the ending that file type needs. An end_of_line here would
-# fight that on Windows.
+# Line endings are LF everywhere, on every OS. .gitattributes stores LF and checks out LF - that is the
+# guarantee, and it holds whatever core.autocrlf a contributor has. end_of_line below is what makes the
+# editors and formatters write LF too, so the working tree never drifts.
 # ======================================================================================================
 
 [*]
 charset = utf-8
+end_of_line = lf
 indent_style = space
 indent_size = 4
 insert_final_newline = true
@@ -36,7 +37,7 @@ trim_trailing_whitespace = false
 #   NewStyleCop.Analyzers member ordering (checking only).    Fixed by ReSharper, see the ordering
 #                                                             section further down.
 #
-# Run scripts/tidy-cs.ps1 to apply all three.
+# Run scripts/tidy-code.ps1 to apply all three.
 # ======================================================================================================
 
 [*.cs]
@@ -221,7 +222,7 @@ dotnet_diagnostic.RCS1037.severity = none
 # Adding a StyleCop rule to this repository means adding it explicitly below.
 #
 # StyleCop can only REPORT a wrong order - its ordering code fix is disabled upstream. ReSharper does the
-# fixing: in Rider through Code Cleanup, and on the command line through scripts/tidy-cs.ps1. So the
+# fixing: in Rider through Code Cleanup, and on the command line through scripts/tidy-code.ps1. So the
 # order is defined twice, and the two definitions have to stay in step:
 #   stylecop.json                     -> what is checked
 #   DbConnectionPlus.slnx.DotSettings -> what is applied

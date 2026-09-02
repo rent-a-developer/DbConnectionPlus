@@ -27,12 +27,12 @@ Codex-only UI metadata and explicit-invocation policy. Claude needs thin skill w
 `disable-model-invocation` policy lives in `SKILL.md` frontmatter.
 
 The hook adapters differ because Claude and Codex use different payload and response contracts. Both delegate
-all substantive behavior to the same scripts: `scripts/tidy-cs.ps1` and `scripts/public-api-guard.ps1`.
+all substantive behavior to the same scripts: `scripts/tidy-code.ps1` and `scripts/public-api-guard.ps1`.
 
 The tidy hook runs the **default scope only** — CSharpier, under a second. Code style and member ordering are
 not run on every edit: `dotnet format style` needs MSBuild and ReSharper loads the whole solution, and neither
 belongs on the critical path of a single edit. All three are build errors, and `scripts/preflight.ps1` runs
-`tidy-cs.ps1 -Scope all` before a commit, so nothing reaches a pull request untidied.
+`tidy-code.ps1 -Scope all` before a commit, so nothing reaches a pull request untidied.
 
 When changing behavior, edit the canonical file. Keep only required names, descriptions, policies, tool/model
 settings, and reference instructions in tool-specific files.

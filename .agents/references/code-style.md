@@ -63,7 +63,7 @@ explicit field and the compiler's capture field are one field, not two.
 ## When a tool surprises you
 
 - **`cleanupcode` re-indents the content of raw string literals and CSharpier puts it back.** Neither is
-  idempotent alone; the pair is. Always let CSharpier run last — `tidy-cs.ps1` does.
+  idempotent alone; the pair is. Always let CSharpier run last — `tidy-code.ps1` does.
 - **Explicit interface implementations sort first — except events.** StyleCop counts an explicit property,
   indexer or method as public, so each of those has its own "Explicit interface …" entry in the file layout
   putting it at the front of its group. An explicit **event** is counted as private, so it stays where
