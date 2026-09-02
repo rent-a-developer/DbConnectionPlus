@@ -35,7 +35,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
         statement.Fragments[1].Should().Be(new InterpolatedParameter("BaseDiscount53", baseDiscount * 5 / 3));
 
-        statement.Fragments[2].Should().Be(new Literal($",{Environment.NewLine}        "));
+        statement.Fragments[2].Should().Be(new Literal(",\n        "));
 
         statement
             .Fragments[3]
@@ -67,10 +67,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
         table1.ValuesType.Should().Be(typeof(long));
 
-        statement
-            .Fragments[2]
-            .Should()
-            .Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Id FROM "));
+        statement.Fragments[2].Should().Be(new Literal("\nUNION\nSELECT Id FROM "));
 
         var table2 = statement.TemporaryTables[1];
 
@@ -86,10 +83,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
         statement.Fragments[1].Should().Be(table1);
 
-        statement
-            .Fragments[2]
-            .Should()
-            .Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Id FROM "));
+        statement.Fragments[2].Should().Be(new Literal("\nUNION\nSELECT Id FROM "));
 
         statement.Fragments[3].Should().Be(table2);
     }
@@ -254,18 +248,15 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
         statement.Fragments[1].Should().Be(new InterpolatedParameter("Value1", value1));
 
-        statement.Fragments[2].Should().Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT "));
+        statement.Fragments[2].Should().Be(new Literal("\nUNION\nSELECT "));
 
         statement.Fragments[3].Should().Be(new InterpolatedParameter("Value2", value2));
 
-        statement.Fragments[4].Should().Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT "));
+        statement.Fragments[4].Should().Be(new Literal("\nUNION\nSELECT "));
 
         statement.Fragments[5].Should().Be(new InterpolatedParameter("Value3", value3));
 
-        statement
-            .Fragments[6]
-            .Should()
-            .Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Value FROM "));
+        statement.Fragments[6].Should().Be(new Literal("\nUNION\nSELECT Value FROM "));
 
         var table1 = statement.Fragments[7].Should().BeOfType<InterpolatedTemporaryTable>().Subject;
 
@@ -275,10 +266,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
 
         table1.ValuesType.Should().Be(typeof(long));
 
-        statement
-            .Fragments[8]
-            .Should()
-            .Be(new Literal($"{Environment.NewLine}UNION{Environment.NewLine}SELECT Id FROM "));
+        statement.Fragments[8].Should().Be(new Literal("\nUNION\nSELECT Id FROM "));
 
         var table2 = statement.Fragments[9].Should().BeOfType<InterpolatedTemporaryTable>().Subject;
 
