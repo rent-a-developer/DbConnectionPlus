@@ -440,7 +440,7 @@ public class InterpolatedSqlStatementTests : UnitTestsBase
                 '2' (System.Int32)
                 '3' (System.Int32)
 
-                """
+                """.ReplaceLineEndings()
             );
     }
 }
