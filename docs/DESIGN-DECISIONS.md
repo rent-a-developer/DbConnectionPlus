@@ -5,8 +5,8 @@
 **Author:** David Liebeherr
 
 This document describes the design **as it is now**, and why it is that way. It is not a change log - see
-[CHANGELOG.md](CHANGELOG.md) for what changed between versions, and [README.md](README.md) for how to use the
-library.
+[CHANGELOG.md](../CHANGELOG.md) for what changed between versions, and [the guides](guides/querying.md) for how to use
+the library.
 
 ## Table of contents
 
@@ -236,7 +236,7 @@ types at opted-in call sites and emitted reflection-free mappers, registered thr
 `[ModuleInitializer]`. It buys run-time performance on the mapping step and nothing else.
 
 What the repository still measures is the price of the reflection path itself - the same cost a generator would
-have removed. From the [benchmark suite](README.md#benchmarks), on in-memory SQLite, where statement execution
+have removed. From the [benchmark results](reference/performance.md), on in-memory SQLite, where statement execution
 is nearly free and mapping is therefore the largest possible share of the total:
 
 | Category, JIT → Native AOT | End to end | Of which the runtime itself (raw `DbCommand` baseline) |
@@ -431,7 +431,7 @@ read-only for the rest of the process and the lookup needs no synchronization - 
 - **The same mechanism serves custom adapters.** There is no built-in/third-party asymmetry: implement
   `IDatabaseAdapter` (plus an `IEntityManipulator` and an `ITemporaryTableBuilder`), call
   `RegisterDatabaseAdapter<MyConnection>`, and optionally wrap that in a `UseMyDatabase()` extension method -
-  which is all the built-in adapters are. The [README](README.md#custom-database-adapter) carries a worked
+  which is all the built-in adapters are. The [custom-adapter guide](guides/custom-adapters.md) carries a worked
   example.
 
 **Trade-off:** one line of startup configuration that a static auto-registering registry would not need, and a
@@ -762,7 +762,7 @@ That is also why the Oracle fixture pins the `faststart` image variant, whose da
 the plain one that spends minutes creating `FREEPDB1` on first start.
 
 Scoping rules and measured per-provider timings:
-[`.agents/skills/integration-db/SKILL.md`](.agents/skills/integration-db/SKILL.md).
+[`.agents/skills/integration-db/SKILL.md`](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/.agents/skills/integration-db/SKILL.md).
 
 ### The Native AOT smoke test
 
@@ -831,7 +831,7 @@ column of the two rows for the same method.
 
 ⚠️ **The benchmarks are not a trimming check.** BenchmarkDotNet reports a benchmark that returned
 default-valued entities as a *fast* benchmark, not a broken one. Only the smoke test asserts values. Details:
-[the benchmark suite's README](benchmarks/DbConnectionPlus.Benchmarks/README.md).
+[the benchmark suite's README](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/benchmarks/DbConnectionPlus.Benchmarks/README.md).
 
 ---
 

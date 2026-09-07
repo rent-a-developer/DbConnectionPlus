@@ -1,4 +1,38 @@
 - name: Home
   href: index.md
+- name: Guides
+  items:
+    - name: Querying
+      href: guides/querying.md
+    - name: Parameters and temporary tables
+      href: guides/parameters-and-temporary-tables.md
+    - name: Entity mapping and CRUD
+      href: guides/entity-mapping-and-crud.md
+    - name: Configuration
+      href: guides/configuration.md
+    - name: Custom database adapters
+      href: guides/custom-adapters.md
+    - name: Native AOT and trimming
+      href: guides/native-aot.md
+- name: Reference
+  items:
+    - name: API summary
+      href: reference/api-summary.md
+    - name: Comparison with Dapper
+      href: reference/comparison.md
+    - name: Performance
+      href: reference/performance.md
+    - name: Design decisions
+      href: DESIGN-DECISIONS.md
+- name: Project
+  items:
+    - name: Change log
+      href: ../CHANGELOG.md
+    - name: Contributing
+      href: ../CONTRIBUTING.md
+    - name: Code of conduct
+      href: ../CODE_OF_CONDUCT.md
+    - name: Security policy
+      href: ../SECURITY.md
 - name: API reference
-  href: api/
+  href: ../artifacts/docs/api/toc.yml

@@ -4,42 +4,60 @@
     {
       "src": [
         {
-          "src": "../src",
+          "src": "../../src",
           "files": [
             "**/*.csproj"
           ]
         }
       ],
-      "dest": "api",
+      "dest": "../../artifacts/docs/api",
       "noRestore": true
     }
   ],
   "build": {
     "content": [
       {
+        "src": "../../docs",
         "files": [
           "**/*.{md,yml}"
         ],
-        "exclude": [
-          "_site/**"
-        ]
+        "dest": "."
+      },
+      {
+        "src": "../../artifacts/docs/api",
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "dest": "api"
+      },
+      {
+        "src": "../../",
+        "files": [
+          "CONTRIBUTING.md",
+          "CODE_OF_CONDUCT.md",
+          "SECURITY.md",
+          "CHANGELOG.md"
+        ],
+        "dest": "."
       }
     ],
     "resource": [
       {
+        "src": "../../docs",
         "files": [
           "assets/**"
-        ]
+        ],
+        "dest": "."
       }
     ],
-    "output": "_site",
+    "output": "../../artifacts/docs/site",
     "template": [
       "default",
       "modern"
     ],
     "globalMetadata": {
-      "_appName": "DbConnectionPlus API Documentation",
-      "_appTitle": "DbConnectionPlus API Documentation",
+      "_appName": "DbConnectionPlus",
+      "_appTitle": "DbConnectionPlus documentation",
       "_appLogoPath": "assets/logo.svg",
       "_appFaviconPath": "assets/favicon.ico",
       "_enableSearch": true

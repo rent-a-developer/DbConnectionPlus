@@ -13,7 +13,8 @@ left at their default values. Measured: 6 columns of real data in, 0 bound, no e
 Nothing is trimmed on the JIT, so the entire unit and integration suite passes with a broken annotation
 chain. **This program is the only check in the repository that can see the defect.** The design that defends
 against it - annotations, no suppressions on the entity path, and the zero-binding guard - is recorded in the
-[Native AOT and Trimming](../../../DESIGN-DECISIONS.md#native-aot-and-trimming) section of DESIGN-DECISIONS.md.
+[Native AOT and Trimming](../../../docs/DESIGN-DECISIONS.md#native-aot-and-trimming) section of
+docs/DESIGN-DECISIONS.md.
 
 That is also why every case asserts **values**, never row counts: silent trimming damage does not remove
 rows, it empties them.
@@ -59,7 +60,7 @@ program's own call sites.
 
 The generic query methods carry neither `[RequiresUnreferencedCode]` nor `[RequiresDynamicCode]`; the three
 underlying reflection sites are answered inside the library instead, and
-[No consumer-facing diagnostics](../../../DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics) holds the
+[No consumer-facing diagnostics](../../../docs/DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics) holds the
 argument. So this program is a faithful sample of what a consumer sees, and what a consumer sees is nothing.
 
 ⚠️ **Both target frameworks have to stay in the gate.** `net8.0` needs an `IL3050` suppression on the two
