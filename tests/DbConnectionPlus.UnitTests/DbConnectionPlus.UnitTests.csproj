@@ -1,60 +1,60 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<!--
-			Both targets of the shipping libraries, not just the floor. The six packages multi-target
-			net8.0;net10.0, and the two builds are not the same code: the net8.0 build carries an IL3050
-			suppression the net10.0 build does not, because only net9.0+ annotates
-			RuntimeFeature.IsDynamicCodeSupported as a feature guard. Testing one target would leave the
-			other verified by nothing but the compiler.
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!--
+      Both targets of the shipping libraries, not just the floor. The six packages multi-target
+      net8.0;net10.0, and the two builds are not the same code: the net8.0 build carries an IL3050
+      suppression the net10.0 build does not, because only net9.0+ annotates
+      RuntimeFeature.IsDynamicCodeSupported as a feature guard. Testing one target would leave the
+      other verified by nothing but the compiler.
 
-			The integration suite deliberately stays single-target - it is bound by four database containers,
-			not by the runtime, and doubling a large test suite buys nothing the materializer tests here do not
-			already cover on both runtimes.
-		-->
-		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
-		<RootNamespace>RentADeveloper.DbConnectionPlus.UnitTests</RootNamespace>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus.UnitTests</AssemblyTitle>
-		<AssemblyName>RentADeveloper.DbConnectionPlus.UnitTests</AssemblyName>
-	</PropertyGroup>
+      The integration suite deliberately stays single-target - it is bound by four database containers,
+      not by the runtime, and doubling a large test suite buys nothing the materializer tests here do not
+      already cover on both runtimes.
+    -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.UnitTests</RootNamespace>
+    <AssemblyTitle>rent-a-developer DbConnectionPlus.UnitTests</AssemblyTitle>
+    <AssemblyName>RentADeveloper.DbConnectionPlus.UnitTests</AssemblyName>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="AutoFixture" Version="4.18.1" />
-		<PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.18.1" />
-		<PackageReference Include="AutoFixture.Idioms" Version="4.18.1" />
-		<PackageReference Include="AwesomeAssertions" Version="9.6.0" />
-		<PackageReference Include="Bogus" Version="35.6.5" />
-		<PackageReference Include="Mapster" Version="10.0.12" />
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
-		<PackageReference Include="NSubstitute" Version="5.3.0" />
-		<PackageReference Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
-		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
-		<PackageReference Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
-		<PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
-		<PackageReference Include="xunit.v3" Version="4.0.0" />
-		<!-- The native MTP coverage extension CI uses to produce the OpenCover report for SonarQube. -->
-		<PackageReference Include="coverlet.MTP" Version="10.0.1">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.18.1" />
+    <PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.18.1" />
+    <PackageReference Include="AutoFixture.Idioms" Version="4.18.1" />
+    <PackageReference Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageReference Include="Bogus" Version="35.6.5" />
+    <PackageReference Include="Mapster" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+    <PackageReference Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
+    <PackageReference Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
+    <PackageReference Include="xunit.v3" Version="4.0.0" />
+    <!-- The native MTP coverage extension CI uses to produce the OpenCover report for SonarQube. -->
+    <PackageReference Include="coverlet.MTP" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.MySql\DbConnectionPlus.DatabaseAdapters.MySql.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Oracle\DbConnectionPlus.DatabaseAdapters.Oracle.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.PostgreSql\DbConnectionPlus.DatabaseAdapters.PostgreSql.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Sqlite\DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.SqlServer\DbConnectionPlus.DatabaseAdapters.SqlServer.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.MySql\DbConnectionPlus.DatabaseAdapters.MySql.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Oracle\DbConnectionPlus.DatabaseAdapters.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.PostgreSql\DbConnectionPlus.DatabaseAdapters.PostgreSql.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Sqlite\DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.SqlServer\DbConnectionPlus.DatabaseAdapters.SqlServer.csproj" />
+  </ItemGroup>
 
 </Project>

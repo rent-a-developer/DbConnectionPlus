@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</AssemblyName>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus MySql Database Adapter</AssemblyTitle>
-		<Description>MySQL database adapter for DbConnectionPlus.</Description>
-		<PackageId>DbConnectionPlus.DatabaseAdapters.MySql</PackageId>
-		<RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</RootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</AssemblyName>
+    <AssemblyTitle>rent-a-developer DbConnectionPlus MySql Database Adapter</AssemblyTitle>
+    <Description>MySQL database adapter for DbConnectionPlus.</Description>
+    <PackageId>DbConnectionPlus.DatabaseAdapters.MySql</PackageId>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</RootNamespace>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="MySqlConnector" Version="2.6.2" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="2.6.2" />
+  </ItemGroup>
 
 </Project>

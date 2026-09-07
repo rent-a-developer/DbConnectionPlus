@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</AssemblyName>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus SQL Server Database Adapter</AssemblyTitle>
-		<Description>SQL Server database adapter for DbConnectionPlus.</Description>
-		<PackageId>DbConnectionPlus.DatabaseAdapters.SqlServer</PackageId>
-		<RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</RootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</AssemblyName>
+    <AssemblyTitle>rent-a-developer DbConnectionPlus SQL Server Database Adapter</AssemblyTitle>
+    <Description>SQL Server database adapter for DbConnectionPlus.</Description>
+    <PackageId>DbConnectionPlus.DatabaseAdapters.SqlServer</PackageId>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</RootNamespace>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+  </ItemGroup>
 
 </Project>

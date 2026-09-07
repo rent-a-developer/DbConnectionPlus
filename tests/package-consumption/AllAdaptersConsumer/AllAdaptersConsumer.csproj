@@ -1,47 +1,47 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
 
-		<!--
-			net8.0 deliberately, and only net8.0: this consumer is built by CI with the .NET 8 SDK alone, to
-			prove that the documented floor is real. A multi-targeted project could not build there at all.
-		-->
-		<TargetFramework>net8.0</TargetFramework>
+    <!--
+      net8.0 deliberately, and only net8.0: this consumer is built by CI with the .NET 8 SDK alone, to
+      prove that the documented floor is real. A multi-targeted project could not build there at all.
+    -->
+    <TargetFramework>net8.0</TargetFramework>
 
-		<RootNamespace>RentADeveloper.DbConnectionPlus.PackageConsumption.AllAdapters</RootNamespace>
-		<AssemblyName>AllAdaptersConsumer</AssemblyName>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.PackageConsumption.AllAdapters</RootNamespace>
+    <AssemblyName>AllAdaptersConsumer</AssemblyName>
 
-		<!-- Set explicitly: the Directory.Build.props boundary in this folder cuts off the repository's. -->
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
+    <!-- Set explicitly: the Directory.Build.props boundary in this folder cuts off the repository's. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
 
-		<IsPackable>false</IsPackable>
-		<IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
 
-		<!-- CI overrides this with the version it just packed. -->
-		<DbConnectionPlusVersion Condition="'$(DbConnectionPlusVersion)' == ''">4.0.0</DbConnectionPlusVersion>
-	</PropertyGroup>
+    <!-- CI overrides this with the version it just packed. -->
+    <DbConnectionPlusVersion Condition="'$(DbConnectionPlusVersion)' == ''">4.0.0</DbConnectionPlusVersion>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<!-- The assertion harness both consumers share. Linked, not project-referenced - see the file. -->
-		<Compile Include="../Check.cs" Link="Check.cs" />
-	</ItemGroup>
+  <ItemGroup>
+    <!-- The assertion harness both consumers share. Linked, not project-referenced - see the file. -->
+    <Compile Include="../Check.cs" Link="Check.cs" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<!--
-			All six packages at once. No driver package is referenced directly - MySqlConnector, Npgsql,
-			Oracle.ManagedDataAccess.Core, Microsoft.Data.SqlClient and Microsoft.Data.Sqlite all have to
-			arrive as dependencies of their adapter package, and one shared DbConnectionPlus has to satisfy
-			all five.
-		-->
-		<PackageReference Include="DbConnectionPlus" Version="$(DbConnectionPlusVersion)" />
-		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.MySql" Version="$(DbConnectionPlusVersion)" />
-		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.Oracle" Version="$(DbConnectionPlusVersion)" />
-		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.PostgreSql" Version="$(DbConnectionPlusVersion)" />
-		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.Sqlite" Version="$(DbConnectionPlusVersion)" />
-		<PackageReference Include="DbConnectionPlus.DatabaseAdapters.SqlServer" Version="$(DbConnectionPlusVersion)" />
-	</ItemGroup>
+  <ItemGroup>
+    <!--
+      All six packages at once. No driver package is referenced directly - MySqlConnector, Npgsql,
+      Oracle.ManagedDataAccess.Core, Microsoft.Data.SqlClient and Microsoft.Data.Sqlite all have to
+      arrive as dependencies of their adapter package, and one shared DbConnectionPlus has to satisfy
+      all five.
+    -->
+    <PackageReference Include="DbConnectionPlus" Version="$(DbConnectionPlusVersion)" />
+    <PackageReference Include="DbConnectionPlus.DatabaseAdapters.MySql" Version="$(DbConnectionPlusVersion)" />
+    <PackageReference Include="DbConnectionPlus.DatabaseAdapters.Oracle" Version="$(DbConnectionPlusVersion)" />
+    <PackageReference Include="DbConnectionPlus.DatabaseAdapters.PostgreSql" Version="$(DbConnectionPlusVersion)" />
+    <PackageReference Include="DbConnectionPlus.DatabaseAdapters.Sqlite" Version="$(DbConnectionPlusVersion)" />
+    <PackageReference Include="DbConnectionPlus.DatabaseAdapters.SqlServer" Version="$(DbConnectionPlusVersion)" />
+  </ItemGroup>
 
 </Project>

@@ -1,107 +1,107 @@
 <Project>
 
-	<!--
-		Properties shared by EVERY project in the solution - the six shipping libraries, the two test projects
-		and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
-		Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
+  <!--
+    Properties shared by EVERY project in the solution - the six shipping libraries, the two test projects
+    and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
+    Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
 
-		Anything that only the shipping libraries need belongs in src/Directory.Build.props instead, which
-		imports this file. MSBuild uses the NEAREST Directory.Build.props and stops there, so that import is
-		what keeps these properties applying under src/ as well.
-	-->
+    Anything that only the shipping libraries need belongs in src/Directory.Build.props instead, which
+    imports this file. MSBuild uses the NEAREST Directory.Build.props and stops there, so that import is
+    what keeps these properties applying under src/ as well.
+  -->
 
-	<PropertyGroup>
-		<Authors>David Liebeherr</Authors>
-		<Company>rent-a-developer</Company>
-		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
-	</PropertyGroup>
+  <PropertyGroup>
+    <Authors>David Liebeherr</Authors>
+    <Company>rent-a-developer</Company>
+    <Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<TieredCompilation>true</TieredCompilation>
-	</PropertyGroup>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TieredCompilation>true</TieredCompilation>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
-		<!--
-			Every project generates an XML documentation file, including the tests and the benchmarks, which
-			have no use for one. This is not about documentation: IDE0005 (unnecessary using directive) is
-			simply not REPORTED at build time unless the compilation produces a doc file, and it says so -
-			"Set MSBuild property 'GenerateDocumentationFile' to 'true' ... to enable IDE0005 on build",
-			https://github.com/dotnet/roslyn/issues/41640. Without this, an unused using is invisible to the
-			build in every project, and the price is three XML files in obj/ that nobody reads.
+    <!--
+      Every project generates an XML documentation file, including the tests and the benchmarks, which
+      have no use for one. This is not about documentation: IDE0005 (unnecessary using directive) is
+      simply not REPORTED at build time unless the compilation produces a doc file, and it says so -
+      "Set MSBuild property 'GenerateDocumentationFile' to 'true' ... to enable IDE0005 on build",
+      https://github.com/dotnet/roslyn/issues/41640. Without this, an unused using is invisible to the
+      build in every project, and the price is three XML files in obj/ that nobody reads.
 
-			The tests and benchmarks do not document their public members, so CS1591 and CS1574 are switched
-			off for them in .editorconfig. In src/ both stay errors - that is what keeps the public API
-			documented.
-		-->
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
+      The tests and benchmarks do not document their public members, so CS1591 and CS1574 are switched
+      off for them in .editorconfig. In src/ both stay errors - that is what keeps the public API
+      documented.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<!--
-			CSharpier as a build step, so formatting is a build error like style and member ordering, rather
-			than something only the editor hooks, preflight and CI notice.
+  <PropertyGroup>
+    <!--
+      CSharpier as a build step, so formatting is a build error like style and member ordering, rather
+      than something only the editor hooks, preflight and CI notice.
 
-			Check, not format. Left at its default the package REWRITES source files during the build, which
-			turns building into editing: the file on disk stops being the file you asked the compiler to
-			compile. With Check the build fails instead and names the file, and fixing it stays a deliberate
-			act - scripts/tidy-code.ps1, or the editor hook that already runs on every agent edit.
+      Check, not format. Left at its default the package REWRITES source files during the build, which
+      turns building into editing: the file on disk stops being the file you asked the compiler to
+      compile. With Check the build fails instead and names the file, and fixing it stays a deliberate
+      act - scripts/tidy-code.ps1, or the editor hook that already runs on every agent edit.
 
-			CSharpier_Bypass=true skips it, for the rare case of needing a build out of a tree mid-edit.
-		-->
-		<CSharpier_Check>true</CSharpier_Check>
-	</PropertyGroup>
+      CSharpier_Bypass=true skips it, for the rare case of needing a build out of a tree mid-edit.
+    -->
+    <CSharpier_Check>true</CSharpier_Check>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<!--
-			The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
-			consumer of the packages.
-		-->
-		<!--
-			KEEP THIS VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json. The two are the
-			same formatter, and a version apart they disagree: the build would demand formatting that
-			`dotnet csharpier format` does not produce, and no amount of running the tool would fix it.
-		-->
-		<PackageReference Include="CSharpier.MsBuild" Version="1.3.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<!--
-			The member-ordering checker. It is here for that one job - see the ordering section of
-			.editorconfig, which switches every StyleCop category off and turns only the ordering rules
-			plus SA1309 back on.
+  <ItemGroup>
+    <!--
+      The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
+      consumer of the packages.
+    -->
+    <!--
+      KEEP THIS VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json. The two are the
+      same formatter, and a version apart they disagree: the build would demand formatting that
+      `dotnet csharpier format` does not produce, and no amount of running the tool would fix it.
+    -->
+    <PackageReference Include="CSharpier.MsBuild" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <!--
+      The member-ordering checker. It is here for that one job - see the ordering section of
+      .editorconfig, which switches every StyleCop category off and turns only the ordering rules
+      plus SA1309 back on.
 
-			This is the NewStyleCop.Analyzers fork, not StyleCop.Analyzers. Upstream's last release is
-			1.2.0-beta.556 from December 2023 and predates the C# this repository writes; the fork ships
-			stable releases and handles C# 14 extension declarations and collection expressions. The rule
-			IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
-		-->
-		<PackageReference Include="NewStyleCop.Analyzers" Version="1.2.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.33.0.1635">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+      This is the NewStyleCop.Analyzers fork, not StyleCop.Analyzers. Upstream's last release is
+      1.2.0-beta.556 from December 2023 and predates the C# this repository writes; the fork ships
+      stable releases and handles C# 14 extension declarations and collection expressions. The rule
+      IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
+    -->
+    <PackageReference Include="NewStyleCop.Analyzers" Version="1.2.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.33.0.1635">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<!-- One stylecop.json for the whole repository; $(MSBuildThisFileDirectory) is the repository root. -->
-		<AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
-	</ItemGroup>
+  <ItemGroup>
+    <!-- One stylecop.json for the whole repository; $(MSBuildThisFileDirectory) is the repository root. -->
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
 
 </Project>
