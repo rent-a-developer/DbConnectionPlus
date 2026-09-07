@@ -3,7 +3,7 @@
     Records the current public surface of the shipping projects in their PublicAPI.Unshipped.txt files.
 
 .DESCRIPTION
-    The six shipping projects are guarded by Microsoft.CodeAnalysis.PublicApiAnalyzers: a public member that
+    The shipping projects are guarded by Microsoft.CodeAnalysis.PublicApiAnalyzers: a public member that
     is not listed in the project's PublicAPI.Shipped.txt or PublicAPI.Unshipped.txt is RS0016, and a listed
     member that no longer exists is RS0017. Both are build errors here, because TreatWarningsAsErrors is on -
     so an unintended change to the public surface breaks the build rather than slipping through review.

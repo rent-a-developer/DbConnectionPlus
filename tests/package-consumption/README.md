@@ -8,13 +8,13 @@ makes them able to see defects that a solution build cannot:
   `[assembly: AssemblyMetadata("IsTrimmable", "True")]` marker survive packing,
 - each adapter package really declares its driver dependency (`MySqlConnector`, `Npgsql`,
   `Oracle.ManagedDataAccess.Core`, `Microsoft.Data.SqlClient`, `Microsoft.Data.Sqlite`),
-- all five adapters resolve **one** `DbConnectionPlus` assembly, not five copies,
+- every adapter resolves **one** `DbConnectionPlus` assembly, not a copy each,
 - the `net8.0` asset of the multi-targeted packages is the one a `net8.0` consumer gets, and it runs.
 
 | Consumer | Packages | What it is for |
 |---|---|---|
 | `AotConsumer` | core + SQLite | The Native AOT gate. Multi-targets `net8.0;net10.0`, published natively for both. See [its README](AotConsumer/README.md) — it is the only check in the repository that can see silent trimming damage. |
-| `AllAdaptersConsumer` | all six | Breadth. Registers all five adapters, asserts the driver packages flowed transitively and that one core assembly is shared. Built by CI with the **.NET 8 SDK alone**, which is what makes the documented `net8.0` floor a checked fact rather than a claim. |
+| `AllAdaptersConsumer` | every package | Breadth. Registers every adapter, asserts the driver packages flowed transitively and that one core assembly is shared. Built by CI with the **.NET 8 SDK alone**, which is what makes the documented `net8.0` floor a checked fact rather than a claim. |
 
 Both apps exit non-zero on failure and hand-roll their assertions (`Check.cs`, linked into both): xUnit,
 NSubstitute and AwesomeAssertions all need run-time code generation, which a Native AOT binary does not have.

@@ -37,7 +37,7 @@
     Build configuration. Release by default, because that is what CI uses.
 
 .PARAMETER Pack
-    Pack the six shipping projects into artifacts/packages first, and clear the consumer's isolated package
+    Pack the shipping projects into artifacts/packages first, and clear the consumer's isolated package
     cache so the fresh build of an unchanged version number is actually picked up. CI does not use this - it
     downloads the exact packages the publish job produced.
 
@@ -87,7 +87,7 @@ $publishDirectory = Join-Path $repositoryRoot "artifacts/package-aot/$Framework-
 
 if (-not $PackageVersion)
 {
-    # The single source of truth for the version of all six packages. Reading it here keeps this script
+    # The single source of truth for the version of every package. Reading it here keeps this script
     # correct across a release bump without a second place to edit.
     $sharedProperties = Join-Path $repositoryRoot 'Directory.Build.props'
     $PackageVersion = ([Xml] (Get-Content -Raw $sharedProperties)).Project.PropertyGroup.Version |
@@ -240,7 +240,7 @@ try
         exit 1
     }
 
-    Write-Host "All six packages are present at $PackageVersion, by their nuspec metadata." -ForegroundColor Cyan
+    Write-Host "Every package is present at $PackageVersion, by their nuspec metadata." -ForegroundColor Cyan
 
     Write-Host "Publishing the Native AOT package consumer ($Framework, $Runtime, packages $PackageVersion)..." `
         -ForegroundColor Cyan

@@ -7,9 +7,9 @@
     gate the publication come from one place.
 
     The CHANGELOG must contain exactly one dated `## [x.y.z] - YYYY-MM-DD` heading for the version, with no
-    TBD placeholder and a non-empty body. Those three failures all mean the same thing - a release was tagged
-    before its changelog entry was finished - and it is much cheaper to fail here than to publish six
-    immutable packages pointing at an empty section.
+    TBD placeholder and a non-empty body. Those failures all mean the same thing - a release was tagged
+    before its changelog entry was finished - and it is much cheaper to fail here than to publish immutable
+    packages pointing at an empty section.
 
     The output goes under artifacts/, which is generated output and is ignored by git. Writing it to the
     repository root, as this script used to, meant a file that looked authored, needed its own .gitignore

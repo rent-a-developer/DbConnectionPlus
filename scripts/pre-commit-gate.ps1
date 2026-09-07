@@ -22,7 +22,7 @@
       Integration tests   Trigger: SQL generation, an adapter, the CRUD or temporary-table paths, type
                           mapping - anything a substituted DbDataReader cannot exercise honestly. Needs
                           Docker. Scope the run; the default scope is SQLite + SQL Server, and a change
-                          to the shared adapter seam obliges all five.
+                          to the shared adapter seam obliges the full matrix.
                           See .agents/skills/integration-db/SKILL.md.
 
       Native AOT gate     Trigger: any change to reflection, the [DynamicallyAccessedMembers]

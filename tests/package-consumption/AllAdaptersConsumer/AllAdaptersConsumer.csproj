@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <!--
-      All six packages at once. No driver package is referenced directly - MySqlConnector, Npgsql,
+      Every package at once. No driver package is referenced directly - MySqlConnector, Npgsql,
       Oracle.ManagedDataAccess.Core, Microsoft.Data.SqlClient and Microsoft.Data.Sqlite all have to
       arrive as dependencies of their adapter package, and one shared DbConnectionPlus has to satisfy
       all five.
