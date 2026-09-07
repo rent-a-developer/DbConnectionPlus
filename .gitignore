@@ -1,29 +1,51 @@
-obj
+# Only generated output belongs here.
+#
+# An ignore rule that matches an AUTHORED file is worse than no rule: the file is invisible to `git status`,
+# so it is never added, and the failure shows up as a build that works for you and for nobody else. This file
+# used to ignore `**/AssemblyInfo.cs`, which would have hidden a hand-written one; the generated one lives in
+# obj/ and is covered by the first rule below.
+
+# --- Build output -------------------------------------------------------------------------------------
 bin
-.vs
+obj
 
-**/AssemblyInfo.cs
-**/*.suo
-**/*.DotSettings.user
-**/*.csproj.user
-
-**/launchSettings.json
-.sonarlint/
-
-BenchmarkDotNet.Artifacts/
+# --- Repository-level generated directories -----------------------------------------------------------
+# artifacts/ holds everything this repository generates on purpose: packages, the AOT publish, the generated
+# API metadata, the documentation site and the extracted release notes.
 artifacts/
-docs/api
-docs/_site
-.idea/
+BenchmarkDotNet.Artifacts/
+
+# --- Test output --------------------------------------------------------------------------------------
+TestResults/
+*.trx
+*.coverage
+coverage.*.xml
+
+# --- Diagnostic logs ----------------------------------------------------------------------------------
+*.binlog
+msbuild.log
+
+# --- Tool and package caches --------------------------------------------------------------------------
+.dotnet/
+.nuget/
+.sonarlint/
 
 # The package consumers' isolated NuGet cache. See tests/package-consumption/nuget.config.
 tests/package-consumption/.packages/
 
-# Written by the CI "Consume packages on .NET 8 SDK" job to pin the SDK for the consumer subtree.
+# Written by the CI "Consume packages on .NET 8 SDK" job to pin the SDK for the consumer subtree, and by a
+# developer reproducing that job locally. Never committed - the repository's own global.json pins 10.0.
 tests/package-consumption/global.json
 
-# Written by the CI publish and release jobs from the matching CHANGELOG.md section.
-release-notes.md
+# --- Editor and machine-local files -------------------------------------------------------------------
+.vs/
+.idea/
+**/*.suo
+**/*.user
+**/*.DotSettings.user
+**/Properties/launchSettings.json
 
-# Stale XML documentation files left next to the project files by an older build configuration.
+# --- Stale generated documentation --------------------------------------------------------------------
+# XML documentation files an older build configuration wrote next to the project file. Nothing produces
+# them now; the rule stays so that an old clone does not offer one for commit.
 src/*/RentADeveloper.*.xml
