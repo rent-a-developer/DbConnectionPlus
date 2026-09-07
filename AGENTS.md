@@ -22,7 +22,7 @@ methods on `DbConnection`, with per-database dialect support from pluggable adap
 | `docs/` | docfx config, the site landing page and implementation plans. |
 | `.agents/`, `.codex/`, `.claude/` | Canonical skills and references, plus each tool's agent metadata and hook wiring. |
 | `.github/workflows/` | `ci.yml` (lint → build/test → package + docs → package-consumption gates → publish), `codeql.yml`, `dependency-review.yml`. |
-| `scripts/` | The commands you type: `preflight`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
+| `scripts/` | The commands you type: `pre-commit-gate`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
 
 The solution file is `DbConnectionPlus.slnx` (XML `.slnx`, not `.sln`). **New projects must be added to it.**
 
@@ -71,12 +71,12 @@ a miss, and that needs Docker. Run the adapter-parity reviewer, walk
 ```bash
 dotnet build DbConnectionPlus.slnx -c Release
 dotnet test --project tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj
-pwsh -File scripts/preflight.ps1                 # the default loop: hygiene, tidiness CHECK, build, unit tests
-pwsh -File scripts/preflight.ps1 -Fix            # the same, but tidy the working tree first
+pwsh -File scripts/pre-commit-gate.ps1                 # the default loop: hygiene, tidiness CHECK, build, unit tests
+pwsh -File scripts/pre-commit-gate.ps1 -Fix            # the same, but tidy the working tree first
 pwsh -File scripts/verify-package-aot.ps1 -Pack  # the Native AOT gate
 ```
 
-`preflight.ps1` **writes build output and nothing else by default** — it does not edit source and it does not
+`pre-commit-gate.ps1` **writes build output and nothing else by default** — it does not edit source and it does not
 touch the git index. `-Fix` is what rewrites files. `tidy-code.ps1 -Check` never writes at any scope: at
 `-Scope all` it runs the pipeline on a disposable copy of the tree and prints the diff from there.
 
@@ -87,7 +87,7 @@ eight projects. The Release build covers every project, so it turns a missed cal
 The Native AOT gate is the **only** check that can see silent trimming damage, because nothing is trimmed on the
 JIT. Run it whenever you change reflection, DAM annotations, the materializers or the temp-table readers. It packs
 the shipping projects, publishes `AotConsumer` natively **from the packages**, gates its IL diagnostics and runs the
-binary. It needs a C++ toolchain and minutes, so it is not in `preflight.ps1`; `-Framework net8.0` checks the
+binary. It needs a C++ toolchain and minutes, so it is not in `pre-commit-gate.ps1`; `-Framework net8.0` checks the
 documented AOT floor, and CI runs that as well as the `net10.0` default.
 
 Integration tests need only a running Docker daemon; [Testcontainers](https://dotnet.testcontainers.org/) starts a
@@ -141,7 +141,7 @@ pwsh -File scripts/tidy-code.ps1 -Scope style # ~15s  + the code-style fixers
 pwsh -File scripts/tidy-code.ps1 -Scope all   # ~3min + member ordering, whole solution
 ```
 
-**Before you commit, run `-Scope all`** — or `scripts/preflight.ps1 -Fix`, which does it for you. That is the
+**Before you commit, run `-Scope all`** — or `scripts/pre-commit-gate.ps1 -Fix`, which does it for you. That is the
 only scope that reorders members, because ReSharper loads the whole solution either way. Claude Code and Codex
 run the **default scope** on the file each edit touched, through a PostToolUse hook; style and ordering are not
 run there, because they are too slow for a single edit and the build catches them.

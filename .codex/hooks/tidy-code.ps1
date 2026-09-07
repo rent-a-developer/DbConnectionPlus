@@ -17,7 +17,7 @@
 # exactly the surprise a scoped hook exists to avoid.
 #
 # Formatting only, which is the default scope. Style and member ordering are build errors and
-# scripts/preflight.ps1 checks `-Scope all` before a commit; neither belongs on the critical path of every
+# scripts/pre-commit-gate.ps1 checks `-Scope all` before a commit; neither belongs on the critical path of every
 # edit.
 #
 # Contract (https://learn.chatgpt.com/docs/hooks): exit 0 and write the response JSON to stdout. Exit code 2

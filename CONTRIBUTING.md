@@ -116,7 +116,7 @@ pipeline on a disposable copy and prints the diff it produced there.
 ### Verifying it
 
 ```shell
-pwsh -File scripts/preflight.ps1
+pwsh -File scripts/pre-commit-gate.ps1
 ```
 
 That is the gate to run before every commit. It checks the public API, checks style, formatting and ordering,
@@ -125,7 +125,7 @@ nothing else** — it does not edit your files and it does not touch the git ind
 the tidying first:
 
 ```shell
-pwsh -File scripts/preflight.ps1 -Fix
+pwsh -File scripts/pre-commit-gate.ps1 -Fix
 ```
 
 `TreatWarningsAsErrors` is on for **every** project, so the build is also the style, member-ordering,
@@ -136,7 +136,7 @@ build never rewrites your files — it fails and names them.
 trimming annotations are complete, and an incomplete chain means entities that come back silently empty under
 trimming.
 
-Two gates are deliberately outside preflight, because each takes minutes and neither applies to every change:
+Two gates are deliberately outside the pre-commit gate, because each takes minutes and neither applies to every change:
 
 | Gate | Run it when | Command |
 |---|---|---|

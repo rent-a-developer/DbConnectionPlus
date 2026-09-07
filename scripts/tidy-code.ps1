@@ -32,7 +32,7 @@
       format  ~1s     CSharpier only. The default, and what the editor hooks use.
       style   ~15s    + the Roslyn code-style fixers.
       all     ~3min   + member reordering. Whole solution only - ReSharper loads all of it either way.
-                      This is the one to run before committing; scripts/preflight.ps1 does it for you.
+                      This is the one to run before committing; scripts/pre-commit-gate.ps1 does it for you.
 
 .PARAMETER Check
     Report violations instead of fixing them, and exit non-zero if there are any. This is what CI runs.

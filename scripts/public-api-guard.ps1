@@ -15,7 +15,7 @@
 
     This is the shared implementation. AI agents call it from a PostToolUse hook - Claude Code through
     .claude/hooks/public-api-guard.ps1 and Codex through .codex/hooks/public-api-guard.ps1 - and
-    scripts/preflight.ps1 runs it over the whole working tree. It only ever reports; it never fails
+    scripts/pre-commit-gate.ps1 runs it over the whole working tree. It only ever reports; it never fails
     anything.
 
 .PARAMETER Path

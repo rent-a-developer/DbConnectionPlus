@@ -92,7 +92,7 @@
   <PropertyGroup>
     <!--
       CSharpier as a build step, so formatting is a build error like style and member ordering, rather
-      than something only the editor hooks, preflight and CI notice.
+      than something only the editor hooks, the pre-commit gate and CI notice.
 
       Check, not format. Left at its default the package REWRITES source files during the build, which
       turns building into editing: the file on disk stops being the file you asked the compiler to

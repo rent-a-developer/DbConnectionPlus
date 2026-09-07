@@ -50,12 +50,12 @@ the maintainer's, at release time. If the change looks like it needs a release, 
 succeeds with no warnings and the tests pass.
 
 ```bash
-pwsh -File scripts/preflight.ps1
+pwsh -File scripts/pre-commit-gate.ps1
 ```
 
 That runs the public-API reminder, checks style, formatting and member ordering, builds Release and runs the
 unit suite on `net8.0` and `net10.0`. It does not edit your files; if it reports the tree as untidy, run
-`pwsh -File scripts/preflight.ps1 -Fix` and review what changed before committing it.
+`pwsh -File scripts/pre-commit-gate.ps1 -Fix` and review what changed before committing it.
 
 If either fails, report the failure and stop — do not commit over it.
 

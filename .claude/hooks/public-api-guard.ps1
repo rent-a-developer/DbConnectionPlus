@@ -1,6 +1,6 @@
 # Claude Code PostToolUse hook: remind about the companion edits a public API change needs.
 #
-# The checklist itself lives in scripts/public-api-guard.ps1, so that Codex's hook and preflight produce
+# The checklist itself lives in scripts/public-api-guard.ps1, so that Codex's hook and the pre-commit gate produce
 # exactly the same text. This file is only the hook wiring: read the tool payload off stdin, pull the edited
 # path out of it, and delegate.
 #

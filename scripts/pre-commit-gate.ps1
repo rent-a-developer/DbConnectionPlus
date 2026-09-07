@@ -48,10 +48,10 @@
     Build configuration. Release by default, because that is what CI and CONTRIBUTING.md use.
 
 .EXAMPLE
-    pwsh -File scripts/preflight.ps1
+    pwsh -File scripts/pre-commit-gate.ps1
 
 .EXAMPLE
-    pwsh -File scripts/preflight.ps1 -Fix
+    pwsh -File scripts/pre-commit-gate.ps1 -Fix
 #>
 #requires -Version 7.0
 [CmdletBinding()]
@@ -117,7 +117,7 @@ foreach ($required in @($publicApiGuard, $tidy))
 {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf))
     {
-        Write-Output "preflight: FAILED - $required does not exist."
+        Write-Output "pre-commit-gate: FAILED - $required does not exist."
 
         exit 1
     }
@@ -209,7 +209,7 @@ else
         $failures.Add('tidy')
         Write-Output ''
         Write-Output 'FAIL - the tree is not tidy, or tidy-code could not finish. The diff above is what'
-        Write-Output 'would fix it. Apply it with: pwsh -File scripts/preflight.ps1 -Fix'
+        Write-Output 'would fix it. Apply it with: pwsh -File scripts/pre-commit-gate.ps1 -Fix'
     }
 }
 
@@ -259,7 +259,7 @@ else
 
 # --- Summary -----------------------------------------------------------------------------------------
 
-Write-Section 'Preflight summary'
+Write-Section 'Pre-commit gate summary'
 
 if ($failures.Count -gt 0)
 {

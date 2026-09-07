@@ -11,7 +11,7 @@ tick it, or leave it and say why in the description. A box that does not apply i
 
 ### Always
 
-- [ ] `pwsh -File scripts/preflight.ps1` passes. It runs the public-API reminder, checks style, formatting
+- [ ] `pwsh -File scripts/pre-commit-gate.ps1` passes. It runs the public-API reminder, checks style, formatting
       and member ordering, builds Release and runs the unit suite on `net8.0` and `net10.0`. Use
       `-Fix` to have it apply the tidying rather than only report it.
 - [ ] The Release build produces **zero warnings**. `TreatWarningsAsErrors` is on, so this also covers style,

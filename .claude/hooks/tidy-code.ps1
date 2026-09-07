@@ -11,7 +11,7 @@
 #
 # Formatting only, which is the default scope and takes under a second. Style and member ordering are not run
 # here: `dotnet format style` needs MSBuild and ReSharper loads the whole solution, and neither belongs on the
-# critical path of every single edit. All three are build errors, and scripts/preflight.ps1 checks `-Scope
+# critical path of every single edit. All three are build errors, and scripts/pre-commit-gate.ps1 checks `-Scope
 # all` before a commit, so nothing slips through.
 #
 # Never fails the edit - a formatter problem is surfaced as text and the hook still exits 0. A PostToolUse

@@ -70,17 +70,17 @@ not formatted by anything. So:
 
 ```bash
 pwsh -File scripts/tidy-code.ps1              # format what git reports as changed
-pwsh -File scripts/preflight.ps1              # and before committing, check the whole tree
+pwsh -File scripts/pre-commit-gate.ps1              # and before committing, check the whole tree
 ```
 
-`preflight.ps1` is the backstop for all of it, and the build is the backstop for `preflight`: formatting,
+`pre-commit-gate.ps1` is the backstop for all of it, and the build is the backstop for it: formatting,
 style and member ordering are build errors, so an unformatted file cannot reach a green pull request whether
 a hook fired or not.
 
 The tidy hook runs the **default scope only**, on the file the edit touched — CSharpier, under a second. Code
 style and member ordering are not run on every edit: `dotnet format style` needs MSBuild and ReSharper loads
 the whole solution, and neither belongs on the critical path of a single edit. All of them are build errors, and
-`scripts/preflight.ps1` checks `-Scope all` before a commit (`-Fix` applies it), so nothing reaches a pull
+`scripts/pre-commit-gate.ps1` checks `-Scope all` before a commit (`-Fix` applies it), so nothing reaches a pull
 request untidied.
 
 When changing behavior, edit the canonical file. Keep only required names, descriptions, policies, tool/model
