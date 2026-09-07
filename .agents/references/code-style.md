@@ -10,7 +10,13 @@ not check.
 |---|---|---|
 | Formatting — whitespace, line breaks, wrapping | **CSharpier** | `.editorconfig` (`max_line_length`, `indent_size`) |
 | Style — `var`, `=>`, `this.`, null checks, usings | **Roslyn analyzers** | `.editorconfig` |
-| Ordering — types and their members | **ReSharper** applies it, **NewStyleCop** checks it | `DbConnectionPlus.slnx.DotSettings` and `stylecop.json` |
+| Ordering — types and their members | **ReSharper** applies it, **NewStyleCop** checks *part* of it | `DbConnectionPlus.slnx.DotSettings` and `stylecop.json` |
+
+The word *part* is load-bearing. StyleCop checks kind, access, constant, static and readonly — `SA1201`,
+`SA1202`, `SA1203`, `SA1204`, `SA1214`. It has no notion of alphabetical order **within** one of those
+groups, which the ReSharper file layout applies and nothing checks. A member that is in the right group but
+the wrong place inside it compiles, passes the analyzers, and is only visible by running the pipeline and
+looking at what it moves.
 
 Each tool owns its concern completely, and all three are build errors rather than warnings, in `tests/` and
 `benchmarks/` as much as in `src/`. Two different mechanisms, both in the root `Directory.Build.props`:
@@ -70,6 +76,16 @@ explicit field and the compiler's capture field are one field, not two.
   ReSharper puts it by default, at the end; giving events an entry breaks the build. The entries match
   `ImplementsInterface` **and** `Access Is="Private"` — without the access test they would also catch implicit
   implementations and pull `Equals(T)` away from `Equals(object)`.
+- **Constructors sort static-first; everything else sorts by access first.** The file layout gives the
+  constructors entry `<Static />` ahead of `<Access />`, and only that entry. It is the one place where the
+  two order definitions had to be reconciled by hand: `stylecop.json` lists `accessibility` before `static`,
+  which for constructors would put a `public` instance constructor ahead of the static one. `Benchmarks.cs`
+  has both, in that order, and the build is green — so this is load-bearing, not an oversight. Do not
+  "regularise" it.
+- **Static fields are not reordered past each other.** The file layout sets
+  `StaticFieldReorderingPolicy="Strict"`, so ReSharper leaves a static field where it found it relative to the
+  other static fields of its type. Moving one can change the order its initializer runs in, and that is a
+  behaviour change no formatter is allowed to make. Order them by hand if you need them ordered.
 - **Overloads with the same name have no defined order between them.** Two methods called `Equals` tie on
   every key the file layout sorts by — kind, access, static, readonly and name — and ReSharper's sort is
   stable, so it leaves them in whatever order it found them. Reordering the same file starting from two
@@ -90,14 +106,16 @@ The benchmarks are the exception: nothing consumes them as an API, so they use p
 
 ## Member order
 
-StyleCop's order, applied by ReSharper and checked by NewStyleCop. Write a new member straight into the right
-place rather than relying on the fixer:
+StyleCop's order, applied by ReSharper. Write a new member straight into the right place rather than relying
+on the fixer — and note that only the first five keys below are checked by an analyzer:
 
     constants → fields → constructors → finalizers → delegates → events → enums → interfaces
     → properties → indexers → conversion operators → operators → methods → nested structs → nested classes
 
 Within each of those groups: public before internal before protected before private, static before instance,
-readonly before mutable, and **alphabetical** after that.
+readonly before mutable, and **alphabetical** after that. The kind, access, constant, static and readonly keys
+are `SA1201`/`SA1202`/`SA1203`/`SA1204`/`SA1214` and are build errors. Alphabetical order is applied by
+ReSharper and checked by nothing.
 
 Note that fields go at the **top** of a type, and that explicit interface implementations sort ahead of the
 ordinary methods — with the exception for events described above.
@@ -108,6 +126,10 @@ These need no attention beyond letting the tools run — they are listed here so
 stays short, not because they are optional:
 
 - **Primary constructors** wherever `IDE0290` asks for one.
+- **`var` where the type is obvious** — a built-in type, or a right-hand side that names the type. Both are
+  errors. Everywhere else the preference is the explicit type, stated in `.editorconfig` as
+  `csharp_style_var_elsewhere = false`, but it is *not* enforced: it is a preference the build does not fail
+  on, so an existing `var` in that position is not a defect.
 - **Expression-bodied members** are `error`-severity for methods, constructors, operators, properties, indexers,
   accessors, lambdas and local functions. Use `=>` wherever a member is a single expression.
 - **File-scoped namespaces**, with usings outside the namespace.

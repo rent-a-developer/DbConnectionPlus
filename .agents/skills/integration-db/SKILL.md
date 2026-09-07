@@ -51,7 +51,7 @@ To scope to one database system, add a class filter — e.g. `--filter-class "*S
 ## Scoping the run — don't pay 10 minutes for every iteration
 
 **First decide whether you need database tests at all.** They are not part of the default verification loop —
-`scripts/preflight.ps1` (hygiene + Release build + unit tests) is. Reach for the integration suite when the
+`scripts/preflight.ps1` (hygiene, tidiness, Release build and the unit suite) is. Reach for the integration suite when the
 change can only be proven against a real database: SQL generation, an adapter, the CRUD or temp-table paths,
 type mapping, or anything a substituted `DbDataReader` cannot exercise honestly. A refactor whose behaviour the
 unit tests already pin down does not need them.

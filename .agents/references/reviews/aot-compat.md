@@ -4,7 +4,7 @@ Use this whenever a change touches reflection, dynamic dispatch, expression tree
 `src/`. This is a **standing** checklist — AOT support shipped in 4.0.0, and everything here exists to keep it
 from regressing.
 
-Read the [Native AOT and Trimming](../../../DESIGN-DECISIONS.md#native-aot-and-trimming) section of
+Read the [Native AOT and Trimming](../../../docs/DESIGN-DECISIONS.md#native-aot-and-trimming) section of
 DESIGN-DECISIONS.md before reviewing: it records what is deliberate, and therefore what counts as a regression,
 and it carries the measurements behind each decision.
 

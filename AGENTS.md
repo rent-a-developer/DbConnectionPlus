@@ -26,18 +26,31 @@ methods on `DbConnection`, with per-database dialect support from pluggable adap
 
 The solution file is `DbConnectionPlus.slnx` (XML `.slnx`, not `.sln`). **New projects must be added to it.**
 
-Build properties live in two `Directory.Build.props` files, not in the `.csproj` files: the repo-root one for all
-nine solution projects (shared metadata, and the **style gate** — `EnforceCodeStyleInBuild` +
-`TreatWarningsAsErrors`), and `src/Directory.Build.props` for the six shipping projects (`<Version>`,
-`TargetFrameworks`, `IsAotCompatible`, `AnalysisLevel=latest-all`, the AOT and public-API analyzers, the package
-metadata). The `src/` one imports the root explicitly, because MSBuild stops at the nearest file, and it is where
-`AnalysisLevel=latest-all` has to stay — CA1707 alone objects 2100 times to the test suite's
-`Method_ShouldDoSomething` naming. Target frameworks differ per project on purpose: benchmarks `net10.0`, unit
-tests `net8.0;net10.0` (the shipping libraries' two builds are not the same code), integration tests `net8.0`.
+Build settings live in shared files, not in the `.csproj` files:
+
+| File | Covers | Carries |
+|---|---|---|
+| `Directory.Build.props` | all nine solution projects | shared metadata, `<Version>`, the **style gate** (`EnforceCodeStyleInBuild` + `TreatWarningsAsErrors`), `IsPackable=false`, the dependency audit |
+| `Directory.Build.targets` | all nine | the files the packages carry, conditioned on `IsPackable` — which is why they cannot be in a `.props` file |
+| `Directory.Packages.props` | all nine | **every dependency version**. A `PackageReference` here carries no `Version`; adding one is `NU1008` |
+| `src/Directory.Build.props` | the six shipping projects | `TargetFrameworks`, `IsAotCompatible`, `AnalysisLevel=latest-all`, the AOT and public-API analyzers, the package metadata and package validation |
+| `tests/Directory.Build.props` | the two test projects | `OutputType=Exe`, the xUnit v3 / Microsoft.Testing.Platform references and the coverage extension |
+
+MSBuild stops at the nearest `Directory.Build.props`, so the `src/` and `tests/` ones **import the root
+explicitly** — without that import their projects would silently lose all of it. `AnalysisLevel=latest-all` has
+to stay under `src/`: CA1707 alone objects 2100 times to the test suite's `Method_ShouldDoSomething` naming.
+
+`<Version>` is one edit for all six packages, at the repository root. `scripts/verify-package-aot.ps1` reads it
+from there when `-PackageVersion` is omitted. **Packing is opt-in**: the root sets `IsPackable=false` and each of
+the six shipping projects sets `IsPackable=true` itself, so a new project ships nothing by accident.
+
+Target frameworks differ per project on purpose: benchmarks `net10.0`, unit tests `net8.0;net10.0` (the shipping
+libraries' two builds are not the same code), integration tests `net8.0`.
 
 `tests/package-consumption/` sits **outside** all of this on purpose. It carries its own empty
-`Directory.Build.props`/`.targets` that stop MSBuild's upward search, so those projects get the library only from
-the packed packages. Do not "fix" that by deleting the empty files.
+`Directory.Build.props`/`.targets`, plus a `Directory.Packages.props` that turns central package management back
+off, all of which stop the upward search — so those projects get the library only from the packed packages, at a
+version CI hands them. Do not "fix" that by deleting the three files.
 
 **Two readmes, and they are not interchangeable.** `README.md` is the repository's reference documentation, what a
 GitHub visitor reads, and what an API change updates. `PACKAGE_README.md` is the short overview nuget.org renders
@@ -58,9 +71,14 @@ a miss, and that needs Docker. Run the adapter-parity reviewer, walk
 ```bash
 dotnet build DbConnectionPlus.slnx -c Release
 dotnet test --project tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj
-pwsh -File scripts/preflight.ps1                 # both, plus hygiene and tidying — the default loop
+pwsh -File scripts/preflight.ps1                 # the default loop: hygiene, tidiness CHECK, build, unit tests
+pwsh -File scripts/preflight.ps1 -Fix            # the same, but tidy the working tree first
 pwsh -File scripts/verify-package-aot.ps1 -Pack  # the Native AOT gate
 ```
+
+`preflight.ps1` **writes build output and nothing else by default** — it does not edit source and it does not
+touch the git index. `-Fix` is what rewrites files. `tidy-code.ps1 -Check` never writes at any scope: at
+`-Scope all` it runs the pipeline on a disposable copy of the tree and prints the diff from there.
 
 Search the **whole repository** when a change touches a shared symbol. A search scoped to `src/` will miss call
 sites in `tests/` and `benchmarks/`; `EntityHelper.GetEntityTypeMetadata`, for scale, is used in 18 files across
@@ -123,10 +141,10 @@ pwsh -File scripts/tidy-code.ps1 -Scope style # ~15s  + the code-style fixers
 pwsh -File scripts/tidy-code.ps1 -Scope all   # ~3min + member ordering, whole solution
 ```
 
-**Before you commit, run `-Scope all`** — or `scripts/preflight.ps1`, which does it for you. That is the only scope
-that reorders members, because ReSharper loads the whole solution either way. Claude Code and Codex run the
-**default scope** on every `.cs` edit through a PostToolUse hook; style and ordering are not run there, because
-they are too slow for a single edit and the build catches them.
+**Before you commit, run `-Scope all`** — or `scripts/preflight.ps1 -Fix`, which does it for you. That is the
+only scope that reorders members, because ReSharper loads the whole solution either way. Claude Code and Codex
+run the **default scope** on the file each edit touched, through a PostToolUse hook; style and ordering are not
+run there, because they are too slow for a single edit and the build catches them.
 
 ## Tests
 
@@ -144,13 +162,13 @@ an undeclared public member, `RS0017` for a declared one that is gone, both erro
 public surface cannot compile. Record a deliberate one with `pwsh -File scripts/update-public-api.ps1`, then
 **review the diff**: it is the public-API change. Per
 [CONTRIBUTING.md](CONTRIBUTING.md) it also needs a `CHANGELOG.md` entry, a `README.md` update and a SemVer bump in
-`src/Directory.Build.props`. A `*REMOVED*` line is a break. `-MarkShipped` folds `Unshipped` into `Shipped` at
+the repository-root `Directory.Build.props`. A `*REMOVED*` line is a break. `-MarkShipped` folds `Unshipped` into `Shipped` at
 release time.
 
 ## Native AOT support
 
 The **reflection paths are AOT-safe**: no companion package, no source generator, no consumer opt-in. Rationale and
-measurements: [DESIGN-DECISIONS.md](DESIGN-DECISIONS.md#native-aot-and-trimming). Before changing anything that
+measurements: [docs/DESIGN-DECISIONS.md](docs/DESIGN-DECISIONS.md#native-aot-and-trimming). Before changing anything that
 reflects, run the AOT/trim reviewer or walk [its checklist](.agents/references/reviews/aot-compat.md). Three
 constraints must not be broken:
 
@@ -164,16 +182,22 @@ constraints must not be broken:
   suppressed; the code-style rules name the two sanctioned exceptions.
 - **No consumer-facing diagnostics.** The generic query methods carry neither `[RequiresUnreferencedCode]` nor
   `[RequiresDynamicCode]`; adding either to a public API is a regression the AOT consumer's zero-diagnostic gate
-  fails on. The argument: [DESIGN-DECISIONS.md](DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics).
+  fails on. The argument: [docs/DESIGN-DECISIONS.md](docs/DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics).
 
 ## Conventions
 
-- Branches: [Conventional Branch](https://conventionalbranch.org/) — `<type>/issue-<issue#>-<slug>` off `main`,
-  types `feature/ bugfix/ hotfix/ release/ chore/`. An agent on its own branch may use `claude/` or `codex/`.
-- Commits: Conventional Commits — `feat:`, `fix:`, `BREAKING CHANGE:`. Full checklist:
-  [the `commit` skill](.agents/skills/commit/SKILL.md). `CHANGELOG.md` follows
-  [Keep a Changelog](https://keepachangelog.com/); versioning is SemVer.
-- Pull request process: [CONTRIBUTING.md](CONTRIBUTING.md#pull-request-process).
+- Branches: [Conventional Branch](https://conventionalbranch.org/) — `<type>/issue-<number>-<slug>` off
+  `main`, or `<type>/<slug>` when there is no issue. Types: `feature bugfix hotfix release chore`. **The same
+  rule applies to you.** There is no `claude/` or `codex/` prefix — a branch is named after what it does, not
+  after who typed it.
+- Commits: [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) with a **lowercase,
+  imperative** summary — `build: standardize repository tooling`. A breaking change is `feat!:` or `fix!:`
+  plus a `BREAKING CHANGE:` **footer**; `BREAKING CHANGE` is never a type. Full checklist:
+  [the `commit` skill](.agents/skills/commit/SKILL.md).
+- `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): user-visible changes go
+  under `## [Unreleased]`. Internal formatting and tooling work needs no entry. **Never bump a version** —
+  the version, the release date, the API-snapshot promotion and the tag are the maintainer's.
+- Pull request process: [CONTRIBUTING.md](CONTRIBUTING.md#opening-the-pull-request).
 - Line endings are LF everywhere; `.gitattributes` and `.editorconfig` enforce this and CI verifies it.
   Never hand-convert line endings, and never compare a multi-line source literal against
   `Environment.NewLine` - the literal carries the file's bytes, `Environment.NewLine` carries the host's.
@@ -191,8 +215,11 @@ Two skills and two review agents are checked in, each under a Codex and a Claude
 `adapter-parity-reviewer`.
 
 Claude Code (`.claude/settings.json`) and Codex (`.codex/hooks.json`) fire the same two PostToolUse hooks —
-formatting and the public-API reminder — and both delegate to `scripts/`. Codex needs those hooks trusted once per
-clone (`/hooks`); until then nothing fires and you run `scripts/tidy-code.ps1` yourself.
+formatting and the public-API reminder — and both delegate to `scripts/`. Each one is **scoped to the file the
+edit touched**: no fallback to every dirty file, no path outside the repository, and they never fail an edit.
+Codex needs those hooks trusted once per clone (`/hooks`), and reviewed again whenever a pull request changes
+one; until then nothing fires and you run `scripts/tidy-code.ps1` yourself. Details, including what to do when
+no hook covers the edit: [.agents/README.md](.agents/README.md).
 
 Reusable skills and reference material belong in `.agents/`, executable checks in `scripts/`, and only metadata and
 hook wiring in `.codex/` and `.claude/`. Never fork a procedure or a check into a tool-specific copy — both
