@@ -4,6 +4,8 @@
     <AssemblyName>RentADeveloper.DbConnectionPlus</AssemblyName>
     <AssemblyTitle>rent-a-developer DbConnectionPlus</AssemblyTitle>
     <Description>A lightweight .NET ORM and extension library for the type DbConnection that adds high-performance, type-safe helpers to reduce boilerplate code, boost productivity, and make working with SQL databases in C# more enjoyable.</Description>
+    <!-- Packing is opt-in: the repository-root Directory.Build.props sets IsPackable=false. -->
+    <IsPackable>true</IsPackable>
     <PackageId>DbConnectionPlus</PackageId>
     <PackageTags>ORM sql server mysql postgresql sqlite oracle SqlConnection DbConnection extensions connection entity insert delete update CRUD</PackageTags>
     <RootNamespace>RentADeveloper.DbConnectionPlus</RootNamespace>
@@ -20,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="3.0.10" />
-    <PackageReference Include="LinkDotNet.StringBuilder" Version="3.4.2" />
+    <PackageReference Include="Humanizer.Core" />
+    <PackageReference Include="LinkDotNet.StringBuilder" />
   </ItemGroup>
 
 </Project>

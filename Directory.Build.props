@@ -11,6 +11,20 @@
   -->
 
   <PropertyGroup>
+    <!--
+      The version every produced package carries. All six shipping packages are versioned and released
+      together, so this is ONE edit per release rather than one per project. It lives at the repository
+      root rather than under src/ so that every script and document has a single, obvious place to read
+      it from - scripts/verify-package-aot.ps1 does exactly that when -PackageVersion is omitted.
+
+      The test and benchmark projects inherit it too. They are never packed (IsPackable is false below,
+      and only the six shipping projects opt back in), so the only effect there is that their assembly
+      version tracks the repository's instead of the SDK's 1.0.0 default.
+    -->
+    <Version>4.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Authors>David Liebeherr</Authors>
     <Company>rent-a-developer</Company>
     <Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
@@ -21,6 +35,39 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <TieredCompilation>true</TieredCompilation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Packing is opt-in, not opt-out. Every project starts unpackable and the six shipping projects under
+      src/ each set IsPackable=true themselves, so "which projects ship as packages" is answered by the
+      six .csproj files rather than by whichever project last remembered to say no. A new test, sample or
+      tool project is silently unpackable, which is the safe default: the failure mode of the other
+      direction is publishing something that was never meant to leave the repository.
+
+      The files those packages carry are added by Directory.Build.targets, not here - a project sets
+      IsPackable AFTER this file has been evaluated, so a condition on it in a .props file is always false.
+    -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      NuGet's dependency audit, at its widest scope: NuGetAuditMode=all reports advisories against
+      transitive packages too, which is where they usually are - the direct references here are few and
+      watched, and a vulnerable ADO.NET driver two levels down is exactly what would otherwise be missed.
+      The level is moderate rather than low, so the audit reports what is worth acting on.
+
+      WarningsNotAsErrors is what keeps this from being hostile. TreatWarningsAsErrors is on for every
+      project, so without it the publication of a new advisory anywhere in the transitive graph would break
+      an unrelated build, on a schedule nobody in this repository controls. NU1901-NU1904 therefore stay
+      warnings: visible in every build and in CI, and never a reason a change that touched nothing cannot
+      compile. Dependabot's security updates are what close them.
+    -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -63,19 +110,20 @@
       consumer of the packages.
     -->
     <!--
-      KEEP THIS VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json. The two are the
-      same formatter, and a version apart they disagree: the build would demand formatting that
-      `dotnet csharpier format` does not produce, and no amount of running the tool would fix it.
+      KEEP THE CSharpier.MsBuild VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json.
+      The two are the same formatter, and a version apart they disagree: the build would demand formatting
+      that `dotnet csharpier format` does not produce, and no amount of running the tool would fix it. The
+      version itself lives in Directory.Packages.props, with every other version in the repository.
     -->
-    <PackageReference Include="CSharpier.MsBuild" Version="1.3.0">
+    <PackageReference Include="CSharpier.MsBuild">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
+    <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -89,11 +137,11 @@
       stable releases and handles C# 14 extension declarations and collection expressions. The rule
       IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
     -->
-    <PackageReference Include="NewStyleCop.Analyzers" Version="1.2.1">
+    <PackageReference Include="NewStyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.33.0.1635">
+    <PackageReference Include="SonarAnalyzer.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

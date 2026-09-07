@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <!--
       Both targets of the shipping libraries, not just the floor. The six packages multi-target
       net8.0;net10.0, and the two builds are not the same code: the net8.0 build carries an IL3050
@@ -20,32 +19,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="4.18.1" />
-    <PackageReference Include="AutoFixture.AutoNSubstitute" Version="4.18.1" />
-    <PackageReference Include="AutoFixture.Idioms" Version="4.18.1" />
-    <PackageReference Include="AwesomeAssertions" Version="9.6.0" />
-    <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="Mapster" Version="10.0.12" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
-    <PackageReference Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
-    <PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
-    <PackageReference Include="xunit.v3" Version="4.0.0" />
-    <!-- The native MTP coverage extension CI uses to produce the OpenCover report for SonarQube. -->
-    <PackageReference Include="coverlet.MTP" Version="10.0.1">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="AutoFixture" />
+    <PackageReference Include="AutoFixture.AutoNSubstitute" />
+    <PackageReference Include="AutoFixture.Idioms" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Bogus" />
+    <PackageReference Include="Mapster" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="NSubstitute.Community.DbConnection" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
+    <PackageReference Include="RentADeveloper.ArgumentNullGuards" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
   </ItemGroup>
 
   <ItemGroup>

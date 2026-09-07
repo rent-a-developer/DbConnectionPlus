@@ -4,6 +4,8 @@
     <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</AssemblyName>
     <AssemblyTitle>rent-a-developer DbConnectionPlus SQL Server Database Adapter</AssemblyTitle>
     <Description>SQL Server database adapter for DbConnectionPlus.</Description>
+    <!-- Packing is opt-in: the repository-root Directory.Build.props sets IsPackable=false. -->
+    <IsPackable>true</IsPackable>
     <PackageId>DbConnectionPlus.DatabaseAdapters.SqlServer</PackageId>
     <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.SqlServer</RootNamespace>
   </PropertyGroup>
@@ -13,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

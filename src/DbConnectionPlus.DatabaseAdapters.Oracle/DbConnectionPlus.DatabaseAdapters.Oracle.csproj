@@ -4,6 +4,8 @@
     <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle</AssemblyName>
     <AssemblyTitle>rent-a-developer DbConnectionPlus Oracle Database Adapter</AssemblyTitle>
     <Description>Oracle database adapter for DbConnectionPlus.</Description>
+    <!-- Packing is opt-in: the repository-root Directory.Build.props sets IsPackable=false. -->
+    <IsPackable>true</IsPackable>
     <PackageId>DbConnectionPlus.DatabaseAdapters.Oracle</PackageId>
     <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.Oracle</RootNamespace>
   </PropertyGroup>
@@ -13,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
   </ItemGroup>
 
 </Project>

@@ -10,19 +10,16 @@
 
     What lives here is what only a shipping, packable library needs: multi-targeting, the AOT, CA and
     public-API analyzers, and the NuGet package metadata. Per-project identity - AssemblyName,
-    AssemblyTitle, RootNamespace, PackageId, Description, PackageTags - stays in each .csproj.
+    AssemblyTitle, RootNamespace, PackageId, Description, PackageTags - stays in each .csproj, and so does
+    IsPackable=true, because packing is opt-in.
+
+    Two things are deliberately NOT here any more. <Version> is in the repository-root
+    Directory.Build.props, so one file answers "what version is this repository at". The files the packages
+    carry are in the repository-root Directory.Build.targets, because they are conditioned on IsPackable,
+    which a project sets after every .props file has been read.
   -->
 
   <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
-
-  <PropertyGroup>
-    <!--
-      All six shipping packages are versioned and released together, so the version lives here rather
-      than being repeated in each .csproj - where it was six edits per release and easy to half-apply.
-      CONTRIBUTING.md requires the bump alongside the CHANGELOG and README updates.
-    -->
-    <Version>4.0.0</Version>
-  </PropertyGroup>
 
   <PropertyGroup>
     <!--
@@ -67,27 +64,45 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Package metadata that is identical for all six packages. The rest is per-project. -->
+    <!--
+      Package metadata that is identical for all six packages. The rest is per-project, and the files the
+      packages carry are added by the repository-root Directory.Build.targets.
+
+      The licence is an SPDX EXPRESSION rather than a file reference. nuget.org can read an expression -
+      it shows "MIT" on the package page and lets a consumer's licence tooling resolve it without opening
+      the package - where a file reference is opaque to everything but a human. LICENSE.md is still packed,
+      unchanged, so nothing is lost by saying it twice.
+
+      PackageRequireLicenseAcceptance is false because acceptance prompts exist for RESTRICTED licences.
+      MIT is not one, and a prompt in front of an MIT package is noise that trains people to click through
+      the prompts that matter.
+    -->
     <PackageIcon>logo-128.png</PackageIcon>
-    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/rent-a-developer/DbConnectionPlus</PackageProjectUrl>
     <PackageReadmeFile>PACKAGE_README.md</PackageReadmeFile>
-    <PackageReleaseNotes>See CHANGELOG.md.</PackageReleaseNotes>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>https://github.com/rent-a-developer/DbConnectionPlus/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryType>GIT</RepositoryType>
     <RepositoryUrl>https://github.com/rent-a-developer/DbConnectionPlus.git</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup>
+  <PropertyGroup>
     <!--
-      The files every package carries. The icon is one file for all six packages rather than a copy per
-      project; $(MSBuildThisFileDirectory) resolves it relative to this file, not to the project.
+      Package validation, against the LAST PUBLISHED version of each package rather than against nothing.
+
+      Without PackageValidationBaselineVersion the check is limited to internal consistency - that the
+      package's target frameworks are compatible with each other - which cannot see the failure that
+      actually matters: a member that shipped and is now gone. With the baseline, `dotnet pack` downloads
+      the published package and runs ApiCompat against it, so removing or changing a public signature
+      fails the pack rather than reaching nuget.org.
+
+      The baseline is the version currently on nuget.org. At a release it moves to the version being
+      replaced, alongside the <Version> bump in the repository-root Directory.Build.props.
     -->
-    <None Include="$(MSBuildThisFileDirectory)../CHANGELOG.md" Pack="true" PackagePath="/" />
-    <None Include="$(MSBuildThisFileDirectory)../LICENSE.md" Pack="true" PackagePath="/" />
-    <None Include="$(MSBuildThisFileDirectory)../PACKAGE_README.md" Pack="true" PackagePath="/" />
-    <None Include="$(MSBuildThisFileDirectory)../assets/logo-128.png" Pack="true" PackagePath="/" />
-  </ItemGroup>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>4.0.0</PackageValidationBaselineVersion>
+  </PropertyGroup>
 
   <ItemGroup>
     <!--
@@ -95,7 +110,7 @@
       project's PublicAPI.*.txt files is RS0016, and removing a listed one is RS0017 - both build errors
       here, because TreatWarningsAsErrors is on. Update the files with scripts/update-public-api.ps1.
     -->
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

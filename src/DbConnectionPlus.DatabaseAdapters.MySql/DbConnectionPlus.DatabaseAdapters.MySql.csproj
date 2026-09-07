@@ -4,6 +4,8 @@
     <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</AssemblyName>
     <AssemblyTitle>rent-a-developer DbConnectionPlus MySql Database Adapter</AssemblyTitle>
     <Description>MySQL database adapter for DbConnectionPlus.</Description>
+    <!-- Packing is opt-in: the repository-root Directory.Build.props sets IsPackable=false. -->
+    <IsPackable>true</IsPackable>
     <PackageId>DbConnectionPlus.DatabaseAdapters.MySql</PackageId>
     <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.MySql</RootNamespace>
   </PropertyGroup>
@@ -13,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="2.6.2" />
+    <PackageReference Include="MySqlConnector" />
   </ItemGroup>
 
 </Project>
