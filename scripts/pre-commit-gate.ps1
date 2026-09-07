@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
-    The pre-commit gate: repository hygiene, style/formatting/ordering, a Release build, and the unit
-    test suite on net8.0 and net10.0.
+    The pre-commit gate: repository hygiene, line endings, style/formatting/ordering, a Release build,
+    and the unit test suite on net8.0 and net10.0.
 
 .DESCRIPTION
     CONTRIBUTING.md requires that all tests pass and the build succeeds with no warnings. Because
@@ -71,6 +71,7 @@ $repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot))
 $solutionFileName = 'DbConnectionPlus.slnx'
 $unitTestProject = 'tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj'
 $publicApiGuard = Join-Path $repositoryRoot 'scripts/public-api-guard.ps1'
+$lineEndings = Join-Path $repositoryRoot 'scripts/verify-line-endings.ps1'
 $tidy = Join-Path $repositoryRoot 'scripts/tidy-code.ps1'
 
 $failures = New-Object System.Collections.Generic.List[String]
@@ -113,7 +114,7 @@ function Invoke-FromRepositoryRoot
     }
 }
 
-foreach ($required in @($publicApiGuard, $tidy))
+foreach ($required in @($publicApiGuard, $lineEndings, $tidy))
 {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf))
     {
@@ -147,7 +148,25 @@ else
     Write-Output 'Unchanged.'
 }
 
-# --- 2. Style, formatting and member ordering ---------------------------------------------------------
+# --- 2. Line endings ----------------------------------------------------------------------------------
+# Cheap, and it has to come before the tidiness check rather than after it, because the tidiness check
+# cannot see this: it commits a disposable copy of the tree before running the tools, and committing is
+# what normalizes line endings away. A CRLF tree passes step 3 and fails step 4 with one
+# "Was not formatted." error per file, none of which mentions a line ending.
+#
+# It reads; it never writes, and it never touches the git index. scripts/verify-line-endings.ps1 says why
+# both columns of `git ls-files --eol` are checked and what fixes each.
+
+Write-Section 'Hygiene: line endings'
+
+& pwsh -NoProfile -NonInteractive -File $lineEndings
+
+if ($LASTEXITCODE -ne 0)
+{
+    $failures.Add('line endings')
+}
+
+# --- 3. Style, formatting and member ordering ---------------------------------------------------------
 # All three are build errors, so leaving them to step 3 only means a slower way of finding out - and the
 # check prints the exact diff that would fix things, where the build only names the file.
 #
@@ -211,9 +230,27 @@ else
         Write-Output 'FAIL - the tree is not tidy, or tidy-code could not finish. The diff above is what'
         Write-Output 'would fix it. Apply it with: pwsh -File scripts/pre-commit-gate.ps1 -Fix'
     }
+    else
+    {
+        # The check above asks whether the tools would change a COPY of the tree. CSharpier.MsBuild asks
+        # about the tree itself, during the build, and anything that lives around the files rather than in
+        # them can make the two disagree - the line endings step 2 covers, or a .csharpierrc or
+        # .editorconfig in a directory ABOVE this repository, which a copy under the temp directory never
+        # sees. Asking CSharpier here costs about a second and names the file and the reason; the build
+        # names every file in the solution and calls all of them unformatted.
+        Invoke-FromRepositoryRoot { & dotnet csharpier check . }
+
+        if ($LASTEXITCODE -ne 0)
+        {
+            $failures.Add('formatting')
+            Write-Output ''
+            Write-Output 'FAIL - CSharpier rejects the tree as it stands on disk, though the check above'
+            Write-Output 'passed on a copy of it. The build fails the same way, less legibly.'
+        }
+    }
 }
 
-# --- 3. Build ----------------------------------------------------------------------------------------
+# --- 4. Build ----------------------------------------------------------------------------------------
 
 if ($SkipBuild)
 {
@@ -235,7 +272,7 @@ else
     }
 }
 
-# --- 4. Unit tests -----------------------------------------------------------------------------------
+# --- 5. Unit tests -----------------------------------------------------------------------------------
 # Both target frameworks, because the two builds of the shipping libraries are not the same code: the
 # net8.0 build carries an IL3050 suppression the net10.0 build does not. The project multi-targets, so a
 # single `dotnet test` covers both - the summary names each one.

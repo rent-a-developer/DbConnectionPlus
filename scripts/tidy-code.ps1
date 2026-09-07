@@ -434,6 +434,12 @@ function Invoke-Format
 # .gitignore to decide what to skip, and the commit is what makes `git diff` inside the copy state the
 # proposed change exactly. Staging and committing THERE is not the same act as staging in your
 # repository, which this script never does.
+#
+# What that diff CANNOT see is line endings. The copy carries .gitattributes with it, so committing the
+# baseline stores every file as LF whatever is on disk, and CSharpier rewriting a CRLF file to LF is then
+# a change git reports as nothing at all. A tree with the wrong line endings passes this check and fails
+# the build, where CSharpier.MsBuild reads the files rather than the index and rejects every one of them.
+# scripts/pre-release-gate.ps1 checks for that separately, before it gets here.
 
 function New-DisposableTreeCopy
 {

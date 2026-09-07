@@ -248,6 +248,20 @@ Invoke-Step 'Ignored revisions' {
     return
 }
 
+# --- Line endings -------------------------------------------------------------------------------------
+# The lint job's second check, and the one whose absence here was expensive: a tree whose files are CRLF
+# fails the build two steps below with one "Was not formatted." error per file, every one of them naming
+# the formatter rather than the line endings, and nothing before it - not the working-tree step above, not
+# the tidiness check below - can see it. scripts/verify-line-endings.ps1 says why in full.
+
+Invoke-Step 'Line endings' {
+    Invoke-FromRepositoryRoot {
+        & pwsh -NoProfile -NonInteractive -File 'scripts/verify-line-endings.ps1'
+    }
+
+    $script:stepSucceeded = ($LASTEXITCODE -eq 0)
+}
+
 # --- Style, formatting and ordering -------------------------------------------------------------------
 # The lint job. All of it is also a build error, so this is only the faster way to find out - but it prints
 # the diff that would fix things, where the build names the file and stops. It checks a disposable copy of
@@ -262,6 +276,33 @@ Invoke-Step 'Style, formatting and ordering' {
     {
         Write-Output ''
         Write-Output 'FAILED - the tree is not tidy. Apply it with: pwsh -File scripts/pre-commit-gate.ps1 -Fix'
+
+        $script:stepSucceeded = $false
+
+        return
+    }
+
+    # And then the same question of THIS tree, which is not the same question.
+    #
+    # The check above runs the tools for real on a copy placed outside the repository and asks git whether
+    # anything changed there. That is the only honest way to check ordering - ReSharper has no check mode -
+    # but it answers about the copy, and two things that decide how CSharpier formats are not copied with
+    # the files: the line endings, which git normalizes away the moment the copy is committed, and anything
+    # a directory ABOVE the repository contributes, which a copy under the temp directory does not have.
+    #
+    # CSharpier.MsBuild asks about the tree instead, during the build, and when the two disagree the build
+    # is where you find out: one "Was not formatted." error per file, naming a formatter that has just
+    # reported the tree tidy. Asking CSharpier directly here costs a second or two and turns that into a
+    # named file and a diff, one step earlier.
+    Invoke-FromRepositoryRoot { & dotnet csharpier check . }
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Output ''
+        Write-Output 'FAILED - CSharpier rejects the tree as it stands on disk, though the check above passed'
+        Write-Output 'on a copy of it. The build would fail the same way. When the files themselves look'
+        Write-Output 'right, the difference is around them: line endings (the step above), or a .csharpierrc'
+        Write-Output 'or .editorconfig in a directory above this repository that the copy never saw.'
 
         $script:stepSucceeded = $false
 

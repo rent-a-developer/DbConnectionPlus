@@ -22,7 +22,7 @@ methods on `DbConnection`, with per-database dialect support from pluggable adap
 | `docs/` | docfx config, the site landing page and implementation plans. |
 | `.agents/`, `.codex/`, `.claude/` | Canonical skills and references, plus each tool's agent metadata and hook wiring. |
 | `.github/workflows/` | `ci.yml` (lint → build/test → package + docs → package-consumption gates → publish), `codeql.yml`, `dependency-review.yml`. |
-| `scripts/` | The commands you type: `pre-commit-gate`, `pre-release-gate`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
+| `scripts/` | The commands you type: `pre-commit-gate`, `pre-release-gate`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you, and `verify-line-endings`, which both gates run. |
 
 The solution file is `DbConnectionPlus.slnx` (XML `.slnx`, not `.sln`). **New projects must be added to it.**
 
