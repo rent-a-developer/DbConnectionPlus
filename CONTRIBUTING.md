@@ -150,6 +150,22 @@ A change to `IDatabaseAdapter`, `IEntityManipulator` or `ITemporaryTableBuilder`
 The AOT gate runs `net8.0` for the documented floor and `net10.0` by default, and
 CI runs both, on Linux and Windows, against the exact packages it will publish.
 
+### Before you push
+
+The pre-commit gate is the per-commit loop. Before pushing a branch you want CI to go green on, there is a
+wider one that runs everything CI checks and can be checked here — the full integration matrix, the
+documentation build with warnings as errors, the pack with package validation, the Native AOT gate on both
+frameworks, and the all-adapters package consumer:
+
+```shell
+pwsh -File scripts/pre-release-gate.ps1
+```
+
+It stops at the first failure and ends with one line: `PASSED: All checks passed.` or
+`FAILED: Check X failed. See output.` What it cannot cover — CodeQL, the dependency review, the Codecov
+upload, the Pages deployment, the publish itself, the Linux legs and the .NET-8-SDK-only leg — is listed in
+the script's own help.
+
 ### Database adapters
 
 The adapter projects under `src/DbConnectionPlus.DatabaseAdapters.*` each implement
@@ -206,7 +222,13 @@ Releases are cut by CI from a pushed tag; nothing is packed or pushed by hand. T
 3. Turn `## [Unreleased]` in `CHANGELOG.md` into a dated section for that version (`## [4.1.0] - 2026-08-17`),
    and open a fresh empty `## [Unreleased]` above it. CI reads the dated section, uses it as the release
    notes, and refuses to publish if it is missing, undated or empty.
-4. Merge to `main`, then push the tag:
+4. Run the pre-release gate with the version you are releasing. `-Version` adds the two checks CI runs
+   immediately before publishing — the declared version matches, and the changelog section for it is dated
+   and non-empty:
+   ```shell
+   pwsh -File scripts/pre-release-gate.ps1 -Version 4.1.0
+   ```
+5. Merge to `main`, then push the tag:
    ```shell
    git tag v4.1.0 && git push origin v4.1.0
    ```

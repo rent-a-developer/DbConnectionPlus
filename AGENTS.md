@@ -22,7 +22,7 @@ methods on `DbConnection`, with per-database dialect support from pluggable adap
 | `docs/` | docfx config, the site landing page and implementation plans. |
 | `.agents/`, `.codex/`, `.claude/` | Canonical skills and references, plus each tool's agent metadata and hook wiring. |
 | `.github/workflows/` | `ci.yml` (lint → build/test → package + docs → package-consumption gates → publish), `codeql.yml`, `dependency-review.yml`. |
-| `scripts/` | The commands you type: `pre-commit-gate`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
+| `scripts/` | The commands you type: `pre-commit-gate`, `pre-release-gate`, `verify-package-aot`, `benchmarks`, `update-public-api`, `clean-build-artifacts`, `extract-release-notes`. Plus `tidy-code` and `public-api-guard`, which the editor hooks run for you. |
 
 The solution file is `DbConnectionPlus.slnx` (XML `.slnx`, not `.sln`). **New projects must be added to it.**
 
@@ -74,6 +74,7 @@ dotnet test --project tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTest
 pwsh -File scripts/pre-commit-gate.ps1                 # the default loop: hygiene, tidiness CHECK, build, unit tests
 pwsh -File scripts/pre-commit-gate.ps1 -Fix            # the same, but tidy the working tree first
 pwsh -File scripts/verify-package-aot.ps1 -Pack  # the Native AOT gate
+pwsh -File scripts/pre-release-gate.ps1               # everything CI checks that can be checked locally
 ```
 
 `pre-commit-gate.ps1` **writes build output and nothing else by default** — it does not edit source and it does not
