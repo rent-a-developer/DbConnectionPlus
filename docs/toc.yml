@@ -18,8 +18,6 @@
   items:
     - name: API summary
       href: reference/api-summary.md
-    - name: Comparison with Dapper
-      href: reference/comparison.md
     - name: Performance
       href: reference/performance.md
     - name: Design decisions

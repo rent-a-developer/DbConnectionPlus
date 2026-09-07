@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <!--
-      Both targets of the shipping libraries, not just the floor. The six packages multi-target
-      net8.0;net10.0, and the two builds are not the same code: the net8.0 build carries an IL3050
+      Every target of the shipping libraries, not just the floor. The shipping packages multi-target
+      net8.0;net10.0, and the net8.0 and net10.0 builds are not the same code: the net8.0 build carries an IL3050
       suppression the net10.0 build does not, because only net9.0+ annotates
       RuntimeFeature.IsDynamicCodeSupported as a feature guard. Testing one target would leave the
       other verified by nothing but the compiler.
 
-      The integration suite deliberately stays single-target - it is bound by four database containers,
+      The integration suite deliberately stays single-target - it is bound by the database containers,
       not by the runtime, and doubling a large test suite buys nothing the materializer tests here do not
-      already cover on both runtimes.
+      already cover on net8.0 and net10.0.
     -->
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <RootNamespace>RentADeveloper.DbConnectionPlus.UnitTests</RootNamespace>

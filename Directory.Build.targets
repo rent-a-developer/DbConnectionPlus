@@ -14,13 +14,13 @@
 
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <!--
-      The files every package carries. One copy of each for all six packages rather than a copy per
+      The files every package carries. One copy of each for every package rather than a copy per
       project; $(MSBuildThisFileDirectory) is the repository root, so the paths resolve relative to this
       file and not to the project that imports it.
 
       The condition is what keeps these out of the tests and the benchmarks, which are not packable.
       It has to be evaluated here: packing is opt-in (IsPackable is false in Directory.Build.props) and
-      the six shipping projects turn it back on in their own .csproj, which MSBuild reads AFTER the
+      the shipping projects turn it back on in their own .csproj, which MSBuild reads AFTER the
       props file and BEFORE this one.
 
       LICENSE.md is packed as a file as well as declared as an SPDX expression

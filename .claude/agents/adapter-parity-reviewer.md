@@ -1,6 +1,6 @@
 ---
 name: adapter-parity-reviewer
-description: Checks whether a change to one database adapter was correctly mirrored into the other four. Use after editing anything under src/DbConnectionPlus.DatabaseAdapters.*, or after changing IDatabaseAdapter, IEntityManipulator, or ITemporaryTableBuilder in core.
+description: Checks whether a change to one database adapter was correctly mirrored into the others. Use after editing anything under src/DbConnectionPlus.DatabaseAdapters.*, or after changing IDatabaseAdapter, IEntityManipulator, or ITemporaryTableBuilder in core.
 tools: Read, Grep, Glob
 ---
 

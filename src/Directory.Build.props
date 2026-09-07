@@ -13,7 +13,7 @@
     AssemblyTitle, RootNamespace, PackageId, Description, PackageTags - stays in each .csproj, and so does
     IsPackable=true, because packing is opt-in.
 
-    Two things are deliberately NOT here any more. <Version> is in the repository-root
+    Two things live elsewhere on purpose. <Version> is in the repository-root
     Directory.Build.props, so one file answers "what version is this repository at". The files the packages
     carry are in the repository-root Directory.Build.targets, because they are conditioned on IsPackable,
     which a project sets after every .props file has been read.
@@ -25,8 +25,8 @@
     <!--
       net8.0 is the documented Native AOT floor; net10.0 is the recommended target.
 
-      The unit tests multi-target the same pair, because the two builds of these libraries are not the
-      same code - net8.0 carries an IL3050 suppression net10.0 does not. The integration tests stay
+      The unit tests multi-target the same pair, because the net8.0 and net10.0 builds of these libraries
+      are not the same code - net8.0 carries an IL3050 suppression net10.0 does not. The integration tests stay
       net8.0 (they are bound by database containers, not by the runtime) and the benchmarks are net10.0
       (BenchmarkDotNet's NativeAotToolchain.Net10_0 publishes that TFM).
     -->
@@ -65,7 +65,7 @@
 
   <PropertyGroup>
     <!--
-      Package metadata that is identical for all six packages. The rest is per-project, and the files the
+      Package metadata that is identical for every package. The rest is per-project, and the files the
       packages carry are added by the repository-root Directory.Build.targets.
 
       The licence is an SPDX EXPRESSION rather than a file reference. nuget.org can read an expression -

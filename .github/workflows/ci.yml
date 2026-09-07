@@ -46,7 +46,7 @@ jobs:
   # idempotent alone, so comparing before against after is the only honest question. Writing to the
   # checkout is harmless here - it is thrown away at the end of the job.
   #
-  # All three are also build errors in the verify job below, for every project - style and ordering through
+  # All of them are also build errors in the verify job below, for every project - style and ordering through
   # the analyzers, formatting through CSharpier.MsBuild. This job still earns its place: it is much faster to
   # a red X, and it prints the exact diff that would fix things rather than only naming the file. It is also
   # the only check that can see a MISPLACED member the analyzers accept, because alphabetical order within a
@@ -159,8 +159,8 @@ jobs:
   #
   # No `services:` block, and no connection strings: the integration suite starts its own containers through
   # Testcontainers, on the Docker daemon this runner already provides. That is the same code path a developer
-  # runs locally, so a database that is configured wrong now fails in both places or in neither - and the
-  # readiness gate this job used to carry by hand is the module wait strategies' job instead.
+  # runs locally, so a database that is configured wrong now fails in both places or in neither. Readiness is
+  # the module wait strategies' job, not this workflow's.
   verify:
     name: Build, test and analyze
     runs-on: ubuntu-latest
@@ -198,7 +198,7 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
 
-      # TreatWarningsAsErrors is on for the six shipping projects, so this is also the style, trim-analyzer
+      # TreatWarningsAsErrors is on for the shipping projects, so this is also the style, trim-analyzer
       # and public-API gate: an IL2xxx/IL3050 diagnostic fails here, and so does an undeclared or vanished
       # public member (RS0016 / RS0017).
       - name: Build
@@ -206,9 +206,9 @@ jobs:
 
       # --no-build, and the configuration named explicitly. Without both, `dotnet test` silently rebuilds the
       # whole solution in Debug and tests that instead of the Release build above. The xUnit TRX reporter and
-      # Coverlet MTP extension replace the VSTest logger and data collector used before the MTP migration.
+      # Coverlet MTP extension are what report results and coverage on Microsoft.Testing.Platform.
       #
-      # This step pulls and starts the four database images, so the bulk of its wall time is the suite plus a
+      # This step pulls and starts the database images, so the bulk of its wall time is the suite plus a
       # cold Oracle - keep an eye on the job timeout above when adding a database system.
       - name: Test
         run: dotnet test --solution ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --results-directory "${{ env.TEST_RESULTS }}" --report-xunit-trx --coverlet --coverlet-output-format opencover
@@ -235,7 +235,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Build the documentation and pack the six packages. Everything downstream consumes the artifact this
+  # Build the documentation and pack the packages. Everything downstream consumes the artifact this
   # produces, so nothing reaches NuGet.org that was not built exactly once, here.
   package-and-docs:
     name: Package and docs
@@ -290,7 +290,7 @@ jobs:
       - name: Build DocFX site
         run: dotnet tool run docfx build ${{ env.DOCFX_CONFIG }} --warningsAsErrors
 
-      # IsPackable in the project files is the source of truth for which projects ship as packages: the six
+      # IsPackable in the project files is the source of truth for which projects ship as packages: the projects
       # under src/ do, the tests and the benchmarks do not.
       - name: Pack NuGet packages
         run: dotnet pack ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.PACKAGE_OUTPUT }} /p:ContinuousIntegrationBuild=true
@@ -387,8 +387,8 @@ jobs:
           -PackageVersion ${{ needs.package-and-docs.outputs.version }}
 
   # Prove the documented net8.0 floor with the .NET 8 SDK and nothing else installed. The consumer installs
-  # all six packages, so this also proves every adapter's driver dependency flows and that one shared
-  # DbConnectionPlus assembly satisfies all five adapters - none of which a project-referenced test can see.
+  # every package, so this also proves each adapter's driver dependency flows and that one shared
+  # DbConnectionPlus assembly satisfies all of the adapters - none of which a project-referenced test can see.
   verify-net8-consumers:
     name: Consume packages on .NET 8 SDK (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -531,8 +531,8 @@ jobs:
         shell: pwsh
         run: ./${{ env.RELEASE_NOTES_SCRIPT }} -Version "$($env:GITHUB_REF_NAME -replace '^v', '')"
 
-      # The <Version> in the repository-root Directory.Build.props is the single source of truth for all six
-      # packages;
+      # The <Version> in the repository-root Directory.Build.props is the single source of truth for every
+      # package;
       # tagging a different version would otherwise publish stale packages, or silently publish nothing at
       # all thanks to --skip-duplicate.
       - name: Verify the tag matches the packed version

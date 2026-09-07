@@ -16,7 +16,7 @@ src/DbConnectionPlus.DatabaseAdapters.SqlServer
 Each contains `{Db}DatabaseAdapter.cs`, `{Db}EntityManipulator.cs`, `{Db}TemporaryTableBuilder.cs` and
 `{Db}ConfigurationExtensions.cs`.
 
-A change to one adapter almost always has to be mirrored into the other four. The only thing that catches a
+A change to one adapter almost always has to be mirrored into the others. The only thing that catches a
 miss is the integration suite, which needs Docker and about ten minutes for the full matrix — so it usually is
 not run. The job here is to catch it statically.
 
@@ -29,21 +29,21 @@ This is a **review**: report findings, do not edit files.
    whether any core seam (`IDatabaseAdapter`, `IEntityManipulator`, `ITemporaryTableBuilder`,
    `DatabaseAdapters/Constants.cs`) changed.
 
-2. **For each changed adapter member**, read the corresponding member in all four other adapters and classify:
+2. **For each changed adapter member**, read the corresponding member in every other adapter and classify:
 
    - **Missing** — the other adapters were not updated at all, and they should have been.
    - **Diverged** — they were updated, but the logic differs in a way that is not explained by dialect
      differences.
    - **Correct** — either mirrored properly, or deliberately different for a real dialect reason.
 
-3. **For each core-seam change**, enumerate all five implementations of the changed interface member and
-   confirm each compiles against the new contract. Search the whole repository for the member name — the five
+3. **For each core-seam change**, enumerate every implementation of the changed interface member and
+   confirm each compiles against the new contract. Search the whole repository for the member name — the
    implementations are named `{Db}DatabaseAdapter`, `{Db}EntityManipulator` and `{Db}TemporaryTableBuilder`, so
-   a hit count below five is a missed mirror — and trust the compiler over the search.
+   a hit count below the number of adapter projects is a missed mirror — and trust the compiler over the search.
 
 4. **Check test parity.** Adapter behaviour is covered in
    `tests/DbConnectionPlus.IntegrationTests/DatabaseAdapters/{MySql,Oracle,PostgreSql,Sqlite,SqlServer}/`.
-   If a behaviour change gained a test in one adapter's file, the other four normally need the same test.
+   If a behaviour change gained a test in one adapter's file, the others normally need the same test.
 
 ## Dialect differences that are legitimately asymmetric
 
@@ -60,7 +60,7 @@ Do not report these as divergence unless the change actually gets them wrong:
 - MySQL's separate enum-handling behaviour in the temp-table reader path. `EnumerableReader` preserves this
   asymmetry deliberately — do not "fix" it as a side effect.
 - Oracle's entity manipulator genuinely has **two** `PropertyGetter`/`PropertySetter` call sites where the
-  other four have three. That is not a missing mirror.
+  others have three. That is not a missing mirror.
 
 ## Reporting
 

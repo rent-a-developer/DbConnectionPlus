@@ -7,7 +7,7 @@
 | 4.x | ✅ |
 | < 4.0 | ❌ |
 
-Fixes are released from `main` as a new patch version of all six packages, which are versioned and released
+Fixes are released from `main` as a new patch version of every package, which are versioned and released
 together.
 
 ## Reporting a vulnerability

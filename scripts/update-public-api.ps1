@@ -21,7 +21,7 @@
     maintainer step - see -MarkShipped - and is never part of an ordinary contribution.
 
 .PARAMETER Project
-    One or more project files to update. Defaults to all six shipping projects under src/.
+    One or more project files to update. Defaults to the shipping projects under src/.
 
 .PARAMETER MarkShipped
     The MAINTAINER's release step, not the edit step: fold PublicAPI.Unshipped.txt into

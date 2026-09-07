@@ -35,7 +35,7 @@ Before committing, check whether the change requires companion edits and raise a
 - **Interface or behaviour change?** The affected pages under `docs/` — the guides carry the examples, and
   `docs/reference/api-summary.md` carries the one-line index. `PACKAGE_README.md` (the NuGet package page)
   only needs touching if the change makes its short overview wrong.
-- **Adapter change?** Was it mirrored into the other four adapters? Delegate the check to the
+- **Adapter change?** Was it mirrored into the other adapters? Delegate the check to the
   `adapter_parity_reviewer` custom agent when the change meets that agent's scope.
 - **Touched a reflection path?** `pwsh -File scripts/verify-package-aot.ps1 -Pack` — the unit and integration
   suites cannot see silent trimming damage. Delegate the review to the `aot_compat_reviewer` custom agent.
@@ -54,7 +54,7 @@ pwsh -File scripts/preflight.ps1
 ```
 
 That runs the public-API reminder, checks style, formatting and member ordering, builds Release and runs the
-unit suite on both target frameworks. It does not edit your files; if it reports the tree as untidy, run
+unit suite on `net8.0` and `net10.0`. It does not edit your files; if it reports the tree as untidy, run
 `pwsh -File scripts/preflight.ps1 -Fix` and review what changed before committing it.
 
 If either fails, report the failure and stop — do not commit over it.

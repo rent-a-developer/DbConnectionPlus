@@ -12,7 +12,7 @@ tick it, or leave it and say why in the description. A box that does not apply i
 ### Always
 
 - [ ] `pwsh -File scripts/preflight.ps1` passes. It runs the public-API reminder, checks style, formatting
-      and member ordering, builds Release and runs the unit suite on both target frameworks. Use
+      and member ordering, builds Release and runs the unit suite on `net8.0` and `net10.0`. Use
       `-Fix` to have it apply the tidying rather than only report it.
 - [ ] The Release build produces **zero warnings**. `TreatWarningsAsErrors` is on, so this also covers style,
       member ordering, trim and public-API diagnostics.
@@ -27,7 +27,7 @@ tick it, or leave it and say why in the description. A box that does not apply i
 
 ### If the change touches a database adapter, or the shared adapter seam
 
-- [ ] It is mirrored into the other four adapters, or it genuinely does not apply to them — see
+- [ ] It is mirrored into the other adapters, or it genuinely does not apply to them — see
       [CONTRIBUTING.md](../CONTRIBUTING.md#database-adapters).
 - [ ] The integration tests ran for every adapter the change touches, and the description says which.
 

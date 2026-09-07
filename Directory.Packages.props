@@ -24,9 +24,9 @@
 
   <ItemGroup>
     <!--
-      The core library's two runtime dependencies. Everything else it needs comes from
-      System.Data.Common. See the "Dependencies" section of docs/DESIGN-DECISIONS.md for why there are
-      only two and why nothing that emits IL at run time may be added.
+      The core library's runtime dependencies. Everything else it needs comes from System.Data.Common.
+      See the "Dependencies" section of docs/DESIGN-DECISIONS.md for why the list is this short and why
+      nothing that emits IL at run time may be added.
     -->
     <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
     <PackageVersion Include="LinkDotNet.StringBuilder" Version="3.4.2" />
@@ -34,9 +34,9 @@
 
   <ItemGroup>
     <!--
-      The five vendor ADO.NET drivers. Each adapter package takes exactly one of these, and that split is
+      The vendor ADO.NET drivers. Each adapter package takes exactly one of these, and that split is
       why the adapters are separate packages: a SQLite consumer never references an Oracle client. The
-      two test projects reference the same drivers at the same versions, which is what this file makes
+      test projects reference the same drivers at the same versions, which is what this file makes
       unmissable.
     -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />

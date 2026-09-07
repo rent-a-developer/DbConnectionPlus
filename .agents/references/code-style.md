@@ -4,7 +4,7 @@ Background for the rules in [AGENTS.md](../../AGENTS.md#code-style-formatting-an
 tool does something you did not expect, or when you are about to write a type name in a place the build does
 not check.
 
-## Three concerns, three tools
+## The concerns, and the tool that owns each
 
 | Concern | Tool | Configured in |
 |---|---|---|
@@ -18,7 +18,7 @@ groups, which the ReSharper file layout applies and nothing checks. A member tha
 the wrong place inside it compiles, passes the analyzers, and is only visible by running the pipeline and
 looking at what it moves.
 
-Each tool owns its concern completely, and all three are build errors rather than warnings, in `tests/` and
+Each tool owns its concern completely, and every one of them is a build error rather than a warning, in `tests/` and
 `benchmarks/` as much as in `src/`. Two different mechanisms, both in the root `Directory.Build.props`:
 `EnforceCodeStyleInBuild=true` with `TreatWarningsAsErrors=true` covers style and ordering, and the
 `CSharpier.MsBuild` package covers formatting. It runs in check mode, so a build never rewrites your files —
@@ -107,7 +107,7 @@ The benchmarks are the exception: nothing consumes them as an API, so they use p
 ## Member order
 
 StyleCop's order, applied by ReSharper. Write a new member straight into the right place rather than relying
-on the fixer — and note that only the first five keys below are checked by an analyzer:
+on the fixer — and note that only the leading keys below are checked by an analyzer:
 
     constants → fields → constructors → finalizers → delegates → events → enums → interfaces
     → properties → indexers → conversion operators → operators → methods → nested structs → nested classes

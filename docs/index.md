@@ -23,13 +23,12 @@ and a quick start. These pages are the full documentation.
 | Page | What it covers |
 |---|---|
 | [API summary](reference/api-summary.md) | Every public entry point, one line each, linked to the generated reference |
-| [Comparison with Dapper](reference/comparison.md) | Where the two differ, and where Dapper is still the better pick |
 | [Performance](reference/performance.md) | The benchmark results, and how they were measured |
 | [Design decisions](DESIGN-DECISIONS.md) | Why the library works the way it does |
 
 ## API reference
 
-The generated reference for all six packages starts at
+The generated reference for every package starts at
 [`DbConnectionExtensions`](xref:RentADeveloper.DbConnectionPlus.DbConnectionExtensions) — the entry point for
 nearly every operation.
 
@@ -50,7 +49,7 @@ Install the core package plus the adapter for your database, then register the a
 DbConnectionExtensions.Configure(configuration => configuration.UseSqlServer());
 ```
 
-All six are versioned and released together, so a given release's adapter always matches its core package.
+They are versioned and released together, so a given release's adapter always matches its core package.
 
 ## Project
 

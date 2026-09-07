@@ -36,7 +36,7 @@ Both `PostToolUse` hooks are **scoped to the file the triggering edit touched**.
 adapter reads the `*** Add File:`, `*** Update File:` and `*** Move to:` headers out of it and skips
 `*** Delete File:`.
 
-Three rules follow, and they are the point of the design:
+These rules follow, and they are the point of the design:
 
 - **No fallback.** If the payload cannot be parsed, the hook formats nothing and says so in one line. It does
   not fall back to "every file git reports as changed" — that would rewrite work in progress that this edit
@@ -79,7 +79,7 @@ a hook fired or not.
 
 The tidy hook runs the **default scope only**, on the file the edit touched — CSharpier, under a second. Code
 style and member ordering are not run on every edit: `dotnet format style` needs MSBuild and ReSharper loads
-the whole solution, and neither belongs on the critical path of a single edit. All three are build errors, and
+the whole solution, and neither belongs on the critical path of a single edit. All of them are build errors, and
 `scripts/preflight.ps1` checks `-Scope all` before a commit (`-Fix` applies it), so nothing reaches a pull
 request untidied.
 

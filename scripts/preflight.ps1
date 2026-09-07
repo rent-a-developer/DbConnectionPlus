@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     The pre-commit gate: repository hygiene, style/formatting/ordering, a Release build, and the unit
-    test suite on both target frameworks.
+    test suite on net8.0 and net10.0.
 
 .DESCRIPTION
     CONTRIBUTING.md requires that all tests pass and the build succeeds with no warnings. Because

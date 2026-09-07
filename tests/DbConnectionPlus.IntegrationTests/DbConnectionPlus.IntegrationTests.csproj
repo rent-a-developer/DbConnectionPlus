@@ -17,7 +17,7 @@
     <PackageReference Include="Oracle.ManagedDataAccess.Core" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
     <!--
-      The four database servers the suite tests against. Testcontainers starts each container on demand and
+      The database servers the suite tests against. Testcontainers starts each container on demand and
       removes it when the run ends - see TestDatabase/Containers/. Testcontainers.XunitV3, not
       Testcontainers.Xunit: the latter builds against xUnit v2.
     -->

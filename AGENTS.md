@@ -33,16 +33,16 @@ Build settings live in shared files, not in the `.csproj` files:
 | `Directory.Build.props` | all nine solution projects | shared metadata, `<Version>`, the **style gate** (`EnforceCodeStyleInBuild` + `TreatWarningsAsErrors`), `IsPackable=false`, the dependency audit |
 | `Directory.Build.targets` | all nine | the files the packages carry, conditioned on `IsPackable` — which is why they cannot be in a `.props` file |
 | `Directory.Packages.props` | all nine | **every dependency version**. A `PackageReference` here carries no `Version`; adding one is `NU1008` |
-| `src/Directory.Build.props` | the six shipping projects | `TargetFrameworks`, `IsAotCompatible`, `AnalysisLevel=latest-all`, the AOT and public-API analyzers, the package metadata and package validation |
-| `tests/Directory.Build.props` | the two test projects | `OutputType=Exe`, the xUnit v3 / Microsoft.Testing.Platform references and the coverage extension |
+| `src/Directory.Build.props` | the shipping projects | `TargetFrameworks`, `IsAotCompatible`, `AnalysisLevel=latest-all`, the AOT and public-API analyzers, the package metadata and package validation |
+| `tests/Directory.Build.props` | the test projects | `OutputType=Exe`, the xUnit v3 / Microsoft.Testing.Platform references and the coverage extension |
 
 MSBuild stops at the nearest `Directory.Build.props`, so the `src/` and `tests/` ones **import the root
 explicitly** — without that import their projects would silently lose all of it. `AnalysisLevel=latest-all` has
 to stay under `src/`: CA1707 alone objects 2100 times to the test suite's `Method_ShouldDoSomething` naming.
 
-`<Version>` is one edit for all six packages, at the repository root. `scripts/verify-package-aot.ps1` reads it
+`<Version>` is one edit for every package, at the repository root. `scripts/verify-package-aot.ps1` reads it
 from there when `-PackageVersion` is omitted. **Packing is opt-in**: the root sets `IsPackable=false` and each of
-the six shipping projects sets `IsPackable=true` itself, so a new project ships nothing by accident.
+the shipping projects sets `IsPackable=true` itself, so a new project ships nothing by accident.
 
 Target frameworks differ per project on purpose: benchmarks `net10.0`, unit tests `net8.0;net10.0` (the shipping
 libraries' two builds are not the same code), integration tests `net8.0`.
@@ -50,7 +50,7 @@ libraries' two builds are not the same code), integration tests `net8.0`.
 `tests/package-consumption/` sits **outside** all of this on purpose. It carries its own empty
 `Directory.Build.props`/`.targets`, plus a `Directory.Packages.props` that turns central package management back
 off, all of which stop the upward search — so those projects get the library only from the packed packages, at a
-version CI hands them. Do not "fix" that by deleting the three files.
+version CI hands them. Do not "fix" that by deleting those files.
 
 **Two readmes, and they are not interchangeable.** `README.md` is the repository's reference documentation, what a
 GitHub visitor reads, and what an API change updates. `PACKAGE_README.md` is the short overview nuget.org renders
@@ -60,11 +60,11 @@ touch it only when the overview itself stops being true.
 ### The adapter seam
 
 `IDatabaseAdapter` (`src/DbConnectionPlus/DatabaseAdapters/IDatabaseAdapter.cs`) exposes `IEntityManipulator` and
-`ITemporaryTableBuilder`, and each of the five adapter projects implements all three.
+`ITemporaryTableBuilder`, and each of the adapter projects implements all three.
 
-**A change to one adapter almost always needs mirroring into the other four.** Only the integration suite catches
+**A change to one adapter almost always needs mirroring into the others.** Only the integration suite catches
 a miss, and that needs Docker. Run the adapter-parity reviewer, walk
-[its checklist](.agents/references/reviews/adapter-parity.md) over the diff, or check the other four by hand.
+[its checklist](.agents/references/reviews/adapter-parity.md) over the diff, or check the others by hand.
 
 ## Build & test
 
@@ -86,26 +86,26 @@ eight projects. The Release build covers every project, so it turns a missed cal
 
 The Native AOT gate is the **only** check that can see silent trimming damage, because nothing is trimmed on the
 JIT. Run it whenever you change reflection, DAM annotations, the materializers or the temp-table readers. It packs
-the six projects, publishes `AotConsumer` natively **from the packages**, gates its IL diagnostics and runs the
+the shipping projects, publishes `AotConsumer` natively **from the packages**, gates its IL diagnostics and runs the
 binary. It needs a C++ toolchain and minutes, so it is not in `preflight.ps1`; `-Framework net8.0` checks the
 documented AOT floor, and CI runs that as well as the `net10.0` default.
 
 Integration tests need only a running Docker daemon; [Testcontainers](https://dotnet.testcontainers.org/) starts a
 container per database system and removes it afterwards. **Scope the run:** the default is **SQLite + SQL Server**
-(~90 s, against ~600 s for all five); add another adapter's tests **only if you changed that adapter's code**; run
-all five only for a change to `IDatabaseAdapter`, `IEntityManipulator` or `ITemporaryTableBuilder`. Commands,
+(~90 s, against ~600 s for the full matrix); add another adapter's tests **only if you changed that adapter's code**; run
+the full matrix only for a change to `IDatabaseAdapter`, `IEntityManipulator` or `ITemporaryTableBuilder`. Commands,
 timings and troubleshooting: [the `integration-db` skill](.agents/skills/integration-db/SKILL.md).
 
 ## Code style, formatting and ordering
 
-Formatting is CSharpier's, style is the Roslyn analyzers', ordering is ReSharper's and NewStyleCop's. All three are
-build errors, in `tests/` and `benchmarks/` as much as in `src/`. Details, and the three cases where a tool does
+Formatting is CSharpier's, style is the Roslyn analyzers', ordering is ReSharper's and NewStyleCop's. All of them are
+build errors, in `tests/` and `benchmarks/` as much as in `src/`. Details, and the cases where a tool does
 something surprising: [the code-style reference](.agents/references/code-style.md).
 
 - **C# keywords, never BCL type names**: `string`, `object?`, `int`, `bool`, `nint`, `nuint` — not `String`,
   `Object?`, `Int32`, `Boolean`, `IntPtr`, `UIntPtr`. ⚠️ **The build does not catch all of this.** `IDE0049`
   ignores `nint`/`nuint` and never looks inside `nameof(...)`, and `tests/package-consumption/` has no style gate
-  at all. Apply the rule by hand in those three places — reasons in
+  at all. Apply the rule by hand in those places — reasons in
   [the reference](.agents/references/code-style.md#where-the-build-misses-a-bcl-type-name).
 - **Always `this.`** for instance fields, properties, methods and events; fields are never `_camelCase` (`SA1309`).
   A **primary constructor parameter** is assigned to a `private readonly` backing field and read through
@@ -133,7 +133,7 @@ something surprising: [the code-style reference](.agents/references/code-style.m
 - Primary constructors, `=>` for single-expression members, file-scoped namespaces, the 120-column limit, nullable
   and `ImplicitUsings` — [the build fully enforces these](.agents/references/code-style.md#rules-the-build-fully-enforces).
 
-One entry point applies all of it, in three scopes:
+One entry point applies all of it, and takes a scope:
 
 ```bash
 pwsh -File scripts/tidy-code.ps1              # ~1s   formatting, on the files git reports as changed
@@ -155,7 +155,7 @@ xUnit v3 with `[Fact]` / `[Theory]`, assertions via **AwesomeAssertions**, fakes
 
 ## The declared public API
 
-Each of the six shipping projects declares its public surface next to its `.csproj`, in `PublicAPI.Shipped.txt`
+Each shipping project declares its public surface next to its `.csproj`, in `PublicAPI.Shipped.txt`
 (what shipped in the last release) and `PublicAPI.Unshipped.txt` (what is new since, plus `*REMOVED*<signature>`
 lines for what is gone). `Microsoft.CodeAnalysis.PublicApiAnalyzers` enforces them **at build time**: `RS0016` for
 an undeclared public member, `RS0017` for a declared one that is gone, both errors, so an accidental change to the
@@ -169,7 +169,7 @@ release time.
 
 The **reflection paths are AOT-safe**: no companion package, no source generator, no consumer opt-in. Rationale and
 measurements: [docs/DESIGN-DECISIONS.md](docs/DESIGN-DECISIONS.md#native-aot-and-trimming). Before changing anything that
-reflects, run the AOT/trim reviewer or walk [its checklist](.agents/references/reviews/aot-compat.md). Three
+reflects, run the AOT/trim reviewer or walk [its checklist](.agents/references/reviews/aot-compat.md). These
 constraints must not be broken:
 
 - **Nothing may generate code at run time** — that, not reflection, is what Native AOT forbids. Accessors use
@@ -205,8 +205,8 @@ constraints must not be broken:
 ### Releases
 
 **Never `dotnet pack` and push by hand.** A release is a pushed tag and CI does the rest: it checks the tag against
-the packed version, publishes all six packages to NuGet.org, and creates the GitHub release from the `CHANGELOG.md`
-section. The three steps: [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
+the packed version, publishes every package to NuGet.org, and creates the GitHub release from the `CHANGELOG.md`
+section. The steps: [CONTRIBUTING.md](CONTRIBUTING.md#releasing).
 
 ## Working procedures
 

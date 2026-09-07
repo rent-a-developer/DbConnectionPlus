@@ -16,11 +16,11 @@
       - a fixed list of known generated directories, named below;
       - every bin/ and obj/ directory found INSIDE the resolved repository root.
 
-    It does not guess. It used to also delete any XML file beside a project file whose name matched that
-    project's AssemblyName, on the theory that such a file could only be a generated documentation file. That
-    theory is not provable from the file: an authored XML file is allowed to have that name, and a delete based
-    on a name pattern cannot tell the two apart. The leftovers it targeted are covered by .gitignore, so
-    `git clean -X` removes them with git's own knowledge of what is generated.
+    It does not guess. In particular it never deletes an XML file because its name matches a project's
+    AssemblyName: an authored XML file is allowed to have that name, and a delete based on a name pattern
+    cannot tell a generated documentation file from a hand-written one. Generated files that this script does
+    not know about are covered by .gitignore, so `git clean -X` removes them with git's own knowledge of what
+    is generated.
 
     Directories that are reparse points - symbolic links, junctions, mount points - are skipped rather than
     followed: deleting "recursively" through one deletes the target, which may be anywhere on the machine. The

@@ -3,7 +3,7 @@
     Prints the CONTRIBUTING.md companion-edit checklist when a project's public API files change.
 
 .DESCRIPTION
-    The public surface of the six shipping projects is declared in their PublicAPI.Shipped.txt and
+    The public surface of the shipping projects is declared in their PublicAPI.Shipped.txt and
     PublicAPI.Unshipped.txt files and enforced by Microsoft.CodeAnalysis.PublicApiAnalyzers - the build
     fails on a public member that is not declared (RS0016) or declared but gone (RS0017), so the build
     already stops an *accidental* change.

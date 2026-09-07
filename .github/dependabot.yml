@@ -22,8 +22,8 @@ updates:
       prefix-development: chore
       include: scope
     groups:
-      # The five vendor ADO.NET drivers. They are independent of each other, but a driver bump is always
-      # reviewed the same way - run that adapter's integration tests - so one pull request beats five.
+      # The vendor ADO.NET drivers. They are independent of each other, but a driver bump is always
+      # reviewed the same way - run that adapter's integration tests - so one pull request beats one per driver.
       #
       # Minor and patch only: a major version of a driver is a breaking change for the adapter that wraps it,
       # and it deserves its own pull request with its own integration run.

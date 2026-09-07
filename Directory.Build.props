@@ -1,7 +1,7 @@
 <Project>
 
   <!--
-    Properties shared by EVERY project in the solution - the six shipping libraries, the two test projects
+    Properties shared by EVERY project in the solution - the shipping libraries, the test projects
     and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
     Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
 
@@ -12,13 +12,13 @@
 
   <PropertyGroup>
     <!--
-      The version every produced package carries. All six shipping packages are versioned and released
+      The version every produced package carries. All shipping packages are versioned and released
       together, so this is ONE edit per release rather than one per project. It lives at the repository
       root rather than under src/ so that every script and document has a single, obvious place to read
       it from - scripts/verify-package-aot.ps1 does exactly that when -PackageVersion is omitted.
 
       The test and benchmark projects inherit it too. They are never packed (IsPackable is false below,
-      and only the six shipping projects opt back in), so the only effect there is that their assembly
+      and only the shipping projects opt back in), so the only effect there is that their assembly
       version tracks the repository's instead of the SDK's 1.0.0 default.
     -->
     <Version>4.0.0</Version>
@@ -39,9 +39,9 @@
 
   <PropertyGroup>
     <!--
-      Packing is opt-in, not opt-out. Every project starts unpackable and the six shipping projects under
-      src/ each set IsPackable=true themselves, so "which projects ship as packages" is answered by the
-      six .csproj files rather than by whichever project last remembered to say no. A new test, sample or
+      Packing is opt-in, not opt-out. Every project starts unpackable and the shipping projects under
+      src/ each set IsPackable=true themselves, so "which projects ship as packages" is answered by those
+      .csproj files rather than by whichever project last remembered to say no. A new test, sample or
       tool project is silently unpackable, which is the safe default: the failure mode of the other
       direction is publishing something that was never meant to leave the repository.
 
@@ -80,7 +80,7 @@
       simply not REPORTED at build time unless the compilation produces a doc file, and it says so -
       "Set MSBuild property 'GenerateDocumentationFile' to 'true' ... to enable IDE0005 on build",
       https://github.com/dotnet/roslyn/issues/41640. Without this, an unused using is invisible to the
-      build in every project, and the price is three XML files in obj/ that nobody reads.
+      build in every project, and the price is an unread XML file in each project's obj/.
 
       The tests and benchmarks do not document their public members, so CS1591 and CS1574 are switched
       off for them in .editorconfig. In src/ both stay errors - that is what keeps the public API

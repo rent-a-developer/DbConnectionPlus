@@ -92,7 +92,7 @@ branch has one.
 
 ### Style, formatting and member ordering
 
-Three tools own three concerns, and all three are build errors:
+Each tool below owns one concern, and every one of them is a build error:
 
 | Concern | Tool |
 |---|---|
@@ -100,7 +100,7 @@ Three tools own three concerns, and all three are build errors:
 | Style — `var`, `=>`, `this.`, null checks, usings | the Roslyn analyzers |
 | Ordering — types and their members | ReSharper applies it, NewStyleCop checks most of it |
 
-One command applies all three:
+One command applies them:
 
 ```shell
 pwsh -File scripts/tidy-code.ps1 -Scope all
@@ -120,7 +120,7 @@ pwsh -File scripts/preflight.ps1
 ```
 
 That is the gate to run before every commit. It checks the public API, checks style, formatting and ordering,
-builds Release and runs the unit suite on both target frameworks. **By default it writes build output and
+builds Release and runs the unit suite on `net8.0` and `net10.0`. **By default it writes build output and
 nothing else** — it does not edit your files and it does not touch the git index. Pass `-Fix` to have it apply
 the tidying first:
 
@@ -144,18 +144,18 @@ Two gates are deliberately outside preflight, because each takes minutes and nei
 | Native AOT | the change touches reflection, the `[DynamicallyAccessedMembers]` annotations, the materializers or the temporary-table readers | `pwsh -File scripts/verify-package-aot.ps1 -Pack` |
 
 **Scope the integration run.** The default scope is SQLite + SQL Server (about 90 seconds, against about 10
-minutes for all five); add `--filter-class "*MySql*"` and the like only for an adapter you actually changed.
-A change to `IDatabaseAdapter`, `IEntityManipulator` or `ITemporaryTableBuilder` obliges all five.
+minutes for the full matrix); add `--filter-class "*MySql*"` and the like only for an adapter you actually changed.
+A change to `IDatabaseAdapter`, `IEntityManipulator` or `ITemporaryTableBuilder` obliges the full matrix.
 
-The AOT gate runs both frameworks — `-Framework net8.0` for the documented floor, `net10.0` by default — and
+The AOT gate runs `net8.0` for the documented floor and `net10.0` by default, and
 CI runs both, on Linux and Windows, against the exact packages it will publish.
 
 ### Database adapters
 
-There are five adapter projects under `src/DbConnectionPlus.DatabaseAdapters.*`, each implementing
+The adapter projects under `src/DbConnectionPlus.DatabaseAdapters.*` each implement
 `IDatabaseAdapter`, `IEntityManipulator` and `ITemporaryTableBuilder` with per-dialect SQL.
 
-**A change to one adapter almost always has to be mirrored into the other four**, and only the integration
+**A change to one adapter almost always has to be mirrored into the others**, and only the integration
 suite catches a miss. Some asymmetries are legitimate and should be left alone: identifier quoting, parameter
 prefixes, temporary-table syntax, `GetDataType` mapping, generated-key readback, the bulk-insert paths, and
 MySQL's separate enum handling in the temporary-table reader.
@@ -199,7 +199,7 @@ by LF". Run the tidy script first, or use `core.safecrlf warn`.
 Releases are cut by CI from a pushed tag; nothing is packed or pushed by hand. The versioning scheme is
 [SemVer](https://semver.org/). **This is the maintainer's procedure**, not a contributor's.
 
-1. Bump `<Version>` in the repository-root `Directory.Build.props` — one edit for all six packages — and move
+1. Bump `<Version>` in the repository-root `Directory.Build.props` — one edit for every package — and move
    `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the version being replaced.
 2. Fold the accumulated public-API entries into the shipped snapshots:
    `pwsh -File scripts/update-public-api.ps1 -MarkShipped`.
@@ -212,4 +212,4 @@ Releases are cut by CI from a pushed tag; nothing is packed or pushed by hand. T
    ```
 
 CI verifies the tag against the packed version, runs every gate — including the package-consumption and Native
-AOT jobs, which nothing can bypass — then pushes all six packages to NuGet.org and creates the GitHub release.
+AOT jobs, which nothing can bypass — then pushes every package to NuGet.org and creates the GitHub release.

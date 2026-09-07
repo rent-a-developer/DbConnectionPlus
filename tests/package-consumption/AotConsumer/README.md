@@ -33,9 +33,9 @@ repository's own build wiring out of here.
 pwsh -File scripts/verify-package-aot.ps1 -Pack
 ```
 
-That packs the six projects, publishes this consumer with `-p:PublishAot=true`, gates the IL diagnostics, and
+That packs the shipping projects, publishes this consumer with `-p:PublishAot=true`, gates the IL diagnostics, and
 runs the native binary. Pass `-Framework net8.0` for the documented AOT floor; the default is `net10.0`. CI
-runs the same script for both frameworks, on Linux and Windows, against the exact packages it will publish.
+runs the same script for `net8.0` and `net10.0`, on Linux and Windows, against the exact packages it will publish.
 
 For the JIT baseline - the same assertions with the expression-tree materializers instead of the reflection
 ones - run it as an ordinary application:
@@ -110,7 +110,7 @@ point the materializer is built - reflection reports no writable property that a
 guard covers both. It is also why the "broken chain, no guard, silent corruption" case cannot be reproduced
 through the public API at all, which is the whole point of having the guard.
 
-Cases 1-14 all run against SQLite, the one provider that needs no server. The other four adapters are covered
+Cases 1-14 all run against SQLite, the one provider that needs no server. The other adapters are covered
 for breadth by [`AllAdaptersConsumer`](../AllAdaptersConsumer) and against real databases by the integration
 suite.
 
