@@ -88,11 +88,11 @@
       The database containers the integration suite starts for itself. Testcontainers.XunitV3, not
       Testcontainers.Xunit: the latter builds against xUnit v2.
     -->
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.14.0" />
-    <PackageVersion Include="Testcontainers.MySql" Version="4.14.0" />
-    <PackageVersion Include="Testcontainers.Oracle" Version="4.14.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.14.0" />
-    <PackageVersion Include="Testcontainers.XunitV3" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.XunitV3" Version="4.15.0" />
   </ItemGroup>
 
   <ItemGroup>
