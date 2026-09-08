@@ -5,7 +5,10 @@ description: Review, verify, deliberately stage, and commit the current DbConnec
 
 # Commit
 
-Write a commit that matches how `main` is written, and check the repo's own release-hygiene rules first.
+Write a commit that matches how `main` is written, and check the repository's own release-hygiene rules first.
+
+**This skill commits. It never pushes, never opens a pull request, and never tags.** Those are separate acts
+and the user asks for them separately.
 
 ## 1. Look at what changed
 
@@ -26,60 +29,57 @@ Before committing, check whether the change requires companion edits and raise a
 - **Public API changed?** The build already told you — an undeclared public member is `RS0016` and a vanished
   one `RS0017`. Record it with `pwsh -File scripts/update-public-api.ps1` and review the
   `PublicAPI.Unshipped.txt` diff; a `*REMOVED*` line is a break.
-- **User-facing change?** `CHANGELOG.md` needs an entry under `## [Unreleased]` or the next version heading,
-  Keep-a-Changelog format (`### Added` / `### Changed` / `### Fixed`). Breaking changes are written
-  `- **BREAKING:** …` and a `### Migration from Nx` section is added for a major.
-- **Interface or behaviour change?** `README.md` — the "API summary" section and any affected examples. The
-  README also carries version numbers in its examples. `PACKAGE_README.md` (the NuGet package page) only needs
-  touching if the change makes its short overview wrong.
-- **SemVer bump?** `<Version>` in `src/Directory.Build.props` — one edit, applied to all six shipping projects.
-- **Adapter change?** Was it mirrored into the other four adapters? Delegate the check to the
+- **User-facing change?** `CHANGELOG.md` needs an entry under `## [Unreleased]`, in Keep-a-Changelog format
+  (`### Added` / `### Changed` / `### Fixed`). Breaking changes are written `- **BREAKING:** …`. Internal
+  formatting and tooling work needs no entry.
+- **Interface or behaviour change?** The affected pages under `docs/` — the guides carry the examples, and
+  `docs/reference/api-summary.md` carries the one-line index. `PACKAGE_README.md` (the NuGet package page)
+  only needs touching if the change makes its short overview wrong.
+- **Adapter change?** Was it mirrored into the other adapters? Delegate the check to the
   `adapter_parity_reviewer` custom agent when the change meets that agent's scope.
 - **Touched a reflection path?** `pwsh -File scripts/verify-package-aot.ps1 -Pack` — the unit and integration
   suites cannot see silent trimming damage. Delegate the review to the `aot_compat_reviewer` custom agent.
 
+⚠️ **Do not bump a version, and do not date a changelog section.** The version in the repository-root
+`Directory.Build.props`, the release date, promoting `PublicAPI.Unshipped.txt` to `Shipped`, and the tag are
+the maintainer's, at release time. If the change looks like it needs a release, say so — do not perform one.
+
 ## 3. Verify it builds
 
-`TreatWarningsAsErrors=true` means a style slip is a build break, and CONTRIBUTING.md requires "all tests pass
-and the build succeeds with no warnings".
+`TreatWarningsAsErrors=true` means a style slip is a build break, and CONTRIBUTING.md requires that the build
+succeeds with no warnings and the tests pass.
 
 ```bash
-pwsh -File scripts/preflight.ps1
+pwsh -File scripts/pre-commit-gate.ps1
 ```
 
-That script runs the public-API reminder, the Release build and the unit tests. Equivalent by hand:
+That runs the public-API reminder, checks style, formatting and member ordering, builds Release and runs the
+unit suite on `net8.0` and `net10.0`. It does not edit your files; if it reports the tree as untidy, run
+`pwsh -File scripts/pre-commit-gate.ps1 -Fix` and review what changed before committing it.
 
-```bash
-dotnet build DbConnectionPlus.slnx -c Release
-```
-
-```bash
-dotnet test --project tests/DbConnectionPlus.UnitTests/DbConnectionPlus.UnitTests.csproj
-```
-
-If either fails, report the failure and stop — don't commit over it.
+If either fails, report the failure and stop — do not commit over it.
 
 ## 4. Write the message
 
-Conventional Commits, matching `main`'s history:
+[Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), with a **lowercase, imperative**
+summary:
 
-```
-feat: Implement feature Optimistic Concurrency Support via Concurrency Tokens
-fix: NameHelper.CreateNameFromCallerArgumentExpression stops scanning to early
-BREAKING CHANGE: Rename NuGet packages
+```text
+feat: add bulk insert for value tuples
+fix: stop NameHelper scanning past the closing bracket
+build: standardize repository tooling
 ```
 
-- Subject line: type prefix, then a capitalised, descriptive summary. Imperative or descriptive both appear in
-  this history — match the surrounding style.
-- Types in use: `feat`, `fix`, `BREAKING CHANGE`. Use `docs`, `test`, `refactor`, `chore`, `build` where they
-  genuinely fit.
+- Types in use: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `build`, `perf`, `ci`.
+- A breaking change is `feat!:` or `fix!:` plus a `BREAKING CHANGE:` **footer** saying what breaks and what to
+  do about it. `BREAKING CHANGE` is a footer, never a type.
 - Add a body when the *why* is not obvious from the subject.
-- If the branch is `feature/<n>-<slug>` or `bugfix/<n>-<slug>`, reference the issue number in the body.
+- If the branch is `<type>/issue-<number>-<slug>`, reference the issue number in the body.
 
 Stage deliberately — `git add` the relevant paths rather than `git add -A`, and confirm nothing unintended
-(build output, local scratch files) is included. A `PublicAPI.*.txt` change belongs in the same commit as
-the code that caused it.
+(build output, local scratch files) is included. A `PublicAPI.*.txt` change belongs in the same commit as the
+code that caused it.
 
 ## 5. Commit
 
-Commit only. Do not push and do not open a PR unless the user asks.
+Commit only. Do not push and do not open a pull request unless the user asks.

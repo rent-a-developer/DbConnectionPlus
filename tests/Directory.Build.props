@@ -1,0 +1,49 @@
+<Project>
+
+  <!--
+    Shared build properties for the two test projects.
+
+    MSBuild uses the NEAREST Directory.Build.props and stops there, so this file imports the repository
+    root one explicitly - without that import the projects under tests/ would silently lose authorship,
+    the language settings, the style analyzers and the style gate itself.
+
+    What belongs here is what BOTH test suites need and nothing else needs: they are executables rather
+    than libraries, they are written against xUnit v3 on Microsoft.Testing.Platform, and they produce a
+    coverage report through the same extension. Their target frameworks stay in the projects, because
+    they deliberately differ - the unit tests multi-target net8.0;net10.0 with the shipping libraries and
+    the integration tests stay on net8.0 - and so does every package only one of them uses.
+
+    tests/package-consumption/ is NOT covered by this file. It carries its own empty
+    Directory.Build.props, which is nearer, so MSBuild stops there instead. That is deliberate: those
+    projects must receive the library only from the packed packages.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)../Directory.Build.props" />
+
+  <PropertyGroup>
+    <!--
+      Both suites are executables. xUnit v3 test projects are: the runner is Microsoft.Testing.Platform,
+      which is hosted by the test assembly itself rather than by an external vstest process. That is also
+      what makes `bin/<configuration>/<tfm>/RentADeveloper.DbConnectionPlus.IntegrationTests -diagnostics`
+      a thing you can run, which the integration-db skill uses to watch a container start.
+    -->
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <!-- The native MTP coverage extension CI uses to produce the OpenCover report Codecov reads. -->
+    <PackageReference Include="coverlet.MTP">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="NSubstitute.Analyzers.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

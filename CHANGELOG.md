@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/) and
 this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Nothing yet. Add your entry here, under a Keep a Changelog category - `### Added`, `### Changed`,
+`### Deprecated`, `### Removed`, `### Fixed` or `### Security` - and add the category only when you have
+something to put in it. Write a breaking change as `- **BREAKING:** ...`.
+
+The maintainer turns this section into a dated release heading at release time; contributors never bump a
+version.
+
 ## [4.0.0] - 2026-08-22
 
 ### Added
@@ -14,7 +23,7 @@ this project adheres to [Semantic Versioning](https://semver.org/).
   materialize the same results under Native AOT as under the just-in-time compiler — constructor injection
   (records and other immutable entities), property setters and value tuples of any size all behave
   identically, down to exception types and messages. The reasoning is recorded in
-  [DESIGN-DECISIONS.md](DESIGN-DECISIONS.md#native-aot-and-trimming).
+  [docs/DESIGN-DECISIONS.md](docs/DESIGN-DECISIONS.md#native-aot-and-trimming).
 - The libraries now multi-target `net8.0` and `net10.0`. `net8.0` remains the supported floor; `net10.0` is
   recommended.
 - The packages are marked trimmable (`[assembly: AssemblyMetadata("IsTrimmable", "True")]`), which opts their

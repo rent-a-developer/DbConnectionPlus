@@ -4,7 +4,7 @@ Use this whenever a change touches reflection, dynamic dispatch, expression tree
 `src/`. This is a **standing** checklist — AOT support shipped in 4.0.0, and everything here exists to keep it
 from regressing.
 
-Read the [Native AOT and Trimming](../../../DESIGN-DECISIONS.md#native-aot-and-trimming) section of
+Read the [Native AOT and Trimming](../../../docs/DESIGN-DECISIONS.md#native-aot-and-trimming) section of
 DESIGN-DECISIONS.md before reviewing: it records what is deliberate, and therefore what counts as a regression,
 and it carries the measurements behind each decision.
 
@@ -78,7 +78,7 @@ surfaces IL diagnostics — and, as warnings-as-errors, fails on them:
 dotnet build DbConnectionPlus.slnx -c Release
 ```
 
-**The expected count is zero, on both target frameworks**, with no suppressions beyond the sanctioned ones
+**The expected count is zero, on `net8.0` and `net10.0`**, with no suppressions beyond the sanctioned ones
 listed above (`IL2060`, `IL2065`, and the `net8.0`-only `IL3050` on the two `CreateMaterializer` dispatchers).
 Any other IL diagnostic in `src/` is a regression; re-measure rather than assuming.
 
@@ -89,7 +89,7 @@ the just-in-time compiler, so a change to any reflection path also needs:
 pwsh -File scripts/verify-package-aot.ps1 -Pack
 ```
 
-It packs the six shipping projects, publishes `tests/package-consumption/AotConsumer` natively **from those
+It packs the shipping projects, publishes `tests/package-consumption/AotConsumer` natively **from those
 packages**, gates its IL diagnostics and runs the binary. `-Framework net8.0` checks the documented floor,
 which behaves differently from the `net10.0` default. Needs a C++ toolchain: MSVC on Windows, `clang` +
 `zlib1g-dev` on Linux. Drop `-Pack` to reuse the packages already in `artifacts/packages`.

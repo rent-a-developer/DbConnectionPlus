@@ -1,19 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql</AssemblyName>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus PostgreSQL Database Adapter</AssemblyTitle>
-		<Description>PostgreSQL database adapter for DbConnectionPlus.</Description>
-		<PackageId>DbConnectionPlus.DatabaseAdapters.PostgreSql</PackageId>
-		<RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql</RootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql</AssemblyName>
+    <AssemblyTitle>rent-a-developer DbConnectionPlus PostgreSQL Database Adapter</AssemblyTitle>
+    <Description>PostgreSQL database adapter for DbConnectionPlus.</Description>
+    <!-- Packing is opt-in: the repository-root Directory.Build.props sets IsPackable=false. -->
+    <IsPackable>true</IsPackable>
+    <PackageId>DbConnectionPlus.DatabaseAdapters.PostgreSql</PackageId>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.DatabaseAdapters.PostgreSql</RootNamespace>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DbConnectionPlus\DbConnectionPlus.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="10.0.3" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
 
 </Project>

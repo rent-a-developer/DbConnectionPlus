@@ -1,0 +1,20 @@
+<Project>
+
+  <!--
+    Central Package Management is deliberately OFF here, and this file exists only to say so.
+
+    NuGet searches upward for a Directory.Packages.props exactly as MSBuild does for
+    Directory.Build.props, and the repository root carries one with ManagePackageVersionsCentrally=true.
+    That file must not reach these projects. They are the one place in the repository whose package
+    version is not a constant: CI hands them the version it just packed
+    (-p:DbConnectionPlusVersion=...), and the references resolve it from that property.
+
+    This is the same boundary the empty Directory.Build.props and Directory.Build.targets next to this
+    file draw for the build itself. Do not "fix" any of the three by deleting them.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+</Project>

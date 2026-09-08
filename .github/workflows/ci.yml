@@ -22,15 +22,15 @@ concurrency:
 env:
   CONFIGURATION: Release
   CONSUMER_DIRECTORY: tests/package-consumption
-  DOCFX_CONFIG: docs/docfx.json
-  DOCS_SITE: docs/_site
+  DOCFX_CONFIG: build/docfx/docfx.json
+  DOCS_SITE: artifacts/docs/site
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_CONFIG: NuGet.config
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   PACKAGE_OUTPUT: artifacts/packages
-  RELEASE_NOTES_FILE: release-notes.md
+  RELEASE_NOTES_FILE: artifacts/release/release-notes.md
   RELEASE_NOTES_SCRIPT: scripts/extract-release-notes.ps1
   SOLUTION: DbConnectionPlus.slnx
   TEST_RESULTS: artifacts/test-results
@@ -46,7 +46,7 @@ jobs:
   # idempotent alone, so comparing before against after is the only honest question. Writing to the
   # checkout is harmless here - it is thrown away at the end of the job.
   #
-  # All three are also build errors in the verify job below, for every project - style and ordering through
+  # All of them are also build errors in the verify job below, for every project - style and ordering through
   # the analyzers, formatting through CSharpier.MsBuild. This job still earns its place: it is much faster to
   # a red X, and it prints the exact diff that would fix things rather than only naming the file. It is also
   # the only check that can see a MISPLACED member the analyzers accept, because alphabetical order within a
@@ -159,8 +159,8 @@ jobs:
   #
   # No `services:` block, and no connection strings: the integration suite starts its own containers through
   # Testcontainers, on the Docker daemon this runner already provides. That is the same code path a developer
-  # runs locally, so a database that is configured wrong now fails in both places or in neither - and the
-  # readiness gate this job used to carry by hand is the module wait strategies' job instead.
+  # runs locally, so a database that is configured wrong now fails in both places or in neither. Readiness is
+  # the module wait strategies' job, not this workflow's.
   verify:
     name: Build, test and analyze
     runs-on: ubuntu-latest
@@ -198,7 +198,7 @@ jobs:
       - name: Restore
         run: dotnet restore ${{ env.SOLUTION }} --configfile ${{ env.NUGET_CONFIG }}
 
-      # TreatWarningsAsErrors is on for the six shipping projects, so this is also the style, trim-analyzer
+      # TreatWarningsAsErrors is on for the shipping projects, so this is also the style, trim-analyzer
       # and public-API gate: an IL2xxx/IL3050 diagnostic fails here, and so does an undeclared or vanished
       # public member (RS0016 / RS0017).
       - name: Build
@@ -206,9 +206,9 @@ jobs:
 
       # --no-build, and the configuration named explicitly. Without both, `dotnet test` silently rebuilds the
       # whole solution in Debug and tests that instead of the Release build above. The xUnit TRX reporter and
-      # Coverlet MTP extension replace the VSTest logger and data collector used before the MTP migration.
+      # Coverlet MTP extension are what report results and coverage on Microsoft.Testing.Platform.
       #
-      # This step pulls and starts the four database images, so the bulk of its wall time is the suite plus a
+      # This step pulls and starts the database images, so the bulk of its wall time is the suite plus a
       # cold Oracle - keep an eye on the job timeout above when adding a database system.
       - name: Test
         run: dotnet test --solution ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --results-directory "${{ env.TEST_RESULTS }}" --report-xunit-trx --coverlet --coverlet-output-format opencover
@@ -235,7 +235,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # Build the documentation and pack the six packages. Everything downstream consumes the artifact this
+  # Build the documentation and pack the packages. Everything downstream consumes the artifact this
   # produces, so nothing reaches NuGet.org that was not built exactly once, here.
   package-and-docs:
     name: Package and docs
@@ -284,10 +284,13 @@ jobs:
       - name: Build DocFX metadata
         run: dotnet tool run docfx metadata ${{ env.DOCFX_CONFIG }}
 
+      # --warningsAsErrors, because a docfx warning is a broken cross-reference, a file the configuration
+      # points at that does not exist, or a link that resolves to nothing. Every one of those ships a
+      # documentation site with a hole in it, and none of them is visible unless the build refuses.
       - name: Build DocFX site
-        run: dotnet tool run docfx build ${{ env.DOCFX_CONFIG }}
+        run: dotnet tool run docfx build ${{ env.DOCFX_CONFIG }} --warningsAsErrors
 
-      # IsPackable in the project files is the source of truth for which projects ship as packages: the six
+      # IsPackable in the project files is the source of truth for which projects ship as packages: the projects
       # under src/ do, the tests and the benchmarks do not.
       - name: Pack NuGet packages
         run: dotnet pack ${{ env.SOLUTION }} --configuration ${{ env.CONFIGURATION }} --no-build --output ${{ env.PACKAGE_OUTPUT }} /p:ContinuousIntegrationBuild=true
@@ -384,8 +387,8 @@ jobs:
           -PackageVersion ${{ needs.package-and-docs.outputs.version }}
 
   # Prove the documented net8.0 floor with the .NET 8 SDK and nothing else installed. The consumer installs
-  # all six packages, so this also proves every adapter's driver dependency flows and that one shared
-  # DbConnectionPlus assembly satisfies all five adapters - none of which a project-referenced test can see.
+  # every package, so this also proves each adapter's driver dependency flows and that one shared
+  # DbConnectionPlus assembly satisfies all of the adapters - none of which a project-referenced test can see.
   verify-net8-consumers:
     name: Consume packages on .NET 8 SDK (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -431,20 +434,39 @@ jobs:
           }
           JSON
 
-      - name: Confirm the active SDK is 8.0
+      # An ASSERTION, not a print. Printing the version proves the step ran; it does not prove the job is
+      # testing what it claims to. If the 10.0 SDK were present on the runner and the pin above failed to
+      # apply, this job would quietly build the consumer on 10.0 and the documented net8.0 floor would go
+      # unverified while the job stayed green.
+      #
+      # working-directory matters and is not cosmetic here or in the step below: the SDK resolves global.json
+      # from the CURRENT directory upward, so running from the repository root would pick up the root
+      # global.json, which pins 10.0.
+      - name: Assert the active SDK is 8.0
         shell: bash
         working-directory: ${{ env.CONSUMER_DIRECTORY }}
-        run: dotnet --version
+        run: |
+          version="$(dotnet --version)"
+          echo "Active SDK: ${version}"
+          case "${version}" in
+            8.*) echo "The consumer subtree resolves an 8.0 SDK, as the pin requires." ;;
+            *)   echo "::error title=Wrong SDK::The consumer subtree resolved SDK ${version}, not 8.0.x. The net8.0 floor is unverified in this run."
+                 exit 1 ;;
+          esac
 
-      # working-directory matters and is not cosmetic: the SDK resolves global.json from the CURRENT
-      # DIRECTORY upward, so running this from the repository root would pick up the root global.json, which
-      # pins the 10.0 SDK - and the job would either fail outright or quietly test the wrong SDK on a runner
-      # image that happens to ship one. Run it where the 8.0 pin above lives.
+      # NUGET_PACKAGES is overridden for this step, to the consumer's own isolated cache. The environment
+      # variable takes precedence over the globalPackagesFolder setting in the consumer's nuget.config, and
+      # this workflow sets a workspace-wide NUGET_PACKAGES at the top - so without the override the consumer
+      # could restore a DbConnectionPlus assembly that did not come out of the packages under test.
+      # RestoreConfigFile names the consumer configuration explicitly for the same reason.
       - name: Run the all-adapters package consumer (net8.0 SDK)
         working-directory: ${{ env.CONSUMER_DIRECTORY }}
+        env:
+          NUGET_PACKAGES: ${{ github.workspace }}/${{ env.CONSUMER_DIRECTORY }}/.packages
         run: >
           dotnet run --project AllAdaptersConsumer/AllAdaptersConsumer.csproj
           --configuration ${{ env.CONFIGURATION }}
+          -p:RestoreConfigFile=${{ github.workspace }}/${{ env.CONSUMER_DIRECTORY }}/nuget.config
           -p:DbConnectionPlusVersion=${{ needs.package-and-docs.outputs.version }}
 
   # Publish the DocFX site to GitHub Pages on every push to main (requires Pages to be set to
@@ -509,7 +531,8 @@ jobs:
         shell: pwsh
         run: ./${{ env.RELEASE_NOTES_SCRIPT }} -Version "$($env:GITHUB_REF_NAME -replace '^v', '')"
 
-      # The <Version> in src/Directory.Build.props is the single source of truth for all six packages;
+      # The <Version> in the repository-root Directory.Build.props is the single source of truth for every
+      # package;
       # tagging a different version would otherwise publish stale packages, or silently publish nothing at
       # all thanks to --skip-duplicate.
       - name: Verify the tag matches the packed version

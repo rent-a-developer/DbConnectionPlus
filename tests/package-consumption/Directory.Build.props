@@ -1,13 +1,13 @@
 <Project>
 
-	<!--
-		Deliberately empty: this file stops MSBuild's upward search, so the repository's
-		Directory.Build.props does NOT apply here.
+  <!--
+    Deliberately empty: this file stops MSBuild's upward search, so the repository's
+    Directory.Build.props does NOT apply here.
 
-		That is the whole point of these projects. They must receive the library, the adapters and their
-		driver dependencies exclusively from the packed NuGet packages - if the repository's authorship,
-		analyzers and multi-targeting leaked in, a consumer test would be testing the repository's build
-		rather than the packages, and would prove nothing about what a real consumer installs.
-	-->
+    That is the whole point of these projects. They must receive the library, the adapters and their
+    driver dependencies exclusively from the packed NuGet packages - if the repository's authorship,
+    analyzers and multi-targeting leaked in, a consumer test would be testing the repository's build
+    rather than the packages, and would prove nothing about what a real consumer installs.
+  -->
 
 </Project>

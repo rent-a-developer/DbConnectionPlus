@@ -1,48 +1,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
-		<RootNamespace>RentADeveloper.DbConnectionPlus.Benchmarks</RootNamespace>
-		<AssemblyTitle>rent-a-developer DbConnectionPlus.Benchmarks</AssemblyTitle>
-		<AssemblyName>DbConnectionPlus.Benchmarks</AssemblyName>
-		<StartupObject>RentADeveloper.DbConnectionPlus.Benchmarks.Program</StartupObject>
-		<IsPackable>false</IsPackable>
-		<InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
-		<InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>RentADeveloper.DbConnectionPlus.Benchmarks</RootNamespace>
+    <AssemblyTitle>rent-a-developer DbConnectionPlus.Benchmarks</AssemblyTitle>
+    <AssemblyName>DbConnectionPlus.Benchmarks</AssemblyName>
+    <StartupObject>RentADeveloper.DbConnectionPlus.Benchmarks.Program</StartupObject>
+    <IsPackable>false</IsPackable>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Dapper.AOT</InterceptorsNamespaces>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Dapper.AOT</InterceptorsPreviewNamespaces>
 
-		<!--
-		  DAP028 advises Query(...).AsList() over Query(...).ToList(). It is sound advice for application code and
-		  wrong for this project: the DbCommand baseline and DbConnectionPlus both materialize through ToList(), so
-		  letting only the Dapper rows skip a copy would put the difference in the wrong column.
-		-->
-		<!--
-		  RCS1181 wants a comment that precedes a declaration turned into an XML doc comment. That is right for
-		  the shipping libraries, whose XML docs are published, and wrong here: nothing consumes this project as
-		  an API, and a benchmark is easier to read with a short note about why a constant has the value it has
-		  than with a <summary> restating its name.
-		-->
-		<NoWarn>$(NoWarn);DAP028;RCS1181</NoWarn>
+    <!--
+      DAP028 advises Query(...).AsList() over Query(...).ToList(). It is sound advice for application code and
+      wrong for this project: the DbCommand baseline and DbConnectionPlus both materialize through ToList(), so
+      letting only the Dapper rows skip a copy would put the difference in the wrong column.
+    -->
+    <!--
+      RCS1181 wants a comment that precedes a declaration turned into an XML doc comment. That is right for
+      the shipping libraries, whose XML docs are published, and wrong here: nothing consumes this project as
+      an API, and a benchmark is easier to read with a short note about why a constant has the value it has
+      than with a <summary> restating its name.
+    -->
+    <NoWarn>$(NoWarn);DAP028;RCS1181</NoWarn>
 
-		<!--
-		  PublishAot is deliberately NOT set here. BenchmarkDotNet's Native AOT toolchain passes it when it
-		  publishes the generated per-job project (see BenchmarksConfig). Setting it in this project file instead
-		  would write the AOT feature switches - notably RuntimeFeature.IsDynamicCodeSupported=false - into
-		  runtimeconfig.json for the ordinary build as well, so the JIT job would silently behave like the AOT job
-		  and the two could no longer be compared. The AOT smoke test's project file carries the same note.
-		-->
-	</PropertyGroup>
+    <!--
+      PublishAot is deliberately NOT set here. BenchmarkDotNet's Native AOT toolchain passes it when it
+      publishes the generated per-job project (see BenchmarksConfig). Setting it in this project file instead
+      would write the AOT feature switches - notably RuntimeFeature.IsDynamicCodeSupported=false - into
+      runtimeconfig.json for the ordinary build as well, so the JIT job would silently behave like the AOT job
+      and the two could no longer be compared. The AOT smoke test's project file carries the same note.
+    -->
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
-		<PackageReference Include="Dapper" Version="2.1.79" />
-		<PackageReference Include="Dapper.AOT" Version="1.0.52" />
-		<PackageReference Include="Dapper.Contrib" Version="2.0.78" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Dapper.AOT" />
+    <PackageReference Include="Dapper.Contrib" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
-		<ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Sqlite\DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DbConnectionPlus\DbConnectionPlus.csproj" />
+    <ProjectReference Include="..\..\src\DbConnectionPlus.DatabaseAdapters.Sqlite\DbConnectionPlus.DatabaseAdapters.Sqlite.csproj" />
+  </ItemGroup>
 
 </Project>

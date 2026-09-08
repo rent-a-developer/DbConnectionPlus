@@ -25,7 +25,7 @@ body:
       options:
         - The core library (applies to every database)
         - One database adapter
-        - All five database adapters (a change to the adapter seam)
+        - Every database adapter (a change to the adapter seam)
         - Not sure
   - type: textarea
     id: alternatives

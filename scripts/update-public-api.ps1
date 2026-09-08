@@ -3,7 +3,7 @@
     Records the current public surface of the shipping projects in their PublicAPI.Unshipped.txt files.
 
 .DESCRIPTION
-    The six shipping projects are guarded by Microsoft.CodeAnalysis.PublicApiAnalyzers: a public member that
+    The shipping projects are guarded by Microsoft.CodeAnalysis.PublicApiAnalyzers: a public member that
     is not listed in the project's PublicAPI.Shipped.txt or PublicAPI.Unshipped.txt is RS0016, and a listed
     member that no longer exists is RS0017. Both are build errors here, because TreatWarningsAsErrors is on -
     so an unintended change to the public surface breaks the build rather than slipping through review.
@@ -13,17 +13,19 @@
     the files, and without them the analyzer reports nothing at all.
 
     Review the diff it produces. That diff IS the public-API change, and per CONTRIBUTING.md a real one also
-    needs a CHANGELOG entry, a README update and a SemVer bump in src/Directory.Build.props.
+    needs a CHANGELOG entry under `## [Unreleased]` and a documentation update. It does NOT need a version
+    bump from you: the version, the release date and the tag are the maintainer's, at release time.
 
     At release time the accumulated entries move from PublicAPI.Unshipped.txt to PublicAPI.Shipped.txt, and
-    a removal is recorded in PublicAPI.Unshipped.txt as `*REMOVED*<signature>`.
+    a removal is recorded in PublicAPI.Unshipped.txt as `*REMOVED*<signature>`. That promotion is a
+    maintainer step - see -MarkShipped - and is never part of an ordinary contribution.
 
 .PARAMETER Project
-    One or more project files to update. Defaults to all six shipping projects under src/.
+    One or more project files to update. Defaults to the shipping projects under src/.
 
 .PARAMETER MarkShipped
-    The release step instead of the edit step: fold PublicAPI.Unshipped.txt into PublicAPI.Shipped.txt and
-    leave Unshipped empty. `*REMOVED*` entries delete the matching Shipped line rather than being carried
+    The MAINTAINER's release step, not the edit step: fold PublicAPI.Unshipped.txt into
+    PublicAPI.Shipped.txt and leave Unshipped empty. `*REMOVED*` entries delete the matching Shipped line rather than being carried
     over. Run this when a version is released, so that the next release's Unshipped.txt again means "new
     since the last release".
 
@@ -36,6 +38,7 @@
 .EXAMPLE
     pwsh -File scripts/update-public-api.ps1 -MarkShipped
 #>
+#requires -Version 7.0
 [CmdletBinding()]
 param(
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
@@ -46,7 +49,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$repositoryRoot = Split-Path -Parent $PSScriptRoot
+# scripts/<this file> - the repository root is one level up, whatever the current directory is.
+$repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 
 if (-not $Project -or $Project.Count -eq 0) {
     $Project = Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'src') -Recurse -File -Filter '*.csproj' |
@@ -114,7 +118,15 @@ foreach ($projectFile in $Project) {
         continue
     }
 
-    $output = & dotnet format analyzers $projectFile --diagnostics RS0016 --severity info -v q 2>&1
+    # From the repository root: `dotnet` resolves global.json from the CURRENT directory upward, and this
+    # repository's global.json is what pins the SDK. The location is restored in the finally block.
+    Push-Location -LiteralPath $repositoryRoot
+    try {
+        $output = & dotnet format analyzers $projectFile --diagnostics RS0016 --severity info -v q 2>&1
+    }
+    finally {
+        Pop-Location
+    }
 
     if ($LASTEXITCODE -ne 0) {
         $failed = $true
@@ -133,8 +145,9 @@ if ($MarkShipped) {
     Write-Output 'PublicAPI.Unshipped.txt is empty again. The next entry that appears there is new since this release.'
 }
 else {
-    Write-Output 'Review the PublicAPI.*.txt diff - it is the public-API change, and a real one also needs a'
-    Write-Output 'CHANGELOG entry, a README update and a SemVer bump (see CONTRIBUTING.md).'
+    Write-Output 'Review the PublicAPI.*.txt diff - it is the public-API change, and a real one also needs an'
+    Write-Output 'entry under ## [Unreleased] in CHANGELOG.md and a documentation update (see CONTRIBUTING.md).'
+    Write-Output 'Do not bump a version: that is the maintainer''s, at release time.'
 }
 
 exit 0

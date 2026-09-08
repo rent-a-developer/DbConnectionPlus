@@ -1,0 +1,36 @@
+<Project>
+
+  <!--
+    Late-evaluated defaults for EVERY project in the solution.
+
+    MSBuild reads Directory.Build.props before a project file and Directory.Build.targets after it, and
+    that ordering is the whole reason this file exists. Anything that has to look at a property the
+    PROJECT set - IsPackable, below - cannot live in the props file, where the answer is always the
+    default rather than the project's.
+
+    tests/package-consumption/ is outside this on purpose: it carries its own empty
+    Directory.Build.targets, which stops MSBuild's upward search before it reaches this file.
+  -->
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <!--
+      The files every package carries. One copy of each for every package rather than a copy per
+      project; $(MSBuildThisFileDirectory) is the repository root, so the paths resolve relative to this
+      file and not to the project that imports it.
+
+      The condition is what keeps these out of the tests and the benchmarks, which are not packable.
+      It has to be evaluated here: packing is opt-in (IsPackable is false in Directory.Build.props) and
+      the shipping projects turn it back on in their own .csproj, which MSBuild reads AFTER the
+      props file and BEFORE this one.
+
+      LICENSE.md is packed as a file as well as declared as an SPDX expression
+      (PackageLicenseExpression in src/Directory.Build.props). The expression is what nuget.org reads;
+      the file is what someone unpacking the .nupkg finds.
+    -->
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="true" PackagePath="/" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="/" />
+    <None Include="$(MSBuildThisFileDirectory)PACKAGE_README.md" Pack="true" PackagePath="/" />
+    <None Include="$(MSBuildThisFileDirectory)assets/logo-128.png" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

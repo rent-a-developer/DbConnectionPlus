@@ -1,0 +1,106 @@
+<Project>
+
+  <!--
+    Every dependency version in the repository, in one place - Central Package Management.
+
+    A .csproj names a package; this file says which version of it. That is the whole convention: a
+    PackageReference in this repository carries no Version attribute, and adding one is an error
+    (NU1008). One place to review, one place to bump, and no way for two projects to drift onto
+    different versions of the same package without anyone noticing.
+
+    tests/package-consumption/ is deliberately outside this: it carries its own
+    Directory.Packages.props with ManagePackageVersionsCentrally=false, because those projects reference
+    the packed packages by a version they are HANDED (-p:DbConnectionPlusVersion=...), which is the one
+    version in the repository that is not a constant.
+
+    Transitive pinning (CentralPackageTransitivePinningEnabled) is deliberately NOT enabled: it would
+    promote every transitive dependency to a direct one in the produced packages and change what a
+    consumer installs. There are no lock files either.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      The core library's runtime dependencies. Everything else it needs comes from System.Data.Common.
+      See the "Dependencies" section of docs/DESIGN-DECISIONS.md for why the list is this short and why
+      nothing that emits IL at run time may be added.
+    -->
+    <PackageVersion Include="Humanizer.Core" Version="3.0.10" />
+    <PackageVersion Include="LinkDotNet.StringBuilder" Version="3.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The vendor ADO.NET drivers. Each adapter package takes exactly one of these, and that split is
+      why the adapters are separate packages: a SQLite consumer never references an Oracle client. The
+      test projects reference the same drivers at the same versions, which is what this file makes
+      unmissable.
+    -->
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="MySqlConnector" Version="2.6.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The analyzers and the formatter. All of them are PrivateAssets=all where they are referenced, so
+      none of them reaches a consumer of the packages.
+
+      KEEP CSharpier.MsBuild IN STEP with the csharpier entry in .config/dotnet-tools.json: the two are
+      the same formatter, and a version apart they disagree - the build would demand formatting that
+      `dotnet csharpier format` does not produce.
+    -->
+    <PackageVersion Include="CSharpier.MsBuild" Version="1.3.0" />
+    <PackageVersion Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
+    <PackageVersion Include="NewStyleCop.Analyzers" Version="1.2.1" />
+    <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.33.0.1635" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The test stack: xUnit v3 through Microsoft.Testing.Platform, the assertion and faking libraries,
+      the test-data generators, and the coverage extension CI hands to Codecov.
+    -->
+    <PackageVersion Include="AutoFixture" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.AutoNSubstitute" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.Idioms" Version="4.18.1" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageVersion Include="Bogus" Version="35.6.5" />
+    <PackageVersion Include="coverlet.MTP" Version="10.0.1" />
+    <PackageVersion Include="Mapster" Version="10.0.12" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
+    <PackageVersion Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
+    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
+    <PackageVersion Include="xunit.v3" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The database containers the integration suite starts for itself. Testcontainers.XunitV3, not
+      Testcontainers.Xunit: the latter builds against xUnit v2.
+    -->
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.14.0" />
+    <PackageVersion Include="Testcontainers.XunitV3" Version="4.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The benchmark harness and the libraries it measures this one against. -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageVersion Include="Dapper" Version="2.1.79" />
+    <PackageVersion Include="Dapper.AOT" Version="1.0.52" />
+    <PackageVersion Include="Dapper.Contrib" Version="2.0.78" />
+  </ItemGroup>
+
+</Project>

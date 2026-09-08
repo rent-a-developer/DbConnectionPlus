@@ -36,6 +36,7 @@
 .EXAMPLE
     pwsh -File scripts/benchmarks.ps1 --filter *Query_Entities*
 #>
+#requires -Version 7.0
 [CmdletBinding()]
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -44,31 +45,52 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$repositoryRoot = Split-Path -Parent $PSScriptRoot
+# scripts/<this file> - the repository root is one level up, whatever the current directory is.
+$repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $project = Join-Path $repositoryRoot 'benchmarks/DbConnectionPlus.Benchmarks/DbConnectionPlus.Benchmarks.csproj'
 
-if ($IsWindows)
+if (-not (Test-Path -LiteralPath $project))
 {
-    # Without vswhere.exe on PATH the native link step fails with MSB3073 and a misleading error message.
-    $visualStudioInstaller = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
+    Write-Host "FAILED. $project does not exist." -ForegroundColor Red
 
-    if ((Test-Path $visualStudioInstaller) -and ($env:PATH -notlike "*$visualStudioInstaller*"))
-    {
-        $env:PATH = "$visualStudioInstaller;$env:PATH"
-    }
+    exit 1
 }
 
-Write-Host 'Running the benchmarks (JIT and Native AOT)...' -ForegroundColor Cyan
-Write-Host ''
+# Both are restored in the finally block below, so an interrupted run leaves the caller's shell as it
+# found it - the location and the PATH alike.
+$originalPath = $env:PATH
 
-# The "--" separator is part of the argument array rather than a literal token in the invocation, because
-# PowerShell consumes a bare "--" as its own end-of-parameters marker and everything after it would then be handed
-# to "dotnet run" instead of to BenchmarkDotNet. That turned a second --filter value into an output path.
-$arguments = @('run', '--project', $project, '--configuration', 'Release', '--') + $BenchmarkDotNetArguments
+Push-Location -LiteralPath $repositoryRoot
+try
+{
+    if ($IsWindows)
+    {
+        # Without vswhere.exe on PATH the native link step fails with MSB3073 and a misleading error message.
+        $visualStudioInstaller = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
 
-& dotnet @arguments
+        if ((Test-Path -LiteralPath $visualStudioInstaller) -and ($env:PATH -notlike "*$visualStudioInstaller*"))
+        {
+            $env:PATH = "$visualStudioInstaller;$env:PATH"
+        }
+    }
 
-$exitCode = $LASTEXITCODE
+    Write-Host 'Running the benchmarks (JIT and Native AOT)...' -ForegroundColor Cyan
+    Write-Host ''
+
+    # The "--" separator is part of the argument array rather than a literal token in the invocation, because
+    # PowerShell consumes a bare "--" as its own end-of-parameters marker and everything after it would then be handed
+    # to "dotnet run" instead of to BenchmarkDotNet. That turned a second --filter value into an output path.
+    $arguments = @('run', '--project', $project, '--configuration', 'Release', '--') + $BenchmarkDotNetArguments
+
+    & dotnet @arguments
+
+    $exitCode = $LASTEXITCODE
+}
+finally
+{
+    $env:PATH = $originalPath
+    Pop-Location
+}
 
 if ($exitCode -ne 0)
 {

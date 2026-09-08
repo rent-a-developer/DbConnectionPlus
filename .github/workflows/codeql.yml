@@ -54,7 +54,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # A traced build rather than buildless extraction: it resolves call targets across the six shipping
+      # A traced build rather than buildless extraction: it resolves call targets across the shipping
       # projects and the adapter seam, which is where a real finding in this codebase would live.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9

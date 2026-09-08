@@ -43,14 +43,14 @@
 -->
 
 <linker>
-	<assembly fullname="System.Private.CoreLib">
-		<type fullname="System.ValueTuple`1" preserve="all" />
-		<type fullname="System.ValueTuple`2" preserve="all" />
-		<type fullname="System.ValueTuple`3" preserve="all" />
-		<type fullname="System.ValueTuple`4" preserve="all" />
-		<type fullname="System.ValueTuple`5" preserve="all" />
-		<type fullname="System.ValueTuple`6" preserve="all" />
-		<type fullname="System.ValueTuple`7" preserve="all" />
-		<type fullname="System.ValueTuple`8" preserve="all" />
-	</assembly>
+  <assembly fullname="System.Private.CoreLib">
+    <type fullname="System.ValueTuple`1" preserve="all" />
+    <type fullname="System.ValueTuple`2" preserve="all" />
+    <type fullname="System.ValueTuple`3" preserve="all" />
+    <type fullname="System.ValueTuple`4" preserve="all" />
+    <type fullname="System.ValueTuple`5" preserve="all" />
+    <type fullname="System.ValueTuple`6" preserve="all" />
+    <type fullname="System.ValueTuple`7" preserve="all" />
+    <type fullname="System.ValueTuple`8" preserve="all" />
+  </assembly>
 </linker>

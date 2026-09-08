@@ -3,18 +3,19 @@
     Prints the CONTRIBUTING.md companion-edit checklist when a project's public API files change.
 
 .DESCRIPTION
-    The public surface of the six shipping projects is declared in their PublicAPI.Shipped.txt and
+    The public surface of the shipping projects is declared in their PublicAPI.Shipped.txt and
     PublicAPI.Unshipped.txt files and enforced by Microsoft.CodeAnalysis.PublicApiAnalyzers - the build
     fails on a public member that is not declared (RS0016) or declared but gone (RS0017), so the build
     already stops an *accidental* change.
 
     What the build cannot know is whether a *deliberate* one was accompanied by its companion edits.
-    CONTRIBUTING.md requires three (CHANGELOG entry, README update, SemVer bump) and they are easy to
-    forget, so this reminds you when one of those files moves.
+    CONTRIBUTING.md requires an Unreleased changelog entry and a documentation update, and both are easy
+    to forget, so this reminds you when one of those files moves. It never asks for a version bump: the
+    version belongs to the maintainer and moves at release time.
 
     This is the shared implementation. AI agents call it from a PostToolUse hook - Claude Code through
     .claude/hooks/public-api-guard.ps1 and Codex through .codex/hooks/public-api-guard.ps1 - and
-    scripts/preflight.ps1 runs it over the whole working tree. It only ever reports; it never fails
+    scripts/pre-commit-gate.ps1 runs it over the whole working tree. It only ever reports; it never fails
     anything.
 
 .PARAMETER Path
@@ -28,6 +29,7 @@
 .EXAMPLE
     pwsh -File scripts/public-api-guard.ps1 src/DbConnectionPlus/PublicAPI.Unshipped.txt
 #>
+#requires -Version 7.0
 [CmdletBinding()]
 param(
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
@@ -36,8 +38,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# scripts/<this file> - the repository root is one level up.
-$repositoryRoot = Split-Path -Parent $PSScriptRoot
+# scripts/<this file> - the repository root is one level up, whatever the current directory is.
+$repositoryRoot = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 
 function Get-ChangedFile {
     param([String] $RepositoryRoot)
@@ -68,10 +70,13 @@ $(($changedApiFiles | ForEach-Object { "  $_" }) -join "`n")
 
 Per CONTRIBUTING.md a public-surface change also requires:
 
-  1. CHANGELOG.md  - entry under [Unreleased] / the next version, Keep-a-Changelog format.
-                     Prefix breaking changes with BREAKING.
-  2. README.md     - update the 'API summary' section and any affected examples.
-  3. <Version>     - SemVer bump in src/Directory.Build.props (one edit for all six projects).
+  1. CHANGELOG.md  - an entry under '## [Unreleased]', in Keep-a-Changelog format. Write a breaking
+                     change as '- **BREAKING:** ...'.
+  2. Documentation - the API reference under docs/, and any example the change makes wrong.
+
+You do NOT bump a version. <Version> in the repository-root Directory.Build.props, the release date in
+the CHANGELOG, promoting PublicAPI.Unshipped.txt to Shipped, and the tag are all the maintainer's, at
+release time. Describing the change accurately under Unreleased is what lets them choose the number.
 
 Review the diff line by line first - it is the guard that this change is deliberate, not accidental. An
 entry starting with *REMOVED* is a break: it means a member that shipped is gone.

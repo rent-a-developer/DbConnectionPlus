@@ -13,7 +13,8 @@ left at their default values. Measured: 6 columns of real data in, 0 bound, no e
 Nothing is trimmed on the JIT, so the entire unit and integration suite passes with a broken annotation
 chain. **This program is the only check in the repository that can see the defect.** The design that defends
 against it - annotations, no suppressions on the entity path, and the zero-binding guard - is recorded in the
-[Native AOT and Trimming](../../../DESIGN-DECISIONS.md#native-aot-and-trimming) section of DESIGN-DECISIONS.md.
+[Native AOT and Trimming](../../../docs/DESIGN-DECISIONS.md#native-aot-and-trimming) section of
+docs/DESIGN-DECISIONS.md.
 
 That is also why every case asserts **values**, never row counts: silent trimming damage does not remove
 rows, it empties them.
@@ -32,9 +33,9 @@ repository's own build wiring out of here.
 pwsh -File scripts/verify-package-aot.ps1 -Pack
 ```
 
-That packs the six projects, publishes this consumer with `-p:PublishAot=true`, gates the IL diagnostics, and
+That packs the shipping projects, publishes this consumer with `-p:PublishAot=true`, gates the IL diagnostics, and
 runs the native binary. Pass `-Framework net8.0` for the documented AOT floor; the default is `net10.0`. CI
-runs the same script for both frameworks, on Linux and Windows, against the exact packages it will publish.
+runs the same script for `net8.0` and `net10.0`, on Linux and Windows, against the exact packages it will publish.
 
 For the JIT baseline - the same assertions with the expression-tree materializers instead of the reflection
 ones - run it as an ordinary application:
@@ -59,7 +60,7 @@ program's own call sites.
 
 The generic query methods carry neither `[RequiresUnreferencedCode]` nor `[RequiresDynamicCode]`; the three
 underlying reflection sites are answered inside the library instead, and
-[No consumer-facing diagnostics](../../../DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics) holds the
+[No consumer-facing diagnostics](../../../docs/DESIGN-DECISIONS.md#4-no-consumer-facing-diagnostics) holds the
 argument. So this program is a faithful sample of what a consumer sees, and what a consumer sees is nothing.
 
 ⚠️ **Both target frameworks have to stay in the gate.** `net8.0` needs an `IL3050` suppression on the two
@@ -109,7 +110,7 @@ point the materializer is built - reflection reports no writable property that a
 guard covers both. It is also why the "broken chain, no guard, silent corruption" case cannot be reproduced
 through the public API at all, which is the whole point of having the guard.
 
-Cases 1-14 all run against SQLite, the one provider that needs no server. The other four adapters are covered
+Cases 1-14 all run against SQLite, the one provider that needs no server. The other adapters are covered
 for breadth by [`AllAdaptersConsumer`](../AllAdaptersConsumer) and against real databases by the integration
 suite.
 

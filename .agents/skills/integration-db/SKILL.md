@@ -51,7 +51,7 @@ To scope to one database system, add a class filter — e.g. `--filter-class "*S
 ## Scoping the run — don't pay 10 minutes for every iteration
 
 **First decide whether you need database tests at all.** They are not part of the default verification loop —
-`scripts/preflight.ps1` (hygiene + Release build + unit tests) is. Reach for the integration suite when the
+`scripts/pre-commit-gate.ps1` (hygiene, tidiness, Release build and the unit suite) is. Reach for the integration suite when the
 change can only be proven against a real database: SQL generation, an adapter, the CRUD or temp-table paths,
 type mapping, or anything a substituted `DbDataReader` cannot exercise honestly. A refactor whose behaviour the
 unit tests already pin down does not need them.
@@ -72,7 +72,7 @@ you now always pay it:
 | SQL Server only | 92 s | **975** | **0** |
 | Oracle only | 142 s | 863 | 100 |
 | MySQL only | 353 s | 855 | 118 |
-| Full matrix (all five) | **597 s** | 4457 | 402 |
+| Full matrix (every adapter) | **597 s** | 4457 | 402 |
 
 SQLite is free next to SQL Server's container start, which is why the pair costs no more than SQL Server alone -
 the two numbers are the same measurement within noise.
@@ -92,9 +92,9 @@ the two numbers are the same measurement within noise.
 - **A change under `src/DbConnectionPlus.DatabaseAdapters.{MySql,Oracle,PostgreSql}`** — add exactly those
   adapters to the default pair, and no others. Touching the MySQL adapter buys a MySQL run, not a full matrix.
 - **A change to the shared adapter seam** — `IDatabaseAdapter`, `IEntityManipulator` or
-  `ITemporaryTableBuilder` — obliges you to run **all five**, because every adapter implements it. The five are
+  `ITemporaryTableBuilder` — obliges you to run **the full matrix**, because every adapter implements it. They are
   genuinely divergent code, and at least one asymmetry is deliberate: MySQL's temp-table reader applies
-  enum/`Char` handling that the other four do not. A two-provider run cannot see that.
+  enum/`Char` handling that the others do not. A two-provider run cannot see that.
 
 **A core-only change does not earn the full matrix.** The five-provider run is repeatedly byte-identical to the
 previous baseline for changes that touch no adapter, which is ten minutes for no signal. If you want the extra

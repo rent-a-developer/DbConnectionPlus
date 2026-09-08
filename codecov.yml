@@ -11,7 +11,7 @@ coverage:
         # Informational: a PR is never blocked on patch coverage, but the delta is reported.
         informational: true
 
-# Only the six shipping libraries under src/ are measured. The benchmarks are BenchmarkDotNet harnesses and
+# Only the shipping libraries under src/ are measured. The benchmarks are BenchmarkDotNet harnesses and
 # the package consumers are compile-and-run smoke tests, so neither is part of the shipped surface.
 ignore:
   - "benchmarks"

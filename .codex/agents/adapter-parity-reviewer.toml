@@ -1,6 +1,5 @@
 name = "adapter_parity_reviewer"
 description = "Review whether database-adapter or shared adapter-seam changes were mirrored correctly across MySQL, Oracle, PostgreSQL, SQLite, and SQL Server implementations and tests."
-model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Read `.agents/references/reviews/adapter-parity.md` in full before doing anything, then follow it exactly.

@@ -1,107 +1,155 @@
 <Project>
 
-	<!--
-		Properties shared by EVERY project in the solution - the six shipping libraries, the two test projects
-		and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
-		Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
+  <!--
+    Properties shared by EVERY project in the solution - the shipping libraries, the test projects
+    and the benchmarks. (tests/package-consumption/ is outside this on purpose: it carries its own empty
+    Directory.Build.props, which stops MSBuild's upward search before it reaches this file.)
 
-		Anything that only the shipping libraries need belongs in src/Directory.Build.props instead, which
-		imports this file. MSBuild uses the NEAREST Directory.Build.props and stops there, so that import is
-		what keeps these properties applying under src/ as well.
-	-->
+    Anything that only the shipping libraries need belongs in src/Directory.Build.props instead, which
+    imports this file. MSBuild uses the NEAREST Directory.Build.props and stops there, so that import is
+    what keeps these properties applying under src/ as well.
+  -->
 
-	<PropertyGroup>
-		<Authors>David Liebeherr</Authors>
-		<Company>rent-a-developer</Company>
-		<Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
-	</PropertyGroup>
+  <PropertyGroup>
+    <!--
+      The version every produced package carries. All shipping packages are versioned and released
+      together, so this is ONE edit per release rather than one per project. It lives at the repository
+      root rather than under src/ so that every script and document has a single, obvious place to read
+      it from - scripts/verify-package-aot.ps1 does exactly that when -PackageVersion is omitted.
 
-	<PropertyGroup>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<TieredCompilation>true</TieredCompilation>
-	</PropertyGroup>
+      The test and benchmark projects inherit it too. They are never packed (IsPackable is false below,
+      and only the shipping projects opt back in), so the only effect there is that their assembly
+      version tracks the repository's instead of the SDK's 1.0.0 default.
+    -->
+    <Version>4.0.0</Version>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <PropertyGroup>
+    <Authors>David Liebeherr</Authors>
+    <Company>rent-a-developer</Company>
+    <Copyright>Copyright © rent-a-developer / David Liebeherr</Copyright>
+  </PropertyGroup>
 
-		<!--
-			Every project generates an XML documentation file, including the tests and the benchmarks, which
-			have no use for one. This is not about documentation: IDE0005 (unnecessary using directive) is
-			simply not REPORTED at build time unless the compilation produces a doc file, and it says so -
-			"Set MSBuild property 'GenerateDocumentationFile' to 'true' ... to enable IDE0005 on build",
-			https://github.com/dotnet/roslyn/issues/41640. Without this, an unused using is invisible to the
-			build in every project, and the price is three XML files in obj/ that nobody reads.
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TieredCompilation>true</TieredCompilation>
+  </PropertyGroup>
 
-			The tests and benchmarks do not document their public members, so CS1591 and CS1574 are switched
-			off for them in .editorconfig. In src/ both stay errors - that is what keeps the public API
-			documented.
-		-->
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
+  <PropertyGroup>
+    <!--
+      Packing is opt-in, not opt-out. Every project starts unpackable and the shipping projects under
+      src/ each set IsPackable=true themselves, so "which projects ship as packages" is answered by those
+      .csproj files rather than by whichever project last remembered to say no. A new test, sample or
+      tool project is silently unpackable, which is the safe default: the failure mode of the other
+      direction is publishing something that was never meant to leave the repository.
 
-	<PropertyGroup>
-		<!--
-			CSharpier as a build step, so formatting is a build error like style and member ordering, rather
-			than something only the editor hooks, preflight and CI notice.
+      The files those packages carry are added by Directory.Build.targets, not here - a project sets
+      IsPackable AFTER this file has been evaluated, so a condition on it in a .props file is always false.
+    -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
 
-			Check, not format. Left at its default the package REWRITES source files during the build, which
-			turns building into editing: the file on disk stops being the file you asked the compiler to
-			compile. With Check the build fails instead and names the file, and fixing it stays a deliberate
-			act - scripts/tidy-code.ps1, or the editor hook that already runs on every agent edit.
+  <PropertyGroup>
+    <!--
+      NuGet's dependency audit, at its widest scope: NuGetAuditMode=all reports advisories against
+      transitive packages too, which is where they usually are - the direct references here are few and
+      watched, and a vulnerable ADO.NET driver two levels down is exactly what would otherwise be missed.
+      The level is moderate rather than low, so the audit reports what is worth acting on.
 
-			CSharpier_Bypass=true skips it, for the rare case of needing a build out of a tree mid-edit.
-		-->
-		<CSharpier_Check>true</CSharpier_Check>
-	</PropertyGroup>
+      WarningsNotAsErrors is what keeps this from being hostile. TreatWarningsAsErrors is on for every
+      project, so without it the publication of a new advisory anywhere in the transitive graph would break
+      an unrelated build, on a schedule nobody in this repository controls. NU1901-NU1904 therefore stay
+      warnings: visible in every build and in CI, and never a reason a change that touched nothing cannot
+      compile. Dependabot's security updates are what close them.
+    -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<!--
-			The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
-			consumer of the packages.
-		-->
-		<!--
-			KEEP THIS VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json. The two are the
-			same formatter, and a version apart they disagree: the build would demand formatting that
-			`dotnet csharpier format` does not produce, and no amount of running the tool would fix it.
-		-->
-		<PackageReference Include="CSharpier.MsBuild" Version="1.3.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<!--
-			The member-ordering checker. It is here for that one job - see the ordering section of
-			.editorconfig, which switches every StyleCop category off and turns only the ordering rules
-			plus SA1309 back on.
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
-			This is the NewStyleCop.Analyzers fork, not StyleCop.Analyzers. Upstream's last release is
-			1.2.0-beta.556 from December 2023 and predates the C# this repository writes; the fork ships
-			stable releases and handles C# 14 extension declarations and collection expressions. The rule
-			IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
-		-->
-		<PackageReference Include="NewStyleCop.Analyzers" Version="1.2.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.33.0.1635">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+    <!--
+      Every project generates an XML documentation file, including the tests and the benchmarks, which
+      have no use for one. This is not about documentation: IDE0005 (unnecessary using directive) is
+      simply not REPORTED at build time unless the compilation produces a doc file, and it says so -
+      "Set MSBuild property 'GenerateDocumentationFile' to 'true' ... to enable IDE0005 on build",
+      https://github.com/dotnet/roslyn/issues/41640. Without this, an unused using is invisible to the
+      build in every project, and the price is an unread XML file in each project's obj/.
 
-	<ItemGroup>
-		<!-- One stylecop.json for the whole repository; $(MSBuildThisFileDirectory) is the repository root. -->
-		<AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
-	</ItemGroup>
+      The tests and benchmarks do not document their public members, so CS1591 and CS1574 are switched
+      off for them in .editorconfig. In src/ both stay errors - that is what keeps the public API
+      documented.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      CSharpier as a build step, so formatting is a build error like style and member ordering, rather
+      than something only the editor hooks, the pre-commit gate and CI notice.
+
+      Check, not format. Left at its default the package REWRITES source files during the build, which
+      turns building into editing: the file on disk stops being the file you asked the compiler to
+      compile. With Check the build fails instead and names the file, and fixing it stays a deliberate
+      act - scripts/tidy-code.ps1, or the editor hook that already runs on every agent edit.
+
+      CSharpier_Bypass=true skips it, for the rare case of needing a build out of a tree mid-edit.
+    -->
+    <CSharpier_Check>true</CSharpier_Check>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      The style analyzers every project is held to. They are PrivateAssets=all, so they never flow to a
+      consumer of the packages.
+    -->
+    <!--
+      KEEP THE CSharpier.MsBuild VERSION IN STEP with the csharpier entry in .config/dotnet-tools.json.
+      The two are the same formatter, and a version apart they disagree: the build would demand formatting
+      that `dotnet csharpier format` does not produce, and no amount of running the tool would fix it. The
+      version itself lives in Directory.Packages.props, with every other version in the repository.
+    -->
+    <PackageReference Include="CSharpier.MsBuild">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ErrorProne.NET.CoreAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslynator.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <!--
+      The member-ordering checker. It is here for that one job - see the ordering section of
+      .editorconfig, which switches every StyleCop category off and turns only the ordering rules
+      plus SA1309 back on.
+
+      This is the NewStyleCop.Analyzers fork, not StyleCop.Analyzers. Upstream's last release is
+      1.2.0-beta.556 from December 2023 and predates the C# this repository writes; the fork ships
+      stable releases and handles C# 14 extension declarations and collection expressions. The rule
+      IDs and stylecop.json are identical, so going back to upstream is a one-line change here.
+    -->
+    <PackageReference Include="NewStyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- One stylecop.json for the whole repository; $(MSBuildThisFileDirectory) is the repository root. -->
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
 
 </Project>

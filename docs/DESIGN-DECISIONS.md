@@ -5,8 +5,8 @@
 **Author:** David Liebeherr
 
 This document describes the design **as it is now**, and why it is that way. It is not a change log - see
-[CHANGELOG.md](CHANGELOG.md) for what changed between versions, and [README.md](README.md) for how to use the
-library.
+[CHANGELOG.md](../CHANGELOG.md) for what changed between versions, and [the guides](guides/querying.md) for how to use
+the library.
 
 ## Table of contents
 
@@ -236,7 +236,7 @@ types at opted-in call sites and emitted reflection-free mappers, registered thr
 `[ModuleInitializer]`. It buys run-time performance on the mapping step and nothing else.
 
 What the repository still measures is the price of the reflection path itself - the same cost a generator would
-have removed. From the [benchmark suite](README.md#benchmarks), on in-memory SQLite, where statement execution
+have removed. From the [benchmark results](reference/performance.md), on in-memory SQLite, where statement execution
 is nearly free and mapping is therefore the largest possible share of the total:
 
 | Category, JIT → Native AOT | End to end | Of which the runtime itself (raw `DbCommand` baseline) |
@@ -291,8 +291,9 @@ for free: with a registry, an undiscovered type fails loudly. Measured under Nat
 | Broken annotation chain, **with** guard | - | **throws** |
 | Correct annotation chain, with guard | 6 | **OK** - no false positive |
 
-The guard also fixed a latent bug on the JIT: a result set matching no property previously returned
-default-valued objects, so a typo in a `SELECT` alias produced a sequence of empty objects with no error.
+The guard also covers a failure that is not AOT-specific: on the JIT, a result set matching no property
+would otherwise produce a sequence of default-valued objects, so a typo in a `SELECT` alias would return empty
+objects with no error.
 
 ⚠️ **All three cases pass on the JIT.** Nothing is trimmed there, so the entire unit and integration suite
 passes with a broken annotation chain. That is why verification lives in a natively published smoke test - see
@@ -341,7 +342,7 @@ of bounds and untouched. The two sanctioned suppressions cover value-tuple **BCL
 eight framework types, preserved by a shipped descriptor, guarded by a unit test and by native smoke cases.
 
 **The `net8.0` `IL3050` suppression is a transcription, not an assertion.** The `net10.0` inner build compiles
-the same source *without* it. That is why both target frameworks are gated in CI: the newer one verifies the
+the same source *without* it. That is why `net8.0` and `net10.0` are both gated in CI: the newer one verifies the
 reasoning the older one has to state by hand.
 
 **Why bother.** A warning a consumer cannot act on, and that does not correspond to any way their application
@@ -431,7 +432,7 @@ read-only for the rest of the process and the lookup needs no synchronization - 
 - **The same mechanism serves custom adapters.** There is no built-in/third-party asymmetry: implement
   `IDatabaseAdapter` (plus an `IEntityManipulator` and an `ITemporaryTableBuilder`), call
   `RegisterDatabaseAdapter<MyConnection>`, and optionally wrap that in a `UseMyDatabase()` extension method -
-  which is all the built-in adapters are. The [README](README.md#custom-database-adapter) carries a worked
+  which is all the built-in adapters are. The [custom-adapter guide](guides/custom-adapters.md) carries a worked
   example.
 
 **Trade-off:** one line of startup configuration that a static auto-registering registry would not need, and a
@@ -697,7 +698,7 @@ Oracle's private temporary table name must carry the server's `private_temp_tabl
 back. The one exception it does translate is cancellation - SQL Server's `OperationAbortedException` becomes
 `OperationCanceledException`, matching every other cancellation path in the library.
 
-**One reader feeds all five.** The bulk-copy APIs and the `INSERT` loops both consume an `EnumerableReader`:  a
+**One reader feeds every adapter.** The bulk-copy APIs and the `INSERT` loops both consume an `EnumerableReader`:  a
 `DbDataReader` implementation over an `IEnumerable`, exposing a single `Value` column for scalars or one column
 per mapped readable property for complex objects. Nothing materializes the sequence into an intermediate table
 or array first, and the same code runs on the JIT and under Native AOT.
@@ -711,8 +712,8 @@ or array first, and the same code runs on the JIT and under Native AOT.
 | Tier | What it is | Scale |
 |---|---|---|
 | **Unit tests** (`DbConnectionPlus.UnitTests`) | core logic in isolation, `DbConnection` / `DbDataReader` substituted with NSubstitute | ~3,270 executed plus ~200 skipped per target framework, in a few seconds - which is what makes them the default verification loop |
-| **Integration tests** (`DbConnectionPlus.IntegrationTests`) | real databases: Testcontainers-managed containers for MySQL, Oracle, PostgreSQL and SQL Server, SQLite in-process | ~600 s for all five, ~90 s for the default SQLite + SQL Server pair |
-| **Package-consumption tests** (`tests/package-consumption/`) | console apps consuming the **packed packages**, not the projects. `AotConsumer` is published with Native AOT; `AllAdaptersConsumer` installs all six packages and builds on the .NET 8 SDK alone, which is what makes the documented `net8.0` floor a checked fact | two CI gates |
+| **Integration tests** (`DbConnectionPlus.IntegrationTests`) | real databases: Testcontainers-managed containers for MySQL, Oracle, PostgreSQL and SQL Server, SQLite in-process | ~600 s for the full matrix, ~90 s for the default SQLite + SQL Server pair |
+| **Package-consumption tests** (`tests/package-consumption/`) | console apps consuming the **packed packages**, not the projects. `AotConsumer` is published with Native AOT; `AllAdaptersConsumer` installs every package and builds on the .NET 8 SDK alone, which is what makes the documented `net8.0` floor a checked fact | two CI gates |
 | **Benchmarks** (`DbConnectionPlus.Benchmarks`) | regression detection against a raw `DbCommand` baseline and against Dapper | BenchmarkDotNet |
 
 ### Unit tests
@@ -729,7 +730,7 @@ a new one.
 **The public surface is not tested - it is declared.** Every shipping project carries `PublicAPI.Shipped.txt`
 and `PublicAPI.Unshipped.txt`, and `Microsoft.CodeAnalysis.PublicApiAnalyzers` turns an undeclared public
 member into `RS0016` and a declared-but-vanished one into `RS0017`. With `TreatWarningsAsErrors=true` that is a
-build error in all six projects on both target frameworks, so an accidental break cannot compile, let alone
+build error in every shipping project on `net8.0` and `net10.0`, so an accidental break cannot compile, let alone
 reach a test run. `scripts/update-public-api.ps1` records a deliberate change.
 
 ### Integration tests
@@ -743,7 +744,7 @@ servers; the container definitions are the fixtures in
 `tests/DbConnectionPlus.IntegrationTests/TestDatabase/Containers/`. There is no compose file to bring up, no
 `testconfig.json`, and no `ConnectionString_*` environment variable: each fixture builds its connection string in
 code from the free host port Docker published its container on, which is what removes both the port collision
-with a locally installed server and the second set of connection strings CI used to carry. CI declares no service
+with a locally installed server and any second set of connection strings for CI. CI declares no service
 containers either - it runs the same code path a developer does, so a container configured wrong fails in both
 places or in neither.
 
@@ -754,15 +755,14 @@ enough to skip database systems the run does not touch and early enough for the 
 open a connection. The container behind it is shared by every test class of that database system and removed by
 an assembly fixture when the run ends.
 
-**What that costs.** Every run now starts from a freshly created server rather than from whatever a long-lived
-compose stack had accumulated, and pays the startup. Measured against the numbers this suite used to record, the
-full matrix went from 533 s to 597 s - about a minute for four containers (PostgreSQL 4.7 s, SQL Server 11.1 s,
-MySQL 19.8 s, Oracle 23.9 s).
+**What that costs.** Every run starts from a freshly created server rather than from whatever a long-lived
+compose stack would have accumulated, and pays the startup: about a minute of the full matrix's 597 s goes on
+container startup (PostgreSQL 4.7 s, SQL Server 11.1 s, MySQL 19.8 s, Oracle 23.9 s).
 That is also why the Oracle fixture pins the `faststart` image variant, whose database is already created, over
 the plain one that spends minutes creating `FREEPDB1` on first start.
 
 Scoping rules and measured per-provider timings:
-[`.agents/skills/integration-db/SKILL.md`](.agents/skills/integration-db/SKILL.md).
+[`.agents/skills/integration-db/SKILL.md`](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/.agents/skills/integration-db/SKILL.md).
 
 ### The Native AOT smoke test
 
@@ -831,7 +831,7 @@ column of the two rows for the same method.
 
 ⚠️ **The benchmarks are not a trimming check.** BenchmarkDotNet reports a benchmark that returned
 default-valued entities as a *fast* benchmark, not a broken one. Only the smoke test asserts values. Details:
-[the benchmark suite's README](benchmarks/DbConnectionPlus.Benchmarks/README.md).
+[the benchmark suite's README](https://github.com/rent-a-developer/DbConnectionPlus/blob/main/benchmarks/DbConnectionPlus.Benchmarks/README.md).
 
 ---
 

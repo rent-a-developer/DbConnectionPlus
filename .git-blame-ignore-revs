@@ -37,3 +37,8 @@ f80b2f75fa4a8331c1b63aef1686144560d1e904
 # tests/package-consumption/ and the MySql primary constructor were applied by hand, because no tool
 # in the pipeline reaches them.
 70f9ea67d055d9932c1ff9f5bf3204af9e1c78c4
+
+# style: reindent the MSBuild and configuration files with two spaces
+# Leading tabs to two spaces in the MSBuild, .slnx, .config, .xml and .DotSettings files. Whitespace
+# only, 534 lines in 17 files; no .cs file was touched and no evaluated MSBuild property changed.
+5ae159ab0031e0ea3ca373eb1c53495d3c633eb1
