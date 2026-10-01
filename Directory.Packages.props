@@ -80,7 +80,7 @@
     <PackageVersion Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
     <PackageVersion Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
     <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
-    <PackageVersion Include="xunit.v3" Version="4.0.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>
