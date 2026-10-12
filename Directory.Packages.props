@@ -39,11 +39,11 @@
       test projects reference the same drivers at the same versions, which is what this file makes
       unmissable.
     -->
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
-    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.301" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,7 +61,7 @@
     <PackageVersion Include="NewStyleCop.Analyzers" Version="1.2.1" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.33.0.1635" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,12 +74,12 @@
     <PackageVersion Include="AutoFixture.Idioms" Version="4.18.1" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="coverlet.MTP" Version="10.0.1" />
-    <PackageVersion Include="Mapster" Version="10.0.12" />
+    <PackageVersion Include="coverlet.MTP" Version="10.1.0" />
+    <PackageVersion Include="Mapster" Version="10.0.13" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NSubstitute.Community.DbConnection" Version="2.15.0" />
     <PackageVersion Include="RentADeveloper.ArgumentNullGuards" Version="1.1.0" />
-    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.11" />
+    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.12" />
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
   </ItemGroup>
 
